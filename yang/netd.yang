@@ -1,0 +1,154 @@
+module netd {
+  yang-version 1.1;
+  namespace "urn:ietf:params:xml:ns:yang:netd";
+  prefix "netd";
+
+  import ietf-interfaces {
+    prefix if;
+  }
+  import ietf-routing {
+    prefix rt;
+  }
+  import ietf-inet-types {
+    prefix inet;
+  }
+
+  organization
+    "Raven Hammer Research";
+
+  contact
+    "Paige Thompson <paige@paige.bio>";
+
+  description
+    "YANG module for netd network configuration tool";
+
+  revision 2025-01-01 {
+    description
+      "Initial version";
+  }
+
+  /* VRF configuration */
+  container vrfs {
+    description "VRF (Virtual Routing and Forwarding) configuration";
+    
+    list vrf {
+      key "name";
+      description "VRF instance";
+      
+      leaf name {
+        type string {
+          length "1..32";
+        }
+        description "VRF name";
+      }
+      
+      leaf description {
+        type string;
+        description "VRF description";
+      }
+      
+      leaf fib {
+        type uint32 {
+          range "0..255";
+        }
+        description "Forwarding Information Base number";
+      }
+      
+      leaf enabled {
+        type boolean;
+        default true;
+        description "Enable/disable VRF";
+      }
+    }
+  }
+
+  /* Interface configuration extensions */
+  augment "/if:interfaces/if:interface" {
+    description "Interface configuration extensions for netd";
+    
+    leaf vrf {
+      type leafref {
+        path "/netd:vrfs/netd:vrf/netd:name";
+      }
+      description "VRF assignment for interface";
+    }
+    
+    leaf group {
+      type string;
+      description "Interface group";
+    }
+  }
+
+  /* Route configuration */
+  container routes {
+    description "Route configuration";
+    
+    list route {
+      key "vrf destination";
+      description "Route entry";
+      
+      leaf vrf {
+        type leafref {
+          path "/netd:vrfs/netd:vrf/netd:name";
+        }
+        description "VRF for this route";
+      }
+      
+      leaf destination {
+        type inet:ip-prefix;
+        description "Route destination";
+      }
+      
+      leaf gateway {
+        type inet:ip-address;
+        description "Route gateway";
+      }
+      
+      leaf interface {
+        type leafref {
+          path "/if:interfaces/if:interface/if:name";
+        }
+        description "Route interface";
+      }
+      
+      leaf type {
+        type enumeration {
+          enum static {
+            description "Static route";
+          }
+          enum reject {
+            description "Reject route";
+          }
+          enum blackhole {
+            description "Blackhole route";
+          }
+        }
+        default static;
+        description "Route type";
+      }
+      
+      leaf enabled {
+        type boolean;
+        default true;
+        description "Enable/disable route";
+      }
+    }
+  }
+
+  /* RPC operations */
+  rpc commit {
+    description "Commit pending configuration changes";
+  }
+  
+  rpc save {
+    description "Save running configuration to file";
+    
+    input {
+      leaf filename {
+        type string;
+        mandatory true;
+        description "Output filename";
+      }
+    }
+  }
+} 

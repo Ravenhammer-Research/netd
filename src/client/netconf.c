@@ -1,0 +1,219 @@
+/*
+ * Copyright (c) 2025 Paige Thompson / Raven Hammer Research (paige@paige.bio)
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice, this
+ *    list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ * 3. Neither the name of the copyright holder nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+#include "net.h"
+
+/**
+ * Connect to netd server via Unix domain socket
+ * @param client Client structure
+ * @return 0 on success, -1 on failure
+ */
+int netconf_connect(net_client_t *client)
+{
+    struct sockaddr_un addr;
+
+    if (!client) {
+        return -1;
+    }
+
+    /* Create socket */
+    client->socket_fd = socket(AF_UNIX, SOCK_STREAM, 0);
+    if (client->socket_fd < 0) {
+        print_error("Failed to create socket: %s", strerror(errno));
+        return -1;
+    }
+
+    /* Set up address */
+    memset(&addr, 0, sizeof(addr));
+    addr.sun_family = AF_UNIX;
+    strlcpy(addr.sun_path, NETD_SOCKET_PATH, sizeof(addr.sun_path));
+
+    /* Connect to server */
+    debug_log(DEBUG_DEBUG, "Attempting to connect to server at %s", NETD_SOCKET_PATH);
+    if (connect(client->socket_fd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
+        print_error("Failed to connect to netd server: %s", strerror(errno));
+        close(client->socket_fd);
+        client->socket_fd = -1;
+        return -1;
+    }
+
+    debug_log(DEBUG_DEBUG, "Successfully connected to server");
+    client->connected = true;
+    return 0;
+}
+
+/**
+ * Disconnect from netd server
+ * @param client Client structure
+ */
+void netconf_disconnect(net_client_t *client)
+{
+    if (client && client->connected) {
+        close(client->socket_fd);
+        client->socket_fd = -1;
+        client->connected = false;
+    }
+}
+
+/**
+ * Send NETCONF request to server
+ * @param client Client structure
+ * @param request Request XML string
+ * @param response Response XML string (allocated)
+ * @return 0 on success, -1 on failure
+ */
+int netconf_send_request(net_client_t *client, const char *request, char **response)
+{
+    ssize_t bytes_sent, bytes_received;
+    char buffer[MAX_RESPONSE_LEN];
+
+    debug_log(DEBUG_DEBUG, "netconf_send_request called");
+
+    if (!client || !client->connected || !request || !response) {
+        debug_log(DEBUG_ERROR, "Invalid parameters to netconf_send_request");
+        return -1;
+    }
+
+    /* Send request */
+    debug_log(DEBUG_DEBUG, "Sending request to server (%zu bytes)", strlen(request));
+    debug_log(DEBUG_DEBUG, "Request content:\n%s", request);
+    debug_log(DEBUG_DEBUG, "About to call send() on socket %d", client->socket_fd);
+    
+    /* Verify socket is still valid */
+    if (client->socket_fd < 0) {
+        debug_log(DEBUG_ERROR, "Invalid socket descriptor");
+        client->connected = false;
+        return -1;
+    }
+    
+    bytes_sent = send(client->socket_fd, request, strlen(request), 0);
+    if (bytes_sent < 0) {
+        print_error("Failed to send request: %s", strerror(errno));
+        client->connected = false;
+        return -1;
+    }
+    debug_log(DEBUG_DEBUG, "Sent %zd bytes to server", bytes_sent);
+
+    /* Receive response */
+    debug_log(DEBUG_DEBUG, "Waiting for response from server...");
+    bytes_received = recv(client->socket_fd, buffer, sizeof(buffer) - 1, 0);
+    if (bytes_received <= 0) {
+        if (bytes_received == 0) {
+            /* Server closed connection, this is normal */
+            debug_log(DEBUG_DEBUG, "Server closed connection after response");
+        } else {
+            print_error("Failed to receive response: %s", strerror(errno));
+        }
+        /* Mark connection as closed */
+        client->connected = false;
+        return -1;
+    }
+    debug_log(DEBUG_DEBUG, "Received %zd bytes from server", bytes_received);
+
+    buffer[bytes_received] = '\0';
+
+    /* Allocate and copy response */
+    *response = strdup(buffer);
+    if (!*response) {
+        print_error("Failed to allocate response buffer");
+        return -1;
+    }
+
+    return 0;
+}
+
+/**
+ * Get interfaces from server
+ * @param client Client structure
+ * @param response Response XML string (allocated)
+ * @return 0 on success, -1 on failure
+ */
+int netconf_get_interfaces(net_client_t *client, char **response)
+{
+    const char *request = 
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+        "<rpc message-id=\"1\" xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">\n"
+        "  <get>\n"
+        "    <filter type=\"subtree\">\n"
+        "      <interfaces xmlns=\"urn:ietf:params:xml:ns:yang:ietf-interfaces\"/>\n"
+        "    </filter>\n"
+        "  </get>\n"
+        "</rpc>\n";
+
+    return netconf_send_request(client, request, response);
+}
+
+/**
+ * Get VRFs from server
+ * @param client Client structure
+ * @param response Response XML string (allocated)
+ * @return 0 on success, -1 on failure
+ */
+int netconf_get_vrfs(net_client_t *client, char **response)
+{
+    const char *request = 
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+        "<rpc message-id=\"2\" xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">\n"
+        "  <get>\n"
+        "    <filter type=\"subtree\">\n"
+        "      <vrfs xmlns=\"urn:ietf:params:xml:ns:yang:ietf-routing\"/>\n"
+        "    </filter>\n"
+        "  </get>\n"
+        "</rpc>\n";
+
+    return netconf_send_request(client, request, response);
+}
+
+/**
+ * Get routes from server
+ * @param client Client structure
+ * @param fib FIB number
+ * @param family Address family
+ * @param response Response XML string (allocated)
+ * @return 0 on success, -1 on failure
+ */
+int netconf_get_routes(net_client_t *client, uint32_t fib, int family, char **response)
+{
+    char request[1024];
+    (void)fib; /* Suppress unused parameter warning */
+    (void)family; /* Suppress unused parameter warning */
+
+    snprintf(request, sizeof(request),
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+        "<rpc message-id=\"3\" xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">\n"
+        "  <get>\n"
+        "    <filter type=\"subtree\">\n"
+        "      <routing xmlns=\"urn:ietf:params:xml:ns:yang:ietf-routing\"/>\n"
+        "    </filter>\n"
+        "  </get>\n"
+        "</rpc>\n");
+
+    return netconf_send_request(client, request, response);
+} 
