@@ -50,8 +50,7 @@
 
 /* Constants */
 #define NETD_SOCKET_PATH "/var/run/netd.sock"
-#define MAX_CMD_LEN 1024
-#define MAX_RESPONSE_LEN 8192
+/* Dynamic allocation instead of fixed limits */
 #define MAX_COMPLETION_ITEMS 100
 
 /* Command types */
@@ -183,10 +182,10 @@ void print_info(const char *format, ...);
 
 /* XML utilities */
 int find_tag_content(const char *xml, const char *tag, char *content, size_t max_len);
+char* extract_xml_content(const char *xml, const char *tag, char *buffer, size_t max_len);
 
 /* Display utilities */
-void print_separator(int width);
-void format_interface_flags(int flags, char *flag_str, size_t max_len);
+
 
 /* Table display functions */
 int print_interface_table(const char *xml_response);

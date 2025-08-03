@@ -1,4 +1,5 @@
 #include "net.h"
+#include "if_table.h"
 #include <sys/queue.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -206,15 +207,15 @@ int execute_show_command(net_client_t *client, const command_t *cmd) {
         return -1;
     }
     
-    if (ret == 0 && response) {
-        /* Display formatted table instead of raw XML */
-        if (strcmp(cmd->args[0], "interface") == 0 || strcmp(cmd->args[0], "interfaces") == 0) {
-            /* Check if this is a group-filtered request */
-            if (cmd->arg_count >= 3 && strcmp(cmd->args[1], "group") == 0) {
-                print_interface_table_filtered(response, cmd->args[2]);
-            } else {
-            print_interface_table(response);
-            }
+            if (ret == 0 && response) {
+            /* Display formatted table instead of raw XML */
+            if (strcmp(cmd->args[0], "interface") == 0 || strcmp(cmd->args[0], "interfaces") == 0) {
+                /* Check if this is a group-filtered request */
+                if (cmd->arg_count >= 3 && strcmp(cmd->args[1], "group") == 0) {
+                    print_interface_table_filtered(response, cmd->args[2]);
+                } else {
+                    print_interface_table(response);
+                }
         } else if (strcmp(cmd->args[0], "vrf") == 0 || strcmp(cmd->args[0], "vrfs") == 0) {
             print_vrf_table(response);
         } else if (strcmp(cmd->args[0], "route") == 0 || strcmp(cmd->args[0], "routes") == 0) {

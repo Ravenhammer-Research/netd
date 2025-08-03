@@ -92,7 +92,10 @@ void netconf_disconnect(net_client_t *client)
 int netconf_send_request(net_client_t *client, const char *request, char **response)
 {
     ssize_t bytes_sent, bytes_received;
-    char buffer[MAX_RESPONSE_LEN];
+    char *response_buffer = NULL;
+    size_t total_received = 0;
+    size_t buffer_size = 8192; /* Start with 8KB */
+    char temp_buffer[4096]; /* Temporary buffer for each recv() */
 
     debug_log(DEBUG_DEBUG, "netconf_send_request called");
 
@@ -121,28 +124,64 @@ int netconf_send_request(net_client_t *client, const char *request, char **respo
     }
     debug_log(DEBUG_DEBUG, "Sent %zd bytes to server", bytes_sent);
 
-    /* Receive response */
-    debug_log(DEBUG_DEBUG, "Waiting for response from server...");
-    bytes_received = recv(client->socket_fd, buffer, sizeof(buffer) - 1, 0);
-    if (bytes_received <= 0) {
-        if (bytes_received == 0) {
-            /* Server closed connection, this is normal */
-            debug_log(DEBUG_DEBUG, "Server closed connection after response");
-        } else {
-            print_error("Failed to receive response: %s", strerror(errno));
-        }
-        /* Mark connection as closed */
-        client->connected = false;
+    /* Allocate initial response buffer */
+    response_buffer = malloc(buffer_size);
+    if (!response_buffer) {
+        print_error("Failed to allocate response buffer");
         return -1;
     }
-    debug_log(DEBUG_DEBUG, "Received %zd bytes from server", bytes_received);
 
-    buffer[bytes_received] = '\0';
+    /* Receive response in chunks */
+    debug_log(DEBUG_DEBUG, "Waiting for response from server...");
+    while (1) {
+        bytes_received = recv(client->socket_fd, temp_buffer, sizeof(temp_buffer), 0);
+        if (bytes_received <= 0) {
+            if (bytes_received == 0) {
+                /* Server closed connection, this is normal */
+                debug_log(DEBUG_DEBUG, "Server closed connection after response");
+                break;
+            } else {
+                print_error("Failed to receive response: %s", strerror(errno));
+                free(response_buffer);
+                client->connected = false;
+                return -1;
+            }
+        }
+
+        /* Check if we need more buffer space */
+        if (total_received + bytes_received >= buffer_size) {
+            buffer_size *= 2;
+            char *new_buffer = realloc(response_buffer, buffer_size);
+            if (!new_buffer) {
+                print_error("Failed to reallocate response buffer");
+                free(response_buffer);
+                return -1;
+            }
+            response_buffer = new_buffer;
+        }
+
+        /* Copy received data to response buffer */
+        memcpy(response_buffer + total_received, temp_buffer, bytes_received);
+        total_received += bytes_received;
+        
+        debug_log(DEBUG_DEBUG, "Received %zd bytes from server (total: %zu)", bytes_received, total_received);
+
+        /* Check if we've received the complete XML response */
+        if (total_received > 0 && strstr(response_buffer, "</rpc-reply>")) {
+            debug_log(DEBUG_DEBUG, "Found end of XML response");
+            break;
+        }
+    }
+
+    /* Null-terminate the response */
+    response_buffer[total_received] = '\0';
 
     /* Allocate and copy response */
-    *response = strdup(buffer);
+    *response = strdup(response_buffer);
+    free(response_buffer);
+    
     if (!*response) {
-        print_error("Failed to allocate response buffer");
+        print_error("Failed to allocate final response buffer");
         return -1;
     }
 

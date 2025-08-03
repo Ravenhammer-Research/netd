@@ -106,14 +106,28 @@ int main(int argc, char *argv[])
         ret = interactive_mode(&client);
     } else {
         /* Command line mode */
-        char cmd_line[MAX_CMD_LEN] = "";
+        char *cmd_line = NULL;
+        
+        /* Calculate total length needed */
+        size_t total_len = 0;
+        for (int i = optind; i < argc; i++) {
+            total_len += strlen(argv[i]) + 1; /* +1 for space */
+        }
+        
+        /* Allocate command line buffer */
+        cmd_line = malloc(total_len + 1);
+        if (!cmd_line) {
+            print_error("Failed to allocate command line buffer");
+            return 1;
+        }
+        cmd_line[0] = '\0';
         
         /* Concatenate all arguments into a single command line */
         for (int i = optind; i < argc; i++) {
             if (i > optind) {
-                strlcat(cmd_line, " ", sizeof(cmd_line));
+                strcat(cmd_line, " ");
             }
-            strlcat(cmd_line, argv[i], sizeof(cmd_line));
+            strcat(cmd_line, argv[i]);
         }
 
         /* Parse and execute command */
@@ -124,6 +138,9 @@ int main(int argc, char *argv[])
         } else {
             ret = execute_command(&client, &cmd);
         }
+        
+        /* Clean up */
+        free(cmd_line);
     }
 
     /* Cleanup */

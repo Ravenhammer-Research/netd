@@ -28,9 +28,96 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "net.h"
+#include "table_utils.h"
 #include <stdio.h>
+#include <stdarg.h>
+#include <string.h>
 #include <net/if.h>
+
+void table_init(struct table_format *fmt, const char *title)
+{
+    memset(fmt, 0, sizeof(*fmt));
+    fmt->title = title;
+    fmt->column_count = 0;
+}
+
+void table_add_column(struct table_format *fmt, const char *header, int min_width)
+{
+    if (fmt->column_count >= MAX_COLUMNS) return;
+    
+    fmt->columns[fmt->column_count].header = header;
+    fmt->columns[fmt->column_count].min_width = min_width;
+    fmt->columns[fmt->column_count].width = min_width;
+    fmt->column_count++;
+}
+
+void table_update_width(struct table_format *fmt, int col_idx, int content_len)
+{
+    if (col_idx < 0 || col_idx >= fmt->column_count) return;
+    
+    if (content_len > fmt->columns[col_idx].width) {
+        fmt->columns[col_idx].width = content_len;
+    }
+}
+
+void table_print_header(const struct table_format *fmt)
+{
+    if (fmt->title) {
+        printf("\n%s:\n", fmt->title);
+    }
+    
+    for (int i = 0; i < fmt->column_count; i++) {
+        printf("%-*s", fmt->columns[i].width, fmt->columns[i].header);
+        if (i < fmt->column_count - 1) printf(" ");
+    }
+    printf("\n");
+}
+
+void table_print_row(const struct table_format *fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+    
+    for (int i = 0; i < fmt->column_count; i++) {
+        const char *value = va_arg(args, const char*);
+        if (!value) value = "";
+        
+        printf("%-*s", fmt->columns[i].width, value);
+        if (i < fmt->column_count - 1) printf(" ");
+    }
+    printf("\n");
+    
+    va_end(args);
+}
+
+void table_print_row_multiline(const struct table_format *fmt, int num_lines, ...)
+{
+    va_list args;
+    va_start(args, num_lines);
+    
+    /* For each line */
+    for (int line = 0; line < num_lines; line++) {
+        /* For each column */
+        for (int i = 0; i < fmt->column_count; i++) {
+            const char *value = va_arg(args, const char*);
+            if (!value) value = "";
+            
+            printf("%-*s", fmt->columns[i].width, value);
+            if (i < fmt->column_count - 1) printf(" ");
+        }
+        printf("\n");
+    }
+    
+    va_end(args);
+}
+
+void table_print_footer(const struct table_format *fmt, const char *footer_text)
+{
+    (void)fmt;
+    if (footer_text) {
+        printf("%s\n", footer_text);
+    }
+}
 
 /**
  * Print a horizontal line for table formatting
