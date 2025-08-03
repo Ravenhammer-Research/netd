@@ -170,39 +170,15 @@ int print_interface_table_filtered(const char *xml_response, const char *group_n
             free(addr6_copy);
         }
         
-        /* Parse bridge members for width calculation */
-        char members_array_width[10][64];
-        int members_count_width = 0;
-        if (data->bridge_members[0] != '\0') {
-            char *members_copy = strdup(data->bridge_members);
-            char *token = strtok(members_copy, ",");
-            while (token && members_count_width < 10) {
-                /* Trim whitespace */
-                while (*token == ' ') token++;
-                char *end = token + strlen(token) - 1;
-                while (end > token && *end == ' ') end--;
-                *(end + 1) = '\0';
-                
-                strncpy(members_array_width[members_count_width], token, sizeof(members_array_width[0]) - 1);
-                members_array_width[members_count_width][sizeof(members_array_width[0]) - 1] = '\0';
-                members_count_width++;
-                token = strtok(NULL, ",");
-            }
-            free(members_copy);
-        }
+
         
         /* Update column widths */
         table_update_width(&fmt, 0, strlen(data->name));
         table_update_width(&fmt, 1, strlen(strcmp(data->enabled, "true") == 0 ? "UP" : "DOWN"));
         table_update_width(&fmt, 2, strlen(data->fib));
         
-        /* Calculate max width for bridge members */
-        int max_members_width = 0;
-        for (int j = 0; j < members_count_width; j++) {
-            int len = strlen(members_array_width[j]);
-            if (len > max_members_width) max_members_width = len;
-        }
-        table_update_width(&fmt, 3, max_members_width);
+        /* Calculate width for bridge members (use full string like regular table) */
+        table_update_width(&fmt, 3, strlen(data->bridge_members));
         table_update_width(&fmt, 4, strlen(data->mtu));
         
         /* Format flags */
@@ -227,34 +203,10 @@ int print_interface_table_filtered(const char *xml_response, const char *group_n
         }
         table_update_width(&fmt, 7, max_ipv6_width);
         
-        /* Parse groups for width calculation */
-        char group_array_width[10][64];
-        int group_count_width = 0;
-        if (data->groups[0] != '\0') {
-            char *groups_copy = strdup(data->groups);
-            char *token = strtok(groups_copy, ",");
-            while (token && group_count_width < 10) {
-                /* Trim whitespace */
-                while (*token == ' ') token++;
-                char *end = token + strlen(token) - 1;
-                while (end > token && *end == ' ') end--;
-                *(end + 1) = '\0';
-                
-                strncpy(group_array_width[group_count_width], token, sizeof(group_array_width[0]) - 1);
-                group_array_width[group_count_width][sizeof(group_array_width[0]) - 1] = '\0';
-                group_count_width++;
-                token = strtok(NULL, ",");
-            }
-            free(groups_copy);
-        }
+
         
-        /* Calculate max width for groups */
-        int max_groups_width = 0;
-        for (int j = 0; j < group_count_width; j++) {
-            int len = strlen(group_array_width[j]);
-            if (len > max_groups_width) max_groups_width = len;
-        }
-        table_update_width(&fmt, 8, max_groups_width);
+        /* Calculate width for groups (use full string like regular table) */
+        table_update_width(&fmt, 8, strlen(data->groups));
     }
     
     /* Print table header */

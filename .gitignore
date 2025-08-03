@@ -2,3 +2,5 @@
 net
 netd
 tests/unit/test_commands
+src/client/lexer.c
+src/client/parser.c

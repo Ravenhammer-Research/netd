@@ -29,6 +29,7 @@
  */
 
 #include "net.h"
+#include <fcntl.h>
 
 /**
  * Connect to netd server via Unix domain socket
@@ -133,6 +134,14 @@ int netconf_send_request(net_client_t *client, const char *request, char **respo
 
     /* Receive response in chunks */
     debug_log(DEBUG_DEBUG, "Waiting for response from server...");
+    
+    /* Set socket to non-blocking */
+    int flags = fcntl(client->socket_fd, F_GETFL, 0);
+    fcntl(client->socket_fd, F_SETFL, flags | O_NONBLOCK);
+    
+    int retry_count = 0;
+    const int max_retries = 10;
+    
     while (1) {
         bytes_received = recv(client->socket_fd, temp_buffer, sizeof(temp_buffer), 0);
         if (bytes_received <= 0) {
@@ -140,6 +149,15 @@ int netconf_send_request(net_client_t *client, const char *request, char **respo
                 /* Server closed connection, this is normal */
                 debug_log(DEBUG_DEBUG, "Server closed connection after response");
                 break;
+            } else if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                /* No data available, retry a few times before giving up */
+                retry_count++;
+                if (retry_count >= max_retries) {
+                    debug_log(DEBUG_DEBUG, "No more data available after %d retries", max_retries);
+                    break;
+                }
+                usleep(10000); /* 10ms delay */
+                continue;
             } else {
                 print_error("Failed to receive response: %s", strerror(errno));
                 free(response_buffer);
@@ -166,9 +184,9 @@ int netconf_send_request(net_client_t *client, const char *request, char **respo
         
         debug_log(DEBUG_DEBUG, "Received %zd bytes from server (total: %zu)", bytes_received, total_received);
 
-        /* Check if we've received the complete XML response */
-        if (total_received > 0 && strstr(response_buffer, "</rpc-reply>")) {
-            debug_log(DEBUG_DEBUG, "Found end of XML response");
+        /* Continue reading until no more data */
+        if (bytes_received == 0) {
+            debug_log(DEBUG_DEBUG, "No more data from server");
             break;
         }
     }

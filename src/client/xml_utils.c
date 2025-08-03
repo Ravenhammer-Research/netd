@@ -254,6 +254,7 @@ static void interface_start_element(void *userData, const char *name, const char
         if (ctx->interface_count < ctx->max_interfaces) {
             ctx->current_interface = &ctx->interfaces[ctx->interface_count];
             memset(ctx->current_interface, 0, sizeof(struct interface_data));
+            debug_log(DEBUG_DEBUG, "Starting interface %d", ctx->interface_count);
         }
     } else if (strcmp(name, "group") == 0) {
         ctx->in_group = 1;
@@ -272,6 +273,7 @@ static void interface_end_element(void *userData, const char *name)
     if (strcmp(name, "interface") == 0) {
         if (ctx->in_interface && ctx->current_interface) {
             ctx->interface_count++;
+            debug_log(DEBUG_DEBUG, "Added interface %d: %s", ctx->interface_count, ctx->current_interface->name);
         }
         ctx->in_interface = 0;
         ctx->current_interface = NULL;
@@ -363,7 +365,7 @@ static void interface_char_data(void *userData, const char *s, int len)
         strncat(ctx->temp_content, s, copy_len);
     }
     
-    debug_log(DEBUG_TRACE, "XML: Char data: '%.*s' (len=%d)", len, s, len);
+    // debug_log(DEBUG_TRACE, "XML: Char data: '%.*s' (len=%d)", len, s, len);
 }
 
 /**
@@ -382,6 +384,13 @@ int parse_interfaces_from_xml(const char *xml, struct interface_data *interfaces
         return -1;
     }
     
+    /* Debug: show last 50 chars of XML */
+    size_t xml_len = strlen(xml);
+    if (xml_len > 50) {
+        debug_log(DEBUG_DEBUG, "XML ends with: %.50s", xml + xml_len - 50);
+    }
+    debug_log(DEBUG_DEBUG, "XML length: %zu", xml_len);
+    
     /* Initialize context */
     memset(&ctx, 0, sizeof(ctx));
     ctx.interfaces = interfaces;
@@ -398,15 +407,17 @@ int parse_interfaces_from_xml(const char *xml, struct interface_data *interfaces
     XML_SetCharacterDataHandler(parser, interface_char_data);
     XML_SetUserData(parser, &ctx);
     
-    /* Parse the XML */
+        /* Parse the XML */
     if (XML_Parse(parser, xml, strlen(xml), 1) != XML_STATUS_OK) {
+        debug_log(DEBUG_ERROR, "XML_Parse failed");
         XML_ParserFree(parser);
         return -1;
     }
-    
+
     /* Clean up */
     XML_ParserFree(parser);
-    
+
+    debug_log(DEBUG_DEBUG, "parse_interfaces_from_xml: parsed %d interfaces", ctx.interface_count);
     return ctx.interface_count;
 }
 
