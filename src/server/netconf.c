@@ -92,6 +92,30 @@ static bool is_get_routes_request(const char *request)
 }
 
 /**
+ * Extract FIB number from routes request
+ * @param request XML request string
+ * @return FIB number, 0 if not found or invalid
+ */
+static uint32_t extract_fib_from_request(const char *request)
+{
+    const char *fib_start = strstr(request, "<fib>");
+    if (fib_start) {
+        fib_start += 5; /* Skip "<fib>" */
+        const char *fib_end = strstr(fib_start, "</fib>");
+        if (fib_end) {
+            char fib_str[16];
+            size_t len = fib_end - fib_start;
+            if (len < sizeof(fib_str)) {
+                strncpy(fib_str, fib_start, len);
+                fib_str[len] = '\0';
+                return (uint32_t)atoi(fib_str);
+            }
+        }
+    }
+    return 0; /* Default FIB */
+}
+
+/**
  * Check if request is a save operation
  * @param request XML request string
  * @return true if save request, false otherwise
@@ -202,12 +226,22 @@ int netconf_handle_request(netd_state_t *state, const char *request, char **resp
         }
     } else if (is_get_routes_request(request)) {
         debug_log(DEBUG_DEBUG, "Handling get-routes request");
-        char *routes_data = route_get_all(state);
-        if (routes_data) {
-            *response = generate_success_response(message_id, routes_data);
-            free(routes_data);
-        } else {
+        uint32_t fib = extract_fib_from_request(request);
+        debug_log(DEBUG_DEBUG, "Extracted FIB: %u", fib);
+        
+        /* Clear existing routes and enumerate for the specific FIB */
+        route_clear_all(state);
+        if (route_enumerate_system(state, fib) < 0) {
+            debug_log(DEBUG_ERROR, "Failed to enumerate routes for FIB %u", fib);
             *response = generate_error_response(message_id, "application", "operation-failed", "Failed to get routes");
+        } else {
+            char *routes_data = route_get_all(state);
+            if (routes_data) {
+                *response = generate_success_response(message_id, routes_data);
+                free(routes_data);
+            } else {
+                *response = generate_error_response(message_id, "application", "operation-failed", "Failed to get routes");
+            }
         }
     } else if (is_save_request(request)) {
         debug_log(DEBUG_DEBUG, "Handling save request");

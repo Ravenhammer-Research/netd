@@ -111,6 +111,7 @@ int yylex(void);
 %token GROUP
 %token REJECT_TOKEN
 %token BLACKHOLE
+%token ID_TOKEN
 
 %type <string> address_family
 %type <string> interface_type
@@ -216,7 +217,19 @@ set_command
     ;
 
 show_command
-    : SHOW VRF {
+    : SHOW VRF ID_TOKEN NUMBER PROTOCOL STATIC {
+        if (current_command) {
+            current_command->type = CMD_SHOW;
+            current_command->object = OBJ_ROUTE;
+            strlcpy(current_command->args[0], "vrf", sizeof(current_command->args[0]));
+            strlcpy(current_command->args[1], "id", sizeof(current_command->args[1]));
+            strlcpy(current_command->args[2], $4, sizeof(current_command->args[2]));
+            strlcpy(current_command->args[3], "protocol", sizeof(current_command->args[3]));
+            strlcpy(current_command->args[4], "static", sizeof(current_command->args[4]));
+            current_command->arg_count = 5;
+        }
+    }
+    | SHOW VRF {
         if (current_command) {
             current_command->type = CMD_SHOW;
             current_command->object = OBJ_VRF;

@@ -119,7 +119,7 @@ net>
 # TODO 
 
 - `show vrf name <name> protocol static`
-- `show vrf id <id> protocol static` (this is just to show that either wants to be unique and should qualify for selection)
+- ~`show vrf id <id> protocol static` (this is just to show that either wants to be unique and should qualify for selection)~  it works now, `show vrf id 0 protocol static` is the same as `show route protocol static` 
 - `show interface name <interface_name>`
 - `set interface`
 - `set route` 

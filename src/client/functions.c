@@ -195,24 +195,47 @@ int execute_show_command(net_client_t *client, const command_t *cmd) {
         return -1;
     }
     
-    /* Determine what to show based on first argument */
-    if (strcmp(cmd->args[0], "interface") == 0 || strcmp(cmd->args[0], "interfaces") == 0) {
-        ret = netconf_get_interfaces(client, &response);
-    } else if (strcmp(cmd->args[0], "vrf") == 0 || strcmp(cmd->args[0], "vrfs") == 0) {
-        ret = netconf_get_vrfs(client, &response);
-    } else if (strcmp(cmd->args[0], "route") == 0 || strcmp(cmd->args[0], "routes") == 0) {
-        /* Check if this is a protocol-specific route request */
-        if (cmd->arg_count >= 3 && strcmp(cmd->args[1], "protocol") == 0) {
-            /* For now, just get all routes - protocol filtering can be added later */
-            ret = netconf_get_routes(client, 0, AF_UNSPEC, &response);
-        } else {
-            ret = netconf_get_routes(client, 0, AF_UNSPEC, &response);
-        }
-    } else if (strcmp(cmd->args[0], "group") == 0) {
-        ret = netconf_get_interface_groups(client, &response);
+    /* Debug logging to see command structure */
+    debug_log(DEBUG_DEBUG, "Command object: %d, arg_count: %d", cmd->object, cmd->arg_count);
+    for (int i = 0; i < cmd->arg_count && i < 5; i++) {
+        debug_log(DEBUG_DEBUG, "args[%d]: '%s'", i, cmd->args[i]);
+    }
+    
+    /* Special handling for VRF ID route command - check pattern regardless of object type */
+    if (cmd->arg_count >= 5 && 
+        strcmp(cmd->args[0], "vrf") == 0 && strcmp(cmd->args[1], "id") == 0 &&
+        strcmp(cmd->args[3], "protocol") == 0 && strcmp(cmd->args[4], "static") == 0) {
+        debug_log(DEBUG_DEBUG, "Handling VRF ID route command");
+        /* Extract FIB ID and get routes for that FIB */
+        uint32_t fib_id = atoi(cmd->args[2]);
+        ret = netconf_get_routes(client, fib_id, AF_UNSPEC, &response);
     } else {
-        print_error("Unknown object type: %s", cmd->args[0]);
-        return -1;
+        /* Check for VRF FIBID route command */
+        if (cmd->object == OBJ_ROUTE && cmd->arg_count >= 5 && 
+            strcmp(cmd->args[0], "vrf") == 0 && strcmp(cmd->args[1], "id") == 0 &&
+            strcmp(cmd->args[3], "protocol") == 0 && strcmp(cmd->args[4], "static") == 0) {
+            debug_log(DEBUG_DEBUG, "Handling VRF FIBID route command");
+            /* Extract FIB ID and get routes for that FIB */
+            uint32_t fib_id = atoi(cmd->args[2]);
+            ret = netconf_get_routes(client, fib_id, AF_UNSPEC, &response);
+        } else if (strcmp(cmd->args[0], "interface") == 0 || strcmp(cmd->args[0], "interfaces") == 0) {
+            ret = netconf_get_interfaces(client, &response);
+        } else if (strcmp(cmd->args[0], "vrf") == 0 || strcmp(cmd->args[0], "vrfs") == 0) {
+            ret = netconf_get_vrfs(client, &response);
+        } else if (strcmp(cmd->args[0], "route") == 0 || strcmp(cmd->args[0], "routes") == 0) {
+            /* Check if this is a protocol-specific route request */
+            if (cmd->arg_count >= 3 && strcmp(cmd->args[1], "protocol") == 0) {
+                /* For now, just get all routes - protocol filtering can be added later */
+                ret = netconf_get_routes(client, 0, AF_UNSPEC, &response);
+            } else {
+                ret = netconf_get_routes(client, 0, AF_UNSPEC, &response);
+            }
+        } else if (strcmp(cmd->args[0], "group") == 0) {
+            ret = netconf_get_interface_groups(client, &response);
+        } else {
+            print_error("Unknown object type: %s", cmd->args[0]);
+            return -1;
+        }
     }
     
             if (ret == 0 && response) {
@@ -232,23 +255,21 @@ int execute_show_command(net_client_t *client, const command_t *cmd) {
                 } else {
                     print_interface_table(response);
                 }
-        } else if (strcmp(cmd->args[0], "group") == 0) {
-            if (cmd->arg_count >= 2) {
-                /* Check if this is the wlan group */
-                if (strcmp(cmd->args[1], "wlan") == 0) {
-                    /* Debug: print the raw XML response */
-                    debug_log(DEBUG_DEBUG, "Raw XML response for wlan group:\n%s", response);
-                    print_wlan_interface_table(response);
-                } else {
-                    print_interface_table_filtered(response, cmd->args[1]);
-                }
-            } else {
-                /* No specific group - show summary */
-                print_interface_groups_summary(response);
-            }
+        } else if (cmd->arg_count >= 5 && 
+                   strcmp(cmd->args[0], "vrf") == 0 && strcmp(cmd->args[1], "id") == 0 &&
+                   strcmp(cmd->args[3], "protocol") == 0 && strcmp(cmd->args[4], "static") == 0) {
+            debug_log(DEBUG_DEBUG, "Displaying VRF ID route table");
+            print_route_table(response);
+        } else if (cmd->object == OBJ_ROUTE && cmd->arg_count >= 5 && 
+                   strcmp(cmd->args[0], "vrf") == 0 && strcmp(cmd->args[1], "id") == 0 &&
+                   strcmp(cmd->args[3], "protocol") == 0 && strcmp(cmd->args[4], "static") == 0) {
+            debug_log(DEBUG_DEBUG, "Displaying VRF FIBID route table");
+            print_route_table(response);
         } else if (strcmp(cmd->args[0], "vrf") == 0 || strcmp(cmd->args[0], "vrfs") == 0) {
+            debug_log(DEBUG_DEBUG, "Displaying VRF table");
             print_vrf_table(response);
         } else if (strcmp(cmd->args[0], "route") == 0 || strcmp(cmd->args[0], "routes") == 0) {
+            debug_log(DEBUG_DEBUG, "Displaying route table");
             print_route_table(response);
         }
         free(response);

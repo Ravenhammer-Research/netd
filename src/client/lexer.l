@@ -73,11 +73,12 @@ void yyerror(const char *s);
 #define PROTOCOL 28
 #define REJECT_TOKEN 29
 #define BLACKHOLE 30
-#define IPV4_ADDRESS 31
-#define IPV6_ADDRESS 32
-#define CIDR_ADDRESS 33
-#define IDENTIFIER 34
-#define NUMBER 35
+#define ID_TOKEN 31
+#define IPV4_ADDRESS 32
+#define IPV6_ADDRESS 33
+#define CIDR_ADDRESS 34
+#define IDENTIFIER 35
+#define NUMBER 36
 
 /* YYSTYPE declaration for lexer values */
 typedef union {
@@ -137,6 +138,7 @@ IPV6_HEX    {HEX}{1,4}
 "protocol"  { return PROTOCOL; }
 "reject"    { return REJECT_TOKEN; }
 "blackhole" { return BLACKHOLE; }
+"id"        { return ID_TOKEN; }
 
 {IPV4_OCTET}\.{IPV4_OCTET}\.{IPV4_OCTET}\.{IPV4_OCTET} {
     /* IPv4 address */

@@ -225,12 +225,33 @@ int route_flush_fib(netd_state_t *state, uint32_t fib)
 } 
 
 /**
+ * Clear all routes from state
+ * @param state Server state
+ * @return 0 on success, -1 on failure
+ */
+int route_clear_all(netd_state_t *state)
+{
+    netd_route_t *route, *next;
+
+    if (!state) {
+        return -1;
+    }
+
+    TAILQ_FOREACH_SAFE(route, &state->routes, entries, next) {
+        TAILQ_REMOVE(&state->routes, route, entries);
+        free(route);
+    }
+
+    return 0;
+}
+
+/**
  * Helper function to parse route message and add to state
  * @param state Server state
  * @param rtm Route message header
  * @return 0 on success, -1 on failure
  */
-static int parse_route_message(netd_state_t *state, struct rt_msghdr *rtm)
+static int parse_route_message(netd_state_t *state, struct rt_msghdr *rtm, uint32_t fib)
 {
     char *cp = (char *)(rtm + 1);
     struct sockaddr *sp[RTAX_MAX];
@@ -305,7 +326,7 @@ static int parse_route_message(netd_state_t *state, struct rt_msghdr *rtm)
             strlcpy(route->interface, ifname, sizeof(route->interface));
         }
         
-        route->fib = 0; /* Default FIB for now */
+        route->fib = fib; /* Set the FIB number */
         route->flags = rtm->rtm_flags;
         
         TAILQ_INSERT_TAIL(&state->routes, route, entries);
@@ -342,7 +363,7 @@ static int parse_route_message(netd_state_t *state, struct rt_msghdr *rtm)
  * @param state Server state
  * @return 0 on success, -1 on failure
  */
-int route_enumerate_system(netd_state_t *state)
+int route_enumerate_system(netd_state_t *state, uint32_t fib)
 {
     size_t needed;
     int mib[6];
@@ -356,7 +377,7 @@ int route_enumerate_system(netd_state_t *state)
         return -1;
     }
 
-    debug_log(DEBUG_DEBUG, "Enumerating system routes");
+    debug_log(DEBUG_DEBUG, "Enumerating system routes for FIB %u", fib);
 
     /* Enumerate IPv4 routes */
     mib[0] = CTL_NET;
@@ -364,7 +385,7 @@ int route_enumerate_system(netd_state_t *state)
     mib[2] = 0;        /* protocol */
     mib[3] = AF_INET;  /* IPv4 */
     mib[4] = NET_RT_DUMP; /* get all routes */
-    mib[5] = 0;        /* FIB 0 */
+    mib[5] = fib;      /* FIB number */
 
 retry_ipv4:
     /* First, get the size needed */
@@ -399,7 +420,7 @@ retry_ipv4:
         rtm = (struct rt_msghdr *)(void *)next;
         
         if (rtm->rtm_type == RTM_ADD || rtm->rtm_type == RTM_CHANGE || rtm->rtm_type == RTM_GET) {
-            if (parse_route_message(state, rtm) == 0) {
+            if (parse_route_message(state, rtm, fib) == 0) {
                 count++;
             }
         }
@@ -444,7 +465,7 @@ retry_ipv6:
         rtm = (struct rt_msghdr *)(void *)next;
         
         if (rtm->rtm_type == RTM_ADD || rtm->rtm_type == RTM_CHANGE || rtm->rtm_type == RTM_GET) {
-            if (parse_route_message(state, rtm) == 0) {
+            if (parse_route_message(state, rtm, fib) == 0) {
                 count++;
             }
         }

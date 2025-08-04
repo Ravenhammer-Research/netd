@@ -259,18 +259,33 @@ int netconf_get_vrfs(net_client_t *client, char **response)
 int netconf_get_routes(net_client_t *client, uint32_t fib, int family, char **response)
 {
     char request[1024];
-    (void)fib; /* Suppress unused parameter warning */
     (void)family; /* Suppress unused parameter warning */
 
-    snprintf(request, sizeof(request),
-        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-        "<rpc message-id=\"3\" xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">\n"
-        "  <get>\n"
-        "    <filter type=\"subtree\">\n"
-        "      <routing xmlns=\"urn:ietf:params:xml:ns:yang:ietf-routing\"/>\n"
-        "    </filter>\n"
-        "  </get>\n"
-        "</rpc>\n");
+    if (fib == 0) {
+        /* Default FIB - use the same request as before */
+        snprintf(request, sizeof(request),
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+            "<rpc message-id=\"3\" xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">\n"
+            "  <get>\n"
+            "    <filter type=\"subtree\">\n"
+            "      <routing xmlns=\"urn:ietf:params:xml:ns:yang:ietf-routing\"/>\n"
+            "    </filter>\n"
+            "  </get>\n"
+            "</rpc>\n");
+    } else {
+        /* Specific FIB - include FIB parameter */
+        snprintf(request, sizeof(request),
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+            "<rpc message-id=\"3\" xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">\n"
+            "  <get>\n"
+            "    <filter type=\"subtree\">\n"
+            "      <routing xmlns=\"urn:ietf:params:xml:ns:yang:ietf-routing\">\n"
+            "        <fib>%u</fib>\n"
+            "      </routing>\n"
+            "    </filter>\n"
+            "  </get>\n"
+            "</rpc>\n", fib);
+    }
 
     return netconf_send_request(client, request, response);
 }

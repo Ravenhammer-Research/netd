@@ -34,6 +34,7 @@
 #define GROUP 290
 #define REJECT_TOKEN 291
 #define BLACKHOLE 292
+#define ID_TOKEN 293
 #ifdef YYSTYPE
 #undef  YYSTYPE_IS_DECLARED
 #define YYSTYPE_IS_DECLARED 1
