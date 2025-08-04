@@ -277,13 +277,9 @@ $(CLIENT_BUILDDIR)/functions.o: $(CLIENTDIR)/net.h
 $(CLIENT_BUILDDIR)/netconf.o: $(CLIENTDIR)/net.h
 $(CLIENT_BUILDDIR)/utils.o: $(CLIENTDIR)/net.h
 $(CLIENT_BUILDDIR)/xml_utils.o: $(CLIENTDIR)/net.h
-$(CLIENT_BUILDDIR)/if_table.o: $(CLIENTDIR)/net.h $(CLIENTDIR)/if_table.h
-$(CLIENT_BUILDDIR)/ifgrp_bridge_table.o: $(CLIENTDIR)/net.h $(CLIENTDIR)/if_table.h
-$(CLIENT_BUILDDIR)/ifgrp_table.o: $(CLIENTDIR)/net.h $(CLIENTDIR)/ifgrp_table.h
-$(CLIENT_BUILDDIR)/ifgrp_wlan_table.o: $(CLIENTDIR)/net.h $(CLIENTDIR)/ifgrp_wlan_table.h
 $(CLIENT_BUILDDIR)/vrf_table.o: $(CLIENTDIR)/net.h
 $(CLIENT_BUILDDIR)/route_table.o: $(CLIENTDIR)/net.h
-$(CLIENT_BUILDDIR)/table_utils.o: $(CLIENTDIR)/net.h $(CLIENTDIR)/table_utils.h
+$(CLIENT_BUILDDIR)/table_utils.o: $(CLIENTDIR)/net.h
 
 # Phony targets
 .PHONY: all clean install uninstall 

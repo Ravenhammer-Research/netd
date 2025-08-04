@@ -28,9 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "ifgrp_wlan_table.h"
-#include "if_table.h"
-#include "table_utils.h"
 #include "net.h"
 #include <bsdxml.h>
 #include <string.h>

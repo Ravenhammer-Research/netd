@@ -29,7 +29,6 @@
  */
 
 #include "net.h"
-#include "table_utils.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>

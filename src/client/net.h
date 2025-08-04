@@ -31,26 +31,14 @@
 #ifndef NET_H
 #define NET_H
 
-#include <sys/param.h>
-#include <sys/socket.h>
-#include <sys/un.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <errno.h>
+#include <stddef.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <readline/readline.h>
-#include <readline/history.h>
-#include <libnetconf2/netconf.h>
-#include <libyang/libyang.h>
-#include "if_table.h"
+#include <sys/socket.h>
 
 /* Constants */
 #define NETD_SOCKET_PATH "/var/run/netd.sock"
+#define MAX_COLUMNS 16
 
 /* Command types */
 typedef enum {
@@ -88,6 +76,16 @@ typedef enum {
     IF_TYPE_BRIDGE
 } interface_type_t;
 
+/* Debug levels */
+typedef enum {
+    DEBUG_NONE = 0,
+    DEBUG_ERROR = 1,
+    DEBUG_WARNING = 2,
+    DEBUG_INFO = 3,
+    DEBUG_DEBUG = 4,
+    DEBUG_TRACE = 5
+} debug_level_t;
+
 /* VRF data structure */
 struct vrf_data {
     char name[64];
@@ -100,6 +98,64 @@ struct route_data {
     char destination[64];
     char gateway[64];
     char interface[64];
+};
+
+/* Interface data structure */
+struct interface_data {
+    char name[64];
+    char enabled[16];
+    char fib[16];
+    char mtu[16];
+    char flags[16];
+    char addr[64];
+    char addr6[64];
+    char addr_list[10][64];  /* All IPv4 addresses */
+    char addr6_list[10][64]; /* All IPv6 addresses */
+    int addr_count;          /* Number of IPv4 addresses */
+    int addr6_count;         /* Number of IPv6 addresses */
+    char groups[256];
+    char bridge_members[256];
+};
+
+/* Extended interface data structure for wireless interfaces */
+struct wlan_interface_data {
+    struct interface_data base;
+    char ssid[64];
+    char channel[8];
+    char frequency[16];
+    char txpower[8];
+    char mode[16];  /* station, ap, monitor, etc. */
+    char security[32];
+    char signal_strength[8];
+    char noise[8];
+    char rate[16];
+};
+
+/* Interface table column widths structure */
+struct if_table_widths {
+    int name_width;
+    int status_width;
+    int vrf_width;
+    int tunvrf_width;
+    int mtu_width;
+    int flags_width;
+    int ipv4_width;
+    int ipv6_width;
+    int groups_width;
+};
+
+/* Table column structure */
+struct table_column {
+    const char *header;
+    int width;
+    int min_width;
+};
+
+/* Table format structure */
+struct table_format {
+    struct table_column columns[MAX_COLUMNS];
+    int column_count;
+    const char *title;
 };
 
 /* Command structure */
@@ -116,16 +172,6 @@ typedef struct transaction {
     int command_count;
     bool active;
 } transaction_t;
-
-/* Debug levels */
-typedef enum {
-    DEBUG_NONE = 0,
-    DEBUG_ERROR = 1,
-    DEBUG_WARNING = 2,
-    DEBUG_INFO = 3,
-    DEBUG_DEBUG = 4,
-    DEBUG_TRACE = 5
-} debug_level_t;
 
 /* Client state */
 typedef struct net_client {
@@ -199,9 +245,6 @@ int parse_interfaces_from_xml(const char *xml, struct interface_data *interfaces
 int parse_vrfs_from_xml(const char *xml, struct vrf_data *vrfs, int max_vrfs);
 int parse_routes_from_xml(const char *xml, struct route_data *routes, int max_routes);
 
-/* Display utilities */
-
-
 /* Table display functions */
 int print_interface_table(const char *xml_response);
 int print_interface_table_filtered(const char *xml_response, const char *group_name);
@@ -210,6 +253,27 @@ int print_wlan_interface_groups_summary(const char *xml_response);
 int print_wlan_interface_table(const char *xml_response);
 int print_vrf_table(const char *xml_response);
 int print_route_table(const char *xml_response);
+
+/* Table utility functions */
+void table_init(struct table_format *fmt, const char *title);
+void table_add_column(struct table_format *fmt, const char *header, int min_width);
+void table_update_width(struct table_format *fmt, int col_idx, int content_len);
+void table_print_header(const struct table_format *fmt);
+void table_print_row(const struct table_format *fmt, ...);
+void table_print_row_multiline(const struct table_format *fmt, int num_lines, ...);
+void table_print_footer(const struct table_format *fmt, const char *footer_text);
+void print_separator(int width);
+void format_interface_flags(int flags, char *flag_str, size_t max_len);
+
+/* Interface table helper functions */
+void calculate_column_widths(const char *xml_response, struct if_table_widths *widths);
+void extract_interface_data(const char *pos, struct interface_data *data);
+void print_interface_row(const struct interface_data *data, const struct if_table_widths *widths);
+void print_interface_header(const struct if_table_widths *widths);
+void print_interface_footer(void);
+
+/* WLAN interface functions */
+int parse_wlan_interfaces_from_xml(const char *xml, struct wlan_interface_data *interfaces, int max_interfaces);
 
 /* Debug logging */
 void debug_init(debug_level_t level);

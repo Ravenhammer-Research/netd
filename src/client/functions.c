@@ -1,11 +1,12 @@
 #include "net.h"
-#include "if_table.h"
+#include <sys/socket.h>
 #include <sys/queue.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <stdio.h>
+#include <libyang/libyang.h>
 #include <readline/readline.h>
 #include <readline/history.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>

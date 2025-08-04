@@ -29,7 +29,6 @@
  */
 
 #include "net.h"
-#include "if_table.h"
 #include <bsdxml.h>
 #include <string.h>
 #include <stdio.h>

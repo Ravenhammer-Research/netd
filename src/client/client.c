@@ -30,6 +30,7 @@
 
 #include "net.h"
 #include <string.h>
+#include <stdio.h>
 
 /**
  * Initialize client

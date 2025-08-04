@@ -28,8 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "ifgrp_table.h"
-#include "if_table.h"
 #include "net.h"
 #include <bsdxml.h>
 #include <string.h>
