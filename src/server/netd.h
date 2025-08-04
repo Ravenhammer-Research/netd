@@ -230,6 +230,8 @@ int transaction_rollback(netd_state_t *state);
 /* YANG/Netconf functions */
 int yang_init(netd_state_t *state);
 void yang_cleanup(netd_state_t *state);
+int yang_validate_xml(netd_state_t *state, const char *xml_data);
+int yang_validate_config(netd_state_t *state, const char *xml_config);
 int netconf_handle_request(netd_state_t *state, const char *request, char **response);
 
 /* FreeBSD system functions */

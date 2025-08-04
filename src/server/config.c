@@ -55,8 +55,7 @@ int config_load(netd_state_t *state)
         debug_log(DEBUG_ERROR, "Failed to enumerate system interfaces");
         return -1;
     }
-    debug_log(DEBUG_INFO, "System interface enumeration complete");
-
+    
     /* Enumerate system routes */
     debug_log(DEBUG_INFO, "Enumerating existing system routes");
     if (route_enumerate_system(state, 0) < 0) {

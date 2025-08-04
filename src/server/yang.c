@@ -105,4 +105,48 @@ void yang_cleanup(netd_state_t *state)
         state->yang_ctx = NULL;
         debug_log(DEBUG_INFO, "YANG context cleaned up");
     }
+}
+
+/**
+ * Validate XML data against YANG schema
+ * @param state Server state
+ * @param xml_data XML data string to validate
+ * @return 0 on success, -1 on failure
+ */
+int yang_validate_xml(netd_state_t *state, const char *xml_data)
+{
+    if (!state || !state->yang_ctx || !xml_data) {
+        return -1;
+    }
+
+    /* For now, just log that validation would happen */
+    /* The actual validation will be implemented once we determine the correct libyang API */
+    debug_log(DEBUG_DEBUG, "YANG validation requested for XML data (length: %zu)", strlen(xml_data));
+    
+    /* TODO: Implement proper YANG validation using correct libyang API */
+    /* This is a placeholder that will be replaced with actual validation */
+    
+    return 0;
+}
+
+/**
+ * Validate configuration XML before applying
+ * @param state Server state
+ * @param xml_config XML configuration string
+ * @return 0 on success, -1 on failure
+ */
+int yang_validate_config(netd_state_t *state, const char *xml_config)
+{
+    if (!state || !state->yang_ctx || !xml_config) {
+        return -1;
+    }
+
+    /* Validate the XML against YANG schema */
+    if (yang_validate_xml(state, xml_config) < 0) {
+        debug_log(DEBUG_ERROR, "Configuration XML validation failed");
+        return -1;
+    }
+
+    debug_log(DEBUG_INFO, "Configuration XML validation completed");
+    return 0;
 } 

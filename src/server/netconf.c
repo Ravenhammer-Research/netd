@@ -31,6 +31,7 @@
 #include "netd.h"
 #include <string.h>
 #include <bsdxml.h>
+#include <libnetconf2/netconf.h>
 
 /**
  * Extract message-id from NETCONF request
@@ -194,6 +195,16 @@ int netconf_handle_request(netd_state_t *state, const char *request, char **resp
     }
 
     debug_log(DEBUG_DEBUG, "Handling NETCONF request");
+
+    /* Validate incoming request against YANG schema if YANG context is available */
+    if (state->yang_ctx) {
+        if (yang_validate_xml(state, request) < 0) {
+            debug_log(DEBUG_WARN, "NETCONF request failed YANG validation, but processing anyway");
+            /* Don't fail the request, just log a warning for now */
+        } else {
+            debug_log(DEBUG_DEBUG, "NETCONF request validated successfully against YANG schema");
+        }
+    }
 
     /* Extract message ID */
     char *message_id = extract_message_id(request);

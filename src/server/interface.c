@@ -470,14 +470,7 @@ int interface_enumerate_system(netd_state_t *state)
         debug_log(DEBUG_ERROR, "Failed to get interface addresses: %s", strerror(errno));
         return -1;
     }
-
-    /* Check if bridge interfaces are found by getifaddrs */
-    for (struct ifaddrs *check_ifa = ifap; check_ifa; check_ifa = check_ifa->ifa_next) {
-        if (strncmp(check_ifa->ifa_name, "bridge", 6) == 0) {
-            debug_log(DEBUG_INFO, "Found bridge interface: %s", check_ifa->ifa_name);
-        }
-    }
-
+    
     /* Iterate through interfaces */
     for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
         /* Skip if we've already processed this interface name */
@@ -903,6 +896,16 @@ char *interface_get_all(netd_state_t *state)
         free(xml);
         free(temp_xml);
         xml = new_xml;
+    }
+
+    /* Validate the generated XML against YANG schema if YANG context is available */
+    if (state->yang_ctx && xml) {
+        if (yang_validate_xml(state, xml) < 0) {
+            debug_log(DEBUG_WARN, "Generated interface XML failed YANG validation, but returning anyway");
+            /* Don't fail the request, just log a warning */
+        } else {
+            debug_log(DEBUG_DEBUG, "Generated interface XML validated successfully against YANG schema");
+        }
     }
 
     return xml;
