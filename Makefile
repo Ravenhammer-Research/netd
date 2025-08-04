@@ -36,6 +36,12 @@ SRCDIR = src
 SERVERDIR = $(SRCDIR)/server
 CLIENTDIR = $(SRCDIR)/client
 YANGDIR = yang
+BUILDDIR = build
+SERVER_BUILDDIR = $(BUILDDIR)/server
+CLIENT_BUILDDIR = $(BUILDDIR)/client
+
+# VPATH for source files
+VPATH = $(SERVERDIR):$(CLIENTDIR)
 
 # Source files
 SERVER_SRCS = $(SERVERDIR)/main.c \
@@ -51,8 +57,8 @@ SERVER_SRCS = $(SERVERDIR)/main.c \
               $(SERVERDIR)/netconf.c
 
 CLIENT_SRCS = $(CLIENTDIR)/main.c \
-              $(CLIENTDIR)/parser.c \
-              $(CLIENTDIR)/lexer.c \
+              $(CLIENT_BUILDDIR)/parser.c \
+              $(CLIENT_BUILDDIR)/lexer.c \
               $(CLIENTDIR)/client.c \
               $(CLIENTDIR)/functions.c \
               $(CLIENTDIR)/netconf.c \
@@ -66,13 +72,38 @@ CLIENT_SRCS = $(CLIENTDIR)/main.c \
               $(CLIENTDIR)/vrf_table.c \
               $(CLIENTDIR)/route_table.c
 
-# Object files
-SERVER_OBJS = $(SERVER_SRCS:.c=.o)
-CLIENT_OBJS = $(CLIENT_SRCS:.c=.o)
+# Object files (in build directory)
+SERVER_OBJS = $(SERVER_BUILDDIR)/main.o \
+              $(SERVER_BUILDDIR)/debug.o \
+              $(SERVER_BUILDDIR)/utils.o \
+              $(SERVER_BUILDDIR)/system.o \
+              $(SERVER_BUILDDIR)/transaction.o \
+              $(SERVER_BUILDDIR)/vrf.o \
+              $(SERVER_BUILDDIR)/interface.o \
+              $(SERVER_BUILDDIR)/route.o \
+              $(SERVER_BUILDDIR)/config.o \
+              $(SERVER_BUILDDIR)/yang.o \
+              $(SERVER_BUILDDIR)/netconf.o
+
+CLIENT_OBJS = $(CLIENT_BUILDDIR)/main.o \
+              $(CLIENT_BUILDDIR)/parser.o \
+              $(CLIENT_BUILDDIR)/lexer.o \
+              $(CLIENT_BUILDDIR)/client.o \
+              $(CLIENT_BUILDDIR)/functions.o \
+              $(CLIENT_BUILDDIR)/netconf.o \
+              $(CLIENT_BUILDDIR)/utils.o \
+              $(CLIENT_BUILDDIR)/xml_utils.o \
+              $(CLIENT_BUILDDIR)/table_utils.o \
+              $(CLIENT_BUILDDIR)/if_table.o \
+              $(CLIENT_BUILDDIR)/ifgrp_bridge_table.o \
+              $(CLIENT_BUILDDIR)/ifgrp_table.o \
+              $(CLIENT_BUILDDIR)/ifgrp_wlan_table.o \
+              $(CLIENT_BUILDDIR)/vrf_table.o \
+              $(CLIENT_BUILDDIR)/route_table.o
 
 # Targets
-SERVER_TARGET = netd
-CLIENT_TARGET = net
+SERVER_TARGET = $(BUILDDIR)/netd
+CLIENT_TARGET = $(BUILDDIR)/net
 
 # Libraries
 SERVER_LIBS = -lyang
@@ -89,24 +120,127 @@ $(SERVER_TARGET): $(SERVER_OBJS)
 $(CLIENT_TARGET): $(CLIENT_OBJS)
 	$(CC) $(LDFLAGS) -o $@ $(CLIENT_OBJS) $(CLIENT_LIBS)
 
-# Generate parser files
-$(CLIENTDIR)/parser.c: $(CLIENTDIR)/parser.y
-	cd $(CLIENTDIR) && yacc -d -o parser.c parser.y
+# Generate parser files in client build directory
+$(CLIENT_BUILDDIR)/parser.c: $(CLIENTDIR)/parser.y
+	@mkdir -p $(CLIENT_BUILDDIR)
+	cd $(CLIENTDIR) && yacc -d parser.y
+	@mv $(CLIENTDIR)/y.tab.c $(CLIENT_BUILDDIR)/parser.c
+	@mv $(CLIENTDIR)/y.tab.h $(CLIENT_BUILDDIR)/y.tab.h
 
-$(CLIENTDIR)/lexer.c: $(CLIENTDIR)/lexer.l $(CLIENTDIR)/parser.c
-	lex -o $@ $<
+$(CLIENT_BUILDDIR)/lexer.c: $(CLIENTDIR)/lexer.l $(CLIENT_BUILDDIR)/parser.c
+	@mkdir -p $(CLIENT_BUILDDIR)
+	cd $(CLIENTDIR) && lex -o ../../$(CLIENT_BUILDDIR)/lexer.c lexer.l
 
-# Compilation rules
-$(SERVERDIR)/%.o: $(SERVERDIR)/%.c
-	$(CC) $(CFLAGS) -I$(SERVERDIR) -c -o $@ $<
+# Compilation rules for server objects
+$(SERVER_BUILDDIR)/main.o: $(SERVERDIR)/main.c
+	@mkdir -p $(SERVER_BUILDDIR)
+	$(CC) $(CFLAGS) -I$(SERVERDIR) -c -o $@ $(SERVERDIR)/main.c
 
-$(CLIENTDIR)/%.o: $(CLIENTDIR)/%.c
-	$(CC) $(CFLAGS) -I$(CLIENTDIR) -c -o $@ $<
+$(SERVER_BUILDDIR)/debug.o: $(SERVERDIR)/debug.c
+	@mkdir -p $(SERVER_BUILDDIR)
+	$(CC) $(CFLAGS) -I$(SERVERDIR) -c -o $@ $(SERVERDIR)/debug.c
+
+$(SERVER_BUILDDIR)/utils.o: $(SERVERDIR)/utils.c
+	@mkdir -p $(SERVER_BUILDDIR)
+	$(CC) $(CFLAGS) -I$(SERVERDIR) -c -o $@ $(SERVERDIR)/utils.c
+
+$(SERVER_BUILDDIR)/system.o: $(SERVERDIR)/system.c
+	@mkdir -p $(SERVER_BUILDDIR)
+	$(CC) $(CFLAGS) -I$(SERVERDIR) -c -o $@ $(SERVERDIR)/system.c
+
+$(SERVER_BUILDDIR)/transaction.o: $(SERVERDIR)/transaction.c
+	@mkdir -p $(SERVER_BUILDDIR)
+	$(CC) $(CFLAGS) -I$(SERVERDIR) -c -o $@ $(SERVERDIR)/transaction.c
+
+$(SERVER_BUILDDIR)/vrf.o: $(SERVERDIR)/vrf.c
+	@mkdir -p $(SERVER_BUILDDIR)
+	$(CC) $(CFLAGS) -I$(SERVERDIR) -c -o $@ $(SERVERDIR)/vrf.c
+
+$(SERVER_BUILDDIR)/interface.o: $(SERVERDIR)/interface.c
+	@mkdir -p $(SERVER_BUILDDIR)
+	$(CC) $(CFLAGS) -I$(SERVERDIR) -c -o $@ $(SERVERDIR)/interface.c
+
+$(SERVER_BUILDDIR)/route.o: $(SERVERDIR)/route.c
+	@mkdir -p $(SERVER_BUILDDIR)
+	$(CC) $(CFLAGS) -I$(SERVERDIR) -c -o $@ $(SERVERDIR)/route.c
+
+$(SERVER_BUILDDIR)/config.o: $(SERVERDIR)/config.c
+	@mkdir -p $(SERVER_BUILDDIR)
+	$(CC) $(CFLAGS) -I$(SERVERDIR) -c -o $@ $(SERVERDIR)/config.c
+
+$(SERVER_BUILDDIR)/yang.o: $(SERVERDIR)/yang.c
+	@mkdir -p $(SERVER_BUILDDIR)
+	$(CC) $(CFLAGS) -I$(SERVERDIR) -c -o $@ $(SERVERDIR)/yang.c
+
+$(SERVER_BUILDDIR)/netconf.o: $(SERVERDIR)/netconf.c
+	@mkdir -p $(SERVER_BUILDDIR)
+	$(CC) $(CFLAGS) -I$(SERVERDIR) -c -o $@ $(SERVERDIR)/netconf.c
+
+# Compilation rules for client objects
+$(CLIENT_BUILDDIR)/main.o: $(CLIENTDIR)/main.c
+	@mkdir -p $(CLIENT_BUILDDIR)
+	$(CC) $(CFLAGS) -I$(CLIENTDIR) -c -o $@ $(CLIENTDIR)/main.c
+
+$(CLIENT_BUILDDIR)/client.o: $(CLIENTDIR)/client.c
+	@mkdir -p $(CLIENT_BUILDDIR)
+	$(CC) $(CFLAGS) -I$(CLIENTDIR) -c -o $@ $(CLIENTDIR)/client.c
+
+$(CLIENT_BUILDDIR)/functions.o: $(CLIENTDIR)/functions.c
+	@mkdir -p $(CLIENT_BUILDDIR)
+	$(CC) $(CFLAGS) -I$(CLIENTDIR) -c -o $@ $(CLIENTDIR)/functions.c
+
+$(CLIENT_BUILDDIR)/netconf.o: $(CLIENTDIR)/netconf.c
+	@mkdir -p $(CLIENT_BUILDDIR)
+	$(CC) $(CFLAGS) -I$(CLIENTDIR) -c -o $@ $(CLIENTDIR)/netconf.c
+
+$(CLIENT_BUILDDIR)/utils.o: $(CLIENTDIR)/utils.c
+	@mkdir -p $(CLIENT_BUILDDIR)
+	$(CC) $(CFLAGS) -I$(CLIENTDIR) -c -o $@ $(CLIENTDIR)/utils.c
+
+$(CLIENT_BUILDDIR)/xml_utils.o: $(CLIENTDIR)/xml_utils.c
+	@mkdir -p $(CLIENT_BUILDDIR)
+	$(CC) $(CFLAGS) -I$(CLIENTDIR) -c -o $@ $(CLIENTDIR)/xml_utils.c
+
+$(CLIENT_BUILDDIR)/table_utils.o: $(CLIENTDIR)/table_utils.c
+	@mkdir -p $(CLIENT_BUILDDIR)
+	$(CC) $(CFLAGS) -I$(CLIENTDIR) -c -o $@ $(CLIENTDIR)/table_utils.c
+
+$(CLIENT_BUILDDIR)/if_table.o: $(CLIENTDIR)/if_table.c
+	@mkdir -p $(CLIENT_BUILDDIR)
+	$(CC) $(CFLAGS) -I$(CLIENTDIR) -c -o $@ $(CLIENTDIR)/if_table.c
+
+$(CLIENT_BUILDDIR)/ifgrp_bridge_table.o: $(CLIENTDIR)/ifgrp_bridge_table.c
+	@mkdir -p $(CLIENT_BUILDDIR)
+	$(CC) $(CFLAGS) -I$(CLIENTDIR) -c -o $@ $(CLIENTDIR)/ifgrp_bridge_table.c
+
+$(CLIENT_BUILDDIR)/ifgrp_table.o: $(CLIENTDIR)/ifgrp_table.c
+	@mkdir -p $(CLIENT_BUILDDIR)
+	$(CC) $(CFLAGS) -I$(CLIENTDIR) -c -o $@ $(CLIENTDIR)/ifgrp_table.c
+
+$(CLIENT_BUILDDIR)/ifgrp_wlan_table.o: $(CLIENTDIR)/ifgrp_wlan_table.c
+	@mkdir -p $(CLIENT_BUILDDIR)
+	$(CC) $(CFLAGS) -I$(CLIENTDIR) -c -o $@ $(CLIENTDIR)/ifgrp_wlan_table.c
+
+$(CLIENT_BUILDDIR)/vrf_table.o: $(CLIENTDIR)/vrf_table.c
+	@mkdir -p $(CLIENT_BUILDDIR)
+	$(CC) $(CFLAGS) -I$(CLIENTDIR) -c -o $@ $(CLIENTDIR)/vrf_table.c
+
+$(CLIENT_BUILDDIR)/route_table.o: $(CLIENTDIR)/route_table.c
+	@mkdir -p $(CLIENT_BUILDDIR)
+	$(CC) $(CFLAGS) -I$(CLIENTDIR) -c -o $@ $(CLIENTDIR)/route_table.c
+
+# Compilation rules for generated parser/lexer objects (from client build directory)
+$(CLIENT_BUILDDIR)/parser.o: $(CLIENT_BUILDDIR)/parser.c
+	@mkdir -p $(CLIENT_BUILDDIR)
+	$(CC) $(CFLAGS) -I$(CLIENTDIR) -c -o $@ $(CLIENT_BUILDDIR)/parser.c
+
+$(CLIENT_BUILDDIR)/lexer.o: $(CLIENT_BUILDDIR)/lexer.c
+	@mkdir -p $(CLIENT_BUILDDIR)
+	$(CC) $(CFLAGS) -I$(CLIENTDIR) -c -o $@ $(CLIENT_BUILDDIR)/lexer.c
 
 # Clean target
 clean:
-	rm -f $(SERVER_OBJS) $(CLIENT_OBJS) $(SERVER_TARGET) $(CLIENT_TARGET)
-	rm -f $(CLIENTDIR)/parser.c $(CLIENTDIR)/lexer.c $(CLIENTDIR)/y.tab.h
+	rm -rf $(BUILDDIR)
 
 # Install target
 install: $(SERVER_TARGET) $(CLIENT_TARGET)
@@ -117,39 +251,39 @@ install: $(SERVER_TARGET) $(CLIENT_TARGET)
 
 # Uninstall target
 uninstall:
-	rm -f /usr/local/sbin/$(SERVER_TARGET)
-	rm -f /usr/local/bin/$(CLIENT_TARGET)
+	rm -f /usr/local/sbin/netd
+	rm -f /usr/local/bin/net
 	rm -f /usr/local/share/netd/netd.yang
 	rmdir /usr/local/share/netd 2>/dev/null || true
 
 # Dependencies
-$(SERVERDIR)/main.o: $(SERVERDIR)/netd.h
-$(SERVERDIR)/debug.o: $(SERVERDIR)/netd.h
-$(SERVERDIR)/utils.o: $(SERVERDIR)/netd.h
-$(SERVERDIR)/system.o: $(SERVERDIR)/netd.h
-$(SERVERDIR)/transaction.o: $(SERVERDIR)/netd.h
-$(SERVERDIR)/vrf.o: $(SERVERDIR)/netd.h
-$(SERVERDIR)/interface.o: $(SERVERDIR)/netd.h
-$(SERVERDIR)/route.o: $(SERVERDIR)/netd.h
-$(SERVERDIR)/config.o: $(SERVERDIR)/netd.h
-$(SERVERDIR)/yang.o: $(SERVERDIR)/netd.h
-$(SERVERDIR)/netconf.o: $(SERVERDIR)/netd.h
+$(SERVER_BUILDDIR)/main.o: $(SERVERDIR)/netd.h
+$(SERVER_BUILDDIR)/debug.o: $(SERVERDIR)/netd.h
+$(SERVER_BUILDDIR)/utils.o: $(SERVERDIR)/netd.h
+$(SERVER_BUILDDIR)/system.o: $(SERVERDIR)/netd.h
+$(SERVER_BUILDDIR)/transaction.o: $(SERVERDIR)/netd.h
+$(SERVER_BUILDDIR)/vrf.o: $(SERVERDIR)/netd.h
+$(SERVER_BUILDDIR)/interface.o: $(SERVERDIR)/netd.h
+$(SERVER_BUILDDIR)/route.o: $(SERVERDIR)/netd.h
+$(SERVER_BUILDDIR)/config.o: $(SERVERDIR)/netd.h
+$(SERVER_BUILDDIR)/yang.o: $(SERVERDIR)/netd.h
+$(SERVER_BUILDDIR)/netconf.o: $(SERVERDIR)/netd.h
 
-$(CLIENTDIR)/main.o: $(CLIENTDIR)/net.h
-$(CLIENTDIR)/parser.o: $(CLIENTDIR)/net.h $(CLIENTDIR)/parser.c
-$(CLIENTDIR)/lexer.o: $(CLIENTDIR)/net.h $(CLIENTDIR)/lexer.c
-$(CLIENTDIR)/client.o: $(CLIENTDIR)/net.h
-$(CLIENTDIR)/functions.o: $(CLIENTDIR)/net.h
-$(CLIENTDIR)/netconf.o: $(CLIENTDIR)/net.h
-$(CLIENTDIR)/utils.o: $(CLIENTDIR)/net.h
-$(CLIENTDIR)/xml_utils.o: $(CLIENTDIR)/net.h
-$(CLIENTDIR)/if_table.o: $(CLIENTDIR)/net.h $(CLIENTDIR)/if_table.h
-$(CLIENTDIR)/ifgrp_bridge_table.o: $(CLIENTDIR)/net.h $(CLIENTDIR)/if_table.h
-$(CLIENTDIR)/ifgrp_table.o: $(CLIENTDIR)/net.h $(CLIENTDIR)/ifgrp_table.h
-$(CLIENTDIR)/ifgrp_wlan_table.o: $(CLIENTDIR)/net.h $(CLIENTDIR)/ifgrp_wlan_table.h
-$(CLIENTDIR)/vrf_table.o: $(CLIENTDIR)/net.h
-$(CLIENTDIR)/route_table.o: $(CLIENTDIR)/net.h
-$(CLIENTDIR)/table.o: $(CLIENTDIR)/net.h
+$(CLIENT_BUILDDIR)/main.o: $(CLIENTDIR)/net.h
+$(CLIENT_BUILDDIR)/parser.o: $(CLIENTDIR)/net.h $(CLIENT_BUILDDIR)/parser.c
+$(CLIENT_BUILDDIR)/lexer.o: $(CLIENTDIR)/net.h $(CLIENT_BUILDDIR)/lexer.c
+$(CLIENT_BUILDDIR)/client.o: $(CLIENTDIR)/net.h
+$(CLIENT_BUILDDIR)/functions.o: $(CLIENTDIR)/net.h
+$(CLIENT_BUILDDIR)/netconf.o: $(CLIENTDIR)/net.h
+$(CLIENT_BUILDDIR)/utils.o: $(CLIENTDIR)/net.h
+$(CLIENT_BUILDDIR)/xml_utils.o: $(CLIENTDIR)/net.h
+$(CLIENT_BUILDDIR)/if_table.o: $(CLIENTDIR)/net.h $(CLIENTDIR)/if_table.h
+$(CLIENT_BUILDDIR)/ifgrp_bridge_table.o: $(CLIENTDIR)/net.h $(CLIENTDIR)/if_table.h
+$(CLIENT_BUILDDIR)/ifgrp_table.o: $(CLIENTDIR)/net.h $(CLIENTDIR)/ifgrp_table.h
+$(CLIENT_BUILDDIR)/ifgrp_wlan_table.o: $(CLIENTDIR)/net.h $(CLIENTDIR)/ifgrp_wlan_table.h
+$(CLIENT_BUILDDIR)/vrf_table.o: $(CLIENTDIR)/net.h
+$(CLIENT_BUILDDIR)/route_table.o: $(CLIENTDIR)/net.h
+$(CLIENT_BUILDDIR)/table_utils.o: $(CLIENTDIR)/net.h $(CLIENTDIR)/table_utils.h
 
 # Phony targets
 .PHONY: all clean install uninstall 

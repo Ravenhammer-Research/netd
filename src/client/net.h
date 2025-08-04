@@ -51,8 +51,6 @@
 
 /* Constants */
 #define NETD_SOCKET_PATH "/var/run/netd.sock"
-/* Dynamic allocation instead of fixed limits */
-#define MAX_COMPLETION_ITEMS 100
 
 /* Command types */
 typedef enum {
@@ -134,8 +132,6 @@ typedef struct net_client {
     int socket_fd;
     struct ly_ctx *yang_ctx;
     bool connected;
-    char *completion_items[MAX_COMPLETION_ITEMS];
-    int completion_count;
     transaction_t transaction;
     debug_level_t debug_level;
 } net_client_t;

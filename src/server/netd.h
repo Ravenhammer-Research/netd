@@ -244,6 +244,7 @@ int freebsd_route_add(uint32_t fib, const char *destination, const char *gateway
                       const char *interface, int flags);
 int freebsd_route_delete(uint32_t fib, const char *destination);
 int freebsd_route_list(uint32_t fib, int family);
+int freebsd_get_bridge_members(const char *ifname, char *members, size_t members_size);
 
 /* Utility functions */
 const char *interface_type_to_string(interface_type_t type);

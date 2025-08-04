@@ -47,7 +47,6 @@ int client_init(net_client_t *client, bool interactive)
     memset(client, 0, sizeof(*client));
     client->socket_fd = -1;
     client->connected = false;
-    client->completion_count = 0;
     client->transaction.active = false;
     client->transaction.command_count = 0;
 

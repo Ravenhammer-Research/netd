@@ -1,6 +1,40 @@
-*.o
-net
-netd
-tests/unit/test_commands
-src/client/lexer.c
+# Build directory
+build/
+
+# Generated parser/lexer files
 src/client/parser.c
+src/client/lexer.c
+src/client/y.tab.h
+src/client/y.tab.c
+
+# Object files
+*.o
+
+# Executables
+netd
+net
+
+# Debug files
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# Core dumps
+core
+core.*
+
+# Temporary files
+*~
+*.tmp
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db

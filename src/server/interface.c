@@ -650,35 +650,7 @@ int interface_enumerate_system(netd_state_t *state)
             
             /* Get bridge member information for bridge interfaces */
             if (type == IF_TYPE_BRIDGE) {
-                /* Use ifconfig to get bridge member information */
-                char cmd[256];
-                char result[1024];
-                FILE *fp;
-                
-                snprintf(cmd, sizeof(cmd), "ifconfig %s | grep 'member:' | awk '{print $2}' | tr '\\n' ',' | sed 's/,$//'", ifa->ifa_name);
-                debug_log(DEBUG_INFO, "Running command: %s", cmd);
-                fp = popen(cmd, "r");
-                if (fp) {
-                    if (fgets(result, sizeof(result), fp)) {
-                        /* Remove trailing newline */
-                        result[strcspn(result, "\n")] = '\0';
-                        debug_log(DEBUG_INFO, "Raw result: '%s'", result);
-                        if (strlen(result) > 0) {
-                            strlcpy(iface->bridge_members, result, sizeof(iface->bridge_members));
-                            debug_log(DEBUG_INFO, "Found bridge members for %s: '%s'", ifa->ifa_name, iface->bridge_members);
-                        } else {
-                            strlcpy(iface->bridge_members, "none", sizeof(iface->bridge_members));
-                            debug_log(DEBUG_INFO, "No bridge members found for %s", ifa->ifa_name);
-                        }
-                    } else {
-                        strlcpy(iface->bridge_members, "none", sizeof(iface->bridge_members));
-                        debug_log(DEBUG_INFO, "No output from command for %s", ifa->ifa_name);
-                    }
-                    pclose(fp);
-                } else {
-                    strlcpy(iface->bridge_members, "none", sizeof(iface->bridge_members));
-                    debug_log(DEBUG_INFO, "Failed to run command for %s", ifa->ifa_name);
-                }
+                freebsd_get_bridge_members(ifa->ifa_name, iface->bridge_members, sizeof(iface->bridge_members));
             }
             
             close(sock);
