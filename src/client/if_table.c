@@ -238,4 +238,4 @@ int print_interface_table(const char *xml_response)
     /* Print footer */
     print_interface_footer();
     return 0;
-} 
+}

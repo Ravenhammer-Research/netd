@@ -421,4 +421,258 @@ int parse_interfaces_from_xml(const char *xml, struct interface_data *interfaces
     return ctx.interface_count;
 }
 
- 
+
+
+/* Structure to hold VRF parsing context */
+struct vrf_parse_context {
+    struct vrf_data *vrfs;
+    int max_vrfs;
+    int vrf_count;
+    struct vrf_data *current_vrf;
+    int in_vrf;
+    char current_tag[64];
+    char temp_content[256];
+};
+
+/**
+ * Start element handler for VRF XML parsing
+ */
+static void vrf_start_element(void *userData, const char *name, const char **atts)
+{
+    (void)atts; /* Suppress unused parameter warning */
+    struct vrf_parse_context *ctx = (struct vrf_parse_context *)userData;
+    
+    if (strcmp(name, "vrf") == 0) {
+        if (ctx->vrf_count < ctx->max_vrfs) {
+            ctx->current_vrf = &ctx->vrfs[ctx->vrf_count];
+            ctx->in_vrf = 1;
+            memset(ctx->current_vrf, 0, sizeof(struct vrf_data));
+        }
+    } else if (ctx->in_vrf) {
+        strlcpy(ctx->current_tag, name, sizeof(ctx->current_tag));
+        ctx->temp_content[0] = '\0';
+    }
+}
+
+/**
+ * End element handler for VRF XML parsing
+ */
+static void vrf_end_element(void *userData, const char *name)
+{
+    struct vrf_parse_context *ctx = (struct vrf_parse_context *)userData;
+    
+    if (strcmp(name, "vrf") == 0) {
+        if (ctx->current_vrf) {
+            /* Determine FIB number based on name */
+            if (strcmp(ctx->current_vrf->name, "default") == 0) {
+                ctx->current_vrf->fib = 0;
+            } else if (strcmp(ctx->current_vrf->name, "-") == 0) {
+                /* Auto-detected VRF with no name, extract FIB from description */
+                const char *desc = ctx->current_vrf->description;
+                if (strncmp(desc, "FIB ", 4) == 0) {
+                    ctx->current_vrf->fib = atoi(desc + 4);
+                } else {
+                    ctx->current_vrf->fib = 0;
+                }
+            } else {
+                /* Explicitly created VRF, we'd need FIB in XML */
+                ctx->current_vrf->fib = 0;
+            }
+            ctx->vrf_count++;
+        }
+        ctx->in_vrf = 0;
+        ctx->current_vrf = NULL;
+    } else if (ctx->in_vrf && ctx->current_vrf) {
+        if (strcmp(name, "name") == 0) {
+            strlcpy(ctx->current_vrf->name, ctx->temp_content, sizeof(ctx->current_vrf->name));
+        } else if (strcmp(name, "description") == 0) {
+            strlcpy(ctx->current_vrf->description, ctx->temp_content, sizeof(ctx->current_vrf->description));
+        }
+    }
+}
+
+/**
+ * Character data handler for VRF XML parsing
+ */
+static void vrf_char_data(void *userData, const char *s, int len)
+{
+    struct vrf_parse_context *ctx = (struct vrf_parse_context *)userData;
+    
+    if (ctx->in_vrf && ctx->current_vrf) {
+        size_t current_len = strlen(ctx->temp_content);
+        size_t remaining = sizeof(ctx->temp_content) - current_len - 1;
+        
+        if (remaining > 0) {
+            size_t copy_len = (len < (int)remaining) ? (size_t)len : remaining;
+            strncat(ctx->temp_content, s, copy_len);
+        }
+    }
+}
+
+/**
+ * Parse VRFs from XML using Expat
+ * @param xml XML string containing VRF data
+ * @param vrfs Array to store parsed VRFs
+ * @param max_vrfs Maximum number of VRFs to parse
+ * @return Number of VRFs parsed, or -1 on failure
+ */
+int parse_vrfs_from_xml(const char *xml, struct vrf_data *vrfs, int max_vrfs)
+{
+    XML_Parser parser;
+    struct vrf_parse_context ctx;
+    
+    if (!xml || !vrfs || max_vrfs <= 0) {
+        return -1;
+    }
+    
+    /* Initialize context */
+    memset(&ctx, 0, sizeof(ctx));
+    ctx.vrfs = vrfs;
+    ctx.max_vrfs = max_vrfs;
+    ctx.vrf_count = 0;
+    
+    /* Create parser */
+    parser = XML_ParserCreate(NULL);
+    if (!parser) {
+        return -1;
+    }
+    
+    /* Set handlers */
+    XML_SetElementHandler(parser, vrf_start_element, vrf_end_element);
+    XML_SetCharacterDataHandler(parser, vrf_char_data);
+    XML_SetUserData(parser, &ctx);
+    
+    /* Parse XML */
+    if (XML_Parse(parser, xml, strlen(xml), 1) != XML_STATUS_OK) {
+        debug_log(DEBUG_ERROR, "XML_Parse failed: %s", XML_ErrorString(XML_GetErrorCode(parser)));
+        XML_ParserFree(parser);
+        return -1;
+    }
+    
+    XML_ParserFree(parser);
+    return ctx.vrf_count;
+}
+
+/* Use the route_data definition from net.h */
+
+/* Structure to hold route parsing context */
+struct route_parse_context {
+    struct route_data *routes;
+    int max_routes;
+    int route_count;
+    struct route_data *current_route;
+    int in_route;
+    int in_next_hop;
+    char current_tag[64];
+    char temp_content[256];
+};
+
+/**
+ * Start element handler for route XML parsing
+ */
+static void route_start_element(void *userData, const char *name, const char **atts)
+{
+    (void)atts; /* Suppress unused parameter warning */
+    struct route_parse_context *ctx = (struct route_parse_context *)userData;
+    
+    if (strcmp(name, "route") == 0) {
+        if (ctx->route_count < ctx->max_routes) {
+            ctx->current_route = &ctx->routes[ctx->route_count];
+            ctx->in_route = 1;
+            memset(ctx->current_route, 0, sizeof(struct route_data));
+        }
+    } else if (strcmp(name, "next-hop") == 0) {
+        ctx->in_next_hop = 1;
+    } else if (ctx->in_route) {
+        strlcpy(ctx->current_tag, name, sizeof(ctx->current_tag));
+        ctx->temp_content[0] = '\0';
+    }
+}
+
+/**
+ * End element handler for route XML parsing
+ */
+static void route_end_element(void *userData, const char *name)
+{
+    struct route_parse_context *ctx = (struct route_parse_context *)userData;
+    
+    if (strcmp(name, "route") == 0) {
+        if (ctx->current_route) {
+            ctx->route_count++;
+        }
+        ctx->in_route = 0;
+        ctx->current_route = NULL;
+    } else if (strcmp(name, "next-hop") == 0) {
+        ctx->in_next_hop = 0;
+    } else if (ctx->in_route && ctx->current_route) {
+        if (strcmp(name, "destination-prefix") == 0) {
+            strlcpy(ctx->current_route->destination, ctx->temp_content, sizeof(ctx->current_route->destination));
+        } else if (strcmp(name, "next-hop-address") == 0) {
+            strlcpy(ctx->current_route->gateway, ctx->temp_content, sizeof(ctx->current_route->gateway));
+        } else if (strcmp(name, "outgoing-interface") == 0) {
+            strlcpy(ctx->current_route->interface, ctx->temp_content, sizeof(ctx->current_route->interface));
+        }
+    }
+}
+
+/**
+ * Character data handler for route XML parsing
+ */
+static void route_char_data(void *userData, const char *s, int len)
+{
+    struct route_parse_context *ctx = (struct route_parse_context *)userData;
+    
+    if (ctx->in_route && ctx->current_route) {
+        size_t current_len = strlen(ctx->temp_content);
+        size_t remaining = sizeof(ctx->temp_content) - current_len - 1;
+        
+        if (remaining > 0) {
+            size_t copy_len = (len < (int)remaining) ? (size_t)len : remaining;
+            strncat(ctx->temp_content, s, copy_len);
+        }
+    }
+}
+
+/**
+ * Parse routes from XML using Expat
+ * @param xml XML string containing route data
+ * @param routes Array to store parsed routes
+ * @param max_routes Maximum number of routes to parse
+ * @return Number of routes parsed, or -1 on failure
+ */
+int parse_routes_from_xml(const char *xml, struct route_data *routes, int max_routes)
+{
+    XML_Parser parser;
+    struct route_parse_context ctx;
+    
+    if (!xml || !routes || max_routes <= 0) {
+        return -1;
+    }
+    
+    /* Initialize context */
+    memset(&ctx, 0, sizeof(ctx));
+    ctx.routes = routes;
+    ctx.max_routes = max_routes;
+    ctx.route_count = 0;
+    
+    /* Create parser */
+    parser = XML_ParserCreate(NULL);
+    if (!parser) {
+        return -1;
+    }
+    
+    /* Set handlers */
+    XML_SetElementHandler(parser, route_start_element, route_end_element);
+    XML_SetCharacterDataHandler(parser, route_char_data);
+    XML_SetUserData(parser, &ctx);
+    
+    /* Parse XML */
+    if (XML_Parse(parser, xml, strlen(xml), 1) != XML_STATUS_OK) {
+        debug_log(DEBUG_ERROR, "XML_Parse failed: %s", XML_ErrorString(XML_GetErrorCode(parser)));
+        XML_ParserFree(parser);
+        return -1;
+    }
+    
+    XML_ParserFree(parser);
+    return ctx.route_count;
+}

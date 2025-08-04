@@ -47,6 +47,7 @@
 #include <readline/history.h>
 #include <libnetconf2/netconf.h>
 #include <libyang/libyang.h>
+#include "if_table.h"
 
 /* Constants */
 #define NETD_SOCKET_PATH "/var/run/netd.sock"
@@ -88,6 +89,20 @@ typedef enum {
     IF_TYPE_VXLAN,
     IF_TYPE_BRIDGE
 } interface_type_t;
+
+/* VRF data structure */
+struct vrf_data {
+    char name[64];
+    char description[256];
+    int fib;
+};
+
+/* Route data structure */
+struct route_data {
+    char destination[64];
+    char gateway[64];
+    char interface[64];
+};
 
 /* Command structure */
 typedef struct command {
@@ -158,6 +173,7 @@ int netconf_send_request(net_client_t *client, const char *request, char **respo
 int netconf_get_interfaces(net_client_t *client, char **response);
 int netconf_get_vrfs(net_client_t *client, char **response);
 int netconf_get_routes(net_client_t *client, uint32_t fib, int family, char **response);
+int netconf_get_interface_groups(net_client_t *client, char **response);
 
 /* YANG context management */
 int yang_init_client(net_client_t *client);
@@ -183,6 +199,9 @@ void print_info(const char *format, ...);
 /* XML utilities */
 int find_tag_content(const char *xml, const char *tag, char *content, size_t max_len);
 char* extract_xml_content(const char *xml, const char *tag, char *buffer, size_t max_len);
+int parse_interfaces_from_xml(const char *xml, struct interface_data *interfaces, int max_interfaces);
+int parse_vrfs_from_xml(const char *xml, struct vrf_data *vrfs, int max_vrfs);
+int parse_routes_from_xml(const char *xml, struct route_data *routes, int max_routes);
 
 /* Display utilities */
 
@@ -190,6 +209,9 @@ char* extract_xml_content(const char *xml, const char *tag, char *buffer, size_t
 /* Table display functions */
 int print_interface_table(const char *xml_response);
 int print_interface_table_filtered(const char *xml_response, const char *group_name);
+int print_interface_groups_summary(const char *xml_response);
+int print_wlan_interface_groups_summary(const char *xml_response);
+int print_wlan_interface_table(const char *xml_response);
 int print_vrf_table(const char *xml_response);
 int print_route_table(const char *xml_response);
 

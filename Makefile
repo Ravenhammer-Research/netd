@@ -61,6 +61,8 @@ CLIENT_SRCS = $(CLIENTDIR)/main.c \
               $(CLIENTDIR)/table_utils.c \
               $(CLIENTDIR)/if_table.c \
               $(CLIENTDIR)/ifgrp_bridge_table.c \
+              $(CLIENTDIR)/ifgrp_table.c \
+              $(CLIENTDIR)/ifgrp_wlan_table.c \
               $(CLIENTDIR)/vrf_table.c \
               $(CLIENTDIR)/route_table.c
 
@@ -143,6 +145,8 @@ $(CLIENTDIR)/utils.o: $(CLIENTDIR)/net.h
 $(CLIENTDIR)/xml_utils.o: $(CLIENTDIR)/net.h
 $(CLIENTDIR)/if_table.o: $(CLIENTDIR)/net.h $(CLIENTDIR)/if_table.h
 $(CLIENTDIR)/ifgrp_bridge_table.o: $(CLIENTDIR)/net.h $(CLIENTDIR)/if_table.h
+$(CLIENTDIR)/ifgrp_table.o: $(CLIENTDIR)/net.h $(CLIENTDIR)/ifgrp_table.h
+$(CLIENTDIR)/ifgrp_wlan_table.o: $(CLIENTDIR)/net.h $(CLIENTDIR)/ifgrp_wlan_table.h
 $(CLIENTDIR)/vrf_table.o: $(CLIENTDIR)/net.h
 $(CLIENTDIR)/route_table.o: $(CLIENTDIR)/net.h
 $(CLIENTDIR)/table.o: $(CLIENTDIR)/net.h

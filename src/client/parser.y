@@ -66,6 +66,9 @@ int yylex(void);
 %token <string> NUMBER
 %token <string> STRING
 
+/* Token declarations */
+%token PROTOCOL
+
 /* Non-terminal type declarations */
 %type <string> vrf_assignment
 %type <string> address_assignment
@@ -229,6 +232,16 @@ show_command
             current_command->arg_count = 2;
         }
     }
+    | SHOW ROUTE PROTOCOL IDENTIFIER {
+        if (current_command) {
+            current_command->type = CMD_SHOW;
+            current_command->object = OBJ_ROUTE;
+            strlcpy(current_command->args[0], "route", sizeof(current_command->args[0]));
+            strlcpy(current_command->args[1], "protocol", sizeof(current_command->args[1]));
+            strlcpy(current_command->args[2], $4, sizeof(current_command->args[2]));
+            current_command->arg_count = 3;
+        }
+    }
     | SHOW INTERFACE {
         if (current_command) {
             current_command->type = CMD_SHOW;
@@ -244,6 +257,15 @@ show_command
             current_command->arg_count = 1;
         }
     }
+    | SHOW INTERFACE GROUP IDENTIFIER {
+        if (current_command) {
+            current_command->type = CMD_SHOW;
+            current_command->object = OBJ_INTERFACE;
+            strlcpy(current_command->args[0], "group", sizeof(current_command->args[0]));
+            strlcpy(current_command->args[1], $4, sizeof(current_command->args[1]));
+            current_command->arg_count = 2;
+        }
+    }
     | SHOW INTERFACE interface_type IDENTIFIER {
         if (current_command) {
             current_command->type = CMD_SHOW;
@@ -253,13 +275,12 @@ show_command
             current_command->arg_count = 2;
         }
     }
-    | SHOW INTERFACE GROUP IDENTIFIER {
+    | SHOW INTERFACE GROUP {
         if (current_command) {
             current_command->type = CMD_SHOW;
             current_command->object = OBJ_INTERFACE;
             strlcpy(current_command->args[0], "group", sizeof(current_command->args[0]));
-            strlcpy(current_command->args[1], $4, sizeof(current_command->args[1]));
-            current_command->arg_count = 2;
+            current_command->arg_count = 1;
         }
     }
     ;

@@ -38,6 +38,7 @@
 #include <sys/stat.h>
 #include <sys/queue.h>
 #include <net/if.h>
+#include <net/if_dl.h>
 #include <net/if_bridgevar.h>
 #include <net/route.h>
 #include <netinet/in.h>
@@ -213,6 +214,7 @@ int route_add(netd_state_t *state, uint32_t fib, const char *destination,
 int route_delete(netd_state_t *state, uint32_t fib, const char *destination);
 int route_list(netd_state_t *state, uint32_t fib, int family);
 int route_flush_fib(netd_state_t *state, uint32_t fib);
+int route_enumerate_system(netd_state_t *state);
 char *route_get_all(netd_state_t *state);
 
 /* Configuration management */

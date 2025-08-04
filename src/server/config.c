@@ -49,15 +49,26 @@ int config_load(netd_state_t *state)
         return -1;
     }
 
+    /* Always enumerate system interfaces first to see what exists */
+    debug_log(DEBUG_INFO, "Enumerating existing system interfaces");
+    if (interface_enumerate_system(state) < 0) {
+        debug_log(DEBUG_ERROR, "Failed to enumerate system interfaces");
+        return -1;
+    }
+    debug_log(DEBUG_INFO, "System interface enumeration complete");
+
+    /* Enumerate system routes */
+    debug_log(DEBUG_INFO, "Enumerating existing system routes");
+    if (route_enumerate_system(state) < 0) {
+        debug_log(DEBUG_ERROR, "Failed to enumerate system routes");
+        return -1;
+    }
+    debug_log(DEBUG_INFO, "System route enumeration complete");
+
+    /* Now try to load config if it exists */
     fp = fopen(NETD_CONFIG_FILE, "r");
     if (!fp) {
-        debug_log(DEBUG_INFO, "No configuration file found, enumerating existing system interfaces");
-        /* Enumerate existing system interfaces when no config file exists */
-        if (interface_enumerate_system(state) < 0) {
-            debug_log(DEBUG_ERROR, "Failed to enumerate system interfaces");
-            return -1;
-        }
-        debug_log(DEBUG_INFO, "System interface enumeration complete");
+        debug_log(DEBUG_INFO, "No configuration file found");
         return 0;
     }
 
@@ -148,13 +159,21 @@ int config_load(netd_state_t *state)
                     }
                 }
 
-                if (interface_create(state, name, type) < 0) {
-                    debug_log(DEBUG_WARN, "Line %d: failed to create interface %s", line_num, name);
-                    continue;
-                }
+                /* Check if interface already exists before creating */
+                if (interface_find(state, name)) {
+                    debug_log(DEBUG_INFO, "Line %d: interface %s already exists, skipping creation and configuration", line_num, name);
+                    /* Skip all configuration parameters for existing interfaces */
+                    while ((token = strtok_r(NULL, " ", &saveptr)) != NULL) {
+                        /* Just consume tokens until end of line */
+                    }
+                } else {
+                    if (interface_create(state, name, type) < 0) {
+                        debug_log(DEBUG_WARN, "Line %d: failed to create interface %s", line_num, name);
+                        continue;
+                    }
 
-                /* Parse additional parameters */
-                while ((token = strtok_r(NULL, " ", &saveptr)) != NULL) {
+                    /* Parse additional parameters only for newly created interfaces */
+                    while ((token = strtok_r(NULL, " ", &saveptr)) != NULL) {
                     if (strcmp(token, "vrf") == 0) {
                         char *vrf_name = strtok_r(NULL, " ", &saveptr);
                         if (vrf_name) {
@@ -182,6 +201,7 @@ int config_load(netd_state_t *state)
                             interface_add_group(state, name, group);
                         }
                     }
+                }
                 }
             }
         }

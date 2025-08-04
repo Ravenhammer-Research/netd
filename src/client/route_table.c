@@ -29,12 +29,10 @@
  */
 
 #include "net.h"
+#include "table_utils.h"
 #include <string.h>
 #include <stdio.h>
-
-/* Forward declarations for functions from other modules */
-extern int find_tag_content(const char *xml, const char *tag, char *content, size_t max_len);
-extern void print_separator(int width);
+#include <stdlib.h>
 
 /**
  * Print route table from XML response
@@ -43,53 +41,49 @@ extern void print_separator(int width);
  */
 int print_route_table(const char *xml_response)
 {
-    const char *pos = xml_response;
-    char destination[64], next_hop[64], interface[64];
-    int count = 0;
+    struct route_data routes[100]; /* Max 100 routes */
+    int count;
+    struct table_format fmt;
     
     if (!xml_response) {
         return -1;
     }
 
-    /* Print table header */
-    printf("\nRoute Table:\n");
-    print_separator(70);
-    printf("%-20s %-20s %-20s\n", "Destination", "Gateway", "Interface");
-    print_separator(70);
-
-    /* Find routes section */
-    pos = strstr(xml_response, "<routes");
-    if (!pos) {
-        print_error("Could not find routes section in XML");
+    /* Parse routes from XML */
+    count = parse_routes_from_xml(xml_response, routes, 100);
+    if (count < 0) {
+        print_error("Failed to parse route XML");
         return -1;
     }
 
-    /* Find each route */
-    while ((pos = strstr(pos, "<route>")) != NULL) {
-        pos += 7; /* Skip "<route>" */
-        
-        /* Extract route data */
-        if (find_tag_content(pos, "destination-prefix", destination, sizeof(destination)) == 0) {
-            find_tag_content(pos, "next-hop-address", next_hop, sizeof(next_hop));
-            find_tag_content(pos, "outgoing-interface", interface, sizeof(interface));
+    /* Initialize table format */
+    table_init(&fmt, "Route Table");
+    table_add_column(&fmt, "Destination", 11);
+    table_add_column(&fmt, "Gateway", 7);
+    table_add_column(&fmt, "Interface", 9);
 
-            printf("%-20s %-20s %-20s\n", 
-                   destination,
-                   next_hop[0] != '\0' ? next_hop : "-",
-                   interface[0] != '\0' ? interface : "-");
-
-            count++;
-        }
-        
-        /* Move to next route */
-        pos = strstr(pos, "</route>");
-        if (pos) {
-            pos += 8; /* Skip "</route>" */
-        }
+    /* First pass: calculate column widths */
+    for (int i = 0; i < count; i++) {
+        table_update_width(&fmt, 0, strlen(routes[i].destination));
+        table_update_width(&fmt, 1, strlen(routes[i].gateway));
+        table_update_width(&fmt, 2, strlen(routes[i].interface));
     }
 
-    print_separator(70);
-    printf("Total routes: %d\n\n", count);
+    /* Print table header */
+    table_print_header(&fmt);
+
+    /* Print each route */
+    for (int i = 0; i < count; i++) {
+        table_print_row(&fmt, 
+                       routes[i].destination,
+                       routes[i].gateway[0] != '\0' ? routes[i].gateway : "-",
+                       routes[i].interface[0] != '\0' ? routes[i].interface : "-");
+    }
+
+    /* Print table footer */
+    char footer_text[64];
+    snprintf(footer_text, sizeof(footer_text), "Total routes: %d", count);
+    table_print_footer(&fmt, footer_text);
 
     return 0;
 } 

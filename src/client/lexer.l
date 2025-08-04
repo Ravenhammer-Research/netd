@@ -70,13 +70,14 @@ void yyerror(const char *s);
 #define ADDRESS 25
 #define MTU 26
 #define GROUP 27
-#define REJECT_TOKEN 28
-#define BLACKHOLE 29
-#define IPV4_ADDRESS 30
-#define IPV6_ADDRESS 31
-#define CIDR_ADDRESS 32
-#define IDENTIFIER 33
-#define NUMBER 34
+#define PROTOCOL 28
+#define REJECT_TOKEN 29
+#define BLACKHOLE 30
+#define IPV4_ADDRESS 31
+#define IPV6_ADDRESS 32
+#define CIDR_ADDRESS 33
+#define IDENTIFIER 34
+#define NUMBER 35
 
 /* YYSTYPE declaration for lexer values */
 typedef union {
@@ -133,6 +134,7 @@ IPV6_HEX    {HEX}{1,4}
 "address"   { return ADDRESS; }
 "mtu"       { return MTU; }
 "group"     { return GROUP; }
+"protocol"  { return PROTOCOL; }
 "reject"    { return REJECT_TOKEN; }
 "blackhole" { return BLACKHOLE; }
 

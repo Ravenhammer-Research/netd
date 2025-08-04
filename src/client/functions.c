@@ -201,7 +201,15 @@ int execute_show_command(net_client_t *client, const command_t *cmd) {
     } else if (strcmp(cmd->args[0], "vrf") == 0 || strcmp(cmd->args[0], "vrfs") == 0) {
         ret = netconf_get_vrfs(client, &response);
     } else if (strcmp(cmd->args[0], "route") == 0 || strcmp(cmd->args[0], "routes") == 0) {
-        ret = netconf_get_routes(client, 0, AF_UNSPEC, &response);
+        /* Check if this is a protocol-specific route request */
+        if (cmd->arg_count >= 3 && strcmp(cmd->args[1], "protocol") == 0) {
+            /* For now, just get all routes - protocol filtering can be added later */
+            ret = netconf_get_routes(client, 0, AF_UNSPEC, &response);
+        } else {
+            ret = netconf_get_routes(client, 0, AF_UNSPEC, &response);
+        }
+    } else if (strcmp(cmd->args[0], "group") == 0) {
+        ret = netconf_get_interface_groups(client, &response);
     } else {
         print_error("Unknown object type: %s", cmd->args[0]);
         return -1;
@@ -209,13 +217,35 @@ int execute_show_command(net_client_t *client, const command_t *cmd) {
     
             if (ret == 0 && response) {
             /* Display formatted table instead of raw XML */
+            debug_log(DEBUG_DEBUG, "Command args[0]='%s', args[1]='%s', arg_count=%d", 
+                     cmd->args[0], cmd->args[1], cmd->arg_count);
             if (strcmp(cmd->args[0], "interface") == 0 || strcmp(cmd->args[0], "interfaces") == 0) {
                 /* Check if this is a group-filtered request */
                 if (cmd->arg_count >= 3 && strcmp(cmd->args[1], "group") == 0) {
-                    print_interface_table_filtered(response, cmd->args[2]);
+                    /* Check if this is the wlan group */
+                    if (strcmp(cmd->args[2], "wlan") == 0) {
+                        debug_log(DEBUG_DEBUG, "Raw XML response for wlan group:\n%s", response);
+                        print_wlan_interface_table(response);
+                    } else {
+                        print_interface_table_filtered(response, cmd->args[2]);
+                    }
                 } else {
                     print_interface_table(response);
                 }
+        } else if (strcmp(cmd->args[0], "group") == 0) {
+            if (cmd->arg_count >= 2) {
+                /* Check if this is the wlan group */
+                if (strcmp(cmd->args[1], "wlan") == 0) {
+                    /* Debug: print the raw XML response */
+                    debug_log(DEBUG_DEBUG, "Raw XML response for wlan group:\n%s", response);
+                    print_wlan_interface_table(response);
+                } else {
+                    print_interface_table_filtered(response, cmd->args[1]);
+                }
+            } else {
+                /* No specific group - show summary */
+                print_interface_groups_summary(response);
+            }
         } else if (strcmp(cmd->args[0], "vrf") == 0 || strcmp(cmd->args[0], "vrfs") == 0) {
             print_vrf_table(response);
         } else if (strcmp(cmd->args[0], "route") == 0 || strcmp(cmd->args[0], "routes") == 0) {

@@ -29,12 +29,10 @@
  */
 
 #include "net.h"
+#include "table_utils.h"
 #include <string.h>
 #include <stdio.h>
-
-/* Forward declarations for functions from other modules */
-extern int find_tag_content(const char *xml, const char *tag, char *content, size_t max_len);
-extern void print_separator(int width);
+#include <stdlib.h>
 
 /**
  * Print VRF table from XML response
@@ -43,59 +41,52 @@ extern void print_separator(int width);
  */
 int print_vrf_table(const char *xml_response)
 {
-    const char *pos = xml_response;
-    char name[64], description[256];
-    int count = 0;
+    struct vrf_data vrfs[100]; /* Max 100 VRFs */
+    struct table_format fmt;
+    int count;
     
     if (!xml_response) {
         return -1;
     }
 
-    /* Print table header */
-    printf("\nVRF Table:\n");
-    print_separator(70);
-    printf("%-15s %-8s %-35s\n", "Name", "FIB", "Description");
-    print_separator(70);
-
-    /* Find vrfs section */
-    pos = strstr(xml_response, "<vrfs");
-    if (!pos) {
-        print_error("Could not find vrfs section in XML");
+    /* Parse VRFs from XML using XML utilities */
+    count = parse_vrfs_from_xml(xml_response, vrfs, 100);
+    if (count < 0) {
+        print_error("Failed to parse VRF XML");
         return -1;
     }
 
-    /* Find each VRF */
-    while ((pos = strstr(pos, "<vrf>")) != NULL) {
-        pos += 5; /* Skip "<vrf>" */
-        
-        /* Extract VRF data */
-        if (find_tag_content(pos, "name", name, sizeof(name)) == 0) {
-            find_tag_content(pos, "description", description, sizeof(description));
-            
-            /* Determine FIB number based on name */
-            int fib = 0;
-            if (strcmp(name, "default") != 0) {
-                /* For non-default VRFs, we'd need to extract FIB from XML */
-                /* For now, just show 0 for default */
-            }
+    /* Initialize table format */
+    table_init(&fmt, "VRF Table");
+    table_add_column(&fmt, "Name", 4);
+    table_add_column(&fmt, "FIB", 3);
+    table_add_column(&fmt, "Description", 11);
 
-            printf("%-15s %-8d %-35s\n", 
-                   name,
-                   fib,
-                   description[0] != '\0' ? description : "");
-
-            count++;
-        }
-        
-        /* Move to next VRF */
-        pos = strstr(pos, "</vrf>");
-        if (pos) {
-            pos += 6; /* Skip "</vrf>" */
-        }
+    /* First pass: calculate column widths */
+    for (int i = 0; i < count; i++) {
+        table_update_width(&fmt, 0, strlen(vrfs[i].name));
+        table_update_width(&fmt, 1, snprintf(NULL, 0, "%d", vrfs[i].fib));
+        table_update_width(&fmt, 2, strlen(vrfs[i].description));
     }
 
-    print_separator(70);
-    printf("Total VRFs: %d\n\n", count);
+    /* Print table header */
+    table_print_header(&fmt);
+
+    /* Print each VRF */
+    for (int i = 0; i < count; i++) {
+        char fib_str[16];
+        snprintf(fib_str, sizeof(fib_str), "%d", vrfs[i].fib);
+        
+        table_print_row(&fmt, 
+                       vrfs[i].name,
+                       fib_str,
+                       vrfs[i].description[0] != '\0' ? vrfs[i].description : "");
+    }
+
+    /* Print table footer */
+    char footer_text[64];
+    snprintf(footer_text, sizeof(footer_text), "Total VRFs: %d", count);
+    table_print_footer(&fmt, footer_text);
 
     return 0;
 } 

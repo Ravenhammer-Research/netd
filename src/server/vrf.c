@@ -210,12 +210,25 @@ int vrf_list(netd_state_t *state)
 char *vrf_get_all(netd_state_t *state)
 {
     vrf_t *vrf;
+    interface_t *iface;
     char *xml = NULL;
     char *temp_xml = NULL;
+    bool fib_used[256] = {false}; // Track which FIBs are in use
     
     if (!state) {
         return NULL;
     }
+
+    /* Scan all interfaces to find FIBs in use */
+    debug_log(DEBUG_DEBUG, "Scanning interfaces for FIBs...");
+    TAILQ_FOREACH(iface, &state->interfaces, entries) {
+        debug_log(DEBUG_DEBUG, "Interface %s has FIB %u", iface->name, iface->fib);
+        if (iface->fib < 256) {
+            fib_used[iface->fib] = true;
+        }
+    }
+
+
 
     /* Start XML */
     asprintf(&xml, "    <vrfs xmlns=\"urn:ietf:params:xml:ns:yang:ietf-routing\">\n");
@@ -223,7 +236,7 @@ char *vrf_get_all(netd_state_t *state)
         return NULL;
     }
 
-    /* Always include default VRF */
+    /* Always include default VRF (FIB 0) */
     asprintf(&temp_xml,
             "      <vrf>\n"
             "        <name>default</name>\n"
@@ -237,7 +250,10 @@ char *vrf_get_all(netd_state_t *state)
         xml = new_xml;
     }
 
+    /* Include explicitly created VRFs */
+    debug_log(DEBUG_DEBUG, "Checking for explicitly created VRFs...");
     TAILQ_FOREACH(vrf, &state->vrfs, entries) {
+        debug_log(DEBUG_DEBUG, "Found explicit VRF: %s (FIB %u)", vrf->name, vrf->fib_number);
         asprintf(&temp_xml,
                 "      <vrf>\n"
                 "        <name>%s</name>\n"
@@ -255,6 +271,28 @@ char *vrf_get_all(netd_state_t *state)
         }
     }
 
+    /* Include FIBs that are in use but don't have explicit VRF names */
+    debug_log(DEBUG_DEBUG, "Checking for auto-detected FIBs...");
+    for (int i = 1; i < 256; i++) { // Skip FIB 0 (default)
+        if (fib_used[i] && !vrf_find_by_fib(state, i)) {
+            debug_log(DEBUG_DEBUG, "Adding auto-detected VRF: - (FIB %d)", i);
+            asprintf(&temp_xml,
+                    "      <vrf>\n"
+                    "        <name>-</name>\n"
+                    "        <description>FIB %d (auto-detected)</description>\n"
+                    "      </vrf>\n",
+                    i);
+
+            if (temp_xml) {
+                char *new_xml;
+                asprintf(&new_xml, "%s%s", xml, temp_xml);
+                free(xml);
+                free(temp_xml);
+                xml = new_xml;
+            }
+        }
+    }
+
     /* Close XML tags */
     asprintf(&temp_xml, "    </vrfs>\n");
     if (temp_xml) {
@@ -265,5 +303,6 @@ char *vrf_get_all(netd_state_t *state)
         xml = new_xml;
     }
 
+    debug_log(DEBUG_DEBUG, "Generated VRF XML response (%zu bytes):\n%s", xml ? strlen(xml) : 0, xml ? xml : "NULL");
     return xml;
 } 

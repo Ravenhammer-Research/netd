@@ -31,6 +31,7 @@
 #include "net.h"
 #include <ctype.h>
 #include <netdb.h>
+#include <net/if_dl.h>
 #include <time.h>
 #include <stdarg.h>
 
@@ -345,6 +346,11 @@ int format_address(const struct sockaddr_storage *addr, char *str, size_t len)
             if (inet_ntop(AF_INET6, &sin6->sin6_addr, str, len) == NULL) {
                 return -1;
             }
+            break;
+        }
+        case AF_LINK: {
+            struct sockaddr_dl *sdl = (struct sockaddr_dl *)addr;
+            snprintf(str, len, "link#%d", sdl->sdl_index);
             break;
         }
         default:

@@ -273,4 +273,25 @@ int netconf_get_routes(net_client_t *client, uint32_t fib, int family, char **re
         "</rpc>\n");
 
     return netconf_send_request(client, request, response);
-} 
+}
+
+/**
+ * Get interface groups from server
+ * @param client Client structure
+ * @param response Response XML string (allocated)
+ * @return 0 on success, -1 on failure
+ */
+int netconf_get_interface_groups(net_client_t *client, char **response)
+{
+    const char *request = 
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+        "<rpc message-id=\"4\" xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">\n"
+        "  <get>\n"
+        "    <filter type=\"subtree\">\n"
+        "      <interfaces xmlns=\"urn:ietf:params:xml:ns:yang:ietf-interfaces\"/>\n"
+        "    </filter>\n"
+        "  </get>\n"
+        "</rpc>\n";
+
+    return netconf_send_request(client, request, response);
+}
