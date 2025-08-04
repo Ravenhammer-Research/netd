@@ -30,8 +30,15 @@
 
 #include "netd.h"
 #include <sys/stat.h>
+#include <sys/socket.h>
 #include <fcntl.h>
 #include <ifaddrs.h>
+#include <errno.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 /**
  * Load configuration from file

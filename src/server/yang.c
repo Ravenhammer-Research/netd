@@ -29,6 +29,10 @@
  */
 
 #include "netd.h"
+#include <libyang/libyang.h>
+#include <string.h>
+#include <stdbool.h>
+#include <stdint.h>
 
 /**
  * Initialize YANG context

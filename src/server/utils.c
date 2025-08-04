@@ -29,9 +29,16 @@
  */
 
 #include "netd.h"
+#include <sys/types.h>
 #include <ctype.h>
 #include <netdb.h>
 #include <net/if_dl.h>
+#include <string.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <stdlib.h>
+#include <sys/socket.h>
+#include <stdio.h>
 
 /**
  * Convert interface type enum to string

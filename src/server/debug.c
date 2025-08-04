@@ -29,6 +29,7 @@
  */
 
 #include "netd.h"
+#include <stdio.h>
 #include <stdarg.h>
 #include <syslog.h>
 #include <time.h>

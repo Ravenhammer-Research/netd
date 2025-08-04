@@ -32,6 +32,10 @@
 #include <string.h>
 #include <bsdxml.h>
 #include <libnetconf2/netconf.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 /**
  * Extract message-id from NETCONF request

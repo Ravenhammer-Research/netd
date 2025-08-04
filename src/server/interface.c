@@ -30,6 +30,23 @@
 
 #include "netd.h"
 #include <ifaddrs.h>
+#include <sys/param.h>
+#include <sys/socket.h>
+#include <sys/ioctl.h>
+#include <sys/queue.h>
+#include <net/if.h>
+#include <net/if_dl.h>
+#include <net/if_bridgevar.h>
+#include <netinet/in.h>
+#include <netinet/in_var.h>
+#include <arpa/inet.h>
+#include <errno.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
 /**
  * Create a new interface or find existing one

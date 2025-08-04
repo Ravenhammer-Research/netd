@@ -29,12 +29,29 @@
  */
 
 #include "netd.h"
+#include <sys/types.h>
 #include <fcntl.h>
 #include <sys/un.h>
+#include <net/if.h>
 #include <net/if_dl.h> // For struct sockaddr_dl
 #include <sys/sockio.h> // For SIOCSIFFIB
 #include <net/if_mib.h> // For struct ifmibdata
 #include <ifaddrs.h> // For getifaddrs, freeifaddrs, struct ifaddrs
+#include <sys/param.h>
+#include <sys/socket.h>
+#include <sys/ioctl.h>
+#include <sys/queue.h>
+#include <sys/sysctl.h>
+#include <net/route.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <errno.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
 /**
  * Create a network interface

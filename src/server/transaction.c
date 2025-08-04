@@ -29,6 +29,14 @@
  */
 
 #include "netd.h"
+#include <sys/queue.h>
+#include <errno.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <netinet/in.h>
 
 /**
  * Begin a transaction
