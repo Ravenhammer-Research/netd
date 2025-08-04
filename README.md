@@ -128,3 +128,4 @@ net>
 - `delete`
 - `commit`
 - `save`
+- byte-compile yang schemas (remove reliance on schema files in filesystem.)
