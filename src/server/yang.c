@@ -69,7 +69,7 @@ static LY_ERR mount_point_callback(const struct lysc_ext_instance *ext, void *us
  */
 int yang_init(netd_state_t *state)
 {
-    (void)ly_set_log_clb(yang_log_callback);
+    //(void)ly_set_log_clb(yang_log_callback);
     (void)ly_log_level(LY_LLDBG);
 
     struct lys_module *mod;
@@ -111,9 +111,6 @@ int yang_init(netd_state_t *state)
     }
 
     debug_log(DEBUG_DEBUG, "YANG context created successfully");
-
-    /* Set up custom logger callback for libyang */
-    ly_set_log_clb(yang_log_callback);
 
     /* Load required modules */
     int loaded_count = 0;
@@ -238,7 +235,49 @@ int yang_validate_xml(netd_state_t *state, const char *xml_data)
         debug_log(DEBUG_DEBUG, "Validating leafref references");
         /* Link leafref nodes to their targets */
         result = lyd_leafref_link_node_tree(tree);
-        debug_log(DEBUG_ERROR, "Leafref validation result: %d", result);
+        
+        /* Map result to descriptive constant name */
+        const char *result_name;
+        switch (result) {
+            case LYVE_SUCCESS:
+                result_name = "LYVE_SUCCESS (no error)";
+                break;
+            case LYVE_SYNTAX:
+                result_name = "LYVE_SYNTAX (generic syntax error)";
+                break;
+            case LYVE_SYNTAX_YANG:
+                result_name = "LYVE_SYNTAX_YANG (YANG-related syntax error)";
+                break;
+            case LYVE_SYNTAX_YIN:
+                result_name = "LYVE_SYNTAX_YIN (YIN-related syntax error)";
+                break;
+            case LYVE_REFERENCE:
+                result_name = "LYVE_REFERENCE (invalid referencing or using an item)";
+                break;
+            case LYVE_XPATH:
+                result_name = "LYVE_XPATH (invalid XPath expression)";
+                break;
+            case LYVE_SEMANTICS:
+                result_name = "LYVE_SEMANTICS (generic semantic error)";
+                break;
+            case LYVE_SYNTAX_XML:
+                result_name = "LYVE_SYNTAX_XML (XML-related syntax error)";
+                break;
+            case LYVE_SYNTAX_JSON:
+                result_name = "LYVE_SYNTAX_JSON (JSON-related syntax error)";
+                break;
+            case LYVE_DATA:
+                result_name = "LYVE_DATA (YANG data does not reflect some of the module restrictions)";
+                break;
+            case LYVE_OTHER:
+                result_name = "LYVE_OTHER (Unknown error)";
+                break;
+            default:
+                result_name = "UNKNOWN_ERROR";
+                break;
+        }
+        debug_log(DEBUG_ERROR, "Leafref validation result: %s", result_name);
+        
         if (result != LY_SUCCESS) {
             const struct ly_err_item *err = ly_err_last(state->yang_ctx);
             if (err) {

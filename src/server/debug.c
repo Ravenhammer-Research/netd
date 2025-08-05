@@ -47,18 +47,18 @@ void yang_log_callback(LY_LOG_LEVEL level, const char *msg, const char *data_pat
     
     /* Convert libyang log level to our debug level */
     switch (level) {
-        // case LY_LLERR:
-        //     debug_level = DEBUG_ERROR;
-        //     break;
-        // case LY_LLWRN:
-        //     debug_level = DEBUG_WARN;
-        //     break;
-        // case LY_LLVRB:
-        //     debug_level = DEBUG_INFO;
-        //     break;
-        // case LY_LLDBG:
-        //     debug_level = DEBUG_DEBUG;
-        //     break;
+        case LY_LLERR:
+            debug_level = DEBUG_ERROR;
+            break;
+        case LY_LLWRN:
+            debug_level = DEBUG_WARN;
+            break;
+        case LY_LLVRB:
+            debug_level = DEBUG_INFO;
+            break;
+        case LY_LLDBG:
+            debug_level = DEBUG_DEBUG;
+            break;
         default:
             debug_level = DEBUG_INFO;
             break;
