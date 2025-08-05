@@ -31,6 +31,7 @@
 #include "netd.h"
 #include <libyang/libyang.h>
 #include <libyang/tree_data.h>
+#include <libyang/log.h>
 #include <string.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -59,6 +60,8 @@ static LY_ERR mount_point_callback(const struct lysc_ext_instance *ext, void *us
     return LY_SUCCESS;
 }
 
+
+
 /**
  * Initialize YANG context
  * @param state Server state
@@ -66,6 +69,9 @@ static LY_ERR mount_point_callback(const struct lysc_ext_instance *ext, void *us
  */
 int yang_init(netd_state_t *state)
 {
+    (void)ly_set_log_clb(yang_log_callback);
+    (void)ly_log_level(LY_LLDBG);
+
     struct lys_module *mod;
     const char *modules[] = {
         "ietf-netconf",
@@ -105,6 +111,9 @@ int yang_init(netd_state_t *state)
     }
 
     debug_log(DEBUG_DEBUG, "YANG context created successfully");
+
+    /* Set up custom logger callback for libyang */
+    ly_set_log_clb(yang_log_callback);
 
     /* Load required modules */
     int loaded_count = 0;
@@ -229,6 +238,7 @@ int yang_validate_xml(netd_state_t *state, const char *xml_data)
         debug_log(DEBUG_DEBUG, "Validating leafref references");
         /* Link leafref nodes to their targets */
         result = lyd_leafref_link_node_tree(tree);
+        debug_log(DEBUG_ERROR, "Leafref validation result: %d", result);
         if (result != LY_SUCCESS) {
             const struct ly_err_item *err = ly_err_last(state->yang_ctx);
             if (err) {

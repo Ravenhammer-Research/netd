@@ -35,6 +35,7 @@
 #include <stdbool.h>
 #include <sys/queue.h>
 #include <netinet/in.h>
+#include <libyang/log.h>
 
 /* Forward declarations for libyang structures */
 struct ly_ctx;
@@ -228,6 +229,7 @@ int yang_validate_leafrefs(netd_state_t *state, struct lyd_node *data_tree);
 char *yang_get_validation_error(const struct ly_ctx *ctx);
 int yang_validate_netd_operation(netd_state_t *state, const char *operation, const char *data);
 bool yang_module_loaded(netd_state_t *state, const char *module_name);
+void yang_log_callback(LY_LOG_LEVEL level, const char *msg, const char *data_path, const char *schema_path, uint64_t line);
 int netconf_handle_request(netd_state_t *state, const char *request, char **response);
 
 /* System interface functions */

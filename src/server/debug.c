@@ -33,9 +33,44 @@
 #include <stdarg.h>
 #include <syslog.h>
 #include <time.h>
+#include <libyang/libyang.h>
 
 static debug_level_t current_debug_level = DEBUG_NONE;
 static bool debug_mode = false;
+
+/**
+ * Custom libyang logger callback
+ */
+void yang_log_callback(LY_LOG_LEVEL level, const char *msg, const char *data_path, const char *schema_path, uint64_t line)
+{
+    debug_level_t debug_level;
+    
+    /* Convert libyang log level to our debug level */
+    switch (level) {
+        // case LY_LLERR:
+        //     debug_level = DEBUG_ERROR;
+        //     break;
+        // case LY_LLWRN:
+        //     debug_level = DEBUG_WARN;
+        //     break;
+        // case LY_LLVRB:
+        //     debug_level = DEBUG_INFO;
+        //     break;
+        // case LY_LLDBG:
+        //     debug_level = DEBUG_DEBUG;
+        //     break;
+        default:
+            debug_level = DEBUG_INFO;
+            break;
+    }
+    
+    /* Log the message with all available context */
+    debug_log(debug_level, "libyang: %s (data: %s, schema: %s, line: %lu)", 
+              msg, 
+              data_path ? data_path : "none", 
+              schema_path ? schema_path : "none", 
+              (unsigned long)line);
+}
 
 /**
  * Initialize debug logging
