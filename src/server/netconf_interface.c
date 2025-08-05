@@ -29,24 +29,12 @@
  */
 
 #include "netd.h"
-#include <ifaddrs.h>
-#include <sys/param.h>
-#include <sys/socket.h>
-#include <sys/ioctl.h>
-#include <sys/queue.h>
-#include <net/if.h>
-#include <net/if_dl.h>
-#include <net/if_bridgevar.h>
-#include <netinet/in.h>
-#include <netinet/in_var.h>
-#include <arpa/inet.h>
 #include <errno.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 
 /**
  * Create a new interface or find existing one
@@ -72,33 +60,7 @@ int interface_create(netd_state_t *state, const char *name, interface_type_t typ
     }
 
     /* Check if this is a hardware interface that already exists in the system */
-    bool is_hardware = false;
-    if (strncmp(name, "em", 2) == 0 || 
-        strncmp(name, "igb", 3) == 0 ||
-        strncmp(name, "ix", 2) == 0 ||
-        strncmp(name, "bge", 3) == 0 ||
-        strncmp(name, "fxp", 3) == 0 ||
-        strncmp(name, "re", 2) == 0 ||
-        strncmp(name, "rl", 2) == 0 ||
-        strncmp(name, "sk", 2) == 0 ||
-        strncmp(name, "ti", 2) == 0 ||
-        strncmp(name, "tx", 2) == 0 ||
-        strncmp(name, "vr", 2) == 0 ||
-        strncmp(name, "xl", 2) == 0 ||
-        strncmp(name, "wlan", 4) == 0 ||
-        strncmp(name, "ath", 3) == 0 ||
-        strncmp(name, "iwn", 3) == 0 ||
-        strncmp(name, "iwm", 3) == 0 ||
-        strncmp(name, "iwl", 3) == 0 ||
-        strncmp(name, "bwi", 3) == 0 ||
-        strncmp(name, "rum", 3) == 0 ||
-        strncmp(name, "run", 3) == 0 ||
-        strncmp(name, "ural", 4) == 0 ||
-        strncmp(name, "urtw", 4) == 0 ||
-        strncmp(name, "zyd", 3) == 0 ||
-        strcmp(name, "lo0") == 0) {
-        is_hardware = true;
-    }
+    bool is_hardware = freebsd_is_hardware_interface(name);
 
     /* Allocate new interface */
     iface = malloc(sizeof(*iface));
@@ -472,274 +434,14 @@ int interface_list(netd_state_t *state, interface_type_t type)
  */
 int interface_enumerate_system(netd_state_t *state)
 {
-    struct ifaddrs *ifap, *ifa;
-    interface_t *iface;
-    char *last_name = NULL;
-    
     if (!state) {
         return -1;
     }
 
     debug_log(DEBUG_DEBUG, "Enumerating system interfaces");
-
-    /* Get interface addresses */
-    if (getifaddrs(&ifap) != 0) {
-        debug_log(DEBUG_ERROR, "Failed to get interface addresses: %s", strerror(errno));
-        return -1;
-    }
     
-    /* Iterate through interfaces */
-    for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
-        /* Skip if we've already processed this interface name */
-        if (last_name && strcmp(last_name, ifa->ifa_name) == 0) {
-            continue;
-        }
-        
-        /* Skip interfaces without addresses, except for certain virtual interface types */
-        if (!ifa->ifa_addr) {
-            /* For virtual interfaces like tap, tun, bridge, etc., we want to include them even without addresses */
-            if (strncmp(ifa->ifa_name, "tap", 3) == 0 ||
-                strncmp(ifa->ifa_name, "tun", 3) == 0 ||
-                strncmp(ifa->ifa_name, "bridge", 6) == 0 ||
-                strncmp(ifa->ifa_name, "vlan", 4) == 0 ||
-                strncmp(ifa->ifa_name, "vxlan", 5) == 0 ||
-                strncmp(ifa->ifa_name, "gif", 3) == 0 ||
-                strncmp(ifa->ifa_name, "gre", 3) == 0 ||
-                strncmp(ifa->ifa_name, "lagg", 4) == 0 ||
-                strncmp(ifa->ifa_name, "epair", 5) == 0) {
-                /* Continue processing these virtual interfaces even without addresses */
-                debug_log(DEBUG_DEBUG, "Including virtual interface %s without address", ifa->ifa_name);
-            } else {
-                debug_log(DEBUG_DEBUG, "Skipping interface %s without address", ifa->ifa_name);
-            continue;
-            }
-        }
-
-        /* Skip loopback interface if it's not the main loopback */
-        if (strcmp(ifa->ifa_name, "lo0") != 0 && 
-            strncmp(ifa->ifa_name, "lo", 2) == 0) {
-            continue;
-        }
-
-        /* Check if interface already exists in our list */
-        if (interface_find(state, ifa->ifa_name)) {
-            last_name = strdup(ifa->ifa_name);
-            continue;
-        }
-
-        /* Determine interface type based on name */
-        interface_type_t type = IF_TYPE_UNKNOWN;
-        if (strncmp(ifa->ifa_name, "em", 2) == 0 || 
-            strncmp(ifa->ifa_name, "igb", 3) == 0 ||
-            strncmp(ifa->ifa_name, "ix", 2) == 0 ||
-            strncmp(ifa->ifa_name, "bge", 3) == 0 ||
-            strncmp(ifa->ifa_name, "fxp", 3) == 0 ||
-            strncmp(ifa->ifa_name, "re", 2) == 0 ||
-            strncmp(ifa->ifa_name, "rl", 2) == 0 ||
-            strncmp(ifa->ifa_name, "sk", 2) == 0 ||
-            strncmp(ifa->ifa_name, "ti", 2) == 0 ||
-            strncmp(ifa->ifa_name, "tx", 2) == 0 ||
-            strncmp(ifa->ifa_name, "vr", 2) == 0 ||
-            strncmp(ifa->ifa_name, "xl", 2) == 0) {
-            type = IF_TYPE_ETHERNET;
-        } else if (strncmp(ifa->ifa_name, "wlan", 4) == 0 ||
-                   strncmp(ifa->ifa_name, "ath", 3) == 0 ||
-                   strncmp(ifa->ifa_name, "iwn", 3) == 0 ||
-                   strncmp(ifa->ifa_name, "iwm", 3) == 0 ||
-                   strncmp(ifa->ifa_name, "iwl", 3) == 0 ||
-                   strncmp(ifa->ifa_name, "bwi", 3) == 0 ||
-                   strncmp(ifa->ifa_name, "rum", 3) == 0 ||
-                   strncmp(ifa->ifa_name, "run", 3) == 0 ||
-                   strncmp(ifa->ifa_name, "ural", 4) == 0 ||
-                   strncmp(ifa->ifa_name, "urtw", 4) == 0 ||
-                   strncmp(ifa->ifa_name, "zyd", 3) == 0) {
-            type = IF_TYPE_WIRELESS;
-        } else if (strncmp(ifa->ifa_name, "epair", 5) == 0) {
-            type = IF_TYPE_EPAIR;
-        } else if (strncmp(ifa->ifa_name, "gif", 3) == 0) {
-            type = IF_TYPE_GIF;
-        } else if (strncmp(ifa->ifa_name, "gre", 3) == 0) {
-            type = IF_TYPE_GRE;
-        } else if (strncmp(ifa->ifa_name, "lagg", 4) == 0) {
-            type = IF_TYPE_LAGG;
-        } else if (strcmp(ifa->ifa_name, "lo0") == 0) {
-            type = IF_TYPE_LOOPBACK;
-        } else if (strncmp(ifa->ifa_name, "ovpn", 4) == 0) {
-            type = IF_TYPE_OVPN;
-        } else if (strncmp(ifa->ifa_name, "tun", 3) == 0) {
-            type = IF_TYPE_TUN;
-        } else if (strncmp(ifa->ifa_name, "tap", 3) == 0) {
-            type = IF_TYPE_TAP;
-        } else if (strncmp(ifa->ifa_name, "vlan", 4) == 0) {
-            type = IF_TYPE_VLAN;
-        } else if (strncmp(ifa->ifa_name, "vxlan", 5) == 0) {
-            type = IF_TYPE_VXLAN;
-        } else if (strncmp(ifa->ifa_name, "bridge", 6) == 0) {
-            type = IF_TYPE_BRIDGE;
-            debug_log(DEBUG_INFO, "Processing bridge interface: %s", ifa->ifa_name);
-        }
-
-        /* Allocate new interface */
-        iface = malloc(sizeof(*iface));
-        if (!iface) {
-            debug_log(DEBUG_ERROR, "Failed to allocate memory for interface %s", ifa->ifa_name);
-            continue;
-        }
-
-        /* Initialize interface */
-        memset(iface, 0, sizeof(*iface));
-        strlcpy(iface->name, ifa->ifa_name, sizeof(iface->name));
-        iface->type = type;
-        iface->fib = 0; /* Default FIB */
-        iface->group_count = 0;
-        iface->enabled = (ifa->ifa_flags & IFF_UP) != 0;
-        iface->flags = ifa->ifa_flags;
-        iface->mtu = 0; /* Will be set below */
-        iface->bridge_members[0] = '\0'; /* Initialize bridge members to empty */
-
-        /* Get additional interface information */
-        int sock = socket(AF_INET, SOCK_DGRAM, 0);
-        if (sock >= 0) {
-            struct ifreq ifr;
-            
-            /* Get FIB */
-            memset(&ifr, 0, sizeof(ifr));
-            strlcpy(ifr.ifr_name, ifa->ifa_name, sizeof(ifr.ifr_name));
-            if (ioctl(sock, SIOCGIFFIB, &ifr) == 0) {
-                iface->fib = ifr.ifr_fib;
-                debug_log(DEBUG_DEBUG, "Found FIB for %s: %u", ifa->ifa_name, iface->fib);
-            } else {
-                debug_log(DEBUG_DEBUG, "Failed to get FIB for %s: %s", ifa->ifa_name, strerror(errno));
-            }
-            
-            /* Get MTU */
-            memset(&ifr, 0, sizeof(ifr));
-            strlcpy(ifr.ifr_name, ifa->ifa_name, sizeof(ifr.ifr_name));
-            if (ioctl(sock, SIOCGIFMTU, &ifr) == 0) {
-                iface->mtu = ifr.ifr_mtu;
-                debug_log(DEBUG_DEBUG, "Found MTU for %s: %d", ifa->ifa_name, iface->mtu);
-            } else {
-                debug_log(DEBUG_DEBUG, "Failed to get MTU for %s: %s", ifa->ifa_name, strerror(errno));
-            }
-            
-            /* Get group information */
-            struct ifgroupreq ifgr;
-            struct ifg_req *ifg;
-            size_t len;
-            
-            memset(&ifgr, 0, sizeof(ifgr));
-            strlcpy(ifgr.ifgr_name, ifa->ifa_name, IFNAMSIZ);
-            
-            /* First call to get the required buffer size */
-            if (ioctl(sock, SIOCGIFGROUP, (caddr_t)&ifgr) == 0) {
-                len = ifgr.ifgr_len;
-                if (len > 0) {
-                    /* Allocate memory for group list */
-                    ifgr.ifgr_groups = (struct ifg_req *)calloc(len / sizeof(struct ifg_req), sizeof(struct ifg_req));
-                    if (ifgr.ifgr_groups != NULL) {
-                        /* Second call to get the actual group data */
-                        if (ioctl(sock, SIOCGIFGROUP, (caddr_t)&ifgr) == 0) {
-                            /* Process each group */
-                            for (ifg = ifgr.ifgr_groups; ifg && len >= sizeof(*ifg); ifg++) {
-                                len -= sizeof(*ifg);
-                                if (iface->group_count < MAX_GROUPS_PER_IF) {
-                                    strlcpy(iface->groups[iface->group_count], ifg->ifgrq_group, MAX_GROUP_NAME_LEN);
-                                    iface->group_count++;
-                                    debug_log(DEBUG_DEBUG, "Found group for %s: %s (total groups: %d)", ifa->ifa_name, ifg->ifgrq_group, iface->group_count);
-                                }
-                            }
-                        } else {
-                            debug_log(DEBUG_DEBUG, "Failed to get groups for %s: %s", ifa->ifa_name, strerror(errno));
-                        }
-                        free(ifgr.ifgr_groups);
-                    }
-                }
-            } else {
-                debug_log(DEBUG_DEBUG, "Failed to get group info for %s: %s", ifa->ifa_name, strerror(errno));
-            }
-            
-            /* Get bridge member information for bridge interfaces */
-            if (type == IF_TYPE_BRIDGE) {
-                freebsd_get_bridge_members(ifa->ifa_name, iface->bridge_members, sizeof(iface->bridge_members));
-            }
-            
-            close(sock);
-        }
-        
-        /* Get all addresses */
-        struct ifaddrs *ifa_addr;
-        bool primary_ipv4_found = false;
-        bool primary_ipv6_found = false;
-        
-        for (ifa_addr = ifap; ifa_addr; ifa_addr = ifa_addr->ifa_next) {
-            if (strcmp(ifa_addr->ifa_name, ifa->ifa_name) == 0 && ifa_addr->ifa_addr) {
-                if (ifa_addr->ifa_addr->sa_family == AF_INET) {
-                    struct sockaddr_in *sin = (struct sockaddr_in *)ifa_addr->ifa_addr;
-                    char addr_str[64];
-                    inet_ntop(AF_INET, &sin->sin_addr, addr_str, sizeof(addr_str));
-                    
-                    if (!primary_ipv4_found) {
-                        /* First IPv4 address is primary */
-                        strncpy(iface->primary_address, addr_str, sizeof(iface->primary_address) - 1);
-                        iface->primary_address[sizeof(iface->primary_address) - 1] = '\0';
-                        primary_ipv4_found = true;
-                        debug_log(DEBUG_DEBUG, "Found primary IPv4 address for %s: %s", ifa->ifa_name, iface->primary_address);
-                    } else if (iface->alias_count < 10) {
-                        /* Additional IPv4 addresses are aliases */
-                        strncpy(iface->alias_addresses[iface->alias_count], addr_str, sizeof(iface->alias_addresses[0]) - 1);
-                        iface->alias_addresses[iface->alias_count][sizeof(iface->alias_addresses[0]) - 1] = '\0';
-                        iface->alias_count++;
-                        debug_log(DEBUG_DEBUG, "Found IPv4 alias for %s: %s", ifa->ifa_name, addr_str);
-                    }
-                } else if (ifa_addr->ifa_addr->sa_family == AF_INET6) {
-                    struct sockaddr_in6 *sin6 = (struct sockaddr_in6 *)ifa_addr->ifa_addr;
-                    char addr_str[64];
-                    inet_ntop(AF_INET6, &sin6->sin6_addr, addr_str, sizeof(addr_str));
-                    
-                    if (!primary_ipv6_found) {
-                        /* First IPv6 address is primary */
-                        strncpy(iface->primary_address6, addr_str, sizeof(iface->primary_address6) - 1);
-                        iface->primary_address6[sizeof(iface->primary_address6) - 1] = '\0';
-                        primary_ipv6_found = true;
-                        debug_log(DEBUG_DEBUG, "Found primary IPv6 address for %s: %s", ifa->ifa_name, iface->primary_address6);
-                    } else if (iface->alias_count6 < 10) {
-                        /* Additional IPv6 addresses are aliases */
-                        strncpy(iface->alias_addresses6[iface->alias_count6], addr_str, sizeof(iface->alias_addresses6[0]) - 1);
-                        iface->alias_addresses6[iface->alias_count6][sizeof(iface->alias_addresses6[0]) - 1] = '\0';
-                        iface->alias_count6++;
-                        debug_log(DEBUG_DEBUG, "Found IPv6 alias for %s: %s", ifa->ifa_name, addr_str);
-                    }
-                }
-            }
-        }
-
-        /* Add to interface list */
-        TAILQ_INSERT_TAIL(&state->interfaces, iface, entries);
-        
-        if (strncmp(ifa->ifa_name, "bridge", 6) == 0) {
-            debug_log(DEBUG_INFO, "Added bridge interface to list: %s", ifa->ifa_name);
-        }
-        
-        debug_log(DEBUG_DEBUG, "Added system interface %s (type: %s, enabled: %s, fib: %u, mtu: %d, addr: %s, addr6: %s, groups: %d)", 
-                  ifa->ifa_name, 
-                  interface_type_to_string(type),
-                  iface->enabled ? "yes" : "no",
-                  iface->fib,
-                  iface->mtu,
-                  iface->primary_address[0] ? iface->primary_address : "none",
-                  iface->primary_address6[0] ? iface->primary_address6 : "none",
-                  iface->group_count);
-
-        last_name = strdup(ifa->ifa_name);
-    }
-
-    freeifaddrs(ifap);
-    if (last_name) {
-        free(last_name);
-    }
-
-    debug_log(DEBUG_INFO, "System interface enumeration complete");
-    return 0;
+    /* Call the system-specific enumeration function */
+    return freebsd_enumerate_interfaces(state);
 }
 
 /**

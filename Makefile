@@ -47,11 +47,11 @@ VPATH = $(SERVERDIR):$(CLIENTDIR)
 SERVER_SRCS = $(SERVERDIR)/main.c \
               $(SERVERDIR)/debug.c \
               $(SERVERDIR)/utils.c \
-              $(SERVERDIR)/system.c \
+              $(SERVERDIR)/freebsd_system.c \
               $(SERVERDIR)/transaction.c \
-              $(SERVERDIR)/vrf.c \
-              $(SERVERDIR)/interface.c \
-              $(SERVERDIR)/route.c \
+              $(SERVERDIR)/netconf_vrf.c \
+              $(SERVERDIR)/netconf_interface.c \
+              $(SERVERDIR)/netconf_route.c \
               $(SERVERDIR)/config.c \
               $(SERVERDIR)/yang.c \
               $(SERVERDIR)/netconf.c
@@ -76,11 +76,11 @@ CLIENT_SRCS = $(CLIENTDIR)/main.c \
 SERVER_OBJS = $(SERVER_BUILDDIR)/main.o \
               $(SERVER_BUILDDIR)/debug.o \
               $(SERVER_BUILDDIR)/utils.o \
-              $(SERVER_BUILDDIR)/system.o \
+              $(SERVER_BUILDDIR)/freebsd_system.o \
               $(SERVER_BUILDDIR)/transaction.o \
-              $(SERVER_BUILDDIR)/vrf.o \
-              $(SERVER_BUILDDIR)/interface.o \
-              $(SERVER_BUILDDIR)/route.o \
+              $(SERVER_BUILDDIR)/netconf_vrf.o \
+              $(SERVER_BUILDDIR)/netconf_interface.o \
+              $(SERVER_BUILDDIR)/netconf_route.o \
               $(SERVER_BUILDDIR)/config.o \
               $(SERVER_BUILDDIR)/yang.o \
               $(SERVER_BUILDDIR)/netconf.o
@@ -144,25 +144,25 @@ $(SERVER_BUILDDIR)/utils.o: $(SERVERDIR)/utils.c
 	@mkdir -p $(SERVER_BUILDDIR)
 	$(CC) $(CFLAGS) -I$(SERVERDIR) -c -o $@ $(SERVERDIR)/utils.c
 
-$(SERVER_BUILDDIR)/system.o: $(SERVERDIR)/system.c
+$(SERVER_BUILDDIR)/freebsd_system.o: $(SERVERDIR)/freebsd_system.c
 	@mkdir -p $(SERVER_BUILDDIR)
-	$(CC) $(CFLAGS) -I$(SERVERDIR) -c -o $@ $(SERVERDIR)/system.c
+	$(CC) $(CFLAGS) -I$(SERVERDIR) -c -o $@ $(SERVERDIR)/freebsd_system.c
 
 $(SERVER_BUILDDIR)/transaction.o: $(SERVERDIR)/transaction.c
 	@mkdir -p $(SERVER_BUILDDIR)
 	$(CC) $(CFLAGS) -I$(SERVERDIR) -c -o $@ $(SERVERDIR)/transaction.c
 
-$(SERVER_BUILDDIR)/vrf.o: $(SERVERDIR)/vrf.c
+$(SERVER_BUILDDIR)/netconf_vrf.o: $(SERVERDIR)/netconf_vrf.c
 	@mkdir -p $(SERVER_BUILDDIR)
-	$(CC) $(CFLAGS) -I$(SERVERDIR) -c -o $@ $(SERVERDIR)/vrf.c
+	$(CC) $(CFLAGS) -I$(SERVERDIR) -c -o $@ $(SERVERDIR)/netconf_vrf.c
 
-$(SERVER_BUILDDIR)/interface.o: $(SERVERDIR)/interface.c
+$(SERVER_BUILDDIR)/netconf_interface.o: $(SERVERDIR)/netconf_interface.c
 	@mkdir -p $(SERVER_BUILDDIR)
-	$(CC) $(CFLAGS) -I$(SERVERDIR) -c -o $@ $(SERVERDIR)/interface.c
+	$(CC) $(CFLAGS) -I$(SERVERDIR) -c -o $@ $(SERVERDIR)/netconf_interface.c
 
-$(SERVER_BUILDDIR)/route.o: $(SERVERDIR)/route.c
+$(SERVER_BUILDDIR)/netconf_route.o: $(SERVERDIR)/netconf_route.c
 	@mkdir -p $(SERVER_BUILDDIR)
-	$(CC) $(CFLAGS) -I$(SERVERDIR) -c -o $@ $(SERVERDIR)/route.c
+	$(CC) $(CFLAGS) -I$(SERVERDIR) -c -o $@ $(SERVERDIR)/netconf_route.c
 
 $(SERVER_BUILDDIR)/config.o: $(SERVERDIR)/config.c
 	@mkdir -p $(SERVER_BUILDDIR)
@@ -260,11 +260,11 @@ uninstall:
 $(SERVER_BUILDDIR)/main.o: $(SERVERDIR)/netd.h
 $(SERVER_BUILDDIR)/debug.o: $(SERVERDIR)/netd.h
 $(SERVER_BUILDDIR)/utils.o: $(SERVERDIR)/netd.h
-$(SERVER_BUILDDIR)/system.o: $(SERVERDIR)/netd.h
+$(SERVER_BUILDDIR)/freebsd_system.o: $(SERVERDIR)/netd.h
 $(SERVER_BUILDDIR)/transaction.o: $(SERVERDIR)/netd.h
-$(SERVER_BUILDDIR)/vrf.o: $(SERVERDIR)/netd.h
-$(SERVER_BUILDDIR)/interface.o: $(SERVERDIR)/netd.h
-$(SERVER_BUILDDIR)/route.o: $(SERVERDIR)/netd.h
+$(SERVER_BUILDDIR)/netconf_vrf.o: $(SERVERDIR)/netd.h
+$(SERVER_BUILDDIR)/netconf_interface.o: $(SERVERDIR)/netd.h
+$(SERVER_BUILDDIR)/netconf_route.o: $(SERVERDIR)/netd.h
 $(SERVER_BUILDDIR)/config.o: $(SERVERDIR)/netd.h
 $(SERVER_BUILDDIR)/yang.o: $(SERVERDIR)/netd.h
 $(SERVER_BUILDDIR)/netconf.o: $(SERVERDIR)/netd.h

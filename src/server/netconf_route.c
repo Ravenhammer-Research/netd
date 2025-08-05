@@ -29,22 +29,12 @@
  */
 
 #include "netd.h"
-#include <sys/param.h>
-#include <sys/socket.h>
-#include <sys/queue.h>
-#include <sys/sysctl.h>
-#include <net/if.h>
-#include <net/if_dl.h>
-#include <net/route.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
 #include <errno.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 
 /**
  * Add a route to the routing table
@@ -267,230 +257,24 @@ int route_clear_all(netd_state_t *state)
  * @param rtm Route message header
  * @return 0 on success, -1 on failure
  */
-static int parse_route_message(netd_state_t *state, struct rt_msghdr *rtm, uint32_t fib)
-{
-    char *cp = (char *)(rtm + 1);
-    struct sockaddr *sp[RTAX_MAX];
-    struct sockaddr_storage dest_addr, gw_addr;
-    char ifname[IFNAMSIZ];
-    netd_route_t *route;
-    int i;
-    
-    memset(sp, 0, sizeof(sp));
-    memset(&dest_addr, 0, sizeof(dest_addr));
-    memset(&gw_addr, 0, sizeof(gw_addr));
-    memset(ifname, 0, sizeof(ifname));
-    
-    /* Parse all sockaddr structures into array first (BSD approach) */
-    for (i = 0; i < RTAX_MAX; i++) {
-        if (rtm->rtm_addrs & (1 << i)) {
-            sp[i] = (struct sockaddr *)cp;
-            debug_log(DEBUG_DEBUG, "Found sockaddr at index %d, family %d, len %d", i, sp[i]->sa_family, sp[i]->sa_len);
-            cp += SA_SIZE(sp[i]);
-        }
-    }
-    
-    /* Extract destination address */
-    if (sp[RTAX_DST]) {
-        memcpy(&dest_addr, sp[RTAX_DST], sp[RTAX_DST]->sa_len);
-        debug_log(DEBUG_DEBUG, "Extracted destination, family %d", dest_addr.ss_family);
-    }
-    
-    /* Extract gateway address - only if RTF_GATEWAY flag is set */
-    if (sp[RTAX_GATEWAY] && (rtm->rtm_flags & RTF_GATEWAY)) {
-        memcpy(&gw_addr, sp[RTAX_GATEWAY], sp[RTAX_GATEWAY]->sa_len);
-        debug_log(DEBUG_DEBUG, "Extracted gateway (RTF_GATEWAY), family %d", gw_addr.ss_family);
-    } else if (sp[RTAX_GATEWAY]) {
-        /* For direct routes, the gateway field contains the link-layer address */
-        memcpy(&gw_addr, sp[RTAX_GATEWAY], sp[RTAX_GATEWAY]->sa_len);
-        debug_log(DEBUG_DEBUG, "Extracted gateway (direct), family %d", gw_addr.ss_family);
-    } else {
-        debug_log(DEBUG_DEBUG, "No gateway found in route message");
-    }
-    
-    /* Extract interface name */
-    if (sp[RTAX_IFP] && sp[RTAX_IFP]->sa_family == AF_LINK) {
-        struct sockaddr_dl *sdl = (struct sockaddr_dl *)sp[RTAX_IFP];
-        if (sdl->sdl_nlen > 0 && sdl->sdl_nlen < IFNAMSIZ) {
-            memcpy(ifname, sdl->sdl_data, sdl->sdl_nlen);
-            ifname[sdl->sdl_nlen] = '\0';
-            debug_log(DEBUG_DEBUG, "Extracted interface name: %s", ifname);
-        } else {
-            debug_log(DEBUG_DEBUG, "Interface name length invalid: %d", sdl->sdl_nlen);
-        }
-    } else if (sp[RTAX_IFP]) {
-        debug_log(DEBUG_DEBUG, "Interface sockaddr found but not AF_LINK, family %d", sp[RTAX_IFP]->sa_family);
-    } else {
-        debug_log(DEBUG_DEBUG, "No interface sockaddr found");
-    }
-    
-    /* Validate that we have a destination */
-    if (dest_addr.ss_family == AF_UNSPEC) {
-        debug_log(DEBUG_DEBUG, "Skipping route with no destination");
-        return -1;
-    }
-    
-    /* Allocate and populate route entry */
-    route = malloc(sizeof(*route));
-    if (route) {
-        memset(route, 0, sizeof(*route));
-        memcpy(&route->destination, &dest_addr, sizeof(dest_addr));
-        memcpy(&route->gateway, &gw_addr, sizeof(gw_addr));
-        
-        /* Only copy interface name if it's valid */
-        if (ifname[0] != '\0') {
-            strlcpy(route->interface, ifname, sizeof(route->interface));
-        }
-        
-        route->fib = fib; /* Set the FIB number */
-        route->flags = rtm->rtm_flags;
-        
-        TAILQ_INSERT_TAIL(&state->routes, route, entries);
-        
-        char dest_str[INET6_ADDRSTRLEN];
-        char gw_str[INET6_ADDRSTRLEN];
-        format_address(&dest_addr, dest_str, sizeof(dest_str));
-        if (gw_addr.ss_family != AF_UNSPEC) {
-            if (gw_addr.ss_family == AF_LINK) {
-                /* Format link-layer address as "link#X" */
-                struct sockaddr_dl *sdl = (struct sockaddr_dl *)&gw_addr;
-                snprintf(gw_str, sizeof(gw_str), "link#%d", sdl->sdl_index);
-            } else {
-                format_address(&gw_addr, gw_str, sizeof(gw_str));
-            }
-        } else {
-            strlcpy(gw_str, "direct", sizeof(gw_str));
-        }
-        
-        /* Only log if interface name is valid */
-        if (ifname[0] != '\0') {
-            debug_log(DEBUG_DEBUG, "Added route: %s via %s on %s", dest_str, gw_str, ifname);
-        } else {
-            debug_log(DEBUG_DEBUG, "Added route: %s via %s", dest_str, gw_str);
-        }
-        return 0;
-    }
-    
-    return -1;
-}
+
 
 /**
  * Enumerate system routes and add them to state
  * @param state Server state
+ * @param fib FIB number
  * @return 0 on success, -1 on failure
  */
 int route_enumerate_system(netd_state_t *state, uint32_t fib)
 {
-    size_t needed;
-    int mib[6];
-    char *buf, *lim, *next;
-    struct rt_msghdr *rtm;
-    int retry_count = 0;
-    const int max_retries = 3;
-    int count = 0;
-
     if (!state) {
         return -1;
     }
 
     debug_log(DEBUG_DEBUG, "Enumerating system routes for FIB %u", fib);
-
-    /* Enumerate IPv4 routes */
-    mib[0] = CTL_NET;
-    mib[1] = PF_ROUTE;
-    mib[2] = 0;        /* protocol */
-    mib[3] = AF_INET;  /* IPv4 */
-    mib[4] = NET_RT_DUMP; /* get all routes */
-    mib[5] = fib;      /* FIB number */
-
-retry_ipv4:
-    /* First, get the size needed */
-    if (sysctl(mib, nitems(mib), NULL, &needed, NULL, 0) < 0) {
-        debug_log(DEBUG_ERROR, "Failed to get IPv4 route table size: %s", strerror(errno));
-        return -1;
-    }
-
-    /* Allocate buffer */
-    buf = malloc(needed);
-    if (!buf) {
-        debug_log(DEBUG_ERROR, "Failed to allocate IPv4 route table buffer");
-        return -1;
-    }
-
-    /* Get the actual route data */
-    if (sysctl(mib, nitems(mib), buf, &needed, NULL, 0) < 0) {
-        if (errno == ENOMEM && retry_count++ < max_retries) {
-            debug_log(DEBUG_DEBUG, "IPv4 route table grew, retrying (attempt %d)", retry_count);
-            free(buf);
-            sleep(1);
-            goto retry_ipv4;
-        }
-        debug_log(DEBUG_ERROR, "Failed to get IPv4 route table: %s", strerror(errno));
-        free(buf);
-        return -1;
-    }
-
-    /* Process all IPv4 route messages */
-    lim = buf + needed;
-    for (next = buf; next < lim; next += rtm->rtm_msglen) {
-        rtm = (struct rt_msghdr *)(void *)next;
-        
-        if (rtm->rtm_type == RTM_ADD || rtm->rtm_type == RTM_CHANGE || rtm->rtm_type == RTM_GET) {
-            if (parse_route_message(state, rtm, fib) == 0) {
-                count++;
-            }
-        }
-    }
-
-    free(buf);
-
-    /* Enumerate IPv6 routes */
-    retry_count = 0;
-    mib[3] = AF_INET6; /* IPv6 */
-
-retry_ipv6:
-    /* First, get the size needed */
-    if (sysctl(mib, nitems(mib), NULL, &needed, NULL, 0) < 0) {
-        debug_log(DEBUG_ERROR, "Failed to get IPv6 route table size: %s", strerror(errno));
-        return -1;
-    }
-
-    /* Allocate buffer */
-    buf = malloc(needed);
-    if (!buf) {
-        debug_log(DEBUG_ERROR, "Failed to allocate IPv6 route table buffer");
-        return -1;
-    }
-
-    /* Get the actual route data */
-    if (sysctl(mib, nitems(mib), buf, &needed, NULL, 0) < 0) {
-        if (errno == ENOMEM && retry_count++ < max_retries) {
-            debug_log(DEBUG_DEBUG, "IPv6 route table grew, retrying (attempt %d)", retry_count);
-            free(buf);
-            sleep(1);
-            goto retry_ipv6;
-        }
-        debug_log(DEBUG_ERROR, "Failed to get IPv6 route table: %s", strerror(errno));
-        free(buf);
-        return -1;
-    }
-
-    /* Process all IPv6 route messages */
-    lim = buf + needed;
-    for (next = buf; next < lim; next += rtm->rtm_msglen) {
-        rtm = (struct rt_msghdr *)(void *)next;
-        
-        if (rtm->rtm_type == RTM_ADD || rtm->rtm_type == RTM_CHANGE || rtm->rtm_type == RTM_GET) {
-            if (parse_route_message(state, rtm, fib) == 0) {
-                count++;
-            }
-        }
-    }
-
-    free(buf);
-
-    debug_log(DEBUG_DEBUG, "Route enumeration complete, added %d routes", count);
-    return 0;
+    
+    /* Call the system-specific route enumeration function */
+    return freebsd_route_enumerate_system(state, fib);
 }
 
 /**

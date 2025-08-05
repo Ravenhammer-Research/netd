@@ -34,7 +34,9 @@
 #include <stddef.h>
 #include <stdbool.h>
 #include <stdint.h>
+#ifdef __FreeBSD__
 #include <sys/socket.h>
+#endif
 
 /* Constants */
 #define NETD_SOCKET_PATH "/var/run/netd.sock"

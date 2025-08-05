@@ -36,6 +36,11 @@
 #include <sys/queue.h>
 #include <netinet/in.h>
 
+/* Socket address family constants */
+#define AF_UNSPEC 0
+#define AF_INET   2
+#define AF_INET6  28
+
 /* Constants */
 #define NETD_SOCKET_PATH "/var/run/netd.sock"
 #define NETD_CONFIG_FILE "/etc/netd.conf"
@@ -216,19 +221,27 @@ int yang_validate_xml(netd_state_t *state, const char *xml_data);
 int yang_validate_config(netd_state_t *state, const char *xml_config);
 int netconf_handle_request(netd_state_t *state, const char *request, char **response);
 
-/* FreeBSD system functions */
+/* System interface functions */
 int freebsd_interface_create(const char *name, interface_type_t type);
 bool freebsd_interface_exists(const char *name);
 int freebsd_interface_delete(const char *name);
 int freebsd_interface_set_fib(const char *name, uint32_t fib);
+int freebsd_interface_get_fib(const char *name, uint32_t *fib);
 int freebsd_interface_set_address(const char *name, const char *address, int family);
 int freebsd_interface_delete_address(const char *name, int family);
 int freebsd_interface_set_mtu(const char *name, int mtu);
+int freebsd_interface_get_mtu(const char *name, int *mtu);
+int freebsd_interface_get_groups(const char *name, char (*groups)[MAX_GROUP_NAME_LEN], int max_groups, int *group_count);
+int freebsd_get_bridge_members(const char *ifname, char *members, size_t members_size);
+int freebsd_enumerate_interfaces(netd_state_t *state);
+bool freebsd_is_hardware_interface(const char *name);
+
+/* Route functions */
 int freebsd_route_add(uint32_t fib, const char *destination, const char *gateway, 
                       const char *interface, int flags);
 int freebsd_route_delete(uint32_t fib, const char *destination);
 int freebsd_route_list(uint32_t fib, int family);
-int freebsd_get_bridge_members(const char *ifname, char *members, size_t members_size);
+int freebsd_route_enumerate_system(netd_state_t *state, uint32_t fib);
 
 /* Utility functions */
 const char *interface_type_to_string(interface_type_t type);
