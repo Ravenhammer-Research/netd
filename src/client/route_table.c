@@ -44,16 +44,20 @@ int print_route_table(const char *xml_response)
     int count;
     struct table_format fmt;
     
+    debug_log(DEBUG_INFO, "Printing route table");
+    
     if (!xml_response) {
         return -1;
     }
 
     /* Parse routes from XML */
+    debug_log(DEBUG_DEBUG, "Parsing routes from XML");
     count = parse_routes_from_xml(xml_response, routes, 100);
     if (count < 0) {
         print_error("Failed to parse route XML");
         return -1;
     }
+    debug_log(DEBUG_INFO, "Parsed %d routes from XML", count);
 
     /* Initialize table format */
     table_init(&fmt, "Route Table");

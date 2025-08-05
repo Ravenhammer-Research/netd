@@ -52,6 +52,19 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <net/if_types.h>
+#include <net/if_var.h>
+#include <time.h>
+
+/**
+ * Get interface operational status based on flags
+ * @param flags Interface flags
+ * @return "up" if IFF_RUNNING is set, "down" otherwise
+ */
+const char *freebsd_get_interface_oper_status(int flags)
+{
+    return (flags & IFF_RUNNING) ? "up" : "down";
+}
 
 /**
  * Create a network interface
@@ -664,7 +677,7 @@ int freebsd_get_bridge_members(const char *ifname, char *members, size_t members
         
         if (ioctl(sock, SIOCGIFFIB, &ifr) == 0) {
             bridge_fib = ifr.ifr_fib;
-            debug_log(DEBUG_DEBUG, "Bridge %s is in FIB %u", ifname, bridge_fib);
+            debug_log(DEBUG_TRACE, "Bridge %s is in FIB %u", ifname, bridge_fib);
         }
         close(sock);
     }
@@ -701,7 +714,7 @@ int freebsd_get_bridge_members(const char *ifname, char *members, size_t members
                     }
                     strlcat(members_list, ifa->ifa_name, sizeof(members_list));
                     member_count++;
-                    debug_log(DEBUG_DEBUG, "Found potential bridge member: %s (FIB %u)", ifa->ifa_name, ifr.ifr_fib);
+                    debug_log(DEBUG_TRACE, "Found potential bridge member: %s (FIB %u)", ifa->ifa_name, ifr.ifr_fib);
                 }
             }
             close(sock);
@@ -712,7 +725,7 @@ int freebsd_get_bridge_members(const char *ifname, char *members, size_t members
 
     if (strlen(members_list) > 0) {
         strlcpy(members, members_list, members_size);
-        debug_log(DEBUG_INFO, "Found bridge members for %s: '%s'", ifname, members);
+        debug_log(DEBUG_TRACE, "Found bridge members for %s: '%s'", ifname, members);
     } else {
         strlcpy(members, "none", members_size);
         debug_log(DEBUG_INFO, "No bridge members found for %s", ifname);
@@ -875,8 +888,6 @@ int freebsd_enumerate_interfaces(netd_state_t *state)
         return -1;
     }
 
-    debug_log(DEBUG_DEBUG, "Enumerating system interfaces");
-
     /* Get interface addresses */
     if (getifaddrs(&ifap) != 0) {
         debug_log(DEBUG_ERROR, "Failed to get interface addresses: %s", strerror(errno));
@@ -965,7 +976,7 @@ int freebsd_enumerate_interfaces(netd_state_t *state)
             type = IF_TYPE_VXLAN;
         } else if (strncmp(ifa->ifa_name, "bridge", 6) == 0) {
             type = IF_TYPE_BRIDGE;
-            debug_log(DEBUG_INFO, "Processing bridge interface: %s", ifa->ifa_name);
+            debug_log(DEBUG_TRACE, "Processing bridge interface: %s", ifa->ifa_name);
         }
 
         /* Allocate new interface */
@@ -990,21 +1001,21 @@ int freebsd_enumerate_interfaces(netd_state_t *state)
         
         /* Get FIB */
         if (freebsd_interface_get_fib(ifa->ifa_name, &iface->fib) == 0) {
-            debug_log(DEBUG_DEBUG, "Found FIB for %s: %u", ifa->ifa_name, iface->fib);
+            debug_log(DEBUG_TRACE, "Found FIB for %s: %u", ifa->ifa_name, iface->fib);
         } else {
             debug_log(DEBUG_DEBUG, "Failed to get FIB for %s", ifa->ifa_name);
         }
         
         /* Get MTU */
         if (freebsd_interface_get_mtu(ifa->ifa_name, &iface->mtu) == 0) {
-            debug_log(DEBUG_DEBUG, "Found MTU for %s: %d", ifa->ifa_name, iface->mtu);
+            debug_log(DEBUG_TRACE, "Found MTU for %s: %d", ifa->ifa_name, iface->mtu);
         } else {
             debug_log(DEBUG_DEBUG, "Failed to get MTU for %s", ifa->ifa_name);
         }
         
         /* Get group information */
         if (freebsd_interface_get_groups(ifa->ifa_name, iface->groups, MAX_GROUPS_PER_IF, &iface->group_count) == 0) {
-            debug_log(DEBUG_DEBUG, "Found %d groups for %s", iface->group_count, ifa->ifa_name);
+            debug_log(DEBUG_TRACE, "Found %d groups for %s", iface->group_count, ifa->ifa_name);
         } else {
             debug_log(DEBUG_DEBUG, "Failed to get groups for %s", ifa->ifa_name);
         }
@@ -1031,13 +1042,13 @@ int freebsd_enumerate_interfaces(netd_state_t *state)
                         strncpy(iface->primary_address, addr_str, sizeof(iface->primary_address) - 1);
                         iface->primary_address[sizeof(iface->primary_address) - 1] = '\0';
                         primary_ipv4_found = true;
-                        debug_log(DEBUG_DEBUG, "Found primary IPv4 address for %s: %s", ifa->ifa_name, iface->primary_address);
+                        debug_log(DEBUG_TRACE, "Found primary IPv4 address for %s: %s", ifa->ifa_name, iface->primary_address);
                     } else if (iface->alias_count < 10) {
                         /* Additional IPv4 addresses are aliases */
                         strncpy(iface->alias_addresses[iface->alias_count], addr_str, sizeof(iface->alias_addresses[0]) - 1);
                         iface->alias_addresses[iface->alias_count][sizeof(iface->alias_addresses[0]) - 1] = '\0';
                         iface->alias_count++;
-                        debug_log(DEBUG_DEBUG, "Found IPv4 alias for %s: %s", ifa->ifa_name, addr_str);
+                        debug_log(DEBUG_TRACE, "Found IPv4 alias for %s: %s", ifa->ifa_name, addr_str);
                     }
                 } else if (ifa_addr->ifa_addr->sa_family == AF_INET6) {
                     struct sockaddr_in6 *sin6 = (struct sockaddr_in6 *)ifa_addr->ifa_addr;
@@ -1049,13 +1060,13 @@ int freebsd_enumerate_interfaces(netd_state_t *state)
                         strncpy(iface->primary_address6, addr_str, sizeof(iface->primary_address6) - 1);
                         iface->primary_address6[sizeof(iface->primary_address6) - 1] = '\0';
                         primary_ipv6_found = true;
-                        debug_log(DEBUG_DEBUG, "Found primary IPv6 address for %s: %s", ifa->ifa_name, iface->primary_address6);
+                        debug_log(DEBUG_TRACE, "Found primary IPv6 address for %s: %s", ifa->ifa_name, iface->primary_address6);
                     } else if (iface->alias_count6 < 10) {
                         /* Additional IPv6 addresses are aliases */
                         strncpy(iface->alias_addresses6[iface->alias_count6], addr_str, sizeof(iface->alias_addresses6[0]) - 1);
                         iface->alias_addresses6[iface->alias_count6][sizeof(iface->alias_addresses6[0]) - 1] = '\0';
                         iface->alias_count6++;
-                        debug_log(DEBUG_DEBUG, "Found IPv6 alias for %s: %s", ifa->ifa_name, addr_str);
+                        debug_log(DEBUG_TRACE, "Found IPv6 alias for %s: %s", ifa->ifa_name, addr_str);
                     }
                 }
             }
@@ -1065,10 +1076,10 @@ int freebsd_enumerate_interfaces(netd_state_t *state)
         TAILQ_INSERT_TAIL(&state->interfaces, iface, entries);
         
         if (strncmp(ifa->ifa_name, "bridge", 6) == 0) {
-            debug_log(DEBUG_INFO, "Added bridge interface to list: %s", ifa->ifa_name);
+            debug_log(DEBUG_TRACE, "Added bridge interface to list: %s", ifa->ifa_name);
         }
         
-        debug_log(DEBUG_DEBUG, "Added system interface %s (type: %s, enabled: %s, fib: %u, mtu: %d, addr: %s, addr6: %s, groups: %d)", 
+        debug_log(DEBUG_TRACE, "Added system interface %s (type: %s, enabled: %s, fib: %u, mtu: %d, addr: %s, addr6: %s, groups: %d)", 
                   ifa->ifa_name, 
                   interface_type_to_string(type),
                   iface->enabled ? "yes" : "no",
@@ -1086,7 +1097,6 @@ int freebsd_enumerate_interfaces(netd_state_t *state)
         free(last_name);
     }
 
-    debug_log(DEBUG_INFO, "System interface enumeration complete");
     return 0;
 } 
 
@@ -1157,7 +1167,7 @@ static int parse_route_message(netd_state_t *state, struct rt_msghdr *rtm, uint3
     for (i = 0; i < RTAX_MAX; i++) {
         if (rtm->rtm_addrs & (1 << i)) {
             sp[i] = (struct sockaddr *)cp;
-            debug_log(DEBUG_DEBUG, "Found sockaddr at index %d, family %d, len %d", i, sp[i]->sa_family, sp[i]->sa_len);
+            debug_log(DEBUG_TRACE, "Found sockaddr at index %d, family %d, len %d, addr: %p", i, sp[i]->sa_family, sp[i]->sa_len, (void*)sp[i]);
             cp += SA_SIZE(sp[i]);
         }
     }
@@ -1165,17 +1175,17 @@ static int parse_route_message(netd_state_t *state, struct rt_msghdr *rtm, uint3
     /* Extract destination address */
     if (sp[RTAX_DST]) {
         memcpy(&dest_addr, sp[RTAX_DST], sp[RTAX_DST]->sa_len);
-        debug_log(DEBUG_DEBUG, "Extracted destination, family %d", dest_addr.ss_family);
+        debug_log(DEBUG_TRACE, "Extracted destination, family %d", dest_addr.ss_family);
     }
     
     /* Extract gateway address - only if RTF_GATEWAY flag is set */
     if (sp[RTAX_GATEWAY] && (rtm->rtm_flags & RTF_GATEWAY)) {
         memcpy(&gw_addr, sp[RTAX_GATEWAY], sp[RTAX_GATEWAY]->sa_len);
-        debug_log(DEBUG_DEBUG, "Extracted gateway (RTF_GATEWAY), family %d", gw_addr.ss_family);
+        debug_log(DEBUG_TRACE, "Extracted gateway (RTF_GATEWAY), family %d", gw_addr.ss_family);
     } else if (sp[RTAX_GATEWAY]) {
         /* For direct routes, the gateway field contains the link-layer address */
         memcpy(&gw_addr, sp[RTAX_GATEWAY], sp[RTAX_GATEWAY]->sa_len);
-        debug_log(DEBUG_DEBUG, "Extracted gateway (direct), family %d", gw_addr.ss_family);
+        debug_log(DEBUG_TRACE, "Extracted gateway (direct), family %d", gw_addr.ss_family);
     } else {
         debug_log(DEBUG_DEBUG, "No gateway found in route message");
     }
@@ -1186,7 +1196,7 @@ static int parse_route_message(netd_state_t *state, struct rt_msghdr *rtm, uint3
         if (sdl->sdl_nlen > 0 && sdl->sdl_nlen < IFNAMSIZ) {
             memcpy(ifname, sdl->sdl_data, sdl->sdl_nlen);
             ifname[sdl->sdl_nlen] = '\0';
-            debug_log(DEBUG_DEBUG, "Extracted interface name: %s", ifname);
+            debug_log(DEBUG_TRACE, "Extracted interface name: %s", ifname);
         } else {
             debug_log(DEBUG_DEBUG, "Interface name length invalid: %d", sdl->sdl_nlen);
         }
@@ -1236,9 +1246,9 @@ static int parse_route_message(netd_state_t *state, struct rt_msghdr *rtm, uint3
         
         /* Only log if interface name is valid */
         if (ifname[0] != '\0') {
-            debug_log(DEBUG_DEBUG, "Added route: %s via %s on %s", dest_str, gw_str, ifname);
+            debug_log(DEBUG_TRACE, "Added route: %s via %s on %s", dest_str, gw_str, ifname);
         } else {
-            debug_log(DEBUG_DEBUG, "Added route: %s via %s", dest_str, gw_str);
+            debug_log(DEBUG_TRACE, "Added route: %s via %s", dest_str, gw_str);
         }
         return 0;
     }
@@ -1265,8 +1275,6 @@ int freebsd_route_enumerate_system(netd_state_t *state, uint32_t fib)
     if (!state) {
         return -1;
     }
-
-    debug_log(DEBUG_DEBUG, "Enumerating system routes for FIB %u", fib);
 
     /* Enumerate IPv4 routes */
     mib[0] = CTL_NET;
@@ -1362,6 +1370,6 @@ retry_ipv6:
 
     free(buf);
 
-    debug_log(DEBUG_DEBUG, "Route enumeration complete, added %d routes", count);
+    debug_log(DEBUG_DEBUG, "Route enumeration completed successfully, added %d routes", count);
     return 0;
 } 

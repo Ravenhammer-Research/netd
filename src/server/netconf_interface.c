@@ -35,6 +35,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 /**
  * Create a new interface or find existing one
@@ -48,9 +49,12 @@ int interface_create(netd_state_t *state, const char *name, interface_type_t typ
     interface_t *iface;
 
     if (!state || !name || !is_valid_interface_name(name)) {
-        debug_log(DEBUG_ERROR, "Invalid parameters for interface creation");
+        debug_log(DEBUG_ERROR, "Invalid parameters for interface creation: state=%p, name=%s, type=%d", 
+                  state, name ? name : "NULL", type);
         return -1;
     }
+
+    debug_log(DEBUG_DEBUG, "Creating interface '%s' of type '%s'", name, interface_type_to_string(type));
 
     /* Check if interface already exists in our list */
     iface = interface_find(state, name);
@@ -61,11 +65,12 @@ int interface_create(netd_state_t *state, const char *name, interface_type_t typ
 
     /* Check if this is a hardware interface that already exists in the system */
     bool is_hardware = freebsd_is_hardware_interface(name);
+    debug_log(DEBUG_DEBUG, "Interface %s is %s", name, is_hardware ? "hardware" : "virtual");
 
     /* Allocate new interface */
     iface = malloc(sizeof(*iface));
     if (!iface) {
-        debug_log(DEBUG_ERROR, "Failed to allocate memory for interface");
+        debug_log(DEBUG_ERROR, "Failed to allocate memory for interface %s", name);
         return -1;
     }
 
@@ -83,6 +88,7 @@ int interface_create(netd_state_t *state, const char *name, interface_type_t typ
         if (freebsd_interface_exists(name)) {
             debug_log(DEBUG_DEBUG, "Interface %s already exists in system, adding to state", name);
         } else {
+            debug_log(DEBUG_DEBUG, "Creating virtual interface %s in FreeBSD", name);
             int result = freebsd_interface_create(name, type);
             if (result < 0) {
                 debug_log(DEBUG_ERROR, "Failed to create interface %s in FreeBSD", name);
@@ -97,6 +103,7 @@ int interface_create(netd_state_t *state, const char *name, interface_type_t typ
 
     /* Add to interface list */
     TAILQ_INSERT_TAIL(&state->interfaces, iface, entries);
+    debug_log(DEBUG_DEBUG, "Added interface %s to state list", name);
 
     return 0;
 }
@@ -112,16 +119,21 @@ int interface_delete(netd_state_t *state, const char *name)
     interface_t *iface;
 
     if (!state || !name) {
-        debug_log(DEBUG_ERROR, "Invalid parameters for interface deletion");
+        debug_log(DEBUG_ERROR, "Invalid parameters for interface deletion: state=%p, name=%s", 
+                  state, name ? name : "NULL");
         return -1;
     }
+
+    debug_log(DEBUG_DEBUG, "Deleting interface '%s'", name);
 
     /* Find interface */
     iface = interface_find(state, name);
     if (!iface) {
-        debug_log(DEBUG_ERROR, "Interface %s not found", name);
+        debug_log(DEBUG_ERROR, "Interface %s not found in state", name);
         return -1;
     }
+
+    debug_log(DEBUG_DEBUG, "Found interface %s in state, deleting from FreeBSD", name);
 
     /* Delete interface in FreeBSD */
     if (freebsd_interface_delete(name) < 0) {
@@ -149,16 +161,21 @@ int interface_set_fib(netd_state_t *state, const char *name, uint32_t fib)
     interface_t *iface;
 
     if (!state || !name || !is_valid_fib_number(fib)) {
-        debug_log(DEBUG_ERROR, "Invalid parameters for interface FIB assignment");
+        debug_log(DEBUG_ERROR, "Invalid parameters for interface FIB assignment: state=%p, name=%s, fib=%u", 
+                  state, name ? name : "NULL", fib);
         return -1;
     }
+
+    debug_log(DEBUG_DEBUG, "Setting FIB %u for interface '%s'", fib, name);
 
     /* Find interface */
     iface = interface_find(state, name);
     if (!iface) {
-        debug_log(DEBUG_ERROR, "Interface %s not found", name);
+        debug_log(DEBUG_ERROR, "Interface %s not found in state", name);
         return -1;
     }
+
+    debug_log(DEBUG_DEBUG, "Found interface %s in state, setting FIB in FreeBSD", name);
 
     /* Set FIB in FreeBSD */
     if (freebsd_interface_set_fib(name, fib) < 0) {
@@ -186,14 +203,17 @@ int interface_add_group(netd_state_t *state, const char *name, const char *group
     int i;
 
     if (!state || !name || !group) {
-        debug_log(DEBUG_ERROR, "Invalid parameters for interface group addition");
+        debug_log(DEBUG_ERROR, "Invalid parameters for interface group addition: state=%p, name=%s, group=%s", 
+                  state, name ? name : "NULL", group ? group : "NULL");
         return -1;
     }
+
+    debug_log(DEBUG_DEBUG, "Adding interface '%s' to group '%s'", name, group);
 
     /* Find interface */
     iface = interface_find(state, name);
     if (!iface) {
-        debug_log(DEBUG_ERROR, "Interface %s not found", name);
+        debug_log(DEBUG_ERROR, "Interface %s not found in state", name);
         return -1;
     }
 
@@ -207,7 +227,7 @@ int interface_add_group(netd_state_t *state, const char *name, const char *group
 
     /* Check if group limit reached */
     if (iface->group_count >= MAX_GROUPS_PER_IF) {
-        debug_log(DEBUG_ERROR, "Interface %s has reached maximum number of groups", name);
+        debug_log(DEBUG_ERROR, "Interface %s has reached maximum number of groups (%d)", name, MAX_GROUPS_PER_IF);
         return -1;
     }
 
@@ -215,7 +235,7 @@ int interface_add_group(netd_state_t *state, const char *name, const char *group
     strlcpy(iface->groups[iface->group_count], group, MAX_GROUP_NAME_LEN);
     iface->group_count++;
 
-    debug_log(DEBUG_INFO, "Added interface %s to group %s", name, group);
+    debug_log(DEBUG_INFO, "Added interface %s to group %s (total groups: %d)", name, group, iface->group_count);
     return 0;
 }
 
@@ -232,26 +252,30 @@ int interface_remove_group(netd_state_t *state, const char *name, const char *gr
     int i, j;
 
     if (!state || !name || !group) {
-        debug_log(DEBUG_ERROR, "Invalid parameters for interface group removal");
+        debug_log(DEBUG_ERROR, "Invalid parameters for interface group removal: state=%p, name=%s, group=%s", 
+                  state, name ? name : "NULL", group ? group : "NULL");
         return -1;
     }
+
+    debug_log(DEBUG_DEBUG, "Removing interface '%s' from group '%s'", name, group);
 
     /* Find interface */
     iface = interface_find(state, name);
     if (!iface) {
-        debug_log(DEBUG_ERROR, "Interface %s not found", name);
+        debug_log(DEBUG_ERROR, "Interface %s not found in state", name);
         return -1;
     }
 
     /* Find and remove group */
     for (i = 0; i < iface->group_count; i++) {
         if (strcmp(iface->groups[i], group) == 0) {
+            debug_log(DEBUG_DEBUG, "Found group %s at index %d, removing", group, i);
             /* Shift remaining groups */
             for (j = i; j < iface->group_count - 1; j++) {
                 strlcpy(iface->groups[j], iface->groups[j + 1], MAX_GROUP_NAME_LEN);
             }
             iface->group_count--;
-            debug_log(DEBUG_INFO, "Removed interface %s from group %s", name, group);
+            debug_log(DEBUG_INFO, "Removed interface %s from group %s (remaining groups: %d)", name, group, iface->group_count);
             return 0;
         }
     }
@@ -273,14 +297,18 @@ int interface_set_address(netd_state_t *state, const char *name, const char *add
     interface_t *iface;
 
     if (!state || !name || !address) {
-        debug_log(DEBUG_ERROR, "Invalid parameters for interface address assignment");
+        debug_log(DEBUG_ERROR, "Invalid parameters for interface address assignment: state=%p, name=%s, address=%s", 
+                  state, name ? name : "NULL", address ? address : "NULL");
         return -1;
     }
+
+    debug_log(DEBUG_DEBUG, "Setting %s address '%s' for interface '%s'", 
+              family == AF_INET ? "IPv4" : family == AF_INET6 ? "IPv6" : "unknown", address, name);
 
     /* Find interface */
     iface = interface_find(state, name);
     if (!iface) {
-        debug_log(DEBUG_ERROR, "Interface %s not found", name);
+        debug_log(DEBUG_ERROR, "Interface %s not found in state", name);
         return -1;
     }
 
@@ -306,14 +334,18 @@ int interface_delete_address(netd_state_t *state, const char *name, int family)
     interface_t *iface;
 
     if (!state || !name) {
-        debug_log(DEBUG_ERROR, "Invalid parameters for interface address deletion");
+        debug_log(DEBUG_ERROR, "Invalid parameters for interface address deletion: state=%p, name=%s", 
+                  state, name ? name : "NULL");
         return -1;
     }
+
+    debug_log(DEBUG_DEBUG, "Deleting %s address from interface '%s'", 
+              family == AF_INET ? "IPv4" : family == AF_INET6 ? "IPv6" : "unknown", name);
 
     /* Find interface */
     iface = interface_find(state, name);
     if (!iface) {
-        debug_log(DEBUG_ERROR, "Interface %s not found", name);
+        debug_log(DEBUG_ERROR, "Interface %s not found in state", name);
         return -1;
     }
 
@@ -339,14 +371,17 @@ int interface_set_mtu(netd_state_t *state, const char *name, int mtu)
     interface_t *iface;
 
     if (!state || !name || mtu <= 0) {
-        debug_log(DEBUG_ERROR, "Invalid parameters for interface MTU setting");
+        debug_log(DEBUG_ERROR, "Invalid parameters for interface MTU setting: state=%p, name=%s, mtu=%d", 
+                  state, name ? name : "NULL", mtu);
         return -1;
     }
+
+    debug_log(DEBUG_DEBUG, "Setting MTU %d for interface '%s'", mtu, name);
 
     /* Find interface */
     iface = interface_find(state, name);
     if (!iface) {
-        debug_log(DEBUG_ERROR, "Interface %s not found", name);
+        debug_log(DEBUG_ERROR, "Interface %s not found in state", name);
         return -1;
     }
 
@@ -395,10 +430,12 @@ int interface_list(netd_state_t *state, interface_type_t type)
     int count = 0;
 
     if (!state) {
+        debug_log(DEBUG_ERROR, "Invalid state parameter for interface listing");
         return -1;
     }
 
-    debug_log(DEBUG_INFO, "Listing interfaces");
+    debug_log(DEBUG_INFO, "Listing interfaces%s", 
+              type == IF_TYPE_UNKNOWN ? "" : " of specific type");
 
     TAILQ_FOREACH(iface, &state->interfaces, entries) {
         if (type == IF_TYPE_UNKNOWN || iface->type == type) {
@@ -435,13 +472,21 @@ int interface_list(netd_state_t *state, interface_type_t type)
 int interface_enumerate_system(netd_state_t *state)
 {
     if (!state) {
+        debug_log(DEBUG_ERROR, "Invalid state parameter for system interface enumeration");
         return -1;
     }
 
-    debug_log(DEBUG_DEBUG, "Enumerating system interfaces");
+    debug_log(DEBUG_DEBUG, "Starting system interface enumeration");
     
     /* Call the system-specific enumeration function */
-    return freebsd_enumerate_interfaces(state);
+    int result = freebsd_enumerate_interfaces(state);
+    if (result == 0) {
+        debug_log(DEBUG_DEBUG, "System interface enumeration completed successfully");
+    } else {
+        debug_log(DEBUG_ERROR, "System interface enumeration failed");
+    }
+    
+    return result;
 }
 
 /**
@@ -454,48 +499,47 @@ char *interface_get_all(netd_state_t *state)
     interface_t *iface;
     char *xml = NULL;
     char *temp_xml = NULL;
+    int interface_count = 0;
     
     if (!state) {
+        debug_log(DEBUG_ERROR, "Invalid state parameter for interface XML generation");
         return NULL;
     }
+
+    debug_log(DEBUG_DEBUG, "Generating XML for all interfaces");
 
     /* Always enumerate from system to get fresh data */
     debug_log(DEBUG_DEBUG, "Enumerating system interfaces for XML generation");
     
     /* Clear existing interface list */
     interface_t *iface_next;
+    int cleared_count = 0;
     TAILQ_FOREACH_SAFE(iface, &state->interfaces, entries, iface_next) {
         TAILQ_REMOVE(&state->interfaces, iface, entries);
         free(iface);
+        cleared_count++;
     }
+    debug_log(DEBUG_DEBUG, "Cleared %d existing interfaces from state", cleared_count);
     
     if (interface_enumerate_system(state) < 0) {
-        debug_log(DEBUG_ERROR, "Failed to enumerate system interfaces");
+        debug_log(DEBUG_ERROR, "Failed to enumerate system interfaces for XML generation");
         return NULL;
     }
 
     /* Start XML */
     asprintf(&xml, "    <interfaces xmlns=\"urn:ietf:params:xml:ns:yang:ietf-interfaces\">\n");
     if (!xml) {
+        debug_log(DEBUG_ERROR, "Failed to allocate memory for XML header");
         return NULL;
     }
 
     TAILQ_FOREACH(iface, &state->interfaces, entries) {
+        interface_count++;
+        debug_log(DEBUG_TRACE, "Processing interface %d: %s (type: %s)", 
+                  interface_count, iface->name, interface_type_to_string(iface->type));
+        
         if (strncmp(iface->name, "bridge", 6) == 0) {
-            debug_log(DEBUG_INFO, "Generating XML for bridge interface: %s", iface->name);
-        }
-        /* Get VRF name */
-        const char *vrf_name = "default";
-        if (iface->fib != 0) {
-            vrf_t *vrf = vrf_find_by_fib(state, iface->fib);
-            if (vrf) {
-                vrf_name = vrf->name;
-            } else {
-                /* VRF exists but no name configured, use ID */
-                static char vrf_id_str[16];
-                snprintf(vrf_id_str, sizeof(vrf_id_str), "%u", iface->fib);
-                vrf_name = vrf_id_str;
-            }
+            debug_log(DEBUG_TRACE, "Generating XML for bridge interface: %s", iface->name);
         }
 
         /* Generate interface XML */
@@ -504,12 +548,12 @@ char *interface_get_all(netd_state_t *state)
                 "        <name>%s</name>\n"
                 "        <type xmlns:ianaift=\"urn:ietf:params:xml:ns:yang:iana-if-type\">ianaift:%s</type>\n"
                 "        <enabled>%s</enabled>\n"
-                "        <bind-ni-name xmlns=\"urn:ietf:params:xml:ns:yang:ietf-network-instance\">%s</bind-ni-name>\n"
+                "        <oper-status>%s</oper-status>\n"
                 "        <flags xmlns=\"urn:ietf:params:xml:ns:yang:netd\">%d</flags>\n",
                 iface->name,
                 interface_type_to_string(iface->type),
                 iface->enabled ? "true" : "false",
-                vrf_name,
+                freebsd_get_interface_oper_status(iface->flags),
                 iface->flags);
 
         if (temp_xml) {
@@ -523,6 +567,7 @@ char *interface_get_all(netd_state_t *state)
 
         /* Add IPv4 container with all addresses */
         if (iface->primary_address[0] != '\0' || iface->alias_count > 0) {
+            debug_log(DEBUG_TRACE, "Adding IPv4 addresses for interface %s", iface->name);
             asprintf(&temp_xml,
                     "        <ipv4 xmlns=\"urn:ietf:params:xml:ns:yang:ietf-ip\">\n"
                     "          <mtu>%d</mtu>\n",
@@ -537,6 +582,7 @@ char *interface_get_all(netd_state_t *state)
 
             /* Add primary IPv4 address */
             if (iface->primary_address[0] != '\0') {
+                debug_log(DEBUG_TRACE, "Adding primary IPv4 address %s for interface %s", iface->primary_address, iface->name);
                 asprintf(&temp_xml,
                         "          <address>\n"
                         "            <ip>%s</ip>\n"
@@ -554,6 +600,7 @@ char *interface_get_all(netd_state_t *state)
 
             /* Add alias IPv4 addresses */
             for (int i = 0; i < iface->alias_count; i++) {
+                debug_log(DEBUG_TRACE, "Adding IPv4 alias %s for interface %s", iface->alias_addresses[i], iface->name);
                 asprintf(&temp_xml,
                         "          <address>\n"
                         "            <ip>%s</ip>\n"
@@ -582,6 +629,7 @@ char *interface_get_all(netd_state_t *state)
 
         /* Add IPv6 container with all addresses */
         if (iface->primary_address6[0] != '\0' || iface->alias_count6 > 0) {
+            debug_log(DEBUG_TRACE, "Adding IPv6 addresses for interface %s", iface->name);
             asprintf(&temp_xml,
                     "        <ipv6 xmlns=\"urn:ietf:params:xml:ns:yang:ietf-ip\">\n");
 
@@ -595,6 +643,7 @@ char *interface_get_all(netd_state_t *state)
 
             /* Add primary IPv6 address */
             if (iface->primary_address6[0] != '\0') {
+                debug_log(DEBUG_TRACE, "Adding primary IPv6 address %s for interface %s", iface->primary_address6, iface->name);
                 asprintf(&temp_xml,
                         "          <address>\n"
                         "            <ip>%s</ip>\n"
@@ -612,6 +661,7 @@ char *interface_get_all(netd_state_t *state)
 
             /* Add alias IPv6 addresses */
             for (int i = 0; i < iface->alias_count6; i++) {
+                debug_log(DEBUG_TRACE, "Adding IPv6 alias %s for interface %s", iface->alias_addresses6[i], iface->name);
                 asprintf(&temp_xml,
                         "          <address>\n"
                         "            <ip>%s</ip>\n"
@@ -640,6 +690,7 @@ char *interface_get_all(netd_state_t *state)
 
         /* Add groups if any */
         if (iface->group_count > 0) {
+            debug_log(DEBUG_TRACE, "Adding %d groups for interface %s", iface->group_count, iface->name);
             /* Join all groups into a comma-separated string */
             char group_string[256] = "";
             for (int i = 0; i < iface->group_count; i++) {
@@ -661,6 +712,7 @@ char *interface_get_all(netd_state_t *state)
 
         /* Add bridge members if any */
         if (iface->type == IF_TYPE_BRIDGE && iface->bridge_members[0] != '\0') {
+            debug_log(DEBUG_TRACE, "Adding bridge members %s for interface %s", iface->bridge_members, iface->name);
             asprintf(&temp_xml, "        <bridge-members xmlns=\"urn:ietf:params:xml:ns:yang:netd\">%s</bridge-members>\n", iface->bridge_members);
             if (temp_xml) {
                 char *new_xml;
@@ -669,6 +721,20 @@ char *interface_get_all(netd_state_t *state)
                 free(temp_xml);
                 xml = new_xml;
             }
+        }
+
+        /* Add statistics container with mandatory discontinuity-time */
+        /* Use the lowest possible date representing "no recent discontinuities" */
+        asprintf(&temp_xml,
+                "        <statistics>\n"
+                "          <discontinuity-time>1970-01-01T00:00:00Z</discontinuity-time>\n"
+                "        </statistics>\n");
+        if (temp_xml) {
+            char *new_xml;
+            asprintf(&new_xml, "%s%s", xml, temp_xml);
+            free(xml);
+            free(temp_xml);
+            xml = new_xml;
         }
 
         /* Close interface tag */
@@ -692,15 +758,31 @@ char *interface_get_all(netd_state_t *state)
         xml = new_xml;
     }
 
+    /* Add network instances data for leafref validation */
+    debug_log(DEBUG_DEBUG, "Adding VRF data for leafref validation");
+    char *vrf_xml = vrf_get_all(state);
+    if (vrf_xml) {
+        char *new_xml;
+        asprintf(&new_xml, "%s%s", xml, vrf_xml);
+        free(xml);
+        free(vrf_xml);
+        xml = new_xml;
+        debug_log(DEBUG_DEBUG, "Added VRF data to interface XML");
+    }
+
     /* Validate the generated XML against YANG schema if YANG context is available */
     if (state->yang_ctx && xml) {
+        debug_log(DEBUG_DEBUG, "Validating generated interface XML against YANG schema");
         if (yang_validate_xml(state, xml) < 0) {
             debug_log(DEBUG_WARN, "Generated interface XML failed YANG validation, but returning anyway");
             /* Don't fail the request, just log a warning */
         } else {
             debug_log(DEBUG_DEBUG, "Generated interface XML validated successfully against YANG schema");
         }
+    } else {
+        debug_log(DEBUG_DEBUG, "Skipping YANG validation (no context or XML)");
     }
 
+    debug_log(DEBUG_INFO, "Generated XML for %d interfaces (%zu bytes)", interface_count, xml ? strlen(xml) : 0);
     return xml;
 } 

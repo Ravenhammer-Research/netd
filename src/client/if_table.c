@@ -72,6 +72,8 @@ int print_interface_table(const char *xml_response)
     int interface_count = 0;
     int max_interfaces = 100;
     
+    debug_log(DEBUG_INFO, "Printing interface table");
+    
     if (!xml_response) {
         print_error("XML response is NULL");
         return -1;
@@ -96,7 +98,9 @@ int print_interface_table(const char *xml_response)
     }
     
     /* First pass: extract all interfaces and calculate widths */
+    debug_log(DEBUG_DEBUG, "Parsing interfaces from XML");
     interface_count = parse_interfaces_from_xml(xml_response, interfaces, max_interfaces);
+    debug_log(DEBUG_INFO, "Parsed %d interfaces from XML", interface_count);
     
     /* Calculate column widths from extracted data */
     for (int i = 0; i < interface_count; i++) {

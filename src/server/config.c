@@ -51,30 +51,34 @@ int config_load(netd_state_t *state)
     char line[1024];
     char *token, *saveptr;
     int line_num = 0;
+    int config_entries = 0;
 
     if (!state) {
+        debug_log(DEBUG_ERROR, "Invalid state parameter for configuration loading");
         return -1;
     }
+
+    debug_log(DEBUG_INFO, "Starting configuration loading process");
 
     /* Always enumerate system interfaces first to see what exists */
     debug_log(DEBUG_INFO, "Enumerating existing system interfaces");
     if (interface_enumerate_system(state) < 0) {
-        debug_log(DEBUG_ERROR, "Failed to enumerate system interfaces");
+        debug_log(DEBUG_ERROR, "Failed to enumerate system interfaces during configuration loading");
         return -1;
     }
     
     /* Enumerate system routes */
     debug_log(DEBUG_INFO, "Enumerating existing system routes");
     if (route_enumerate_system(state, 0) < 0) {
-        debug_log(DEBUG_ERROR, "Failed to enumerate system routes");
+        debug_log(DEBUG_ERROR, "Failed to enumerate system routes during configuration loading");
         return -1;
     }
-    debug_log(DEBUG_INFO, "System route enumeration complete");
+    debug_log(DEBUG_INFO, "System route enumeration completed successfully");
 
     /* Now try to load config if it exists */
     fp = fopen(NETD_CONFIG_FILE, "r");
     if (!fp) {
-        debug_log(DEBUG_INFO, "No configuration file found");
+        debug_log(DEBUG_INFO, "No configuration file found at %s, using system defaults", NETD_CONFIG_FILE);
         return 0;
     }
 
@@ -85,15 +89,18 @@ int config_load(netd_state_t *state)
         
         /* Skip comments and empty lines */
         if (line[0] == '#' || line[0] == '\n' || line[0] == '\0') {
+            debug_log(DEBUG_DEBUG, "Line %d: Skipping comment or empty line", line_num);
             continue;
         }
 
         /* Remove newline */
         line[strcspn(line, "\n")] = '\0';
+        debug_log(DEBUG_DEBUG, "Line %d: Processing '%s'", line_num, line);
 
         /* Parse command line */
         token = strtok_r(line, " ", &saveptr);
         if (!token) {
+            debug_log(DEBUG_DEBUG, "Line %d: Empty line after tokenization", line_num);
             continue;
         }
 
@@ -111,13 +118,18 @@ int config_load(netd_state_t *state)
                 char *fib_str = strtok_r(NULL, " ", &saveptr);
 
                 if (!name || !table || !fib_str || strcmp(table, "table") != 0) {
-                    debug_log(DEBUG_WARN, "Line %d: invalid vrf command format", line_num);
+                    debug_log(DEBUG_WARN, "Line %d: invalid vrf command format, expected 'set vrf <name> table <fib>'", line_num);
                     continue;
                 }
 
                 uint32_t fib = atoi(fib_str);
+                debug_log(DEBUG_DEBUG, "Line %d: Creating VRF '%s' with FIB %u", line_num, name, fib);
+                
                 if (vrf_create(state, name, fib) < 0) {
-                    debug_log(DEBUG_WARN, "Line %d: failed to create VRF %s", line_num, name);
+                    debug_log(DEBUG_WARN, "Line %d: failed to create VRF %s with FIB %u", line_num, name, fib);
+                } else {
+                    debug_log(DEBUG_INFO, "Line %d: Successfully created VRF %s with FIB %u", line_num, name, fib);
+                    config_entries++;
                 }
             } else if (strcmp(token, "interface") == 0) {
                 /* set interface <type> <name> [params] */
@@ -125,9 +137,11 @@ int config_load(netd_state_t *state)
                 char *name = strtok_r(NULL, " ", &saveptr);
 
                 if (!type_str || !name) {
-                    debug_log(DEBUG_WARN, "Line %d: invalid interface command format", line_num);
+                    debug_log(DEBUG_WARN, "Line %d: invalid interface command format, expected 'set interface <type> <name> [params]'", line_num);
                     continue;
                 }
+
+                debug_log(DEBUG_DEBUG, "Line %d: Processing interface '%s' of type '%s'", line_num, name, type_str);
 
                 interface_type_t type = interface_type_from_string(type_str);
                 if (type == IF_TYPE_UNKNOWN) {
@@ -160,7 +174,7 @@ int config_load(netd_state_t *state)
                         type = IF_TYPE_VXLAN;
                         debug_log(DEBUG_INFO, "Line %d: inferred vxlan type for interface '%s'", line_num, name);
                     } else {
-                        debug_log(DEBUG_WARN, "Line %d: unknown interface type '%s' for interface '%s'", line_num, type_str, name);
+                        debug_log(DEBUG_WARN, "Line %d: unknown interface type '%s' for interface '%s', skipping", line_num, type_str, name);
                         continue;
                     }
                 }
@@ -170,51 +184,96 @@ int config_load(netd_state_t *state)
                     debug_log(DEBUG_INFO, "Line %d: interface %s already exists, skipping creation and configuration", line_num, name);
                     /* Skip all configuration parameters for existing interfaces */
                     while ((token = strtok_r(NULL, " ", &saveptr)) != NULL) {
-                        /* Just consume tokens until end of line */
+                        debug_log(DEBUG_DEBUG, "Line %d: Skipping parameter '%s' for existing interface %s", line_num, token, name);
                     }
                 } else {
+                    debug_log(DEBUG_DEBUG, "Line %d: Creating interface %s of type %s", line_num, name, interface_type_to_string(type));
+                    
                     if (interface_create(state, name, type) < 0) {
-                        debug_log(DEBUG_WARN, "Line %d: failed to create interface %s", line_num, name);
+                        debug_log(DEBUG_WARN, "Line %d: failed to create interface %s of type %s", line_num, name, interface_type_to_string(type));
                         continue;
+                    } else {
+                        debug_log(DEBUG_INFO, "Line %d: Successfully created interface %s of type %s", line_num, name, interface_type_to_string(type));
+                        config_entries++;
                     }
 
                     /* Parse additional parameters only for newly created interfaces */
+                    int param_count = 0;
                     while ((token = strtok_r(NULL, " ", &saveptr)) != NULL) {
-                    if (strcmp(token, "vrf") == 0) {
-                        char *vrf_name = strtok_r(NULL, " ", &saveptr);
-                        if (vrf_name) {
-                            vrf_t *vrf = vrf_find_by_name(state, vrf_name);
-                            if (vrf) {
-                                interface_set_fib(state, name, vrf->fib_number);
+                        param_count++;
+                        debug_log(DEBUG_DEBUG, "Line %d: Processing parameter %d: '%s' for interface %s", line_num, param_count, token, name);
+                        
+                        if (strcmp(token, "vrf") == 0) {
+                            char *vrf_name = strtok_r(NULL, " ", &saveptr);
+                            if (vrf_name) {
+                                debug_log(DEBUG_DEBUG, "Line %d: Setting VRF '%s' for interface %s", line_num, vrf_name, name);
+                                vrf_t *vrf = vrf_find_by_name(state, vrf_name);
+                                if (vrf) {
+                                    if (interface_set_fib(state, name, vrf->fib_number) == 0) {
+                                        debug_log(DEBUG_INFO, "Line %d: Successfully set VRF '%s' (FIB %u) for interface %s", line_num, vrf_name, vrf->fib_number, name);
+                                    } else {
+                                        debug_log(DEBUG_WARN, "Line %d: Failed to set VRF '%s' for interface %s", line_num, vrf_name, name);
+                                    }
+                                } else {
+                                    debug_log(DEBUG_WARN, "Line %d: VRF '%s' not found for interface %s", line_num, vrf_name, name);
+                                }
+                            } else {
+                                debug_log(DEBUG_WARN, "Line %d: Missing VRF name for interface %s", line_num, name);
                             }
-                        }
-                    } else if (strcmp(token, "address") == 0) {
-                        char *family = strtok_r(NULL, " ", &saveptr);
-                        char *address = strtok_r(NULL, " ", &saveptr);
-                        if (family && address) {
-                            int af = (strcmp(family, "inet") == 0) ? AF_INET : AF_INET6;
-                            interface_set_address(state, name, address, af);
-                        }
-                    } else if (strcmp(token, "mtu") == 0) {
-                        char *mtu_str = strtok_r(NULL, " ", &saveptr);
-                        if (mtu_str) {
-                            int mtu = atoi(mtu_str);
-                            interface_set_mtu(state, name, mtu);
-                        }
-                    } else if (strcmp(token, "group") == 0) {
-                        char *group = strtok_r(NULL, " ", &saveptr);
-                        if (group) {
-                            interface_add_group(state, name, group);
+                        } else if (strcmp(token, "address") == 0) {
+                            char *family = strtok_r(NULL, " ", &saveptr);
+                            char *address = strtok_r(NULL, " ", &saveptr);
+                            if (family && address) {
+                                int af = (strcmp(family, "inet") == 0) ? AF_INET : AF_INET6;
+                                debug_log(DEBUG_DEBUG, "Line %d: Setting %s address '%s' for interface %s", line_num, family, address, name);
+                                if (interface_set_address(state, name, address, af) == 0) {
+                                    debug_log(DEBUG_INFO, "Line %d: Successfully set %s address '%s' for interface %s", line_num, family, address, name);
+                                } else {
+                                    debug_log(DEBUG_WARN, "Line %d: Failed to set %s address '%s' for interface %s", line_num, family, address, name);
+                                }
+                            } else {
+                                debug_log(DEBUG_WARN, "Line %d: Invalid address format for interface %s", line_num, name);
+                            }
+                        } else if (strcmp(token, "mtu") == 0) {
+                            char *mtu_str = strtok_r(NULL, " ", &saveptr);
+                            if (mtu_str) {
+                                int mtu = atoi(mtu_str);
+                                debug_log(DEBUG_DEBUG, "Line %d: Setting MTU %d for interface %s", line_num, mtu, name);
+                                if (interface_set_mtu(state, name, mtu) == 0) {
+                                    debug_log(DEBUG_INFO, "Line %d: Successfully set MTU %d for interface %s", line_num, mtu, name);
+                                } else {
+                                    debug_log(DEBUG_WARN, "Line %d: Failed to set MTU %d for interface %s", line_num, mtu, name);
+                                }
+                            } else {
+                                debug_log(DEBUG_WARN, "Line %d: Missing MTU value for interface %s", line_num, name);
+                            }
+                        } else if (strcmp(token, "group") == 0) {
+                            char *group = strtok_r(NULL, " ", &saveptr);
+                            if (group) {
+                                debug_log(DEBUG_DEBUG, "Line %d: Adding interface %s to group %s", line_num, name, group);
+                                if (interface_add_group(state, name, group) == 0) {
+                                    debug_log(DEBUG_INFO, "Line %d: Successfully added interface %s to group %s", line_num, name, group);
+                                } else {
+                                    debug_log(DEBUG_WARN, "Line %d: Failed to add interface %s to group %s", line_num, name, group);
+                                }
+                            } else {
+                                debug_log(DEBUG_WARN, "Line %d: Missing group name for interface %s", line_num, name);
+                            }
+                        } else {
+                            debug_log(DEBUG_WARN, "Line %d: Unknown parameter '%s' for interface %s", line_num, token, name);
                         }
                     }
                 }
-                }
+            } else {
+                debug_log(DEBUG_WARN, "Line %d: Unknown set command '%s'", line_num, token);
             }
+        } else {
+            debug_log(DEBUG_WARN, "Line %d: Unknown command '%s'", line_num, token);
         }
     }
 
     fclose(fp);
-    debug_log(DEBUG_INFO, "Configuration loaded successfully");
+    debug_log(DEBUG_INFO, "Configuration loading completed successfully with %d configuration entries processed", config_entries);
     return 0;
 }
 
@@ -226,9 +285,11 @@ int config_load(netd_state_t *state)
 int config_save(netd_state_t *state)
 {
     if (!state) {
+        debug_log(DEBUG_ERROR, "Invalid state parameter for configuration saving");
         return -1;
     }
 
     debug_log(DEBUG_INFO, "Configuration save requested (stubbed - no file written)");
+    debug_log(DEBUG_DEBUG, "Configuration save would write current state to %s", NETD_CONFIG_FILE);
     return 0;
 } 

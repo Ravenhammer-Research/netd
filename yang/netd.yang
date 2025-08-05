@@ -6,8 +6,8 @@ module netd {
   import ietf-interfaces {
     prefix if;
   }
-  import ietf-network-instance {
-    prefix ni;
+  import frr-vrf {
+    prefix frr-vrf;
   }
   import ietf-inet-types {
     prefix inet;
@@ -27,8 +27,8 @@ module netd {
       "Initial version";
   }
 
-  /* VRF configuration - augment network-instance */
-  augment "/ni:network-instances/ni:network-instance" {
+  /* VRF configuration - augment frr-vrf */
+  augment "/frr-vrf:lib/frr-vrf:vrf" {
     description "VRF (Virtual Routing and Forwarding) configuration extensions";
     
     leaf fib {
@@ -67,10 +67,12 @@ module netd {
       type string;
       description "Interface group";
     }
+    
+
   }
 
-  /* Route configuration - augment network-instance routing */
-  augment "/ni:network-instances/ni:network-instance" {
+  /* Route configuration - augment frr-vrf */
+  augment "/frr-vrf:lib/frr-vrf:vrf" {
     description "Route configuration extensions";
     
     list route {

@@ -64,7 +64,7 @@ int netconf_connect(net_client_t *client)
     strlcpy(addr.sun_path, NETD_SOCKET_PATH, sizeof(addr.sun_path));
 
     /* Connect to server */
-    debug_log(DEBUG_DEBUG, "Attempting to connect to server at %s", NETD_SOCKET_PATH);
+    debug_log(DEBUG_INFO, "Attempting to connect to server at %s", NETD_SOCKET_PATH);
     if (connect(client->socket_fd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
         print_error("Failed to connect to netd server: %s", strerror(errno));
         close(client->socket_fd);
@@ -72,7 +72,7 @@ int netconf_connect(net_client_t *client)
         return -1;
     }
 
-    debug_log(DEBUG_DEBUG, "Successfully connected to server");
+    debug_log(DEBUG_INFO, "Successfully connected to server");
     client->connected = true;
     return 0;
 }
@@ -273,7 +273,7 @@ int netconf_get_vrfs(net_client_t *client, char **response)
         "<rpc message-id=\"2\" xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">\n"
         "  <get>\n"
         "    <filter type=\"subtree\">\n"
-        "      <network-instances xmlns=\"urn:ietf:params:xml:ns:yang:ietf-network-instance\"/>\n"
+        "      <lib xmlns=\"http://frrouting.org/yang/vrf\"/>\n"
         "    </filter>\n"
         "  </get>\n"
         "</rpc>\n";
@@ -301,7 +301,7 @@ int netconf_get_routes(net_client_t *client, uint32_t fib, int family, char **re
             "<rpc message-id=\"3\" xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">\n"
             "  <get>\n"
             "    <filter type=\"subtree\">\n"
-            "      <network-instances xmlns=\"urn:ietf:params:xml:ns:yang:ietf-network-instance\"/>\n"
+            "      <lib xmlns=\"http://frrouting.org/yang/vrf\"/>\n"
             "    </filter>\n"
             "  </get>\n"
             "</rpc>\n");
@@ -312,11 +312,11 @@ int netconf_get_routes(net_client_t *client, uint32_t fib, int family, char **re
             "<rpc message-id=\"3\" xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">\n"
             "  <get>\n"
             "    <filter type=\"subtree\">\n"
-            "      <network-instances xmlns=\"urn:ietf:params:xml:ns:yang:ietf-network-instance\">\n"
-            "        <network-instance>\n"
+            "      <lib xmlns=\"http://frrouting.org/yang/vrf\">\n"
+            "        <vrf>\n"
             "          <name>vrf%u</name>\n"
-            "        </network-instance>\n"
-            "      </network-instances>\n"
+            "        </vrf>\n"
+            "      </lib>\n"
             "    </filter>\n"
             "  </get>\n"
             "</rpc>\n", fib);

@@ -44,6 +44,8 @@ int client_init(net_client_t *client, bool interactive)
         return -1;
     }
 
+    debug_log(DEBUG_INFO, "Initializing client (interactive: %s)", interactive ? "yes" : "no");
+
     /* Initialize client structure */
     memset(client, 0, sizeof(*client));
     client->socket_fd = -1;
@@ -52,12 +54,14 @@ int client_init(net_client_t *client, bool interactive)
     client->transaction.command_count = 0;
 
     /* Initialize YANG context */
+    debug_log(DEBUG_DEBUG, "Initializing YANG context");
     if (yang_init_client(client) < 0) {
         print_error("Failed to initialize YANG context");
         return -1;
     }
 
     /* Connect to server */
+    debug_log(DEBUG_DEBUG, "Connecting to netd server");
     if (netconf_connect(client) < 0) {
         print_error("Failed to connect to netd server");
         yang_cleanup_client(client);
@@ -66,9 +70,11 @@ int client_init(net_client_t *client, bool interactive)
 
     /* Initialize readline if interactive */
     if (interactive) {
+        debug_log(DEBUG_DEBUG, "Initializing readline for interactive mode");
         initialize_readline();
     }
 
+    debug_log(DEBUG_INFO, "Client initialization completed successfully");
     return 0;
 }
 
@@ -79,12 +85,20 @@ int client_init(net_client_t *client, bool interactive)
 void client_cleanup(net_client_t *client)
 {
     if (client) {
+        debug_log(DEBUG_DEBUG, "Cleaning up client");
+        
         /* Rollback any active transaction */
         if (client->transaction.active) {
+            debug_log(DEBUG_DEBUG, "Rolling back active transaction");
             transaction_rollback(client);
         }
         
+        debug_log(DEBUG_DEBUG, "Disconnecting from server");
         netconf_disconnect(client);
+        
+        debug_log(DEBUG_DEBUG, "Cleaning up YANG context");
         yang_cleanup_client(client);
+        
+        debug_log(DEBUG_INFO, "Client cleanup completed");
     }
 } 

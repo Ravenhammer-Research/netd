@@ -44,6 +44,8 @@
  */
 int parse_wlan_interfaces_from_xml(const char *xml, struct wlan_interface_data *interfaces, int max_interfaces)
 {
+    debug_log(DEBUG_DEBUG, "Parsing WLAN interfaces from XML");
+    
     if (!xml || !interfaces || max_interfaces <= 0) {
         return -1;
     }
@@ -81,6 +83,7 @@ int parse_wlan_interfaces_from_xml(const char *xml, struct wlan_interface_data *
     }
 
     free(base_interfaces);
+    debug_log(DEBUG_INFO, "Parsed %d WLAN interfaces from XML", count);
     return count;
 }
 
@@ -94,6 +97,8 @@ int print_wlan_interface_groups_summary(const char *xml_response)
     struct wlan_interface_data *interfaces = NULL;
     int interface_count = 0;
     int max_interfaces = 100;
+    
+    debug_log(DEBUG_INFO, "Printing WLAN interface groups summary");
     
     if (!xml_response) {
         print_error("XML response is NULL");

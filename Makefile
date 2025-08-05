@@ -62,6 +62,7 @@ CLIENT_SRCS = $(CLIENTDIR)/main.c \
               $(CLIENTDIR)/client.c \
               $(CLIENTDIR)/functions.c \
               $(CLIENTDIR)/netconf.c \
+              $(CLIENTDIR)/yang.c \
               $(CLIENTDIR)/utils.c \
               $(CLIENTDIR)/xml_utils.c \
               $(CLIENTDIR)/table_utils.c \
@@ -91,6 +92,7 @@ CLIENT_OBJS = $(CLIENT_BUILDDIR)/main.o \
               $(CLIENT_BUILDDIR)/client.o \
               $(CLIENT_BUILDDIR)/functions.o \
               $(CLIENT_BUILDDIR)/netconf.o \
+              $(CLIENT_BUILDDIR)/yang.o \
               $(CLIENT_BUILDDIR)/utils.o \
               $(CLIENT_BUILDDIR)/xml_utils.o \
               $(CLIENT_BUILDDIR)/table_utils.o \
@@ -106,7 +108,7 @@ SERVER_TARGET = $(BUILDDIR)/netd
 CLIENT_TARGET = $(BUILDDIR)/net
 
 # Libraries
-SERVER_LIBS = -lyang
+SERVER_LIBS = -lyang -lexpat
 CLIENT_LIBS = -lyang -lreadline -lfl -lexpat
 
 # Default target
@@ -193,6 +195,10 @@ $(CLIENT_BUILDDIR)/netconf.o: $(CLIENTDIR)/netconf.c
 	@mkdir -p $(CLIENT_BUILDDIR)
 	$(CC) $(CFLAGS) -I$(CLIENTDIR) -c -o $@ $(CLIENTDIR)/netconf.c
 
+$(CLIENT_BUILDDIR)/yang.o: $(CLIENTDIR)/yang.c
+	@mkdir -p $(CLIENT_BUILDDIR)
+	$(CC) $(CFLAGS) -I$(CLIENTDIR) -c -o $@ $(CLIENTDIR)/yang.c
+
 $(CLIENT_BUILDDIR)/utils.o: $(CLIENTDIR)/utils.c
 	@mkdir -p $(CLIENT_BUILDDIR)
 	$(CC) $(CFLAGS) -I$(CLIENTDIR) -c -o $@ $(CLIENTDIR)/utils.c
@@ -275,6 +281,7 @@ $(CLIENT_BUILDDIR)/lexer.o: $(CLIENTDIR)/net.h $(CLIENT_BUILDDIR)/lexer.c
 $(CLIENT_BUILDDIR)/client.o: $(CLIENTDIR)/net.h
 $(CLIENT_BUILDDIR)/functions.o: $(CLIENTDIR)/net.h
 $(CLIENT_BUILDDIR)/netconf.o: $(CLIENTDIR)/net.h
+$(CLIENT_BUILDDIR)/yang.o: $(CLIENTDIR)/net.h
 $(CLIENT_BUILDDIR)/utils.o: $(CLIENTDIR)/net.h
 $(CLIENT_BUILDDIR)/xml_utils.o: $(CLIENTDIR)/net.h
 $(CLIENT_BUILDDIR)/vrf_table.o: $(CLIENTDIR)/net.h

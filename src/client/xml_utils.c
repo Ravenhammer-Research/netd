@@ -247,15 +247,15 @@ static void interface_start_element(void *userData, const char *name, const char
     strncpy(ctx->current_tag, name, sizeof(ctx->current_tag) - 1);
     ctx->current_tag[sizeof(ctx->current_tag) - 1] = '\0';
     
-    debug_log(DEBUG_TRACE, "XML: Start element: %s (in_interface=%d, in_group=%d, in_alias=%d)", 
-              name, ctx->in_interface, ctx->in_group, ctx->in_alias);
+    // debug_log(DEBUG_DEBUG, "XML: Start element: %s (in_interface=%d, in_group=%d, in_alias=%d)", 
+    //           name, ctx->in_interface, ctx->in_group, ctx->in_alias);
     
     if (strcmp(name, "interface") == 0) {
         ctx->in_interface = 1;
         if (ctx->interface_count < ctx->max_interfaces) {
             ctx->current_interface = &ctx->interfaces[ctx->interface_count];
             memset(ctx->current_interface, 0, sizeof(struct interface_data));
-            debug_log(DEBUG_DEBUG, "Starting interface %d", ctx->interface_count);
+            // debug_log(DEBUG_DEBUG, "Starting interface %d", ctx->interface_count);
         }
     } else if (strcmp(name, "alias") == 0) {
         ctx->in_alias = 1;
@@ -276,7 +276,7 @@ static void interface_end_element(void *userData, const char *name)
     if (strcmp(name, "interface") == 0) {
         if (ctx->in_interface && ctx->current_interface) {
             ctx->interface_count++;
-            debug_log(DEBUG_DEBUG, "Added interface %d: %s", ctx->interface_count, ctx->current_interface->name);
+            // debug_log(DEBUG_DEBUG, "Added interface %d: %s", ctx->interface_count, ctx->current_interface->name);
         }
         ctx->in_interface = 0;
         ctx->current_interface = NULL;
@@ -298,7 +298,7 @@ static void interface_end_element(void *userData, const char *name)
         }
         *(end + 1) = '\0';
         
-        debug_log(DEBUG_TRACE, "XML: End element: %s, content: '%s'", name, content);
+        // debug_log(DEBUG_DEBUG, "XML: End element: %s, content: '%s'", name, content);
         
         /* Process the content when we hit the end of a tag */
         if (strcmp(name, "name") == 0) {
@@ -362,7 +362,7 @@ static void interface_char_data(void *userData, const char *s, int len)
         strncat(ctx->temp_content, s, copy_len);
     }
     
-    // debug_log(DEBUG_TRACE, "XML: Char data: '%.*s' (len=%d)", len, s, len);
+    // debug_log(DEBUG_DEBUG, "XML: Char data: '%.*s' (len=%d)", len, s, len);
 }
 
 /**
@@ -381,12 +381,10 @@ int parse_interfaces_from_xml(const char *xml, struct interface_data *interfaces
         return -1;
     }
     
-    /* Debug: show last 50 chars of XML */
-    size_t xml_len = strlen(xml);
-    if (xml_len > 50) {
-        debug_log(DEBUG_DEBUG, "XML ends with: %.50s", xml + xml_len - 50);
+    /* Validate XML input */
+    if (strlen(xml) == 0) {
+        return -1;
     }
-    debug_log(DEBUG_DEBUG, "XML length: %zu", xml_len);
     
     /* Initialize context */
     memset(&ctx, 0, sizeof(ctx));
@@ -414,7 +412,7 @@ int parse_interfaces_from_xml(const char *xml, struct interface_data *interfaces
     /* Clean up */
     XML_ParserFree(parser);
 
-    debug_log(DEBUG_DEBUG, "parse_interfaces_from_xml: parsed %d interfaces", ctx.interface_count);
+    // debug_log(DEBUG_DEBUG, "parse_interfaces_from_xml: parsed %d interfaces", ctx.interface_count);
     return ctx.interface_count;
 }
 

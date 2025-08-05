@@ -46,6 +46,8 @@ int print_interface_table_filtered(const char *xml_response, const char *group_n
     int max_interfaces = 100; /* Reasonable limit */
     int interface_count = 0;
     
+    debug_log(DEBUG_INFO, "Printing interface table filtered by group: %s", group_name);
+    
     if (!xml_response || !group_name) {
         print_error("XML response or group name is NULL");
         return -1;
@@ -59,14 +61,17 @@ int print_interface_table_filtered(const char *xml_response, const char *group_n
     }
     
     /* Parse all interfaces from XML */
+    debug_log(DEBUG_DEBUG, "Parsing interfaces from XML for group filtering");
     interface_count = parse_interfaces_from_xml(xml_response, interfaces, max_interfaces);
     if (interface_count < 0) {
         free(interfaces);
         print_error("Failed to parse XML response");
         return -1;
     }
+    debug_log(DEBUG_INFO, "Parsed %d interfaces from XML", interface_count);
     
     /* Filter interfaces by group */
+    debug_log(DEBUG_DEBUG, "Filtering interfaces by group: %s", group_name);
     int filtered_count = 0;
     for (int i = 0; i < interface_count; i++) {
         struct interface_data *data = &interfaces[i];

@@ -244,6 +244,7 @@ int freebsd_interface_get_groups(const char *name, char (*groups)[MAX_GROUP_NAME
 int freebsd_get_bridge_members(const char *ifname, char *members, size_t members_size);
 int freebsd_enumerate_interfaces(netd_state_t *state);
 bool freebsd_is_hardware_interface(const char *name);
+const char *freebsd_get_interface_oper_status(int flags);
 
 /* Route functions */
 int freebsd_route_add(uint32_t fib, const char *destination, const char *gateway, 

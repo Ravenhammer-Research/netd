@@ -46,6 +46,8 @@ int print_interface_groups_summary(const char *xml_response)
     int interface_count = 0;
     int max_interfaces = 100;
     
+    debug_log(DEBUG_INFO, "Printing interface groups summary");
+    
     if (!xml_response) {
         print_error("XML response is NULL");
         return -1;
@@ -59,12 +61,14 @@ int print_interface_groups_summary(const char *xml_response)
     }
     
     /* Parse interfaces from XML */
+    debug_log(DEBUG_DEBUG, "Parsing interfaces from XML for groups summary");
     interface_count = parse_interfaces_from_xml(xml_response, interfaces, max_interfaces);
     if (interface_count < 0) {
         print_error("Failed to parse interfaces from XML");
         free(interfaces);
         return -1;
     }
+    debug_log(DEBUG_INFO, "Parsed %d interfaces from XML", interface_count);
     
     /* Create a hash table to count interfaces per group */
     struct group_count {

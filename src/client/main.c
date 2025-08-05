@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
         switch (opt) {
             case 'd':
                 debug_level = atoi(optarg);
-                if (debug_level < DEBUG_NONE || debug_level > DEBUG_TRACE) {
+                if (debug_level < DEBUG_NONE || debug_level > DEBUG_DEBUG) {
                     fprintf(stderr, "Invalid debug level: %s\n", optarg);
                     return 1;
                 }
@@ -92,13 +92,18 @@ int main(int argc, char *argv[])
 
     /* Initialize debug logging */
     debug_init(debug_level);
+    debug_log(DEBUG_INFO, "Starting net client (debug level: %d)", debug_level);
 
     /* Check if interactive mode */
     if (optind >= argc) {
         interactive = true;
+        debug_log(DEBUG_INFO, "Running in interactive mode");
+    } else {
+        debug_log(DEBUG_INFO, "Running in command mode");
     }
 
     /* Initialize client */
+    debug_log(DEBUG_DEBUG, "Initializing client");
     if (client_init(&client, interactive) < 0) {
         print_error("Failed to initialize client");
         return 1;
@@ -106,9 +111,11 @@ int main(int argc, char *argv[])
 
     if (interactive) {
         /* Interactive mode */
+        debug_log(DEBUG_DEBUG, "Starting interactive mode");
         ret = interactive_mode(&client);
     } else {
         /* Command line mode */
+        debug_log(DEBUG_DEBUG, "Processing command line arguments");
         char *cmd_line = NULL;
         
         /* Calculate total length needed */
@@ -147,6 +154,8 @@ int main(int argc, char *argv[])
     }
 
     /* Cleanup */
+    debug_log(DEBUG_DEBUG, "Cleaning up client");
     client_cleanup(&client);
+    debug_log(DEBUG_INFO, "Client shutdown complete");
     return ret;
 } 

@@ -54,8 +54,8 @@ static bool running = true;
  */
 static void signal_handler(int sig)
 {
-    (void)sig;
-    debug_log(DEBUG_INFO, "Received shutdown signal");
+    debug_log(DEBUG_INFO, "Received shutdown signal %d (%s)", sig, 
+              sig == SIGINT ? "SIGINT" : sig == SIGTERM ? "SIGTERM" : "UNKNOWN");
     running = false;
 }
 
@@ -68,12 +68,15 @@ static int setup_socket(void)
     int sock;
     struct sockaddr_un addr;
 
+    debug_log(DEBUG_DEBUG, "Setting up Unix domain socket at %s", NETD_SOCKET_PATH);
+
     /* Create socket */
     sock = socket(AF_UNIX, SOCK_STREAM, 0);
     if (sock < 0) {
         debug_log(DEBUG_ERROR, "Failed to create socket: %s", strerror(errno));
         return -1;
     }
+    debug_log(DEBUG_DEBUG, "Created socket with file descriptor %d", sock);
 
     /* Set socket options */
     int opt = 1;
@@ -82,6 +85,7 @@ static int setup_socket(void)
         close(sock);
         return -1;
     }
+    debug_log(DEBUG_DEBUG, "Set socket reuse address option");
 
     /* Make socket non-blocking for signal handling */
     int flags = fcntl(sock, F_GETFL, 0);
@@ -95,9 +99,14 @@ static int setup_socket(void)
         close(sock);
         return -1;
     }
+    debug_log(DEBUG_DEBUG, "Set socket to non-blocking mode");
 
     /* Remove existing socket file */
-    unlink(NETD_SOCKET_PATH);
+    if (unlink(NETD_SOCKET_PATH) == 0) {
+        debug_log(DEBUG_DEBUG, "Removed existing socket file %s", NETD_SOCKET_PATH);
+    } else if (errno != ENOENT) {
+        debug_log(DEBUG_WARN, "Failed to remove existing socket file %s: %s", NETD_SOCKET_PATH, strerror(errno));
+    }
 
     /* Bind socket */
     memset(&addr, 0, sizeof(addr));
@@ -109,6 +118,7 @@ static int setup_socket(void)
         close(sock);
         return -1;
     }
+    debug_log(DEBUG_DEBUG, "Bound socket to %s", NETD_SOCKET_PATH);
 
     /* Listen for connections */
     if (listen(sock, 5) < 0) {
@@ -116,11 +126,16 @@ static int setup_socket(void)
         close(sock);
         return -1;
     }
+    debug_log(DEBUG_DEBUG, "Socket listening with backlog of 5");
 
     /* Set socket permissions */
-    chmod(NETD_SOCKET_PATH, 0666);
+    if (chmod(NETD_SOCKET_PATH, 0666) < 0) {
+        debug_log(DEBUG_WARN, "Failed to set socket permissions: %s", strerror(errno));
+    } else {
+        debug_log(DEBUG_DEBUG, "Set socket permissions to 0666");
+    }
 
-    debug_log(DEBUG_INFO, "Unix domain socket setup complete: %s", NETD_SOCKET_PATH);
+    debug_log(DEBUG_INFO, "Unix domain socket setup complete: %s (fd: %d)", NETD_SOCKET_PATH, sock);
     return sock;
 }
 
@@ -133,46 +148,58 @@ static void handle_client(int client_sock)
     char buffer[8192];
     char *response = NULL;
     ssize_t bytes_read, bytes_written;
+    int request_count = 0;
 
-    debug_log(DEBUG_DEBUG, "Handling client connection");
+    debug_log(DEBUG_INFO, "Handling client connection on socket %d", client_sock);
 
     /* Handle multiple requests on the same connection */
     while (1) {
+        request_count++;
+        debug_log(DEBUG_DEBUG, "Waiting for request #%d from client...", request_count);
+        
         /* Read request */
-        debug_log(DEBUG_DEBUG, "Waiting for data from client...");
         bytes_read = recv(client_sock, buffer, sizeof(buffer) - 1, 0);
         if (bytes_read <= 0) {
             if (bytes_read == 0) {
-                debug_log(DEBUG_INFO, "Client closed connection");
+                debug_log(DEBUG_INFO, "Client closed connection after %d requests", request_count - 1);
             } else {
-                debug_log(DEBUG_ERROR, "Failed to read from client: %s", strerror(errno));
+                debug_log(DEBUG_ERROR, "Failed to read from client socket %d: %s", client_sock, strerror(errno));
             }
             close(client_sock);
             return;
         }
-        debug_log(DEBUG_DEBUG, "Received %zd bytes from client", bytes_read);
+        
         buffer[bytes_read] = '\0';
+        debug_log(DEBUG_DEBUG, "Received %zd bytes from client (request #%d)", bytes_read, request_count);
 
-        debug_log(DEBUG_DEBUG, "Received request: %s", buffer);
+        if (state.debug_level >= DEBUG_DEBUG) {
+            debug_log(DEBUG_DEBUG, "Request content: %s", buffer);
+        }
 
         /* Handle NETCONF request */
+        debug_log(DEBUG_DEBUG, "Processing NETCONF request #%d", request_count);
         if (netconf_handle_request(&state, buffer, &response) < 0) {
-            debug_log(DEBUG_ERROR, "Failed to handle NETCONF request");
+            debug_log(DEBUG_ERROR, "Failed to handle NETCONF request #%d", request_count);
             close(client_sock);
             return;
         }
 
         /* Send response */
         if (response) {
+            debug_log(DEBUG_DEBUG, "Sending response for request #%d (%zu bytes)", request_count, strlen(response));
             bytes_written = send(client_sock, response, strlen(response), 0);
             if (bytes_written < 0) {
-                debug_log(DEBUG_ERROR, "Failed to send response: %s", strerror(errno));
+                debug_log(DEBUG_ERROR, "Failed to send response to client socket %d: %s", client_sock, strerror(errno));
+                free(response);
                 close(client_sock);
                 return;
             } else {
-                debug_log(DEBUG_DEBUG, "Sent response (%zd bytes)", bytes_written);
+                debug_log(DEBUG_DEBUG, "Successfully sent response (%zd bytes) for request #%d", bytes_written, request_count);
             }
             free(response);
+            response = NULL;
+        } else {
+            debug_log(DEBUG_WARN, "No response generated for request #%d", request_count);
         }
     }
 }
@@ -210,6 +237,8 @@ int main(int argc, char *argv[])
     debug_level_t debug_level = DEBUG_NONE;
     int opt;
 
+    debug_log(DEBUG_INFO, "netd server starting (version: %s)", "1.0.0");
+
     /* Parse command line options */
     while ((opt = getopt(argc, argv, "d:h")) != -1) {
         switch (opt) {
@@ -219,6 +248,7 @@ int main(int argc, char *argv[])
                     fprintf(stderr, "Invalid debug level: %s\n", optarg);
                     return 1;
                 }
+                debug_log(DEBUG_INFO, "Debug level set to %d via command line", debug_level);
                 break;
             case 'h':
                 print_usage(argv[0]);
@@ -230,18 +260,22 @@ int main(int argc, char *argv[])
     }
 
     /* Initialize debug logging */
+    debug_log(DEBUG_INFO, "Initializing debug logging system");
     debug_init(debug_level);
 
     /* Initialize syslog if not in debug mode */
     if (debug_level == DEBUG_NONE) {
+        debug_log(DEBUG_INFO, "Initializing syslog for production logging");
         openlog("netd", LOG_PID | LOG_CONS, LOG_DAEMON);
     }
 
     /* Set up signal handlers */
+    debug_log(DEBUG_DEBUG, "Setting up signal handlers for SIGINT and SIGTERM");
     signal(SIGINT, signal_handler);
     signal(SIGTERM, signal_handler);
 
     /* Initialize server state */
+    debug_log(DEBUG_DEBUG, "Initializing server state");
     memset(&state, 0, sizeof(state));
     TAILQ_INIT(&state.vrfs);
     TAILQ_INIT(&state.interfaces);
@@ -249,21 +283,26 @@ int main(int argc, char *argv[])
     TAILQ_INIT(&state.pending_changes);
     state.debug_level = debug_level;
     state.transaction_active = false;
+    debug_log(DEBUG_DEBUG, "Server state initialized successfully");
 
     /* Initialize YANG context */
+    debug_log(DEBUG_INFO, "Initializing YANG context");
     if (yang_init(&state) < 0) {
         debug_log(DEBUG_ERROR, "Failed to initialize YANG context");
         return 1;
     }
 
     /* Load configuration */
+    debug_log(DEBUG_INFO, "Loading configuration");
     if (config_load(&state) < 0) {
         debug_log(DEBUG_ERROR, "Failed to load configuration");
         yang_cleanup(&state);
         return 1;
     }
+    debug_log(DEBUG_INFO, "Configuration loaded successfully");
 
     /* Setup Unix domain socket */
+    debug_log(DEBUG_INFO, "Setting up Unix domain socket");
     server_sock = setup_socket();
     if (server_sock < 0) {
         debug_log(DEBUG_ERROR, "Failed to setup socket");
@@ -272,10 +311,12 @@ int main(int argc, char *argv[])
     }
     state.socket_fd = server_sock;
 
-    debug_log(DEBUG_INFO, "netd server started");
+    debug_log(DEBUG_INFO, "netd server started successfully and ready to accept connections");
 
     /* Main server loop */
+    int loop_iteration = 0;
     while (running) {
+        loop_iteration++;
         fd_set readfds;
         struct timeval timeout;
         
@@ -286,23 +327,26 @@ int main(int argc, char *argv[])
         timeout.tv_sec = 1;
         timeout.tv_usec = 0;
         
+        debug_log(DEBUG_TRACE, "Server loop iteration %d: waiting for connections...", loop_iteration);
         int result = select(server_sock + 1, &readfds, NULL, NULL, &timeout);
         
         if (result < 0) {
             if (errno == EINTR) {
                 /* Interrupted by signal, check running flag */
+                debug_log(DEBUG_DEBUG, "select() interrupted by signal, checking running flag");
                 continue;
             }
-            debug_log(DEBUG_ERROR, "select() failed: %s", strerror(errno));
+            debug_log(DEBUG_ERROR, "select() failed on iteration %d: %s", loop_iteration, strerror(errno));
             break;
         }
         
         if (result == 0) {
             /* Timeout, check running flag and continue */
+            debug_log(DEBUG_TRACE, "select() timeout on iteration %d, checking running flag", loop_iteration);
             continue;
         }
         
-        debug_log(DEBUG_DEBUG, "select() returned %d", result);
+        debug_log(DEBUG_DEBUG, "select() returned %d on iteration %d", result, loop_iteration);
         
         if (FD_ISSET(server_sock, &readfds)) {
             client_len = sizeof(client_addr);
@@ -310,7 +354,9 @@ int main(int argc, char *argv[])
             
             if (client_sock < 0) {
                 if (errno != EAGAIN && errno != EWOULDBLOCK) {
-                    debug_log(DEBUG_ERROR, "Failed to accept connection: %s", strerror(errno));
+                    debug_log(DEBUG_ERROR, "Failed to accept connection on iteration %d: %s", loop_iteration, strerror(errno));
+                } else {
+                    debug_log(DEBUG_DEBUG, "Accept would block on iteration %d", loop_iteration);
                 }
                 continue;
             }
@@ -319,9 +365,11 @@ int main(int argc, char *argv[])
             int flags = fcntl(client_sock, F_GETFL, 0);
             if (flags >= 0) {
                 fcntl(client_sock, F_SETFL, flags & ~O_NONBLOCK);
+                debug_log(DEBUG_DEBUG, "Set client socket %d to blocking mode", client_sock);
             }
 
-            debug_log(DEBUG_INFO, "Accepted client connection from %s", client_addr.sun_path);
+            debug_log(DEBUG_INFO, "Accepted client connection from %s on socket %d", 
+                      client_addr.sun_path[0] ? client_addr.sun_path : "unknown", client_sock);
             handle_client(client_sock);
         }
     }
@@ -329,22 +377,35 @@ int main(int argc, char *argv[])
     /* Cleanup */
     debug_log(DEBUG_INFO, "Shutting down netd server");
 
-    close(server_sock);
-    unlink(NETD_SOCKET_PATH);
+    if (server_sock >= 0) {
+        debug_log(DEBUG_DEBUG, "Closing server socket %d", server_sock);
+        close(server_sock);
+    }
+    
+    if (unlink(NETD_SOCKET_PATH) == 0) {
+        debug_log(DEBUG_DEBUG, "Removed socket file %s", NETD_SOCKET_PATH);
+    } else if (errno != ENOENT) {
+        debug_log(DEBUG_WARN, "Failed to remove socket file %s: %s", NETD_SOCKET_PATH, strerror(errno));
+    }
 
     /* Save configuration */
+    debug_log(DEBUG_INFO, "Saving final configuration");
     if (config_save(&state) < 0) {
-        debug_log(DEBUG_ERROR, "Failed to save configuration");
+        debug_log(DEBUG_ERROR, "Failed to save configuration during shutdown");
+    } else {
+        debug_log(DEBUG_INFO, "Configuration saved successfully");
     }
 
     /* Cleanup YANG context */
+    debug_log(DEBUG_INFO, "Cleaning up YANG context");
     yang_cleanup(&state);
 
     /* Close syslog */
     if (debug_level == DEBUG_NONE) {
+        debug_log(DEBUG_DEBUG, "Closing syslog");
         closelog();
     }
 
-    debug_log(DEBUG_INFO, "netd server stopped");
+    debug_log(DEBUG_INFO, "netd server stopped successfully");
     return 0;
 } 
