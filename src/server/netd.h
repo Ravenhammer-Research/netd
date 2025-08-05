@@ -36,6 +36,10 @@
 #include <sys/queue.h>
 #include <netinet/in.h>
 
+/* Forward declarations for libyang structures */
+struct ly_ctx;
+struct lyd_node;
+
 /* Socket address family constants */
 #define AF_UNSPEC 0
 #define AF_INET   2
@@ -219,6 +223,11 @@ int yang_init(netd_state_t *state);
 void yang_cleanup(netd_state_t *state);
 int yang_validate_xml(netd_state_t *state, const char *xml_data);
 int yang_validate_config(netd_state_t *state, const char *xml_config);
+int yang_validate_rpc(netd_state_t *state, const char *rpc_xml);
+int yang_validate_leafrefs(netd_state_t *state, struct lyd_node *data_tree);
+char *yang_get_validation_error(const struct ly_ctx *ctx);
+int yang_validate_netd_operation(netd_state_t *state, const char *operation, const char *data);
+bool yang_module_loaded(netd_state_t *state, const char *module_name);
 int netconf_handle_request(netd_state_t *state, const char *request, char **response);
 
 /* System interface functions */

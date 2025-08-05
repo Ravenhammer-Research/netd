@@ -227,6 +227,8 @@ struct interface_parse_context {
     int in_alias;
     char current_tag[64];
     char temp_content[256];
+    int in_ipv4;
+    int in_ipv6;
 };
 
 /**
@@ -255,10 +257,12 @@ static void interface_start_element(void *userData, const char *name, const char
             memset(ctx->current_interface, 0, sizeof(struct interface_data));
             debug_log(DEBUG_DEBUG, "Starting interface %d", ctx->interface_count);
         }
-    } else if (strcmp(name, "group") == 0) {
-        ctx->in_group = 1;
     } else if (strcmp(name, "alias") == 0) {
         ctx->in_alias = 1;
+    } else if (strcmp(name, "ipv4") == 0 || strstr(name, "ipv4") != NULL) {
+        ctx->in_ipv4 = 1;
+    } else if (strcmp(name, "ipv6") == 0 || strstr(name, "ipv6") != NULL) {
+        ctx->in_ipv6 = 1;
     }
 }
 
@@ -276,10 +280,12 @@ static void interface_end_element(void *userData, const char *name)
         }
         ctx->in_interface = 0;
         ctx->current_interface = NULL;
-    } else if (strcmp(name, "group") == 0) {
-        ctx->in_group = 0;
     } else if (strcmp(name, "alias") == 0) {
         ctx->in_alias = 0;
+    } else if (strcmp(name, "ipv4") == 0 || strstr(name, "ipv4") != NULL) {
+        ctx->in_ipv4 = 0;
+    } else if (strcmp(name, "ipv6") == 0 || strstr(name, "ipv6") != NULL) {
+        ctx->in_ipv6 = 0;
     } else if (ctx->in_interface && ctx->current_interface) {
         /* Sanitize the content by trimming whitespace */
         char *content = ctx->temp_content;
@@ -301,41 +307,33 @@ static void interface_end_element(void *userData, const char *name)
         } else if (strcmp(name, "enabled") == 0) {
             strncpy(ctx->current_interface->enabled, content, sizeof(ctx->current_interface->enabled) - 1);
             ctx->current_interface->enabled[sizeof(ctx->current_interface->enabled) - 1] = '\0';
-        } else if (strcmp(name, "vrf") == 0) {
+        } else if (strcmp(name, "bind-ni-name") == 0 || strstr(name, "bind-ni-name") != NULL) {
             strncpy(ctx->current_interface->fib, content, sizeof(ctx->current_interface->fib) - 1);
             ctx->current_interface->fib[sizeof(ctx->current_interface->fib) - 1] = '\0';
         } else if (strcmp(name, "mtu") == 0) {
             strncpy(ctx->current_interface->mtu, content, sizeof(ctx->current_interface->mtu) - 1);
             ctx->current_interface->mtu[sizeof(ctx->current_interface->mtu) - 1] = '\0';
-        } else if (strcmp(name, "flags") == 0) {
+        } else if (strcmp(name, "flags") == 0 || strstr(name, "flags") != NULL) {
             strncpy(ctx->current_interface->flags, content, sizeof(ctx->current_interface->flags) - 1);
             ctx->current_interface->flags[sizeof(ctx->current_interface->flags) - 1] = '\0';
-        } else if (strcmp(name, "primary-address") == 0) {
-            strncpy(ctx->current_interface->addr, content, sizeof(ctx->current_interface->addr) - 1);
-            ctx->current_interface->addr[sizeof(ctx->current_interface->addr) - 1] = '\0';
-        } else if (strcmp(name, "primary-address6") == 0) {
-            strncpy(ctx->current_interface->addr6, content, sizeof(ctx->current_interface->addr6) - 1);
-            ctx->current_interface->addr6[sizeof(ctx->current_interface->addr6) - 1] = '\0';
-        } else if (strcmp(name, "address") == 0 && ctx->in_alias) {
-            if (ctx->current_interface->addr[0] != '\0') {
-                strcat(ctx->current_interface->addr, ",");
-            }
-            strncat(ctx->current_interface->addr, content, sizeof(ctx->current_interface->addr) - strlen(ctx->current_interface->addr) - 1);
-        } else if (strcmp(name, "address6") == 0 && ctx->in_alias) {
-            if (ctx->current_interface->addr6[0] != '\0') {
-                strcat(ctx->current_interface->addr6, ",");
-            }
-            strncat(ctx->current_interface->addr6, content, sizeof(ctx->current_interface->addr6) - strlen(ctx->current_interface->addr6) - 1);
-        } else if (strcmp(name, "bridge-members") == 0) {
+        } else if (strcmp(name, "bridge-members") == 0 || strstr(name, "bridge-members") != NULL) {
             strncpy(ctx->current_interface->bridge_members, content, sizeof(ctx->current_interface->bridge_members) - 1);
             ctx->current_interface->bridge_members[sizeof(ctx->current_interface->bridge_members) - 1] = '\0';
-        } else if (strcmp(name, "group-name") == 0 && ctx->in_group) {
-            /* Skip "all" group - it's not a real group */
-            if (strcmp(content, "all") != 0) {
-                if (ctx->current_interface->groups[0] != '\0') {
-                    strcat(ctx->current_interface->groups, ",");
+        } else if (strcmp(name, "group") == 0 || strstr(name, "group") != NULL) {
+            strncpy(ctx->current_interface->groups, content, sizeof(ctx->current_interface->groups) - 1);
+            ctx->current_interface->groups[sizeof(ctx->current_interface->groups) - 1] = '\0';
+        } else if (strcmp(name, "ip") == 0) {
+            /* This is an IP address under ipv4 or ipv6 container */
+            if (ctx->in_ipv4) {
+                if (ctx->current_interface->addr[0] != '\0') {
+                    strcat(ctx->current_interface->addr, ",");
                 }
-                strncat(ctx->current_interface->groups, content, sizeof(ctx->current_interface->groups) - strlen(ctx->current_interface->groups) - 1);
+                strncat(ctx->current_interface->addr, content, sizeof(ctx->current_interface->addr) - strlen(ctx->current_interface->addr) - 1);
+            } else if (ctx->in_ipv6) {
+                if (ctx->current_interface->addr6[0] != '\0') {
+                    strcat(ctx->current_interface->addr6, ",");
+                }
+                strncat(ctx->current_interface->addr6, content, sizeof(ctx->current_interface->addr6) - strlen(ctx->current_interface->addr6) - 1);
             }
         }
         

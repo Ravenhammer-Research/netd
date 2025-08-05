@@ -83,7 +83,7 @@ static bool is_get_interfaces_request(const char *request)
  */
 static bool is_get_vrfs_request(const char *request)
 {
-    return strstr(request, "<get>") && strstr(request, "<vrfs xmlns=\"urn:ietf:params:xml:ns:yang:ietf-routing\"/>");
+    return strstr(request, "<get>") && strstr(request, "<network-instances xmlns=\"urn:ietf:params:xml:ns:yang:ietf-network-instance\"/>");
 }
 
 /**
@@ -93,7 +93,7 @@ static bool is_get_vrfs_request(const char *request)
  */
 static bool is_get_routes_request(const char *request)
 {
-    return strstr(request, "<get>") && strstr(request, "<routing xmlns=\"urn:ietf:params:xml:ns:yang:ietf-routing\"/>");
+    return strstr(request, "<get>") && strstr(request, "<network-instances xmlns=\"urn:ietf:params:xml:ns:yang:ietf-network-instance\"/>");
 }
 
 /**
@@ -202,11 +202,11 @@ int netconf_handle_request(netd_state_t *state, const char *request, char **resp
 
     /* Validate incoming request against YANG schema if YANG context is available */
     if (state->yang_ctx) {
-        if (yang_validate_xml(state, request) < 0) {
-            debug_log(DEBUG_WARN, "NETCONF request failed YANG validation, but processing anyway");
+        if (yang_validate_rpc(state, request) < 0) {
+            debug_log(DEBUG_WARN, "NETCONF RPC failed YANG validation, but processing anyway");
             /* Don't fail the request, just log a warning for now */
         } else {
-            debug_log(DEBUG_DEBUG, "NETCONF request validated successfully against YANG schema");
+            debug_log(DEBUG_DEBUG, "NETCONF RPC validated successfully against YANG schema");
         }
     }
 

@@ -112,6 +112,19 @@ int netconf_send_request(net_client_t *client, const char *request, char **respo
         return -1;
     }
 
+    /* Validate request against YANG schema if YANG context is available */
+    if (client->yang_ctx) {
+        debug_log(DEBUG_DEBUG, "Validating NETCONF request against YANG schema");
+        if (yang_validate_rpc_client(client, request) < 0) {
+            debug_log(DEBUG_WARN, "NETCONF request failed YANG validation, but sending anyway");
+            /* Don't fail the request, just log a warning for now */
+        } else {
+            debug_log(DEBUG_DEBUG, "NETCONF request validated successfully against YANG schema");
+        }
+    } else {
+        debug_log(DEBUG_DEBUG, "No YANG context available, skipping request validation");
+    }
+
     /* Send request */
     debug_log(DEBUG_DEBUG, "Sending request to server (%zu bytes)", strlen(request));
     debug_log(DEBUG_DEBUG, "Request content:\n%s", request);
@@ -210,6 +223,19 @@ int netconf_send_request(net_client_t *client, const char *request, char **respo
         return -1;
     }
 
+    /* Validate response against YANG schema if YANG context is available */
+    if (client->yang_ctx) {
+        debug_log(DEBUG_DEBUG, "Validating NETCONF response against YANG schema");
+        if (yang_validate_response_client(client, *response) < 0) {
+            debug_log(DEBUG_WARN, "NETCONF response failed YANG validation, but processing anyway");
+            /* Don't fail the request, just log a warning for now */
+        } else {
+            debug_log(DEBUG_DEBUG, "NETCONF response validated successfully against YANG schema");
+        }
+    } else {
+        debug_log(DEBUG_DEBUG, "No YANG context available, skipping response validation");
+    }
+
     return 0;
 }
 
@@ -247,7 +273,7 @@ int netconf_get_vrfs(net_client_t *client, char **response)
         "<rpc message-id=\"2\" xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">\n"
         "  <get>\n"
         "    <filter type=\"subtree\">\n"
-        "      <vrfs xmlns=\"urn:ietf:params:xml:ns:yang:ietf-routing\"/>\n"
+        "      <network-instances xmlns=\"urn:ietf:params:xml:ns:yang:ietf-network-instance\"/>\n"
         "    </filter>\n"
         "  </get>\n"
         "</rpc>\n";
@@ -269,26 +295,28 @@ int netconf_get_routes(net_client_t *client, uint32_t fib, int family, char **re
     (void)family; /* Suppress unused parameter warning */
 
     if (fib == 0) {
-        /* Default FIB - use the same request as before */
+        /* Default FIB - get all network instances */
         snprintf(request, sizeof(request),
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
             "<rpc message-id=\"3\" xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">\n"
             "  <get>\n"
             "    <filter type=\"subtree\">\n"
-            "      <routing xmlns=\"urn:ietf:params:xml:ns:yang:ietf-routing\"/>\n"
+            "      <network-instances xmlns=\"urn:ietf:params:xml:ns:yang:ietf-network-instance\"/>\n"
             "    </filter>\n"
             "  </get>\n"
             "</rpc>\n");
     } else {
-        /* Specific FIB - include FIB parameter */
+        /* Specific FIB - include network instance name */
         snprintf(request, sizeof(request),
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
             "<rpc message-id=\"3\" xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">\n"
             "  <get>\n"
             "    <filter type=\"subtree\">\n"
-            "      <routing xmlns=\"urn:ietf:params:xml:ns:yang:ietf-routing\">\n"
-            "        <fib>%u</fib>\n"
-            "      </routing>\n"
+            "      <network-instances xmlns=\"urn:ietf:params:xml:ns:yang:ietf-network-instance\">\n"
+            "        <network-instance>\n"
+            "          <name>vrf%u</name>\n"
+            "        </network-instance>\n"
+            "      </network-instances>\n"
             "    </filter>\n"
             "  </get>\n"
             "</rpc>\n", fib);

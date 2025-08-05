@@ -144,11 +144,11 @@ const char *interface_type_to_string(interface_type_t type)
 {
     switch (type) {
         case IF_TYPE_ETHERNET:
-            return "ethernet";
+            return "ethernetCsmacd";
         case IF_TYPE_WIRELESS:
-            return "wireless80211";
+            return "ieee80211";
         case IF_TYPE_EPAIR:
-            return "epair";
+            return "other";
         case IF_TYPE_GIF:
             return "gif";
         case IF_TYPE_GRE:
@@ -156,21 +156,21 @@ const char *interface_type_to_string(interface_type_t type)
         case IF_TYPE_LAGG:
             return "lagg";
         case IF_TYPE_LOOPBACK:
-            return "lo";
+            return "softwareLoopback";
         case IF_TYPE_OVPN:
-            return "ovpn";
+            return "tunnel";
         case IF_TYPE_TUN:
-            return "tun";
+            return "tunnel";
         case IF_TYPE_TAP:
-            return "tap";
+            return "other";
         case IF_TYPE_VLAN:
-            return "vlan";
-            case IF_TYPE_VXLAN:
-        return "vxlan";
-    case IF_TYPE_BRIDGE:
-        return "bridge";
-    default:
-        return "unknown";
+            return "l2vlan";
+        case IF_TYPE_VXLAN:
+            return "l2vlan";
+        case IF_TYPE_BRIDGE:
+            return "bridge";
+        default:
+            return "other";
     }
 }
 
@@ -185,9 +185,9 @@ interface_type_t interface_type_from_string(const char *str)
         return IF_TYPE_UNKNOWN;
     }
 
-    if (strcmp(str, "ethernet") == 0) {
+    if (strcmp(str, "ethernet") == 0 || strcmp(str, "ethernetCsmacd") == 0) {
         return IF_TYPE_ETHERNET;
-    } else if (strcmp(str, "wireless") == 0 || strcmp(str, "wireless80211") == 0) {
+    } else if (strcmp(str, "wireless") == 0 || strcmp(str, "wireless80211") == 0 || strcmp(str, "ieee80211") == 0) {
         return IF_TYPE_WIRELESS;
     } else if (strcmp(str, "epair") == 0) {
         return IF_TYPE_EPAIR;
@@ -197,15 +197,15 @@ interface_type_t interface_type_from_string(const char *str)
         return IF_TYPE_GRE;
     } else if (strcmp(str, "lagg") == 0) {
         return IF_TYPE_LAGG;
-    } else if (strcmp(str, "lo") == 0 || strcmp(str, "loopback") == 0) {
+    } else if (strcmp(str, "lo") == 0 || strcmp(str, "loopback") == 0 || strcmp(str, "softwareLoopback") == 0) {
         return IF_TYPE_LOOPBACK;
-    } else if (strcmp(str, "ovpn") == 0) {
+    } else if (strcmp(str, "ovpn") == 0 || strcmp(str, "tunnel") == 0) {
         return IF_TYPE_OVPN;
     } else if (strcmp(str, "tun") == 0) {
         return IF_TYPE_TUN;
     } else if (strcmp(str, "tap") == 0) {
         return IF_TYPE_TAP;
-    } else if (strcmp(str, "vlan") == 0) {
+    } else if (strcmp(str, "vlan") == 0 || strcmp(str, "l2vlan") == 0) {
         return IF_TYPE_VLAN;
     } else if (strcmp(str, "vxlan") == 0) {
         return IF_TYPE_VXLAN;
@@ -503,7 +503,7 @@ void debug_log(debug_level_t level, const char *format, ...)
     /* Print timestamp and message to stderr */
     fprintf(stderr, "[%s] [%s] ", time_str, 
             level == DEBUG_ERROR ? "ERROR" :
-            level == DEBUG_WARNING ? "WARNING" :
+            level == DEBUG_WARN ? "WARNING" :
             level == DEBUG_INFO ? "INFO" :
             level == DEBUG_DEBUG ? "DEBUG" :
             level == DEBUG_TRACE ? "TRACE" : "UNKNOWN");

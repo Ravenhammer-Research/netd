@@ -82,7 +82,7 @@ typedef enum {
 typedef enum {
     DEBUG_NONE = 0,
     DEBUG_ERROR = 1,
-    DEBUG_WARNING = 2,
+    DEBUG_WARN = 2,
     DEBUG_INFO = 3,
     DEBUG_DEBUG = 4,
     DEBUG_TRACE = 5
@@ -222,6 +222,10 @@ int netconf_get_interface_groups(net_client_t *client, char **response);
 /* YANG context management */
 int yang_init_client(net_client_t *client);
 void yang_cleanup_client(net_client_t *client);
+int yang_validate_xml_client(net_client_t *client, const char *xml_data);
+int yang_validate_rpc_client(net_client_t *client, const char *rpc_xml);
+int yang_validate_response_client(net_client_t *client, const char *response_xml);
+int yang_validate_data_client(net_client_t *client, const char *data_xml);
 
 /* Utility functions */
 const char *command_type_to_string(command_type_t type);

@@ -504,19 +504,13 @@ char *interface_get_all(netd_state_t *state)
                 "        <name>%s</name>\n"
                 "        <type xmlns:ianaift=\"urn:ietf:params:xml:ns:yang:iana-if-type\">ianaift:%s</type>\n"
                 "        <enabled>%s</enabled>\n"
-                "        <vrf>%s</vrf>\n"
-                "        <mtu>%d</mtu>\n"
-                "        <flags>%d</flags>\n"
-                "        <primary-address>%s</primary-address>\n"
-                "        <primary-address6>%s</primary-address6>\n",
+                "        <bind-ni-name xmlns=\"urn:ietf:params:xml:ns:yang:ietf-network-instance\">%s</bind-ni-name>\n"
+                "        <flags xmlns=\"urn:ietf:params:xml:ns:yang:netd\">%d</flags>\n",
                 iface->name,
                 interface_type_to_string(iface->type),
                 iface->enabled ? "true" : "false",
                 vrf_name,
-                iface->mtu,
-                iface->flags,
-                iface->primary_address[0] ? iface->primary_address : "",
-                iface->primary_address6[0] ? iface->primary_address6 : "");
+                iface->flags);
 
         if (temp_xml) {
             /* Append to main XML */
@@ -527,10 +521,56 @@ char *interface_get_all(netd_state_t *state)
             xml = new_xml;
         }
 
-        /* Add alias addresses if any */
-        for (int i = 0; i < iface->alias_count; i++) {
-            asprintf(&temp_xml, "        <alias>\n          <address>%s</address>\n        </alias>\n", 
-                     iface->alias_addresses[i]);
+        /* Add IPv4 container with all addresses */
+        if (iface->primary_address[0] != '\0' || iface->alias_count > 0) {
+            asprintf(&temp_xml,
+                    "        <ipv4 xmlns=\"urn:ietf:params:xml:ns:yang:ietf-ip\">\n"
+                    "          <mtu>%d</mtu>\n",
+                    iface->mtu);
+            if (temp_xml) {
+                char *new_xml;
+                asprintf(&new_xml, "%s%s", xml, temp_xml);
+                free(xml);
+                free(temp_xml);
+                xml = new_xml;
+            }
+
+            /* Add primary IPv4 address */
+            if (iface->primary_address[0] != '\0') {
+                asprintf(&temp_xml,
+                        "          <address>\n"
+                        "            <ip>%s</ip>\n"
+                        "            <prefix-length>24</prefix-length>\n"
+                        "          </address>\n",
+                        iface->primary_address);
+                if (temp_xml) {
+                    char *new_xml;
+                    asprintf(&new_xml, "%s%s", xml, temp_xml);
+                    free(xml);
+                    free(temp_xml);
+                    xml = new_xml;
+                }
+            }
+
+            /* Add alias IPv4 addresses */
+            for (int i = 0; i < iface->alias_count; i++) {
+                asprintf(&temp_xml,
+                        "          <address>\n"
+                        "            <ip>%s</ip>\n"
+                        "            <prefix-length>24</prefix-length>\n"
+                        "          </address>\n",
+                        iface->alias_addresses[i]);
+                if (temp_xml) {
+                    char *new_xml;
+                    asprintf(&new_xml, "%s%s", xml, temp_xml);
+                    free(xml);
+                    free(temp_xml);
+                    xml = new_xml;
+                }
+            }
+
+            /* Close IPv4 container */
+            asprintf(&temp_xml, "        </ipv4>\n");
             if (temp_xml) {
                 char *new_xml;
                 asprintf(&new_xml, "%s%s", xml, temp_xml);
@@ -539,10 +579,56 @@ char *interface_get_all(netd_state_t *state)
                 xml = new_xml;
             }
         }
-        
-        for (int i = 0; i < iface->alias_count6; i++) {
-            asprintf(&temp_xml, "        <alias>\n          <address6>%s</address6>\n        </alias>\n", 
-                     iface->alias_addresses6[i]);
+
+        /* Add IPv6 container with all addresses */
+        if (iface->primary_address6[0] != '\0' || iface->alias_count6 > 0) {
+            asprintf(&temp_xml,
+                    "        <ipv6 xmlns=\"urn:ietf:params:xml:ns:yang:ietf-ip\">\n");
+
+            if (temp_xml) {
+                char *new_xml;
+                asprintf(&new_xml, "%s%s", xml, temp_xml);
+                free(xml);
+                free(temp_xml);
+                xml = new_xml;
+            }
+
+            /* Add primary IPv6 address */
+            if (iface->primary_address6[0] != '\0') {
+                asprintf(&temp_xml,
+                        "          <address>\n"
+                        "            <ip>%s</ip>\n"
+                        "            <prefix-length>64</prefix-length>\n"
+                        "          </address>\n",
+                        iface->primary_address6);
+                if (temp_xml) {
+                    char *new_xml;
+                    asprintf(&new_xml, "%s%s", xml, temp_xml);
+                    free(xml);
+                    free(temp_xml);
+                    xml = new_xml;
+                }
+            }
+
+            /* Add alias IPv6 addresses */
+            for (int i = 0; i < iface->alias_count6; i++) {
+                asprintf(&temp_xml,
+                        "          <address>\n"
+                        "            <ip>%s</ip>\n"
+                        "            <prefix-length>64</prefix-length>\n"
+                        "          </address>\n",
+                        iface->alias_addresses6[i]);
+                if (temp_xml) {
+                    char *new_xml;
+                    asprintf(&new_xml, "%s%s", xml, temp_xml);
+                    free(xml);
+                    free(temp_xml);
+                    xml = new_xml;
+                }
+            }
+
+            /* Close IPv6 container */
+            asprintf(&temp_xml, "        </ipv6>\n");
             if (temp_xml) {
                 char *new_xml;
                 asprintf(&new_xml, "%s%s", xml, temp_xml);
@@ -554,27 +640,16 @@ char *interface_get_all(netd_state_t *state)
 
         /* Add groups if any */
         if (iface->group_count > 0) {
-            asprintf(&temp_xml, "        <group>\n");
-            if (temp_xml) {
-                char *new_xml;
-                asprintf(&new_xml, "%s%s", xml, temp_xml);
-                free(xml);
-                free(temp_xml);
-                xml = new_xml;
-            }
-
+            /* Join all groups into a comma-separated string */
+            char group_string[256] = "";
             for (int i = 0; i < iface->group_count; i++) {
-                asprintf(&temp_xml, "          <group-name>%s</group-name>\n", iface->groups[i]);
-                if (temp_xml) {
-                    char *new_xml;
-                    asprintf(&new_xml, "%s%s", xml, temp_xml);
-                    free(xml);
-                    free(temp_xml);
-                    xml = new_xml;
+                if (i > 0) {
+                    strcat(group_string, ",");
                 }
+                strcat(group_string, iface->groups[i]);
             }
-
-            asprintf(&temp_xml, "        </group>\n");
+            
+            asprintf(&temp_xml, "        <group xmlns=\"urn:ietf:params:xml:ns:yang:netd\">%s</group>\n", group_string);
             if (temp_xml) {
                 char *new_xml;
                 asprintf(&new_xml, "%s%s", xml, temp_xml);
@@ -586,7 +661,7 @@ char *interface_get_all(netd_state_t *state)
 
         /* Add bridge members if any */
         if (iface->type == IF_TYPE_BRIDGE && iface->bridge_members[0] != '\0') {
-            asprintf(&temp_xml, "        <bridge-members>%s</bridge-members>\n", iface->bridge_members);
+            asprintf(&temp_xml, "        <bridge-members xmlns=\"urn:ietf:params:xml:ns:yang:netd\">%s</bridge-members>\n", iface->bridge_members);
             if (temp_xml) {
                 char *new_xml;
                 asprintf(&new_xml, "%s%s", xml, temp_xml);

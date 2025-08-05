@@ -6,8 +6,8 @@ module netd {
   import ietf-interfaces {
     prefix if;
   }
-  import ietf-routing {
-    prefix rt;
+  import ietf-network-instance {
+    prefix ni;
   }
   import ietf-inet-types {
     prefix inet;
@@ -27,38 +27,15 @@ module netd {
       "Initial version";
   }
 
-  /* VRF configuration */
-  container vrfs {
-    description "VRF (Virtual Routing and Forwarding) configuration";
+  /* VRF configuration - augment network-instance */
+  augment "/ni:network-instances/ni:network-instance" {
+    description "VRF (Virtual Routing and Forwarding) configuration extensions";
     
-    list vrf {
-      key "name";
-      description "VRF instance";
-      
-      leaf name {
-        type string {
-          length "1..32";
-        }
-        description "VRF name";
+    leaf fib {
+      type uint32 {
+        range "0..255";
       }
-      
-      leaf description {
-        type string;
-        description "VRF description";
-      }
-      
-      leaf fib {
-        type uint32 {
-          range "0..255";
-        }
-        description "Forwarding Information Base number";
-      }
-      
-      leaf enabled {
-        type boolean;
-        default true;
-        description "Enable/disable VRF";
-      }
+      description "Forwarding Information Base number";
     }
   }
 
@@ -66,11 +43,24 @@ module netd {
   augment "/if:interfaces/if:interface" {
     description "Interface configuration extensions for netd";
     
-    leaf vrf {
-      type leafref {
-        path "/netd:vrfs/netd:vrf/netd:name";
-      }
-      description "VRF assignment for interface";
+    leaf flags {
+      type uint32;
+      description "Interface flags (system-specific)";
+    }
+    
+    leaf primary-address {
+      type inet:ipv4-address;
+      description "Primary IPv4 address";
+    }
+    
+    leaf primary-address6 {
+      type inet:ipv6-address;
+      description "Primary IPv6 address";
+    }
+    
+    leaf bridge-members {
+      type string;
+      description "Bridge member interfaces";
     }
     
     leaf group {
@@ -79,20 +69,13 @@ module netd {
     }
   }
 
-  /* Route configuration */
-  container routes {
-    description "Route configuration";
+  /* Route configuration - augment network-instance routing */
+  augment "/ni:network-instances/ni:network-instance" {
+    description "Route configuration extensions";
     
     list route {
-      key "vrf destination";
+      key "destination";
       description "Route entry";
-      
-      leaf vrf {
-        type leafref {
-          path "/netd:vrfs/netd:vrf/netd:name";
-        }
-        description "VRF for this route";
-      }
       
       leaf destination {
         type inet:ip-prefix;

@@ -237,17 +237,18 @@ char *vrf_get_all(netd_state_t *state)
 
 
     /* Start XML */
-    asprintf(&xml, "    <vrfs xmlns=\"urn:ietf:params:xml:ns:yang:ietf-routing\">\n");
+    asprintf(&xml, "    <network-instances xmlns=\"urn:ietf:params:xml:ns:yang:ietf-network-instance\">\n");
     if (!xml) {
         return NULL;
     }
 
     /* Always include default VRF (FIB 0) */
     asprintf(&temp_xml,
-            "      <vrf>\n"
+            "      <network-instance>\n"
             "        <name>default</name>\n"
             "        <description>Default VRF (system managed)</description>\n"
-            "      </vrf>\n");
+            "        <enabled>true</enabled>\n"
+            "      </network-instance>\n");
     if (temp_xml) {
         char *new_xml;
         asprintf(&new_xml, "%s%s", xml, temp_xml);
@@ -261,10 +262,11 @@ char *vrf_get_all(netd_state_t *state)
     TAILQ_FOREACH(vrf, &state->vrfs, entries) {
         debug_log(DEBUG_DEBUG, "Found explicit VRF: %s (FIB %u)", vrf->name, vrf->fib_number);
         asprintf(&temp_xml,
-                "      <vrf>\n"
+                "      <network-instance>\n"
                 "        <name>%s</name>\n"
                 "        <description>%s</description>\n"
-                "      </vrf>\n",
+                "        <enabled>true</enabled>\n"
+                "      </network-instance>\n",
                 vrf->name,
                 vrf->description[0] != '\0' ? vrf->description : "");
 
@@ -283,10 +285,11 @@ char *vrf_get_all(netd_state_t *state)
         if (fib_used[i] && !vrf_find_by_fib(state, i)) {
             debug_log(DEBUG_DEBUG, "Adding auto-detected VRF: - (FIB %d)", i);
             asprintf(&temp_xml,
-                    "      <vrf>\n"
+                    "      <network-instance>\n"
                     "        <name>-</name>\n"
                     "        <description>FIB %d (auto-detected)</description>\n"
-                    "      </vrf>\n",
+                    "        <enabled>true</enabled>\n"
+                    "      </network-instance>\n",
                     i);
 
             if (temp_xml) {
@@ -300,7 +303,7 @@ char *vrf_get_all(netd_state_t *state)
     }
 
     /* Close XML tags */
-    asprintf(&temp_xml, "    </vrfs>\n");
+    asprintf(&temp_xml, "    </network-instances>\n");
     if (temp_xml) {
         char *new_xml;
         asprintf(&new_xml, "%s%s", xml, temp_xml);
