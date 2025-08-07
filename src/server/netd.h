@@ -108,6 +108,25 @@ typedef struct interface {
     int alias_count;
     int alias_count6;
     char bridge_members[64]; /* Bridge member interfaces as comma-separated string */
+    
+    /* VLAN-specific fields */
+    int vlan_id;           /* VLAN ID */
+    char vlan_proto[16];   /* VLAN protocol (e.g., "802.1q", "802.1ad") */
+    int vlan_pcp;          /* VLAN Priority Code Point */
+    char vlan_parent[64];  /* Parent interface name */
+    
+    /* WiFi-specific fields */
+    char wifi_regdomain[16];  /* Regulatory domain (e.g., "FCC") */
+    char wifi_country[8];     /* Country code (e.g., "US") */
+    char wifi_authmode[16];   /* Authentication mode (e.g., "OPEN", "WPA") */
+    char wifi_privacy[8];     /* Privacy setting (e.g., "OFF", "ON") */
+    int wifi_txpower;         /* Transmit power in dBm */
+    int wifi_bmiss;           /* Beacon miss threshold */
+    int wifi_scanvalid;       /* Scan validity period */
+    char wifi_features[64];   /* WiFi features (e.g., "wme") */
+    int wifi_bintval;         /* Beacon interval */
+    char wifi_parent[64];     /* Parent interface name */
+    
     TAILQ_ENTRY(interface) entries;
 } interface_t;
 
@@ -195,6 +214,8 @@ int interface_remove_group(netd_state_t *state, const char *name, const char *gr
 int interface_set_address(netd_state_t *state, const char *name, const char *address, int family);
 int interface_delete_address(netd_state_t *state, const char *name, int family);
 int interface_set_mtu(netd_state_t *state, const char *name, int mtu);
+int interface_add(netd_state_t *state, const char *name);
+int interface_modify(netd_state_t *state, const char *name, const char *property, const char *value);
 interface_t *interface_find(netd_state_t *state, const char *name);
 int interface_list(netd_state_t *state, interface_type_t type);
 int interface_enumerate_system(netd_state_t *state);
@@ -218,9 +239,13 @@ int config_save(netd_state_t *state);
 int transaction_begin(netd_state_t *state);
 int transaction_commit(netd_state_t *state);
 int transaction_rollback(netd_state_t *state);
+int add_pending_vrf_create(netd_state_t *state, const char *name, uint32_t fib);
+int add_pending_vrf_delete(netd_state_t *state, const char *name);
 int add_pending_route_add(netd_state_t *state, uint32_t fib, const char *destination, 
                          const char *gateway, const char *interface, int flags);
 int add_pending_route_delete(netd_state_t *state, uint32_t fib, const char *destination);
+int add_pending_interface_create(netd_state_t *state, const char *name, interface_type_t type);
+int add_pending_interface_set_fib(netd_state_t *state, const char *name, uint32_t fib);
 
 /* YANG/Netconf functions */
 int yang_init(netd_state_t *state);
@@ -247,6 +272,12 @@ int freebsd_interface_set_mtu(const char *name, int mtu);
 int freebsd_interface_get_mtu(const char *name, int *mtu);
 int freebsd_interface_get_groups(const char *name, char (*groups)[MAX_GROUP_NAME_LEN], int max_groups, int *group_count);
 int freebsd_get_bridge_members(const char *ifname, char *members, size_t members_size);
+int freebsd_get_vlan_info(const char *ifname, int *vlan_id, char *vlan_proto, size_t proto_size, 
+                         int *vlan_pcp, char *vlan_parent, size_t parent_size);
+int freebsd_get_wifi_info(const char *ifname, char *regdomain, size_t regdomain_size,
+                         char *country, size_t country_size, char *authmode, size_t authmode_size,
+                         char *privacy, size_t privacy_size, int *txpower, int *bmiss, int *scanvalid,
+                         char *features, size_t features_size, int *bintval, char *parent, size_t parent_size);
 int freebsd_enumerate_interfaces(netd_state_t *state);
 bool freebsd_is_hardware_interface(const char *name);
 const char *freebsd_get_interface_oper_status(int flags);
@@ -260,6 +291,7 @@ int freebsd_route_enumerate_system(netd_state_t *state, uint32_t fib);
 
 /* Utility functions */
 const char *interface_type_to_string(interface_type_t type);
+const char *interface_type_get_namespace(interface_type_t type);
 interface_type_t interface_type_from_string(const char *str);
 bool is_valid_interface_name(const char *name);
 bool is_valid_vrf_name(const char *name);

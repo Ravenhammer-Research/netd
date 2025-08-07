@@ -58,25 +58,49 @@ void print_interface_footer(void)
     printf("Flags: U=UP, B=BROADCAST, R=RUNNING, P=PROMISC, M=MULTICAST, L=LOOPBACK\n\n");
 }
 
+/**
+ * Helper function to extract FIB number from interface name
+ */
+static int extract_fib_from_interface_name(const char *name) {
+    const char *dot = strrchr(name, '.');
+    if (dot && dot[1] != '\0') {
+        return atoi(dot + 1);
+    }
+    return 0; /* Default FIB */
+}
 
+/**
+ * Helper function to find VRF name by FIB number
+ */
+static const char *find_vrf_name_by_fib(const struct vrf_data *vrfs, int vrf_count, int fib_num) {
+    for (int i = 0; i < vrf_count; i++) {
+        if (vrfs[i].fib == fib_num) {
+            return vrfs[i].name;
+        }
+    }
+    return NULL;
+}
 
 /**
  * Print interface table from XML response using simple parsing
  * @param xml_response XML response string
- * @return 0 on success, -1 on failure
+
  */
-int print_interface_table(const char *xml_response)
+void print_interface_table(const char *xml_response)
 {
     struct table_format fmt;
     struct interface_data *interfaces = NULL;
+    struct vrf_data *vrfs = NULL;
     int interface_count = 0;
+    int vrf_count = 0;
     int max_interfaces = 100;
+    int max_vrfs = 100;
     
     debug_log(DEBUG_INFO, "Printing interface table");
     
     if (!xml_response) {
         print_error("XML response is NULL");
-        return -1;
+        return;
     }
 
     /* Initialize table format */
@@ -90,17 +114,28 @@ int print_interface_table(const char *xml_response)
     table_add_column(&fmt, "IPv6", 4);
     table_add_column(&fmt, "Groups", 6);
     
-    /* Allocate interface array */
+    /* Allocate interface and VRF arrays */
     interfaces = malloc(max_interfaces * sizeof(struct interface_data));
     if (!interfaces) {
         print_error("Failed to allocate memory for interfaces");
-        return -1;
+        return;
     }
     
-    /* First pass: extract all interfaces and calculate widths */
+    vrfs = malloc(max_vrfs * sizeof(struct vrf_data));
+    if (!vrfs) {
+        print_error("Failed to allocate memory for VRFs");
+        free(interfaces);
+        return;
+    }
+    
+    /* Parse interfaces and VRFs from XML */
     debug_log(DEBUG_DEBUG, "Parsing interfaces from XML");
     interface_count = parse_interfaces_from_xml(xml_response, interfaces, max_interfaces);
     debug_log(DEBUG_INFO, "Parsed %d interfaces from XML", interface_count);
+    
+    debug_log(DEBUG_DEBUG, "Parsing VRFs from XML");
+    vrf_count = parse_vrfs_from_xml(xml_response, vrfs, max_vrfs);
+    debug_log(DEBUG_INFO, "Parsed %d VRFs from XML", vrf_count);
     
     /* Calculate column widths from extracted data */
     for (int i = 0; i < interface_count; i++) {
@@ -148,10 +183,17 @@ int print_interface_table(const char *xml_response)
             free(addr6_copy);
         }
         
+        /* Get VRF name for this interface */
+        const char *vrf_name = NULL;
+        int fib_num = extract_fib_from_interface_name(data->name);
+        if (fib_num > 0) {
+            vrf_name = find_vrf_name_by_fib(vrfs, vrf_count, fib_num);
+        }
+        
         /* Update column widths */
         table_update_width(&fmt, 0, strlen(data->name));
         table_update_width(&fmt, 1, strlen(strcmp(data->enabled, "true") == 0 ? "UP" : "DOWN"));
-        table_update_width(&fmt, 2, strlen(data->fib));
+        table_update_width(&fmt, 2, vrf_name ? strlen(vrf_name) : strlen(data->fib));
         table_update_width(&fmt, 3, strlen(data->mtu));
         
         /* Format flags */
@@ -186,6 +228,13 @@ int print_interface_table(const char *xml_response)
     /* Second pass: print all interfaces */
     for (int i = 0; i < interface_count; i++) {
         struct interface_data *data = &interfaces[i];
+        
+        /* Get VRF name for this interface */
+        const char *vrf_name = NULL;
+        int fib_num = extract_fib_from_interface_name(data->name);
+        if (fib_num > 0) {
+            vrf_name = find_vrf_name_by_fib(vrfs, vrf_count, fib_num);
+        }
         
         /* Format flags */
         char flag_str[16] = "";
@@ -226,7 +275,7 @@ int print_interface_table(const char *xml_response)
         for (int line = 0; line < max_lines; line++) {
             const char *name = (line == 0) ? data->name : "";
             const char *status = (line == 0) ? (strcmp(data->enabled, "true") == 0 ? "UP" : "DOWN") : "";
-            const char *vrf = (line == 0) ? data->fib : "";
+            const char *vrf = (line == 0) ? (vrf_name ? vrf_name : data->fib) : "";
             const char *mtu = (line == 0) ? data->mtu : "";
             const char *flags = (line == 0) ? flag_str : "";
             const char *ipv4 = (line < data->addr_count) ? data->addr_list[line] : "";
@@ -239,8 +288,9 @@ int print_interface_table(const char *xml_response)
     
     /* Cleanup */
     free(interfaces);
+    free(vrfs);
     
     /* Print footer */
     print_interface_footer();
-    return 0;
+
 }

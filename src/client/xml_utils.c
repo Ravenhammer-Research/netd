@@ -320,6 +320,42 @@ static void interface_end_element(void *userData, const char *name)
         } else if (strcmp(name, "bridge-members") == 0 || strstr(name, "bridge-members") != NULL) {
             strncpy(ctx->current_interface->bridge_members, content, sizeof(ctx->current_interface->bridge_members) - 1);
             ctx->current_interface->bridge_members[sizeof(ctx->current_interface->bridge_members) - 1] = '\0';
+        } else if (strcmp(name, "vlan-id") == 0) {
+            ctx->current_interface->vlan_id = atoi(content);
+        } else if (strcmp(name, "vlan-proto") == 0) {
+            strncpy(ctx->current_interface->vlan_proto, content, sizeof(ctx->current_interface->vlan_proto) - 1);
+            ctx->current_interface->vlan_proto[sizeof(ctx->current_interface->vlan_proto) - 1] = '\0';
+        } else if (strcmp(name, "vlan-pcp") == 0) {
+            ctx->current_interface->vlan_pcp = atoi(content);
+        } else if (strcmp(name, "vlan-parent") == 0) {
+            strncpy(ctx->current_interface->vlan_parent, content, sizeof(ctx->current_interface->vlan_parent) - 1);
+            ctx->current_interface->vlan_parent[sizeof(ctx->current_interface->vlan_parent) - 1] = '\0';
+        } else if (strcmp(name, "regdomain") == 0) {
+            strncpy(ctx->current_interface->wifi_regdomain, content, sizeof(ctx->current_interface->wifi_regdomain) - 1);
+            ctx->current_interface->wifi_regdomain[sizeof(ctx->current_interface->wifi_regdomain) - 1] = '\0';
+        } else if (strcmp(name, "country") == 0) {
+            strncpy(ctx->current_interface->wifi_country, content, sizeof(ctx->current_interface->wifi_country) - 1);
+            ctx->current_interface->wifi_country[sizeof(ctx->current_interface->wifi_country) - 1] = '\0';
+        } else if (strcmp(name, "authmode") == 0) {
+            strncpy(ctx->current_interface->wifi_authmode, content, sizeof(ctx->current_interface->wifi_authmode) - 1);
+            ctx->current_interface->wifi_authmode[sizeof(ctx->current_interface->wifi_authmode) - 1] = '\0';
+        } else if (strcmp(name, "privacy") == 0) {
+            strncpy(ctx->current_interface->wifi_privacy, content, sizeof(ctx->current_interface->wifi_privacy) - 1);
+            ctx->current_interface->wifi_privacy[sizeof(ctx->current_interface->wifi_privacy) - 1] = '\0';
+        } else if (strcmp(name, "txpower") == 0) {
+            ctx->current_interface->wifi_txpower = atoi(content);
+        } else if (strcmp(name, "bmiss") == 0) {
+            ctx->current_interface->wifi_bmiss = atoi(content);
+        } else if (strcmp(name, "scanvalid") == 0) {
+            ctx->current_interface->wifi_scanvalid = atoi(content);
+        } else if (strcmp(name, "features") == 0) {
+            strncpy(ctx->current_interface->wifi_features, content, sizeof(ctx->current_interface->wifi_features) - 1);
+            ctx->current_interface->wifi_features[sizeof(ctx->current_interface->wifi_features) - 1] = '\0';
+        } else if (strcmp(name, "bintval") == 0) {
+            ctx->current_interface->wifi_bintval = atoi(content);
+        } else if (strcmp(name, "parent") == 0) {
+            strncpy(ctx->current_interface->wifi_parent, content, sizeof(ctx->current_interface->wifi_parent) - 1);
+            ctx->current_interface->wifi_parent[sizeof(ctx->current_interface->wifi_parent) - 1] = '\0';
         } else if (strcmp(name, "group") == 0 || strstr(name, "group") != NULL) {
             strncpy(ctx->current_interface->groups, content, sizeof(ctx->current_interface->groups) - 1);
             ctx->current_interface->groups[sizeof(ctx->current_interface->groups) - 1] = '\0';

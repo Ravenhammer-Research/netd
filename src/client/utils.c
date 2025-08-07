@@ -148,7 +148,7 @@ const char *interface_type_to_string(interface_type_t type)
         case IF_TYPE_WIRELESS:
             return "ieee80211";
         case IF_TYPE_EPAIR:
-            return "other";
+            return "epair";
         case IF_TYPE_GIF:
             return "gif";
         case IF_TYPE_GRE:
@@ -158,15 +158,15 @@ const char *interface_type_to_string(interface_type_t type)
         case IF_TYPE_LOOPBACK:
             return "softwareLoopback";
         case IF_TYPE_OVPN:
-            return "tunnel";
+            return "ovpn";
         case IF_TYPE_TUN:
-            return "tunnel";
+            return "tun";
         case IF_TYPE_TAP:
-            return "other";
+            return "tap";
         case IF_TYPE_VLAN:
             return "l2vlan";
         case IF_TYPE_VXLAN:
-            return "l2vlan";
+            return "vxlan";
         case IF_TYPE_BRIDGE:
             return "bridge";
         default:
@@ -267,7 +267,100 @@ int parse_command(const char *line, command_t *cmd)
         cmd->object = object_type_from_string(cmd->args[0]);
     }
 
+    /* Special handling for set interface commands with complex structure */
+    debug_log(DEBUG_DEBUG, "Checking for set interface command: type=%d, object=%d, arg_count=%d", cmd->type, cmd->object, arg_count);
+    if (cmd->type == CMD_SET && cmd->object == OBJ_INTERFACE && arg_count >= 10) {
+        /* Check if this is a set interface type <type> name <name> peer <peer> vrf id <number> command */
+        if (strcmp(cmd->args[1], "type") == 0 && strcmp(cmd->args[3], "name") == 0 && 
+            strcmp(cmd->args[5], "peer") == 0 && strcmp(cmd->args[7], "vrf") == 0 && 
+            strcmp(cmd->args[8], "id") == 0) {
+            
+            /* Reorganize the arguments to match the expected format */
+            char temp_args[10][64];
+            for (int i = 0; i < arg_count; i++) {
+                strlcpy(temp_args[i], cmd->args[i], sizeof(temp_args[i]));
+            }
+            
+            /* args[0] = interface type (epair) */
+            strlcpy(cmd->args[0], temp_args[2], sizeof(cmd->args[0]));
+            /* args[1] = interface name (epair127) */
+            strlcpy(cmd->args[1], temp_args[4], sizeof(cmd->args[1]));
+            /* args[2] = property (peer) */
+            strlcpy(cmd->args[2], temp_args[5], sizeof(cmd->args[2]));
+            /* args[3] = value (b) */
+            strlcpy(cmd->args[3], temp_args[6], sizeof(cmd->args[3]));
+            /* args[4] = sub property (vrf) */
+            strlcpy(cmd->args[4], temp_args[7], sizeof(cmd->args[4]));
+            /* args[5] = sub value (18) */
+            strlcpy(cmd->args[5], temp_args[9], sizeof(cmd->args[5]));
+            
+            cmd->arg_count = 6;
+            debug_log(DEBUG_DEBUG, "Reorganized set interface command: type=%s, name=%s, property=%s, value=%s, sub_property=%s, sub_value=%s",
+                      cmd->args[0], cmd->args[1], cmd->args[2], cmd->args[3], cmd->args[4], cmd->args[5]);
+        }
+    }
+
     free(line_copy);
+    return 0;
+}
+
+/**
+ * Parse command using YACC parser
+ * @param line Command line string
+ * @param cmd Command structure to fill
+ * @return 0 on success, -1 on failure
+ */
+int parse_command_yacc(const char *line, command_t *cmd)
+{
+    extern int yyparse(void);
+    extern void yyrestart(FILE *);
+    extern FILE *yyin;
+    extern command_t *current_command;
+    extern int parse_error;
+    
+    if (!line || !cmd) {
+        return -1;
+    }
+
+    /* Initialize command structure */
+    memset(cmd, 0, sizeof(*cmd));
+    
+    /* Set up global variables for parser */
+    current_command = cmd;
+    parse_error = 0;
+    
+    /* Create a temporary file with the command line */
+    FILE *temp_file = tmpfile();
+    if (!temp_file) {
+        debug_log(DEBUG_ERROR, "Failed to create temporary file for YACC parsing");
+        return -1;
+    }
+    
+    /* Write command line to temporary file */
+    fprintf(temp_file, "%s\n", line);
+    rewind(temp_file);
+    
+    /* Set up YACC input */
+    yyin = temp_file;
+    
+    /* Parse the command */
+    debug_log(DEBUG_DEBUG, "Starting YACC parse for command: %s", line);
+    int result = yyparse();
+    debug_log(DEBUG_DEBUG, "YACC parse result: %d, parse_error: %d", result, parse_error);
+    
+    /* Clean up */
+    fclose(temp_file);
+    yyin = NULL;
+    current_command = NULL;
+    
+    if (parse_error || result != 0) {
+        debug_log(DEBUG_ERROR, "YACC parsing failed for command: %s", line);
+        return -1;
+    }
+    
+    debug_log(DEBUG_DEBUG, "YACC parsing successful: type=%d, object=%d, arg_count=%d", 
+              cmd->type, cmd->object, cmd->arg_count);
+    
     return 0;
 }
 

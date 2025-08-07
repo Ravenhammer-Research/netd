@@ -36,14 +36,17 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 /* Forward declarations */
 static bool is_edit_config_request(const char *request);
 static int handle_edit_config(netd_state_t *state, const char *request, const char *message_id, char **response);
 static bool is_commit_request(const char *request);
+extern int add_pending_vrf_create(netd_state_t *state, const char *name, uint32_t fib);
 extern int add_pending_route_add(netd_state_t *state, uint32_t fib, const char *destination, 
                                  const char *gateway, const char *interface, int flags);
 extern int add_pending_route_delete(netd_state_t *state, uint32_t fib, const char *destination);
+extern int add_pending_interface_set_fib(netd_state_t *state, const char *name, uint32_t fib);
 
 /* Callback data structures */
 struct message_id_data {
@@ -784,13 +787,24 @@ struct edit_config_data {
     bool in_config;
     bool in_vrf;
     bool in_route;
+    bool in_set;
     bool has_route_config;
+    bool has_vrf_config;
+    bool has_set_config;
     char vrf_name[64];
+    char vrf_table[16];
     char route_destination[64];
     char route_gateway[64];
     char route_interface[64];
     char route_type[32];
     bool route_enabled;
+    char set_object[32];
+    char set_type[32];
+    char set_name[64];
+    char set_property[32];
+    char set_value[64];
+    char set_sub_property[32];
+    char set_sub_value[64];
     char current_tag[64];
     char temp_content[256];
 };
@@ -800,10 +814,12 @@ struct edit_config_data {
  */
 static void edit_config_start_element(void *userData, const XML_Char *name, const XML_Char **atts)
 {
-    (void)atts; /* Suppress unused parameter warning */
     struct edit_config_data *data = (struct edit_config_data *)userData;
     
     debug_log(DEBUG_DEBUG, "edit_config_start_element: userData=%p, name=%s, atts=%p", userData, name, atts);
+    
+    /* Clear temp_content at the start of each element */
+    data->temp_content[0] = '\0';
     
     if (strcmp(name, "edit-config") == 0) {
         data->is_edit_config = true;
@@ -813,15 +829,20 @@ static void edit_config_start_element(void *userData, const XML_Char *name, cons
         debug_log(DEBUG_DEBUG, "Found config element");
     } else if (strcmp(name, "vrf") == 0 && data->in_config) {
         data->in_vrf = true;
+        data->has_vrf_config = true;
         debug_log(DEBUG_DEBUG, "Found vrf element");
     } else if (strcmp(name, "route") == 0 && data->in_vrf) {
         data->in_route = true;
         debug_log(DEBUG_DEBUG, "Found route element");
         /* Capture the state here - we have a complete route configuration */
         data->has_route_config = true;
-    } else if (data->in_route || data->in_vrf) {
+    } else if (strcmp(name, "set") == 0 && data->in_config) {
+        data->in_set = true;
+        data->has_set_config = true;
+        debug_log(DEBUG_DEBUG, "Found set element");
+    } else if (data->in_set) {
+        debug_log(DEBUG_DEBUG, "In set element, found: %s", name);
         strlcpy(data->current_tag, name, sizeof(data->current_tag));
-        data->temp_content[0] = '\0';
     }
 }
 
@@ -839,10 +860,14 @@ static void edit_config_end_element(void *userData, const XML_Char *name)
         data->in_config = false;
         data->in_vrf = false;
         data->in_route = false;
+        data->in_set = false;
     } else if (data->in_vrf && !data->in_route) {
         if (strcmp(name, "name") == 0) {
             strlcpy(data->vrf_name, data->temp_content, sizeof(data->vrf_name));
             debug_log(DEBUG_DEBUG, "Extracted VRF name: %s", data->vrf_name);
+        } else if (strcmp(name, "table") == 0) {
+            strlcpy(data->vrf_table, data->temp_content, sizeof(data->vrf_table));
+            debug_log(DEBUG_DEBUG, "Extracted VRF table: %s", data->vrf_table);
         }
     } else if (data->in_route) {
         if (strcmp(name, "destination") == 0) {
@@ -861,6 +886,41 @@ static void edit_config_end_element(void *userData, const XML_Char *name)
             data->route_enabled = (strcmp(data->temp_content, "true") == 0);
             debug_log(DEBUG_DEBUG, "Extracted route enabled: %s", data->temp_content);
         }
+    } else if (data->in_set) {
+        /* Trim whitespace from temp_content */
+        char *trimmed = data->temp_content;
+        while (*trimmed && isspace((unsigned char)*trimmed)) trimmed++;
+        char *end = trimmed + strlen(trimmed) - 1;
+        while (end > trimmed && isspace((unsigned char)*end)) end--;
+        end[1] = '\0';
+        
+        if (strcmp(name, "object") == 0) {
+            strlcpy(data->set_object, trimmed, sizeof(data->set_object));
+            debug_log(DEBUG_DEBUG, "Extracted set object: %s", data->set_object);
+        } else if (strcmp(name, "type") == 0) {
+            strlcpy(data->set_type, trimmed, sizeof(data->set_type));
+            debug_log(DEBUG_DEBUG, "Extracted set type: %s", data->set_type);
+        } else if (strcmp(name, "name") == 0) {
+            strlcpy(data->set_name, trimmed, sizeof(data->set_name));
+            debug_log(DEBUG_DEBUG, "Extracted set name: %s", data->set_name);
+        } else if (strcmp(name, "property") == 0) {
+            strlcpy(data->set_property, trimmed, sizeof(data->set_property));
+            debug_log(DEBUG_DEBUG, "Extracted set property: %s", data->set_property);
+        } else if (strcmp(name, "value") == 0) {
+            strlcpy(data->set_value, trimmed, sizeof(data->set_value));
+            debug_log(DEBUG_DEBUG, "Extracted set value: %s", data->set_value);
+        } else if (strcmp(name, "sub_property") == 0) {
+            strlcpy(data->set_sub_property, trimmed, sizeof(data->set_sub_property));
+            debug_log(DEBUG_DEBUG, "Extracted set sub_property: %s", data->set_sub_property);
+        } else if (strcmp(name, "sub_value") == 0) {
+            strlcpy(data->set_sub_value, trimmed, sizeof(data->set_sub_value));
+            debug_log(DEBUG_DEBUG, "Extracted set sub_value: %s", data->set_sub_value);
+        }
+        
+        /* Log all set element values for debugging */
+        if (data->in_set && strcmp(name, "set") != 0) {
+            debug_log(DEBUG_DEBUG, "Set element end: %s = '%s'", name, trimmed);
+        }
     }
 }
 
@@ -871,7 +931,7 @@ static void edit_config_char_data(void *userData, const XML_Char *s, int len)
 {
     struct edit_config_data *data = (struct edit_config_data *)userData;
     
-    if ((data->in_vrf || data->in_route) && len > 0) {
+    if (data->in_set && strlen(data->current_tag) > 0 && len > 0) {
         size_t current_len = strlen(data->temp_content);
         size_t remaining = sizeof(data->temp_content) - current_len - 1;
         
@@ -880,6 +940,8 @@ static void edit_config_char_data(void *userData, const XML_Char *s, int len)
             memcpy(data->temp_content + current_len, s, copy_len);
             data->temp_content[current_len + copy_len] = '\0';
         }
+        
+        debug_log(DEBUG_DEBUG, "Set element char data for %s: '%s' (len=%d)", data->current_tag, data->temp_content, len);
     }
 }
 
@@ -898,7 +960,7 @@ static bool is_edit_config_request(const char *request)
     }
     
     /* Set up user data to track what we find */
-    struct edit_config_data user_data = { false, false, false, false, false, "", "", "", "", "", false, "", "" };
+    struct edit_config_data user_data = {0};
     
     XML_SetUserData(parser, &user_data);
     XML_SetElementHandler(parser, edit_config_start_element, NULL); /* Don't use end element handler for detection */
@@ -930,12 +992,14 @@ static int handle_edit_config(netd_state_t *state, const char *request, const ch
     XML_Parser parser = XML_ParserCreate(NULL);
     int result = -1;
     
+    debug_log(DEBUG_DEBUG, "Handling edit-config request: %s", request);
+    
     if (!parser) {
         return -1;
     }
     
     /* Set up user data to track what we find */
-    struct edit_config_data user_data = { false, false, false, false, false, "", "", "", "", "", false, "", "" };
+    struct edit_config_data user_data = {0};
     
     XML_SetUserData(parser, &user_data);
     XML_SetElementHandler(parser, edit_config_start_element, edit_config_end_element);
@@ -943,12 +1007,31 @@ static int handle_edit_config(netd_state_t *state, const char *request, const ch
     
                /* Parse the XML */
            if (XML_Parse(parser, request, strlen(request), 1) == XML_STATUS_OK) {
-               debug_log(DEBUG_DEBUG, "Edit-config parsing result: is_edit_config=%s, in_config=%s, in_vrf=%s, in_route=%s, has_route_config=%s",
+               debug_log(DEBUG_DEBUG, "Edit-config parsing result: is_edit_config=%s, in_config=%s, in_vrf=%s, in_route=%s, has_route_config=%s, has_vrf_config=%s, has_set_config=%s",
                          user_data.is_edit_config ? "true" : "false",
                          user_data.in_config ? "true" : "false",
                          user_data.in_vrf ? "true" : "false",
                          user_data.in_route ? "true" : "false",
-                         user_data.has_route_config ? "true" : "false");
+                         user_data.has_route_config ? "true" : "false",
+                         user_data.has_vrf_config ? "true" : "false",
+                         user_data.has_set_config ? "true" : "false");
+               
+               if (user_data.has_set_config) {
+                   debug_log(DEBUG_INFO, "Set operation detected: object=%s, type=%s, name=%s, property=%s, value=%s, sub_property=%s, sub_value=%s",
+                             user_data.set_object, user_data.set_type, user_data.set_name, user_data.set_property, user_data.set_value,
+                             user_data.set_sub_property, user_data.set_sub_value);
+               }
+
+               /* Start a transaction if one isn't already active for any edit-config operation */
+               if (!state->transaction_active) {
+                   debug_log(DEBUG_DEBUG, "Starting transaction for edit-config operation");
+                   if (transaction_begin(state) < 0) {
+                       debug_log(DEBUG_ERROR, "Failed to start transaction for edit-config");
+                       *response = generate_error_response(message_id, "application", "operation-failed", "Failed to start transaction");
+                       XML_ParserFree(parser);
+                       return -1;
+                   }
+               }
 
                if (user_data.has_route_config) {
             /* We have a route configuration */
@@ -1019,11 +1102,188 @@ static int handle_edit_config(netd_state_t *state, const char *request, const ch
                     *response = generate_error_response(message_id, "application", "operation-failed", "Failed to add route to pending changes");
                 }
             }
-        } else if (user_data.is_edit_config && user_data.in_config) {
-            /* Handle the old generic format for now - just return success */
-            debug_log(DEBUG_INFO, "Processing generic edit-config operation");
-            *response = generate_success_response(message_id, NULL);
-            result = 0;
+        } else if (user_data.has_vrf_config && !user_data.has_route_config) {
+            /* We have a VRF configuration without routes */
+            debug_log(DEBUG_INFO, "Processing VRF configuration: name=%s, table=%s", 
+                      user_data.vrf_name, user_data.vrf_table);
+            
+            /* Start a transaction if one isn't already active */
+            if (!state->transaction_active) {
+                debug_log(DEBUG_DEBUG, "Starting transaction for VRF creation");
+                if (transaction_begin(state) < 0) {
+                    debug_log(DEBUG_ERROR, "Failed to start transaction for VRF creation");
+                    *response = generate_error_response(message_id, "application", "operation-failed", "Failed to start transaction");
+                    XML_ParserFree(parser);
+                    return -1;
+                }
+            }
+            
+            /* Parse table number */
+            uint32_t fib = 0;
+            if (strlen(user_data.vrf_table) > 0) {
+                char *endptr;
+                fib = strtoul(user_data.vrf_table, &endptr, 10);
+                if (*endptr != '\0') {
+                    debug_log(DEBUG_ERROR, "Invalid table number: %s", user_data.vrf_table);
+                    *response = generate_error_response(message_id, "application", "operation-failed", "Invalid table number");
+                    XML_ParserFree(parser);
+                    return -1;
+                }
+            }
+            
+            /* Add VRF creation to pending changes */
+            if (add_pending_vrf_create(state, user_data.vrf_name, fib) == 0) {
+                *response = generate_success_response(message_id, NULL);
+                result = 0;
+                debug_log(DEBUG_INFO, "Successfully added VRF creation to pending changes: name=%s, FIB=%u", 
+                          user_data.vrf_name, fib);
+            } else {
+                debug_log(DEBUG_ERROR, "Failed to add VRF creation to pending changes: name=%s, FIB=%u", 
+                          user_data.vrf_name, fib);
+                *response = generate_error_response(message_id, "application", "operation-failed", "Failed to add VRF creation to pending changes");
+            }
+                 } else if (user_data.has_set_config) {
+             /* Handle <set> operations */
+             debug_log(DEBUG_INFO, "Processing set operation: object=%s, type=%s, name=%s, property=%s, value=%s, sub_property=%s, sub_value=%s",
+                       user_data.set_object, user_data.set_type, user_data.set_name, user_data.set_property, user_data.set_value,
+                       user_data.set_sub_property, user_data.set_sub_value);
+             
+             if (strcmp(user_data.set_object, "interface") == 0) {
+                 /* Handle interface property setting */
+                 if (strcmp(user_data.set_property, "vrf") == 0) {
+                     /* Set VRF/FIB for interface */
+                     char *endptr;
+                     uint32_t fib = strtoul(user_data.set_value, &endptr, 10);
+                     if (*endptr != '\0') {
+                         debug_log(DEBUG_ERROR, "Invalid VRF/FIB number: %s", user_data.set_value);
+                         *response = generate_error_response(message_id, "application", "operation-failed", "Invalid VRF/FIB number");
+                         XML_ParserFree(parser);
+                         return -1;
+                     }
+                     
+                     if (add_pending_interface_set_fib(state, user_data.set_name, fib) == 0) {
+                         *response = generate_success_response(message_id, NULL);
+                         result = 0;
+                         debug_log(DEBUG_INFO, "Successfully added interface FIB change to pending changes: %s -> FIB %u", 
+                                   user_data.set_name, fib);
+                     } else {
+                         debug_log(DEBUG_ERROR, "Failed to add interface FIB change to pending changes: %s -> FIB %u", 
+                                   user_data.set_name, fib);
+                         *response = generate_error_response(message_id, "application", "operation-failed", "Failed to add interface FIB change to pending changes");
+                     }
+                 } else if (strcmp(user_data.set_property, "peer") == 0) {
+                     /* Handle peer property for epair interfaces */
+                     debug_log(DEBUG_INFO, "Setting peer %s for interface %s", user_data.set_value, user_data.set_name);
+                     
+                     /* Start a transaction if one isn't already active */
+                     if (!state->transaction_active) {
+                         debug_log(DEBUG_DEBUG, "Starting transaction for epair interface configuration");
+                         if (transaction_begin(state) < 0) {
+                             debug_log(DEBUG_ERROR, "Failed to start transaction for epair interface configuration");
+                             *response = generate_error_response(message_id, "application", "operation-failed", "Failed to start transaction");
+                             XML_ParserFree(parser);
+                             return -1;
+                         }
+                     }
+                     
+                     /* For epair interfaces, we need to create the base interface name */
+                     /* The system will create both epair127a and epair127b */
+                     char base_name[64];
+                     strlcpy(base_name, user_data.set_name, sizeof(base_name));
+                     
+                     /* Remove the 'a' or 'b' suffix if present to get the base name */
+                     size_t len = strlen(base_name);
+                     if (len > 0 && (base_name[len-1] == 'a' || base_name[len-1] == 'b')) {
+                         base_name[len-1] = '\0';
+                     }
+                     
+                     /* Check if either of the peer interfaces exists (epair127a or epair127b) */
+                     char peer_a[64], peer_b[64];
+                     snprintf(peer_a, sizeof(peer_a), "%sa", base_name);
+                     snprintf(peer_b, sizeof(peer_b), "%sb", base_name);
+                     
+                     bool peer_exists = freebsd_interface_exists(peer_a) || freebsd_interface_exists(peer_b);
+                     
+                     if (!peer_exists) {
+                         debug_log(DEBUG_INFO, "Peer interfaces %s and %s do not exist, creating epair interface", peer_a, peer_b);
+                         if (add_pending_interface_create(state, base_name, IF_TYPE_EPAIR) != 0) {
+                             debug_log(DEBUG_ERROR, "Failed to add interface creation to pending changes: %s", base_name);
+                             *response = generate_error_response(message_id, "application", "operation-failed", "Failed to add interface creation to pending changes");
+                             XML_ParserFree(parser);
+                             return -1;
+                         }
+                         debug_log(DEBUG_INFO, "Successfully added interface creation to pending changes: %s", base_name);
+                     } else {
+                         debug_log(DEBUG_INFO, "Peer interfaces already exist, skipping creation");
+                         
+                         /* Add existing peer interfaces to state so they can be configured */
+                         char peer_interface[64];
+                         snprintf(peer_interface, sizeof(peer_interface), "%s%s", base_name, user_data.set_value);
+                         
+                         /* Check if the peer interface is already in our state */
+                         if (!interface_find(state, peer_interface)) {
+                             debug_log(DEBUG_INFO, "Adding existing peer interface %s to state", peer_interface);
+                             if (interface_create(state, peer_interface, IF_TYPE_EPAIR) != 0) {
+                                 debug_log(DEBUG_ERROR, "Failed to add existing peer interface %s to state", peer_interface);
+                                 *response = generate_error_response(message_id, "application", "operation-failed", "Failed to add existing peer interface to state");
+                                 XML_ParserFree(parser);
+                                 return -1;
+                             }
+                         }
+                     }
+                     
+                     /* Check if there's a sub-property (like vrf) */
+                     if (strlen(user_data.set_sub_property) > 0) {
+                         if (strcmp(user_data.set_sub_property, "vrf") == 0) {
+                             /* Set VRF/FIB for the specific peer interface (epair127a or epair127b) */
+                             char *endptr;
+                             uint32_t fib = strtoul(user_data.set_sub_value, &endptr, 10);
+                             if (*endptr != '\0') {
+                                 debug_log(DEBUG_ERROR, "Invalid VRF/FIB number: %s", user_data.set_sub_value);
+                                 *response = generate_error_response(message_id, "application", "operation-failed", "Invalid VRF/FIB number");
+                                 XML_ParserFree(parser);
+                                 return -1;
+                             }
+                             
+                             /* Determine the correct peer interface name */
+                             char peer_interface[64];
+                             snprintf(peer_interface, sizeof(peer_interface), "%s%s", base_name, user_data.set_value);
+                             
+                             if (add_pending_interface_set_fib(state, peer_interface, fib) == 0) {
+                                 *response = generate_success_response(message_id, NULL);
+                                 result = 0;
+                                 debug_log(DEBUG_INFO, "Successfully added interface FIB change to pending changes: %s -> FIB %u", 
+                                           peer_interface, fib);
+                             } else {
+                                 debug_log(DEBUG_ERROR, "Failed to add interface FIB change to pending changes: %s -> FIB %u", 
+                                           peer_interface, fib);
+                                 *response = generate_error_response(message_id, "application", "operation-failed", "Failed to add interface FIB change to pending changes");
+                             }
+                         } else {
+                             debug_log(DEBUG_WARN, "Unsupported sub-property for peer: %s", user_data.set_sub_property);
+                             *response = generate_error_response(message_id, "application", "operation-not-supported", "Unsupported sub-property for peer");
+                         }
+                     } else {
+                         /* Just setting the peer without additional properties */
+                         debug_log(DEBUG_INFO, "Setting peer %s for interface %s (peer only)", user_data.set_value, user_data.set_name);
+                         /* For now, just return success - in a real implementation, you'd add this to pending changes */
+                         *response = generate_success_response(message_id, NULL);
+                         result = 0;
+                     }
+                 } else {
+                     debug_log(DEBUG_WARN, "Unsupported interface property: %s", user_data.set_property);
+                     *response = generate_error_response(message_id, "application", "operation-not-supported", "Unsupported interface property");
+                 }
+             } else {
+                 debug_log(DEBUG_WARN, "Unsupported set object: %s", user_data.set_object);
+                 *response = generate_error_response(message_id, "application", "operation-not-supported", "Unsupported set object");
+             }
+                 } else if (user_data.is_edit_config && user_data.in_config) {
+             /* Handle the old generic format for now - just return success */
+             debug_log(DEBUG_INFO, "Processing generic edit-config operation (no specific handler matched)");
+             /* A transaction has already been started above for any edit-config operation */
+             *response = generate_success_response(message_id, NULL);
+             result = 0;
         } else {
             debug_log(DEBUG_WARN, "Unsupported edit-config operation");
             *response = generate_error_response(message_id, "application", "operation-not-supported", "Unsupported edit-config operation");

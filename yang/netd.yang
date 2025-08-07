@@ -27,6 +27,61 @@ module netd {
       "Initial version";
   }
 
+  /* FreeBSD-specific interface types */
+  identity freebsd-interface-type {
+    base if:interface-type;
+    description
+      "Base identity for FreeBSD-specific interface types";
+  }
+
+  identity epair {
+    base freebsd-interface-type;
+    description
+      "FreeBSD epair interface - Ethernet pair interface for connecting two network stacks";
+  }
+
+  identity gif {
+    base freebsd-interface-type;
+    description
+      "FreeBSD gif interface - Generic tunnel interface";
+  }
+
+  identity gre {
+    base freebsd-interface-type;
+    description
+      "FreeBSD gre interface - Generic Routing Encapsulation tunnel interface";
+  }
+
+  identity lagg {
+    base freebsd-interface-type;
+    description
+      "FreeBSD lagg interface - Link aggregation interface";
+  }
+
+  identity ovpn {
+    base freebsd-interface-type;
+    description
+      "FreeBSD ovpn interface - OpenVPN tunnel interface";
+  }
+
+  identity tun {
+    base freebsd-interface-type;
+    description
+      "FreeBSD tun interface - Point-to-point tunnel interface";
+  }
+
+  identity tap {
+    base freebsd-interface-type;
+    description
+      "FreeBSD tap interface - Ethernet tunnel interface";
+  }
+
+  identity vxlan {
+    base freebsd-interface-type;
+    description
+      "FreeBSD vxlan interface - Virtual Extensible LAN interface";
+  }
+
   /* VRF configuration - augment frr-vrf */
   augment "/frr-vrf:lib/frr-vrf:vrf" {
     description "VRF (Virtual Routing and Forwarding) configuration extensions";
@@ -66,6 +121,84 @@ module netd {
     leaf group {
       type string;
       description "Interface group";
+    }
+    
+    container vlan-info {
+      description "VLAN-specific information";
+      
+      leaf vlan-id {
+        type uint16;
+        description "VLAN ID";
+      }
+      
+      leaf vlan-proto {
+        type string;
+        description "VLAN protocol (e.g., 802.1q, 802.1ad)";
+      }
+      
+      leaf vlan-pcp {
+        type uint8;
+        description "VLAN Priority Code Point";
+      }
+      
+      leaf vlan-parent {
+        type string;
+        description "Parent interface name";
+      }
+    }
+    
+    container wifi-info {
+      description "WiFi-specific information";
+      
+      leaf regdomain {
+        type string;
+        description "Regulatory domain (e.g., FCC)";
+      }
+      
+      leaf country {
+        type string;
+        description "Country code (e.g., US)";
+      }
+      
+      leaf authmode {
+        type string;
+        description "Authentication mode (e.g., OPEN, WPA)";
+      }
+      
+      leaf privacy {
+        type string;
+        description "Privacy setting (e.g., OFF, ON)";
+      }
+      
+      leaf txpower {
+        type int32;
+        description "Transmit power in dBm";
+      }
+      
+      leaf bmiss {
+        type int32;
+        description "Beacon miss threshold";
+      }
+      
+      leaf scanvalid {
+        type int32;
+        description "Scan validity period";
+      }
+      
+      leaf features {
+        type string;
+        description "WiFi features (e.g., wme)";
+      }
+      
+      leaf bintval {
+        type int32;
+        description "Beacon interval";
+      }
+      
+      leaf parent {
+        type string;
+        description "Parent interface name";
+      }
     }
     
 

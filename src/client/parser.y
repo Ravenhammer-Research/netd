@@ -84,7 +84,7 @@ int yylex(void);
 %token <cmd_type> COMMIT
 %token <cmd_type> SAVE
 
-%token <obj_type> VRF
+%token <string> VRF
 %token <obj_type> INTERFACE
 %token <obj_type> ROUTE
 
@@ -104,14 +104,34 @@ int yylex(void);
 %token <family> INET
 %token <family> INET6
 
-%token TABLE
-%token STATIC
-%token ADDRESS
-%token MTU
-%token GROUP
-%token REJECT_TOKEN
-%token BLACKHOLE
-%token ID_TOKEN
+%token <string> TABLE
+%token <string> STATIC
+%token <string> ADDRESS
+%token <string> MTU
+%token <string> GROUP
+%token <string> REJECT_TOKEN
+%token <string> BLACKHOLE
+%token <string> ID_TOKEN
+%token <string> TYPE
+%token <string> NAME
+%token <string> MEMBER
+%token <string> LAGGPROTO
+%token <string> LAGGPORT
+%token <string> PEER
+%token <string> VLANDEV
+%token <string> VLANPROTO
+%token <string> TUNNEL
+%token <string> LOCAL
+%token <string> REMOTE
+%token <string> TUNNELVRF
+%token <string> LAYER2
+%token <string> HOST
+%token <string> GATEWAY
+%token <string> IFACE
+%token <string> VXLANID
+%token <string> VXLANLOCAL
+%token <string> VXLANREMOTE
+%token <string> VXLANDEV
 
 %type <string> address_family
 %type <string> interface_type
@@ -137,47 +157,325 @@ set_command
             current_command->arg_count = 2;
         }
     }
-    | SET INTERFACE interface_type IDENTIFIER vrf_assignment {
+    | SET VRF ID_TOKEN NUMBER NAME IDENTIFIER {
+        if (current_command) {
+            current_command->type = CMD_SET;
+            current_command->object = OBJ_VRF;
+            strlcpy(current_command->args[0], $3, sizeof(current_command->args[0]));
+            strlcpy(current_command->args[1], "name", sizeof(current_command->args[1]));
+            strlcpy(current_command->args[2], $5, sizeof(current_command->args[2]));
+            current_command->arg_count = 3;
+        }
+    }
+    | SET INTERFACE TYPE interface_type NAME IDENTIFIER vrf_assignment {
         if (current_command) {
             current_command->type = CMD_SET;
             current_command->object = OBJ_INTERFACE;
-            strlcpy(current_command->args[0], $3, sizeof(current_command->args[0]));
-            strlcpy(current_command->args[1], $4, sizeof(current_command->args[1]));
+            strlcpy(current_command->args[0], $4, sizeof(current_command->args[0]));
+            strlcpy(current_command->args[1], $6, sizeof(current_command->args[1]));
             strlcpy(current_command->args[2], "vrf", sizeof(current_command->args[2]));
-            strlcpy(current_command->args[3], $5, sizeof(current_command->args[3]));
+            strlcpy(current_command->args[3], $7, sizeof(current_command->args[3]));
             current_command->arg_count = 4;
         }
     }
-    | SET INTERFACE interface_type IDENTIFIER address_assignment {
+    | SET INTERFACE TYPE interface_type NAME IDENTIFIER address_assignment {
         if (current_command) {
             current_command->type = CMD_SET;
             current_command->object = OBJ_INTERFACE;
-            strlcpy(current_command->args[0], $3, sizeof(current_command->args[0]));
-            strlcpy(current_command->args[1], $4, sizeof(current_command->args[1]));
+            strlcpy(current_command->args[0], $4, sizeof(current_command->args[0]));
+            strlcpy(current_command->args[1], $6, sizeof(current_command->args[1]));
             strlcpy(current_command->args[2], "address", sizeof(current_command->args[2]));
-            strlcpy(current_command->args[3], $5, sizeof(current_command->args[3]));
+            strlcpy(current_command->args[3], $7, sizeof(current_command->args[3]));
             current_command->arg_count = 4;
         }
     }
-    | SET INTERFACE interface_type IDENTIFIER mtu_assignment {
+    | SET INTERFACE TYPE interface_type NAME IDENTIFIER mtu_assignment {
         if (current_command) {
             current_command->type = CMD_SET;
             current_command->object = OBJ_INTERFACE;
-            strlcpy(current_command->args[0], $3, sizeof(current_command->args[0]));
-            strlcpy(current_command->args[1], $4, sizeof(current_command->args[1]));
+            strlcpy(current_command->args[0], $4, sizeof(current_command->args[0]));
+            strlcpy(current_command->args[1], $6, sizeof(current_command->args[1]));
             strlcpy(current_command->args[2], "mtu", sizeof(current_command->args[2]));
-            strlcpy(current_command->args[3], $5, sizeof(current_command->args[3]));
+            strlcpy(current_command->args[3], $7, sizeof(current_command->args[3]));
             current_command->arg_count = 4;
         }
     }
-    | SET INTERFACE interface_type IDENTIFIER group_assignment {
+    | SET INTERFACE TYPE interface_type NAME IDENTIFIER group_assignment {
         if (current_command) {
             current_command->type = CMD_SET;
             current_command->object = OBJ_INTERFACE;
-            strlcpy(current_command->args[0], $3, sizeof(current_command->args[0]));
-            strlcpy(current_command->args[1], $4, sizeof(current_command->args[1]));
+            strlcpy(current_command->args[0], $4, sizeof(current_command->args[0]));
+            strlcpy(current_command->args[1], $6, sizeof(current_command->args[1]));
             strlcpy(current_command->args[2], "group", sizeof(current_command->args[2]));
-            strlcpy(current_command->args[3], $5, sizeof(current_command->args[3]));
+            strlcpy(current_command->args[3], $7, sizeof(current_command->args[3]));
+            current_command->arg_count = 4;
+        }
+    }
+    | SET INTERFACE TYPE interface_type NAME IDENTIFIER MEMBER IDENTIFIER {
+        if (current_command) {
+            /* Only allow member operations for bridge interfaces */
+            if (strcmp($4, "bridge") != 0) {
+                fprintf(stderr, "Error: member operations only valid for bridge interfaces\n");
+                return -1;
+            }
+            current_command->type = CMD_SET;
+            current_command->object = OBJ_INTERFACE;
+            strlcpy(current_command->args[0], $4, sizeof(current_command->args[0]));
+            strlcpy(current_command->args[1], $6, sizeof(current_command->args[1]));
+            strlcpy(current_command->args[2], "member", sizeof(current_command->args[2]));
+            strlcpy(current_command->args[3], $8, sizeof(current_command->args[3]));
+            current_command->arg_count = 4;
+        }
+    }
+    | SET INTERFACE TYPE interface_type NAME IDENTIFIER LAGGPROTO IDENTIFIER {
+        if (current_command) {
+            /* Only allow laggproto operations for lagg interfaces */
+            if (strcmp($4, "lagg") != 0) {
+                fprintf(stderr, "Error: laggproto operations only valid for lagg interfaces\n");
+                return -1;
+            }
+            current_command->type = CMD_SET;
+            current_command->object = OBJ_INTERFACE;
+            strlcpy(current_command->args[0], $4, sizeof(current_command->args[0]));
+            strlcpy(current_command->args[1], $6, sizeof(current_command->args[1]));
+            strlcpy(current_command->args[2], "laggproto", sizeof(current_command->args[2]));
+            strlcpy(current_command->args[3], $8, sizeof(current_command->args[3]));
+            current_command->arg_count = 4;
+        }
+    }
+    | SET INTERFACE TYPE interface_type NAME IDENTIFIER LAGGPORT IDENTIFIER {
+        if (current_command) {
+            /* Only allow laggport operations for lagg interfaces */
+            if (strcmp($4, "lagg") != 0) {
+                fprintf(stderr, "Error: laggport operations only valid for lagg interfaces\n");
+                return -1;
+            }
+            current_command->type = CMD_SET;
+            current_command->object = OBJ_INTERFACE;
+            strlcpy(current_command->args[0], $4, sizeof(current_command->args[0]));
+            strlcpy(current_command->args[1], $6, sizeof(current_command->args[1]));
+            strlcpy(current_command->args[2], "laggport", sizeof(current_command->args[2]));
+            strlcpy(current_command->args[3], $8, sizeof(current_command->args[3]));
+            current_command->arg_count = 4;
+        }
+    }
+    | SET INTERFACE TYPE interface_type NAME IDENTIFIER PEER IDENTIFIER {
+        if (current_command) {
+            /* Only allow peer operations for epair interfaces */
+            if (strcmp($4, "epair") != 0) {
+                fprintf(stderr, "Error: peer operations only valid for epair interfaces\n");
+                return -1;
+            }
+            current_command->type = CMD_SET;
+            current_command->object = OBJ_INTERFACE;
+            strlcpy(current_command->args[0], $4, sizeof(current_command->args[0]));
+            strlcpy(current_command->args[1], $6, sizeof(current_command->args[1]));
+            strlcpy(current_command->args[2], "peer", sizeof(current_command->args[2]));
+            strlcpy(current_command->args[3], $8, sizeof(current_command->args[3]));
+            current_command->arg_count = 4;
+        }
+    }
+    | SET INTERFACE TYPE interface_type NAME IDENTIFIER PEER IDENTIFIER vrf_assignment {
+        if (current_command) {
+            /* Only allow peer operations for epair interfaces */
+            if (strcmp($4, "epair") != 0) {
+                fprintf(stderr, "Error: peer operations only valid for epair interfaces\n");
+                return -1;
+            }
+            current_command->type = CMD_SET;
+            current_command->object = OBJ_INTERFACE;
+            strlcpy(current_command->args[0], $4, sizeof(current_command->args[0]));
+            strlcpy(current_command->args[1], $6, sizeof(current_command->args[1]));
+            strlcpy(current_command->args[2], "peer", sizeof(current_command->args[2]));
+            strlcpy(current_command->args[3], $8, sizeof(current_command->args[3]));
+            strlcpy(current_command->args[4], "vrf", sizeof(current_command->args[4]));
+            strlcpy(current_command->args[5], $9, sizeof(current_command->args[5]));
+            current_command->arg_count = 6;
+        }
+    }
+    | SET INTERFACE TYPE interface_type NAME IDENTIFIER PEER IDENTIFIER address_assignment {
+        if (current_command) {
+            /* Only allow peer operations for epair interfaces */
+            if (strcmp($4, "epair") != 0) {
+                fprintf(stderr, "Error: peer operations only valid for epair interfaces\n");
+                return -1;
+            }
+            current_command->type = CMD_SET;
+            current_command->object = OBJ_INTERFACE;
+            strlcpy(current_command->args[0], $4, sizeof(current_command->args[0]));
+            strlcpy(current_command->args[1], $6, sizeof(current_command->args[1]));
+            strlcpy(current_command->args[2], "peer", sizeof(current_command->args[2]));
+            strlcpy(current_command->args[3], $8, sizeof(current_command->args[3]));
+            strlcpy(current_command->args[4], "address", sizeof(current_command->args[4]));
+            strlcpy(current_command->args[5], $9, sizeof(current_command->args[5]));
+            current_command->arg_count = 6;
+        }
+    }
+    | SET INTERFACE TYPE interface_type NAME IDENTIFIER VLANDEV IDENTIFIER {
+        if (current_command) {
+            /* Only allow vlandev operations for vlan interfaces */
+            if (strcmp($4, "vlan") != 0) {
+                fprintf(stderr, "Error: vlandev operations only valid for vlan interfaces\n");
+                return -1;
+            }
+            current_command->type = CMD_SET;
+            current_command->object = OBJ_INTERFACE;
+            strlcpy(current_command->args[0], $4, sizeof(current_command->args[0]));
+            strlcpy(current_command->args[1], $6, sizeof(current_command->args[1]));
+            strlcpy(current_command->args[2], "vlandev", sizeof(current_command->args[2]));
+            strlcpy(current_command->args[3], $8, sizeof(current_command->args[3]));
+            current_command->arg_count = 4;
+        }
+    }
+    | SET INTERFACE TYPE interface_type NAME IDENTIFIER VLANPROTO IDENTIFIER {
+        if (current_command) {
+            /* Only allow vlanproto operations for vlan interfaces */
+            if (strcmp($4, "vlan") != 0) {
+                fprintf(stderr, "Error: vlanproto operations only valid for vlan interfaces\n");
+                return -1;
+            }
+            current_command->type = CMD_SET;
+            current_command->object = OBJ_INTERFACE;
+            strlcpy(current_command->args[0], $4, sizeof(current_command->args[0]));
+            strlcpy(current_command->args[1], $6, sizeof(current_command->args[1]));
+            strlcpy(current_command->args[2], "vlanproto", sizeof(current_command->args[2]));
+            strlcpy(current_command->args[3], $8, sizeof(current_command->args[3]));
+            current_command->arg_count = 4;
+        }
+    }
+    | SET INTERFACE TYPE interface_type NAME IDENTIFIER TUNNEL address_family LOCAL IPV4_ADDRESS REMOTE IPV4_ADDRESS {
+        if (current_command) {
+            /* Only allow tunnel operations for gif interfaces */
+            if (strcmp($4, "gif") != 0) {
+                fprintf(stderr, "Error: tunnel operations only valid for gif interfaces\n");
+                return -1;
+            }
+            current_command->type = CMD_SET;
+            current_command->object = OBJ_INTERFACE;
+            strlcpy(current_command->args[0], $4, sizeof(current_command->args[0]));
+            strlcpy(current_command->args[1], $6, sizeof(current_command->args[1]));
+            strlcpy(current_command->args[2], "tunnel", sizeof(current_command->args[2]));
+            strlcpy(current_command->args[3], $7, sizeof(current_command->args[3]));
+            strlcpy(current_command->args[4], $9, sizeof(current_command->args[4]));
+            strlcpy(current_command->args[5], $11, sizeof(current_command->args[5]));
+            current_command->arg_count = 6;
+        }
+    }
+    | SET INTERFACE TYPE interface_type NAME IDENTIFIER TUNNEL address_family LOCAL IPV6_ADDRESS REMOTE IPV6_ADDRESS {
+        if (current_command) {
+            /* Only allow tunnel operations for gif interfaces */
+            if (strcmp($4, "gif") != 0) {
+                fprintf(stderr, "Error: tunnel operations only valid for gif interfaces\n");
+                return -1;
+            }
+            current_command->type = CMD_SET;
+            current_command->object = OBJ_INTERFACE;
+            strlcpy(current_command->args[0], $4, sizeof(current_command->args[0]));
+            strlcpy(current_command->args[1], $6, sizeof(current_command->args[1]));
+            strlcpy(current_command->args[2], "tunnel", sizeof(current_command->args[2]));
+            strlcpy(current_command->args[3], $7, sizeof(current_command->args[3]));
+            strlcpy(current_command->args[4], $9, sizeof(current_command->args[4]));
+            strlcpy(current_command->args[5], $11, sizeof(current_command->args[5]));
+            current_command->arg_count = 6;
+        }
+    }
+    | SET INTERFACE TYPE interface_type NAME IDENTIFIER TUNNELVRF ID_TOKEN NUMBER {
+        if (current_command) {
+            /* Only allow tunnelvrf operations for gif interfaces */
+            if (strcmp($4, "gif") != 0) {
+                fprintf(stderr, "Error: tunnelvrf operations only valid for gif interfaces\n");
+                return -1;
+            }
+            current_command->type = CMD_SET;
+            current_command->object = OBJ_INTERFACE;
+            strlcpy(current_command->args[0], $4, sizeof(current_command->args[0]));
+            strlcpy(current_command->args[1], $6, sizeof(current_command->args[1]));
+            strlcpy(current_command->args[2], "tunnelvrf", sizeof(current_command->args[2]));
+            strlcpy(current_command->args[3], $8, sizeof(current_command->args[3]));
+            current_command->arg_count = 4;
+        }
+    }
+    | SET INTERFACE TYPE interface_type NAME IDENTIFIER LAYER2 VLAN ID_TOKEN NUMBER {
+        if (current_command) {
+            /* Only allow layer2 vlan operations for vlan interfaces */
+            if (strcmp($4, "vlan") != 0) {
+                fprintf(stderr, "Error: layer2 vlan operations only valid for vlan interfaces\n");
+                return -1;
+            }
+            current_command->type = CMD_SET;
+            current_command->object = OBJ_INTERFACE;
+            strlcpy(current_command->args[0], $4, sizeof(current_command->args[0]));
+            strlcpy(current_command->args[1], $6, sizeof(current_command->args[1]));
+            strlcpy(current_command->args[2], "layer2", sizeof(current_command->args[2]));
+            strlcpy(current_command->args[3], $9, sizeof(current_command->args[3]));
+            current_command->arg_count = 4;
+        }
+    }
+    | SET INTERFACE TYPE interface_type NAME IDENTIFIER VXLANID ID_TOKEN NUMBER {
+        if (current_command) {
+            /* Only allow vxlanid operations for vxlan interfaces */
+            if (strcmp($4, "vxlan") != 0) {
+                fprintf(stderr, "Error: vxlanid operations only valid for vxlan interfaces\n");
+                return -1;
+            }
+            current_command->type = CMD_SET;
+            current_command->object = OBJ_INTERFACE;
+            strlcpy(current_command->args[0], $4, sizeof(current_command->args[0]));
+            strlcpy(current_command->args[1], $6, sizeof(current_command->args[1]));
+            strlcpy(current_command->args[2], "vxlanid", sizeof(current_command->args[2]));
+            strlcpy(current_command->args[3], $8, sizeof(current_command->args[3]));
+            current_command->arg_count = 4;
+        }
+    }
+    | SET INTERFACE TYPE interface_type NAME IDENTIFIER TUNNEL address_family VXLANLOCAL IPV4_ADDRESS VXLANREMOTE IPV4_ADDRESS {
+        if (current_command) {
+            /* Only allow tunnel operations for vxlan interfaces */
+            if (strcmp($4, "vxlan") != 0) {
+                fprintf(stderr, "Error: tunnel operations only valid for vxlan interfaces\n");
+                return -1;
+            }
+            current_command->type = CMD_SET;
+            current_command->object = OBJ_INTERFACE;
+            strlcpy(current_command->args[0], $4, sizeof(current_command->args[0]));
+            strlcpy(current_command->args[1], $6, sizeof(current_command->args[1]));
+            strlcpy(current_command->args[2], "tunnel", sizeof(current_command->args[2]));
+            strlcpy(current_command->args[3], $7, sizeof(current_command->args[3]));
+            strlcpy(current_command->args[4], $9, sizeof(current_command->args[4]));
+            strlcpy(current_command->args[5], $11, sizeof(current_command->args[5]));
+            current_command->arg_count = 6;
+        }
+    }
+    | SET INTERFACE TYPE interface_type NAME IDENTIFIER TUNNEL address_family VXLANLOCAL IPV6_ADDRESS VXLANREMOTE IPV6_ADDRESS {
+        if (current_command) {
+            /* Only allow tunnel operations for vxlan interfaces */
+            if (strcmp($4, "vxlan") != 0) {
+                fprintf(stderr, "Error: tunnel operations only valid for vxlan interfaces\n");
+                return -1;
+            }
+            current_command->type = CMD_SET;
+            current_command->object = OBJ_INTERFACE;
+            strlcpy(current_command->args[0], $4, sizeof(current_command->args[0]));
+            strlcpy(current_command->args[1], $6, sizeof(current_command->args[1]));
+            strlcpy(current_command->args[2], "tunnel", sizeof(current_command->args[2]));
+            strlcpy(current_command->args[3], $7, sizeof(current_command->args[3]));
+            strlcpy(current_command->args[4], $9, sizeof(current_command->args[4]));
+            strlcpy(current_command->args[5], $11, sizeof(current_command->args[5]));
+            current_command->arg_count = 6;
+        }
+    }
+    | SET INTERFACE TYPE interface_type NAME IDENTIFIER VXLANDEV IDENTIFIER {
+        if (current_command) {
+            /* Only allow vxlandev operations for vxlan interfaces */
+            if (strcmp($4, "vxlan") != 0) {
+                fprintf(stderr, "Error: vxlandev operations only valid for vxlan interfaces\n");
+                return -1;
+            }
+            current_command->type = CMD_SET;
+            current_command->object = OBJ_INTERFACE;
+            strlcpy(current_command->args[0], $4, sizeof(current_command->args[0]));
+            strlcpy(current_command->args[1], $6, sizeof(current_command->args[1]));
+            strlcpy(current_command->args[2], "vxlandev", sizeof(current_command->args[2]));
+            strlcpy(current_command->args[3], $8, sizeof(current_command->args[3]));
             current_command->arg_count = 4;
         }
     }
@@ -192,26 +490,129 @@ set_command
             current_command->arg_count = 4;
         }
     }
-    | SET VRF IDENTIFIER address_family STATIC IPV4_ADDRESS IPV4_ADDRESS {
+    | SET VRF IDENTIFIER address_family STATIC HOST IPV4_ADDRESS GATEWAY IPV4_ADDRESS {
         if (current_command) {
             current_command->type = CMD_SET;
             current_command->object = OBJ_ROUTE;
             strlcpy(current_command->args[0], $3, sizeof(current_command->args[0]));
             strlcpy(current_command->args[1], $4, sizeof(current_command->args[1]));
-            strlcpy(current_command->args[2], $6, sizeof(current_command->args[2]));
+            strlcpy(current_command->args[2], "host", sizeof(current_command->args[2]));
             strlcpy(current_command->args[3], $7, sizeof(current_command->args[3]));
-            current_command->arg_count = 4;
+            strlcpy(current_command->args[4], "gateway", sizeof(current_command->args[4]));
+            strlcpy(current_command->args[5], $9, sizeof(current_command->args[5]));
+            current_command->arg_count = 6;
         }
     }
-    | SET VRF IDENTIFIER address_family STATIC IPV6_ADDRESS IPV6_ADDRESS {
+    | SET VRF IDENTIFIER address_family STATIC HOST IPV4_ADDRESS GATEWAY IPV4_ADDRESS IFACE IDENTIFIER {
         if (current_command) {
             current_command->type = CMD_SET;
             current_command->object = OBJ_ROUTE;
             strlcpy(current_command->args[0], $3, sizeof(current_command->args[0]));
             strlcpy(current_command->args[1], $4, sizeof(current_command->args[1]));
-            strlcpy(current_command->args[2], $6, sizeof(current_command->args[2]));
+            strlcpy(current_command->args[2], "host", sizeof(current_command->args[2]));
             strlcpy(current_command->args[3], $7, sizeof(current_command->args[3]));
-            current_command->arg_count = 4;
+            strlcpy(current_command->args[4], "gateway", sizeof(current_command->args[4]));
+            strlcpy(current_command->args[5], $9, sizeof(current_command->args[5]));
+            strlcpy(current_command->args[6], "iface", sizeof(current_command->args[6]));
+            strlcpy(current_command->args[7], $11, sizeof(current_command->args[7]));
+            current_command->arg_count = 8;
+        }
+    }
+    | SET VRF IDENTIFIER address_family STATIC HOST IPV6_ADDRESS GATEWAY IPV6_ADDRESS {
+        if (current_command) {
+            current_command->type = CMD_SET;
+            current_command->object = OBJ_ROUTE;
+            strlcpy(current_command->args[0], $3, sizeof(current_command->args[0]));
+            strlcpy(current_command->args[1], $4, sizeof(current_command->args[1]));
+            strlcpy(current_command->args[2], "host", sizeof(current_command->args[2]));
+            strlcpy(current_command->args[3], $7, sizeof(current_command->args[3]));
+            strlcpy(current_command->args[4], "gateway", sizeof(current_command->args[4]));
+            strlcpy(current_command->args[5], $9, sizeof(current_command->args[5]));
+            current_command->arg_count = 6;
+        }
+    }
+    | SET VRF IDENTIFIER address_family STATIC HOST IPV6_ADDRESS GATEWAY IPV6_ADDRESS IFACE IDENTIFIER {
+        if (current_command) {
+            current_command->type = CMD_SET;
+            current_command->object = OBJ_ROUTE;
+            strlcpy(current_command->args[0], $3, sizeof(current_command->args[0]));
+            strlcpy(current_command->args[1], $4, sizeof(current_command->args[1]));
+            strlcpy(current_command->args[2], "host", sizeof(current_command->args[2]));
+            strlcpy(current_command->args[3], $7, sizeof(current_command->args[3]));
+            strlcpy(current_command->args[4], "gateway", sizeof(current_command->args[4]));
+            strlcpy(current_command->args[5], $9, sizeof(current_command->args[5]));
+            strlcpy(current_command->args[6], "iface", sizeof(current_command->args[6]));
+            strlcpy(current_command->args[7], $11, sizeof(current_command->args[7]));
+            current_command->arg_count = 8;
+        }
+    }
+    | SET VRF IDENTIFIER address_family STATIC CIDR_ADDRESS IFACE IDENTIFIER {
+        if (current_command) {
+            current_command->type = CMD_SET;
+            current_command->object = OBJ_ROUTE;
+            strlcpy(current_command->args[0], $3, sizeof(current_command->args[0]));
+            strlcpy(current_command->args[1], $4, sizeof(current_command->args[1]));
+            strlcpy(current_command->args[2], "network", sizeof(current_command->args[2]));
+            strlcpy(current_command->args[3], $6, sizeof(current_command->args[3]));
+            strlcpy(current_command->args[4], "iface", sizeof(current_command->args[4]));
+            strlcpy(current_command->args[5], $8, sizeof(current_command->args[5]));
+            current_command->arg_count = 6;
+        }
+    }
+    | SET VRF IDENTIFIER address_family STATIC CIDR_ADDRESS GATEWAY IPV4_ADDRESS {
+        if (current_command) {
+            current_command->type = CMD_SET;
+            current_command->object = OBJ_ROUTE;
+            strlcpy(current_command->args[0], $3, sizeof(current_command->args[0]));
+            strlcpy(current_command->args[1], $4, sizeof(current_command->args[1]));
+            strlcpy(current_command->args[2], "network", sizeof(current_command->args[2]));
+            strlcpy(current_command->args[3], $6, sizeof(current_command->args[3]));
+            strlcpy(current_command->args[4], "gateway", sizeof(current_command->args[4]));
+            strlcpy(current_command->args[5], $8, sizeof(current_command->args[5]));
+            current_command->arg_count = 6;
+        }
+    }
+    | SET VRF IDENTIFIER address_family STATIC CIDR_ADDRESS GATEWAY IPV4_ADDRESS IFACE IDENTIFIER {
+        if (current_command) {
+            current_command->type = CMD_SET;
+            current_command->object = OBJ_ROUTE;
+            strlcpy(current_command->args[0], $3, sizeof(current_command->args[0]));
+            strlcpy(current_command->args[1], $4, sizeof(current_command->args[1]));
+            strlcpy(current_command->args[2], "network", sizeof(current_command->args[2]));
+            strlcpy(current_command->args[3], $6, sizeof(current_command->args[3]));
+            strlcpy(current_command->args[4], "gateway", sizeof(current_command->args[4]));
+            strlcpy(current_command->args[5], $8, sizeof(current_command->args[5]));
+            strlcpy(current_command->args[6], "iface", sizeof(current_command->args[6]));
+            strlcpy(current_command->args[7], $10, sizeof(current_command->args[7]));
+            current_command->arg_count = 8;
+        }
+    }
+    | SET VRF IDENTIFIER address_family STATIC CIDR_ADDRESS GATEWAY IPV6_ADDRESS {
+        if (current_command) {
+            current_command->type = CMD_SET;
+            current_command->object = OBJ_ROUTE;
+            strlcpy(current_command->args[0], $3, sizeof(current_command->args[0]));
+            strlcpy(current_command->args[1], $4, sizeof(current_command->args[1]));
+            strlcpy(current_command->args[2], "network", sizeof(current_command->args[2]));
+            strlcpy(current_command->args[3], $6, sizeof(current_command->args[3]));
+            strlcpy(current_command->args[4], "gateway", sizeof(current_command->args[4]));
+            strlcpy(current_command->args[5], $8, sizeof(current_command->args[5]));
+            current_command->arg_count = 6;
+        }
+    }
+    | SET VRF IDENTIFIER address_family STATIC CIDR_ADDRESS GATEWAY IPV6_ADDRESS IFACE IDENTIFIER {
+        if (current_command) {
+            current_command->type = CMD_SET;
+            current_command->object = OBJ_ROUTE;
+            strlcpy(current_command->args[0], $3, sizeof(current_command->args[0]));
+            strlcpy(current_command->args[1], $4, sizeof(current_command->args[1]));
+            strlcpy(current_command->args[2], "network", sizeof(current_command->args[2]));
+            strlcpy(current_command->args[3], $6, sizeof(current_command->args[3]));
+            strlcpy(current_command->args[4], "gateway", sizeof(current_command->args[4]));
+            strlcpy(current_command->args[5], $8, sizeof(current_command->args[5]));
+            strlcpy(current_command->args[6], "iface", sizeof(current_command->args[6]));
+            strlcpy(current_command->args[7], $10, sizeof(current_command->args[7]));
+            current_command->arg_count = 8;
         }
     }
     ;
@@ -227,6 +628,19 @@ show_command
             strlcpy(current_command->args[3], "protocol", sizeof(current_command->args[3]));
             strlcpy(current_command->args[4], "static", sizeof(current_command->args[4]));
             current_command->arg_count = 5;
+        }
+    }
+    | SHOW VRF ID_TOKEN NUMBER PROTOCOL STATIC address_family {
+        if (current_command) {
+            current_command->type = CMD_SHOW;
+            current_command->object = OBJ_ROUTE;
+            strlcpy(current_command->args[0], "vrf", sizeof(current_command->args[0]));
+            strlcpy(current_command->args[1], "id", sizeof(current_command->args[1]));
+            strlcpy(current_command->args[2], $4, sizeof(current_command->args[2]));
+            strlcpy(current_command->args[3], "protocol", sizeof(current_command->args[3]));
+            strlcpy(current_command->args[4], "static", sizeof(current_command->args[4]));
+            strlcpy(current_command->args[5], $7, sizeof(current_command->args[5]));
+            current_command->arg_count = 6;
         }
     }
     | SHOW VRF {
@@ -255,11 +669,23 @@ show_command
             current_command->arg_count = 3;
         }
     }
-    | SHOW INTERFACE {
+
+    | SHOW INTERFACE GROUP IDENTIFIER {
         if (current_command) {
             current_command->type = CMD_SHOW;
             current_command->object = OBJ_INTERFACE;
-            current_command->arg_count = 0;
+            strlcpy(current_command->args[0], "group", sizeof(current_command->args[0]));
+            strlcpy(current_command->args[1], $4, sizeof(current_command->args[1]));
+            current_command->arg_count = 2;
+        }
+    }
+    | SHOW INTERFACE TYPE interface_type {
+        if (current_command) {
+            current_command->type = CMD_SHOW;
+            current_command->object = OBJ_INTERFACE;
+            strlcpy(current_command->args[0], "type", sizeof(current_command->args[0]));
+            strlcpy(current_command->args[1], $4, sizeof(current_command->args[1]));
+            current_command->arg_count = 2;
         }
     }
     | SHOW INTERFACE interface_type {
@@ -268,15 +694,6 @@ show_command
             current_command->object = OBJ_INTERFACE;
             strlcpy(current_command->args[0], $3, sizeof(current_command->args[0]));
             current_command->arg_count = 1;
-        }
-    }
-    | SHOW INTERFACE GROUP IDENTIFIER {
-        if (current_command) {
-            current_command->type = CMD_SHOW;
-            current_command->object = OBJ_INTERFACE;
-            strlcpy(current_command->args[0], "group", sizeof(current_command->args[0]));
-            strlcpy(current_command->args[1], $4, sizeof(current_command->args[1]));
-            current_command->arg_count = 2;
         }
     }
     | SHOW INTERFACE interface_type IDENTIFIER {
@@ -294,6 +711,13 @@ show_command
             current_command->object = OBJ_INTERFACE;
             strlcpy(current_command->args[0], "group", sizeof(current_command->args[0]));
             current_command->arg_count = 1;
+        }
+    }
+    | SHOW INTERFACE {
+        if (current_command) {
+            current_command->type = CMD_SHOW;
+            current_command->object = OBJ_INTERFACE;
+            current_command->arg_count = 0;
         }
     }
     ;
@@ -316,24 +740,66 @@ delete_command
             current_command->arg_count = 2;
         }
     }
-    | DELETE INTERFACE interface_type IDENTIFIER {
+    | DELETE INTERFACE NAME IDENTIFIER {
         if (current_command) {
             current_command->type = CMD_DELETE;
             current_command->object = OBJ_INTERFACE;
-            strlcpy(current_command->args[0], $3, sizeof(current_command->args[0]));
+            strlcpy(current_command->args[0], "name", sizeof(current_command->args[0]));
             strlcpy(current_command->args[1], $4, sizeof(current_command->args[1]));
             current_command->arg_count = 2;
         }
     }
-    | DELETE INTERFACE interface_type IDENTIFIER ADDRESS address_family {
+    | DELETE INTERFACE NAME IDENTIFIER ADDRESS address_family {
         if (current_command) {
             current_command->type = CMD_DELETE;
             current_command->object = OBJ_INTERFACE;
-            strlcpy(current_command->args[0], $3, sizeof(current_command->args[0]));
+            strlcpy(current_command->args[0], "name", sizeof(current_command->args[0]));
             strlcpy(current_command->args[1], $4, sizeof(current_command->args[1]));
             strlcpy(current_command->args[2], "address", sizeof(current_command->args[2]));
             strlcpy(current_command->args[3], $6, sizeof(current_command->args[3]));
             current_command->arg_count = 4;
+        }
+    }
+    | DELETE INTERFACE NAME IDENTIFIER MEMBER {
+        if (current_command) {
+            current_command->type = CMD_DELETE;
+            current_command->object = OBJ_INTERFACE;
+            strlcpy(current_command->args[0], "name", sizeof(current_command->args[0]));
+            strlcpy(current_command->args[1], $4, sizeof(current_command->args[1]));
+            strlcpy(current_command->args[2], "member", sizeof(current_command->args[2]));
+            current_command->arg_count = 3;
+        }
+    }
+    | DELETE INTERFACE NAME IDENTIFIER MEMBER IDENTIFIER {
+        if (current_command) {
+            current_command->type = CMD_DELETE;
+            current_command->object = OBJ_INTERFACE;
+            strlcpy(current_command->args[0], "name", sizeof(current_command->args[0]));
+            strlcpy(current_command->args[1], $4, sizeof(current_command->args[1]));
+            strlcpy(current_command->args[2], "member", sizeof(current_command->args[2]));
+            strlcpy(current_command->args[3], $6, sizeof(current_command->args[3]));
+            current_command->arg_count = 4;
+        }
+    }
+    | DELETE INTERFACE NAME IDENTIFIER LAGGPORT IDENTIFIER {
+        if (current_command) {
+            current_command->type = CMD_DELETE;
+            current_command->object = OBJ_INTERFACE;
+            strlcpy(current_command->args[0], "name", sizeof(current_command->args[0]));
+            strlcpy(current_command->args[1], $4, sizeof(current_command->args[1]));
+            strlcpy(current_command->args[2], "laggport", sizeof(current_command->args[2]));
+            strlcpy(current_command->args[3], $6, sizeof(current_command->args[3]));
+            current_command->arg_count = 4;
+        }
+    }
+    | DELETE INTERFACE NAME IDENTIFIER LAGGPORT {
+        if (current_command) {
+            current_command->type = CMD_DELETE;
+            current_command->object = OBJ_INTERFACE;
+            strlcpy(current_command->args[0], "name", sizeof(current_command->args[0]));
+            strlcpy(current_command->args[1], $4, sizeof(current_command->args[1]));
+            strlcpy(current_command->args[2], "laggport", sizeof(current_command->args[2]));
+            current_command->arg_count = 3;
         }
     }
     ;
@@ -359,7 +825,11 @@ save_command
     ;
 
 vrf_assignment
-    : VRF IDENTIFIER { $$ = $2; }
+    : VRF ID_TOKEN NUMBER { 
+        char temp[64];
+        snprintf(temp, sizeof(temp), "%s", $3);
+        $$ = strdup(temp);
+    }
     ;
 
 address_assignment
@@ -404,6 +874,8 @@ route_action
 %%
 
 void yyerror(const char *s) {
+    debug_log(DEBUG_DEBUG, "Parse error: %s", s);
     parse_error = 1;
-    fprintf(stderr, "Parse error: %s\n", s);
+    /* Don't print error messages - the fallback parser handles valid commands */
+    /* fprintf(stderr, "Parse error: %s\n", s); */
 } 

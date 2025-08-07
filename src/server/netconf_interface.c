@@ -543,18 +543,38 @@ char *interface_get_all(netd_state_t *state)
         }
 
         /* Generate interface XML */
-        asprintf(&temp_xml,
-                "      <interface>\n"
-                "        <name>%s</name>\n"
-                "        <type xmlns:ianaift=\"urn:ietf:params:xml:ns:yang:iana-if-type\">ianaift:%s</type>\n"
-                "        <enabled>%s</enabled>\n"
-                "        <oper-status>%s</oper-status>\n"
-                "        <flags xmlns=\"urn:ietf:params:xml:ns:yang:netd\">%d</flags>\n",
-                iface->name,
-                interface_type_to_string(iface->type),
-                iface->enabled ? "true" : "false",
-                freebsd_get_interface_oper_status(iface->flags),
-                iface->flags);
+        const char *namespace = interface_type_get_namespace(iface->type);
+        const char *type_str = interface_type_to_string(iface->type);
+        
+        if (strcmp(namespace, "netd") == 0) {
+            /* Use netd namespace for FreeBSD-specific interface types */
+            asprintf(&temp_xml,
+                    "      <interface>\n"
+                    "        <name>%s</name>\n"
+                    "        <type xmlns:netd=\"urn:ietf:params:xml:ns:yang:netd\">netd:%s</type>\n"
+                    "        <enabled>%s</enabled>\n"
+                    "        <oper-status>%s</oper-status>\n"
+                    "        <flags xmlns=\"urn:ietf:params:xml:ns:yang:netd\">%d</flags>\n",
+                    iface->name,
+                    type_str,
+                    iface->enabled ? "true" : "false",
+                    freebsd_get_interface_oper_status(iface->flags),
+                    iface->flags);
+        } else {
+            /* Use IANA namespace for standard interface types */
+            asprintf(&temp_xml,
+                    "      <interface>\n"
+                    "        <name>%s</name>\n"
+                    "        <type xmlns:ianaift=\"urn:ietf:params:xml:ns:yang:iana-if-type\">ianaift:%s</type>\n"
+                    "        <enabled>%s</enabled>\n"
+                    "        <oper-status>%s</oper-status>\n"
+                    "        <flags xmlns=\"urn:ietf:params:xml:ns:yang:netd\">%d</flags>\n",
+                    iface->name,
+                    type_str,
+                    iface->enabled ? "true" : "false",
+                    freebsd_get_interface_oper_status(iface->flags),
+                    iface->flags);
+        }
 
         if (temp_xml) {
             /* Append to main XML */
@@ -722,7 +742,59 @@ char *interface_get_all(netd_state_t *state)
                 xml = new_xml;
             }
         }
-
+        
+        /* Add VLAN information if any */
+        if ((iface->type == IF_TYPE_VLAN || strchr(iface->name, '.') != NULL) && iface->vlan_id > 0) {
+            debug_log(DEBUG_TRACE, "Adding VLAN info for interface %s: id=%d, proto=%s, pcp=%d, parent=%s", 
+                      iface->name, iface->vlan_id, iface->vlan_proto, iface->vlan_pcp, iface->vlan_parent);
+            asprintf(&temp_xml, 
+                    "        <vlan-info xmlns=\"urn:ietf:params:xml:ns:yang:netd\">\n"
+                    "          <vlan-id>%d</vlan-id>\n"
+                    "          <vlan-proto>%s</vlan-proto>\n"
+                    "          <vlan-pcp>%d</vlan-pcp>\n"
+                    "          <vlan-parent>%s</vlan-parent>\n"
+                    "        </vlan-info>\n", 
+                    iface->vlan_id, iface->vlan_proto, iface->vlan_pcp, iface->vlan_parent);
+            if (temp_xml) {
+                char *new_xml;
+                asprintf(&new_xml, "%s%s", xml, temp_xml);
+                free(xml);
+                free(temp_xml);
+                xml = new_xml;
+            }
+                }
+        
+        /* Add WiFi information if any */
+        if (iface->type == IF_TYPE_WIRELESS && iface->wifi_regdomain[0] != '\0') {
+            debug_log(DEBUG_TRACE, "Adding WiFi info for interface %s: regdomain=%s, country=%s, authmode=%s, privacy=%s, txpower=%d, bmiss=%d, scanvalid=%d, features=%s, bintval=%d, parent=%s", 
+                      iface->name, iface->wifi_regdomain, iface->wifi_country, iface->wifi_authmode, 
+                      iface->wifi_privacy, iface->wifi_txpower, iface->wifi_bmiss, iface->wifi_scanvalid,
+                      iface->wifi_features, iface->wifi_bintval, iface->wifi_parent);
+            asprintf(&temp_xml, 
+                    "        <wifi-info xmlns=\"urn:ietf:params:xml:ns:yang:netd\">\n"
+                    "          <regdomain>%s</regdomain>\n"
+                    "          <country>%s</country>\n"
+                    "          <authmode>%s</authmode>\n"
+                    "          <privacy>%s</privacy>\n"
+                    "          <txpower>%d</txpower>\n"
+                    "          <bmiss>%d</bmiss>\n"
+                    "          <scanvalid>%d</scanvalid>\n"
+                    "          <features>%s</features>\n"
+                    "          <bintval>%d</bintval>\n"
+                    "          <parent>%s</parent>\n"
+                    "        </wifi-info>\n", 
+                    iface->wifi_regdomain, iface->wifi_country, iface->wifi_authmode, 
+                    iface->wifi_privacy, iface->wifi_txpower, iface->wifi_bmiss, iface->wifi_scanvalid,
+                    iface->wifi_features, iface->wifi_bintval, iface->wifi_parent);
+            if (temp_xml) {
+                char *new_xml;
+                asprintf(&new_xml, "%s%s", xml, temp_xml);
+                free(xml);
+                free(temp_xml);
+                xml = new_xml;
+            }
+        }
+        
         /* Add statistics container with mandatory discontinuity-time */
         /* Use the lowest possible date representing "no recent discontinuities" */
         asprintf(&temp_xml,
@@ -785,4 +857,74 @@ char *interface_get_all(netd_state_t *state)
 
     debug_log(DEBUG_INFO, "Generated XML for %d interfaces (%zu bytes)", interface_count, xml ? strlen(xml) : 0);
     return xml;
+} 
+
+/**
+ * Add an interface to the system
+ * @param state Server state
+ * @param name Interface name
+ * @return 0 on success, -1 on failure
+ */
+int interface_add(netd_state_t *state, const char *name)
+{
+    if (!state || !name) {
+        debug_log(DEBUG_ERROR, "Invalid parameters for interface add: state=%p, name=%s", 
+                  state, name ? name : "NULL");
+        return -1;
+    }
+
+    /* Check if interface already exists */
+    if (interface_find(state, name)) {
+        debug_log(DEBUG_WARN, "Interface %s already exists in state", name);
+        return 0; /* Already exists, consider it a success */
+    }
+
+    /* For now, just add to state without creating in system */
+    /* This is a placeholder - in a real implementation, you'd create the interface */
+    debug_log(DEBUG_INFO, "Adding interface %s to state (placeholder implementation)", name);
+    return 0;
+}
+
+/**
+ * Modify an interface property
+ * @param state Server state
+ * @param name Interface name
+ * @param property Property to modify
+ * @param value New value
+ * @return 0 on success, -1 on failure
+ */
+int interface_modify(netd_state_t *state, const char *name, const char *property, const char *value)
+{
+    if (!state || !name || !property || !value) {
+        debug_log(DEBUG_ERROR, "Invalid parameters for interface modify: state=%p, name=%s, property=%s, value=%s", 
+                  state, name ? name : "NULL", property ? property : "NULL", value ? value : "NULL");
+        return -1;
+    }
+
+    /* Find the interface */
+    interface_t *iface = interface_find(state, name);
+    if (!iface) {
+        debug_log(DEBUG_ERROR, "Interface %s not found", name);
+        return -1;
+    }
+
+    /* Handle different properties */
+    if (strcmp(property, "vrf") == 0) {
+        /* Set VRF/FIB for interface */
+        char *endptr;
+        uint32_t fib = strtoul(value, &endptr, 10);
+        if (*endptr != '\0') {
+            debug_log(DEBUG_ERROR, "Invalid VRF/FIB number: %s", value);
+            return -1;
+        }
+        return interface_set_fib(state, name, fib);
+    } else if (strcmp(property, "peer") == 0) {
+        /* Handle peer property for epair interfaces */
+        debug_log(DEBUG_INFO, "Setting peer %s for interface %s", value, name);
+        /* This would typically involve setting up the epair peer relationship */
+        return 0;
+    } else {
+        debug_log(DEBUG_WARN, "Unsupported interface property: %s", property);
+        return -1;
+    }
 } 

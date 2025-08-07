@@ -53,7 +53,7 @@ const char *interface_type_to_string(interface_type_t type)
         case IF_TYPE_WIRELESS:
             return "ieee80211";
         case IF_TYPE_EPAIR:
-            return "other";
+            return "epair";
         case IF_TYPE_GIF:
             return "gif";
         case IF_TYPE_GRE:
@@ -63,19 +63,47 @@ const char *interface_type_to_string(interface_type_t type)
         case IF_TYPE_LOOPBACK:
             return "softwareLoopback";
         case IF_TYPE_OVPN:
-            return "tunnel";
+            return "ovpn";
         case IF_TYPE_TUN:
-            return "tunnel";
+            return "tun";
         case IF_TYPE_TAP:
-            return "other";
+            return "tap";
         case IF_TYPE_VLAN:
             return "l2vlan";
         case IF_TYPE_VXLAN:
-            return "l2vlan";
+            return "vxlan";
         case IF_TYPE_BRIDGE:
             return "bridge";
         default:
             return "other";
+    }
+}
+
+/**
+ * Get the namespace for an interface type
+ * @param type Interface type
+ * @return Namespace string (ianaift or netd)
+ */
+const char *interface_type_get_namespace(interface_type_t type)
+{
+    switch (type) {
+        case IF_TYPE_ETHERNET:
+        case IF_TYPE_WIRELESS:
+        case IF_TYPE_LOOPBACK:
+        case IF_TYPE_VLAN:
+        case IF_TYPE_BRIDGE:
+            return "ianaift";
+        case IF_TYPE_EPAIR:
+        case IF_TYPE_GIF:
+        case IF_TYPE_GRE:
+        case IF_TYPE_LAGG:
+        case IF_TYPE_OVPN:
+        case IF_TYPE_TUN:
+        case IF_TYPE_TAP:
+        case IF_TYPE_VXLAN:
+            return "netd";
+        default:
+            return "ianaift";
     }
 }
 

@@ -55,6 +55,8 @@
 #include <net/if_types.h>
 #include <net/if_var.h>
 #include <time.h>
+#include <sys/module.h>
+#include <sys/linker.h>
 
 /**
  * Get interface operational status based on flags
@@ -106,14 +108,36 @@ int freebsd_interface_create(const char *name, interface_type_t type)
     memset(&ifr, 0, sizeof(ifr));
     strlcpy(ifr.ifr_name, name, sizeof(ifr.ifr_name));
 
-    /* Create interface */
-    if (ioctl(sock, SIOCIFCREATE2, &ifr) < 0) {
-        debug_log(DEBUG_ERROR, "Failed to create interface %s: %s", name, strerror(errno));
-        close(sock);
-        return -1;
+    /* For epair interfaces, we need to use the cloning mechanism */
+    if (type == IF_TYPE_EPAIR) {
+        /* For epair interfaces, we create the base name and the system creates both a and b interfaces */
+        /* First, try to load the epair module if it's not already loaded */
+        int kld_id = kldload("if_epair");
+        if (kld_id < 0 && errno != EEXIST) {
+            debug_log(DEBUG_WARN, "Failed to load if_epair module: %s (continuing anyway)", strerror(errno));
+        } else if (kld_id >= 0) {
+            debug_log(DEBUG_INFO, "Loaded if_epair module (kld_id: %d)", kld_id);
+        } else {
+            debug_log(DEBUG_DEBUG, "if_epair module already loaded");
+        }
+        
+        /* Check if the epair module is loaded */
+        if (ioctl(sock, SIOCIFCREATE2, &ifr) < 0) {
+            debug_log(DEBUG_ERROR, "Failed to create epair interface %s: %s", name, strerror(errno));
+            close(sock);
+            return -1;
+        }
+        debug_log(DEBUG_INFO, "Created epair interface %s (which creates %sa and %sb)", name, name, name);
+    } else {
+        /* Create interface for other types */
+        if (ioctl(sock, SIOCIFCREATE2, &ifr) < 0) {
+            debug_log(DEBUG_ERROR, "Failed to create interface %s: %s", name, strerror(errno));
+            close(sock);
+            return -1;
+        }
+        debug_log(DEBUG_INFO, "Created interface %s of type %s", name, type_str);
     }
-
-    debug_log(DEBUG_INFO, "Created interface %s of type %s", name, type_str);
+    
     close(sock);
     return 0;
 }
@@ -750,6 +774,342 @@ int freebsd_get_bridge_members(const char *ifname, char *members, size_t members
 }
 
 /**
+ * Get VLAN information for an interface
+ * @param ifname Interface name
+ * @param vlan_id VLAN ID (output)
+ * @param vlan_proto VLAN protocol (output)
+ * @param proto_size Size of vlan_proto buffer
+ * @param vlan_pcp VLAN Priority Code Point (output)
+ * @param vlan_parent Parent interface name (output)
+ * @param parent_size Size of vlan_parent buffer
+ * @return 0 on success, -1 on failure
+ */
+int freebsd_get_vlan_info(const char *ifname, int *vlan_id, char *vlan_proto, size_t proto_size, 
+                         int *vlan_pcp, char *vlan_parent, size_t parent_size)
+{
+    char path[256];
+    char line[512];
+    FILE *fp;
+    char *token;
+    int found = 0;
+    
+    if (!ifname || !vlan_id || !vlan_proto || !vlan_pcp || !vlan_parent) {
+        return -1;
+    }
+    
+    /* Initialize output parameters */
+    *vlan_id = -1;
+    *vlan_pcp = 0;
+    vlan_proto[0] = '\0';
+    vlan_parent[0] = '\0';
+    
+    /* Check if this is a VLAN interface by looking for dot in name */
+    char *dot = strchr(ifname, '.');
+    if (dot) {
+        /* This is a VLAN interface like em0.18 */
+        strlcpy(vlan_parent, ifname, dot - ifname + 1);
+        *vlan_id = atoi(dot + 1);
+        strlcpy(vlan_proto, "802.1q", proto_size);
+        found = 1;
+    } else if (strncmp(ifname, "vlan", 4) == 0) {
+        /* This is a VLAN interface like vlan28 */
+        *vlan_id = atoi(ifname + 4);
+        strlcpy(vlan_proto, "802.1q", proto_size);
+        
+        /* Try to find parent interface using sysctl */
+        snprintf(path, sizeof(path), "/proc/net/vlan/config");
+        fp = fopen(path, "r");
+        if (fp) {
+            while (fgets(line, sizeof(line), fp)) {
+                if (strstr(line, ifname)) {
+                    /* Parse parent interface from line */
+                    token = strtok(line, " \t");
+                    if (token) {
+                        token = strtok(NULL, " \t"); /* Skip VLAN name */
+                        if (token) {
+                            strlcpy(vlan_parent, token, parent_size);
+                            found = 1;
+                            break;
+                        }
+                    }
+                }
+            }
+            fclose(fp);
+        }
+        
+        if (!found) {
+            /* Fallback: try to infer parent from interface name */
+            snprintf(path, sizeof(path), "/proc/net/dev");
+            fp = fopen(path, "r");
+            if (fp) {
+                while (fgets(line, sizeof(line), fp)) {
+                    if (strstr(line, "em") || strstr(line, "igb") || strstr(line, "ix")) {
+                        token = strtok(line, ":");
+                        if (token) {
+                            /* Remove leading/trailing whitespace */
+                            while (*token == ' ') token++;
+                            char *end = token + strlen(token) - 1;
+                            while (end > token && *end == ' ') end--;
+                            *(end + 1) = '\0';
+                            
+                            strlcpy(vlan_parent, token, parent_size);
+                            found = 1;
+                            break;
+                        }
+                    }
+                }
+                fclose(fp);
+            }
+        }
+    }
+    
+    return found ? 0 : -1;
+}
+
+/**
+ * Get WiFi information for an interface
+ * @param ifname Interface name
+ * @param regdomain Regulatory domain (output)
+ * @param regdomain_size Size of regdomain buffer
+ * @param country Country code (output)
+ * @param country_size Size of country buffer
+ * @param authmode Authentication mode (output)
+ * @param authmode_size Size of authmode buffer
+ * @param privacy Privacy setting (output)
+ * @param privacy_size Size of privacy buffer
+ * @param txpower Transmit power (output)
+ * @param bmiss Beacon miss threshold (output)
+ * @param scanvalid Scan validity period (output)
+ * @param features WiFi features (output)
+ * @param features_size Size of features buffer
+ * @param bintval Beacon interval (output)
+ * @param parent Parent interface name (output)
+ * @param parent_size Size of parent buffer
+ * @return 0 on success, -1 on failure
+ */
+int freebsd_get_wifi_info(const char *ifname, char *regdomain, size_t regdomain_size,
+                         char *country, size_t country_size, char *authmode, size_t authmode_size,
+                         char *privacy, size_t privacy_size, int *txpower, int *bmiss, int *scanvalid,
+                         char *features, size_t features_size, int *bintval, char *parent, size_t parent_size)
+{
+    char path[256];
+    char line[512];
+    FILE *fp;
+    char *token;
+    int found = 0;
+    
+    if (!ifname || !regdomain || !country || !authmode || !privacy || !txpower || 
+        !bmiss || !scanvalid || !features || !bintval || !parent) {
+        return -1;
+    }
+    
+    /* Initialize output parameters */
+    regdomain[0] = '\0';
+    country[0] = '\0';
+    authmode[0] = '\0';
+    privacy[0] = '\0';
+    *txpower = 0;
+    *bmiss = 0;
+    *scanvalid = 0;
+    features[0] = '\0';
+    *bintval = 0;
+    parent[0] = '\0';
+    
+    /* Check if this is a WiFi interface */
+    if (strncmp(ifname, "wlan", 4) == 0 || 
+        strncmp(ifname, "ath", 3) == 0 ||
+        strncmp(ifname, "iwn", 3) == 0 ||
+        strncmp(ifname, "iwm", 3) == 0 ||
+        strncmp(ifname, "iwl", 3) == 0 ||
+        strncmp(ifname, "bwi", 3) == 0 ||
+        strncmp(ifname, "rum", 3) == 0 ||
+        strncmp(ifname, "run", 3) == 0 ||
+        strncmp(ifname, "ural", 4) == 0 ||
+        strncmp(ifname, "urtw", 4) == 0 ||
+        strncmp(ifname, "zyd", 3) == 0) {
+        
+        /* Try to get WiFi information using ifconfig */
+        snprintf(path, sizeof(path), "/tmp/ifconfig_%s.txt", ifname);
+        char cmd[512];
+        snprintf(cmd, sizeof(cmd), "ifconfig %s > %s 2>/dev/null", ifname, path);
+        system(cmd);
+        
+        fp = fopen(path, "r");
+        if (fp) {
+            while (fgets(line, sizeof(line), fp)) {
+                /* Parse regdomain and country */
+                if (strstr(line, "regdomain")) {
+                    token = strstr(line, "regdomain");
+                    if (token) {
+                        token += 9; /* Skip "regdomain " */
+                        while (*token == ' ') token++;
+                        char *end = strchr(token, ' ');
+                        if (end) {
+                            size_t len = end - token;
+                            if (len < regdomain_size) {
+                                strncpy(regdomain, token, len);
+                                regdomain[len] = '\0';
+                            }
+                        }
+                    }
+                    
+                    /* Extract country from same line */
+                    token = strstr(line, "country");
+                    if (token) {
+                        token += 8; /* Skip "country " */
+                        while (*token == ' ') token++;
+                        char *end = strchr(token, ' ');
+                        if (end) {
+                            size_t len = end - token;
+                            if (len < country_size) {
+                                strncpy(country, token, len);
+                                country[len] = '\0';
+                            }
+                        }
+                    }
+                }
+                
+                /* Parse authmode and privacy */
+                if (strstr(line, "authmode")) {
+                    token = strstr(line, "authmode");
+                    if (token) {
+                        token += 9; /* Skip "authmode " */
+                        while (*token == ' ') token++;
+                        char *end = strchr(token, ' ');
+                        if (end) {
+                            size_t len = end - token;
+                            if (len < authmode_size) {
+                                strncpy(authmode, token, len);
+                                authmode[len] = '\0';
+                            }
+                        }
+                    }
+                }
+                
+                if (strstr(line, "privacy")) {
+                    token = strstr(line, "privacy");
+                    if (token) {
+                        token += 8; /* Skip "privacy " */
+                        while (*token == ' ') token++;
+                        char *end = strchr(token, ' ');
+                        if (end) {
+                            size_t len = end - token;
+                            if (len < privacy_size) {
+                                strncpy(privacy, token, len);
+                                privacy[len] = '\0';
+                            }
+                        }
+                    }
+                }
+                
+                /* Parse txpower */
+                if (strstr(line, "txpower")) {
+                    token = strstr(line, "txpower");
+                    if (token) {
+                        token += 8; /* Skip "txpower " */
+                        while (*token == ' ') token++;
+                        *txpower = atoi(token);
+                    }
+                }
+                
+                /* Parse bmiss */
+                if (strstr(line, "bmiss")) {
+                    token = strstr(line, "bmiss");
+                    if (token) {
+                        token += 6; /* Skip "bmiss " */
+                        while (*token == ' ') token++;
+                        *bmiss = atoi(token);
+                    }
+                }
+                
+                /* Parse scanvalid */
+                if (strstr(line, "scanvalid")) {
+                    token = strstr(line, "scanvalid");
+                    if (token) {
+                        token += 10; /* Skip "scanvalid " */
+                        while (*token == ' ') token++;
+                        *scanvalid = atoi(token);
+                    }
+                }
+                
+                /* Parse features */
+                if (strstr(line, "wme") || strstr(line, "bintval")) {
+                    char feature_list[128] = "";
+                    if (strstr(line, "wme")) {
+                        strcat(feature_list, "wme ");
+                    }
+                    if (strstr(line, "bintval")) {
+                        strcat(feature_list, "bintval ");
+                    }
+                    if (strlen(feature_list) > 0) {
+                        strlcpy(features, feature_list, features_size);
+                    }
+                }
+                
+                /* Parse bintval */
+                if (strstr(line, "bintval")) {
+                    token = strstr(line, "bintval");
+                    if (token) {
+                        token += 8; /* Skip "bintval " */
+                        while (*token == ' ') token++;
+                        *bintval = atoi(token);
+                    }
+                }
+                
+                /* Parse parent interface */
+                if (strstr(line, "parent interface:")) {
+                    token = strstr(line, "parent interface:");
+                    if (token) {
+                        token += 16; /* Skip "parent interface: " */
+                        while (*token == ' ') token++;
+                        char *end = strchr(token, '\n');
+                        if (end) {
+                            size_t len = end - token;
+                            if (len < parent_size) {
+                                strncpy(parent, token, len);
+                                parent[len] = '\0';
+                            }
+                        }
+                    }
+                }
+            }
+            fclose(fp);
+            unlink(path); /* Clean up temp file */
+            found = 1;
+        }
+        
+        /* Fallback: try to infer parent from interface name */
+        if (parent[0] == '\0') {
+            if (strncmp(ifname, "wlan", 4) == 0) {
+                /* For wlan interfaces, try to find the parent */
+                snprintf(path, sizeof(path), "/proc/net/dev");
+                fp = fopen(path, "r");
+                if (fp) {
+                    while (fgets(line, sizeof(line), fp)) {
+                        if (strstr(line, "iwm") || strstr(line, "iwn") || strstr(line, "ath")) {
+                            token = strtok(line, ":");
+                            if (token) {
+                                /* Remove leading/trailing whitespace */
+                                while (*token == ' ') token++;
+                                char *end = token + strlen(token) - 1;
+                                while (end > token && *end == ' ') end--;
+                                *(end + 1) = '\0';
+                                
+                                strlcpy(parent, token, parent_size);
+                                break;
+                            }
+                        }
+                    }
+                    fclose(fp);
+                }
+            }
+        }
+    }
+    
+    return found ? 0 : -1;
+}
+
+/**
  * Get interface FIB number
  * @param name Interface name
  * @param fib Pointer to store FIB number
@@ -1038,6 +1398,29 @@ int freebsd_enumerate_interfaces(netd_state_t *state)
         /* Get bridge member information for bridge interfaces */
         if (type == IF_TYPE_BRIDGE) {
             freebsd_get_bridge_members(ifa->ifa_name, iface->bridge_members, sizeof(iface->bridge_members));
+        }
+        
+        /* Get VLAN information for VLAN interfaces */
+        if (type == IF_TYPE_VLAN || strchr(ifa->ifa_name, '.') != NULL) {
+            freebsd_get_vlan_info(ifa->ifa_name, &iface->vlan_id, iface->vlan_proto, sizeof(iface->vlan_proto),
+                                 &iface->vlan_pcp, iface->vlan_parent, sizeof(iface->vlan_parent));
+            debug_log(DEBUG_TRACE, "Found VLAN info for %s: id=%d, proto=%s, pcp=%d, parent=%s", 
+                      ifa->ifa_name, iface->vlan_id, iface->vlan_proto, iface->vlan_pcp, iface->vlan_parent);
+        }
+        
+        /* Get WiFi information for wireless interfaces */
+        if (type == IF_TYPE_WIRELESS) {
+            freebsd_get_wifi_info(ifa->ifa_name, iface->wifi_regdomain, sizeof(iface->wifi_regdomain),
+                                 iface->wifi_country, sizeof(iface->wifi_country),
+                                 iface->wifi_authmode, sizeof(iface->wifi_authmode),
+                                 iface->wifi_privacy, sizeof(iface->wifi_privacy),
+                                 &iface->wifi_txpower, &iface->wifi_bmiss, &iface->wifi_scanvalid,
+                                 iface->wifi_features, sizeof(iface->wifi_features),
+                                 &iface->wifi_bintval, iface->wifi_parent, sizeof(iface->wifi_parent));
+            debug_log(DEBUG_TRACE, "Found WiFi info for %s: regdomain=%s, country=%s, authmode=%s, privacy=%s, txpower=%d, bmiss=%d, scanvalid=%d, features=%s, bintval=%d, parent=%s", 
+                      ifa->ifa_name, iface->wifi_regdomain, iface->wifi_country, iface->wifi_authmode, 
+                      iface->wifi_privacy, iface->wifi_txpower, iface->wifi_bmiss, iface->wifi_scanvalid,
+                      iface->wifi_features, iface->wifi_bintval, iface->wifi_parent);
         }
         
         /* Get all addresses */

@@ -117,6 +117,24 @@ struct interface_data {
     int addr6_count;         /* Number of IPv6 addresses */
     char groups[256];
     char bridge_members[256];
+    
+    /* VLAN-specific fields */
+    int vlan_id;
+    char vlan_proto[16];
+    int vlan_pcp;
+    char vlan_parent[64];
+    
+    /* WiFi-specific fields */
+    char wifi_regdomain[16];
+    char wifi_country[8];
+    char wifi_authmode[16];
+    char wifi_privacy[8];
+    int wifi_txpower;
+    int wifi_bmiss;
+    int wifi_scanvalid;
+    char wifi_features[64];
+    int wifi_bintval;
+    char wifi_parent[64];
 };
 
 /* Extended interface data structure for wireless interfaces */
@@ -193,6 +211,7 @@ int execute_save_command(net_client_t *client, const command_t *cmd);
 
 /* Command parsing and execution */
 int parse_command(const char *line, command_t *cmd);
+int parse_command_yacc(const char *line, command_t *cmd);
 int execute_command(net_client_t *client, const command_t *cmd);
 int execute_set_command(net_client_t *client, const command_t *cmd);
 int execute_show_command(net_client_t *client, const command_t *cmd);
@@ -252,13 +271,20 @@ int parse_vrfs_from_xml(const char *xml, struct vrf_data *vrfs, int max_vrfs);
 int parse_routes_from_xml(const char *xml, struct route_data *routes, int max_routes);
 
 /* Table display functions */
-int print_interface_table(const char *xml_response);
-int print_interface_table_filtered(const char *xml_response, const char *group_name);
-int print_interface_groups_summary(const char *xml_response);
-int print_wlan_interface_groups_summary(const char *xml_response);
-int print_wlan_interface_table(const char *xml_response);
-int print_vrf_table(const char *xml_response);
-int print_route_table(const char *xml_response);
+void print_interface_table(const char *xml_data);
+void print_iftype_bridge_table(const char *xml_data);
+void print_iftype_vlan_table(const char *xml_data);
+void print_iftype_lagg_table(const char *xml_data);
+void print_iftype_ethernet_table(const char *xml_data);
+void print_iftype_tap_table(const char *xml_data);
+void print_iftype_gif_table(const char *xml_data);
+void print_iftype_epair_table(const char *xml_data);
+void print_iftype_vxlan_table(const char *xml_data);
+void print_iftype_loopback_table(const char *xml_data);
+void print_vrf_table(const char *xml_data);
+void print_route_table(const char *xml_data);
+void print_interface_table_filtered(const char *xml_data, const char *group);
+void print_iftype_wlan_table(const char *xml_data);
 
 /* Table utility functions */
 void table_init(struct table_format *fmt, const char *title);

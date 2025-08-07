@@ -74,16 +74,40 @@ void yyerror(const char *s);
 #define REJECT_TOKEN 29
 #define BLACKHOLE 30
 #define ID_TOKEN 31
-#define IPV4_ADDRESS 32
-#define IPV6_ADDRESS 33
-#define CIDR_ADDRESS 34
-#define IDENTIFIER 35
-#define NUMBER 36
+#define TYPE 32
+#define NAME 33
+#define MEMBER 34
+#define LAGGPROTO 35
+#define LAGGPORT 36
+#define PEER 37
+#define VLANDEV 38
+#define VLANPROTO 39
+#define TUNNEL 40
+#define LOCAL 41
+#define REMOTE 42
+#define TUNNELVRF 43
+#define LAYER2 44
+#define HOST 45
+#define GATEWAY 46
+#define IFACE 47
+#define VXLANID 48
+#define VXLANLOCAL 49
+#define VXLANREMOTE 50
+#define VXLANDEV 51
+#define IPV4_ADDRESS 52
+#define IPV6_ADDRESS 53
+#define CIDR_ADDRESS 54
+#define IDENTIFIER 55
+#define NUMBER 56
 
 /* YYSTYPE declaration for lexer values */
 typedef union {
     char *string;
     int number;
+    command_type_t cmd_type;
+    object_type_t obj_type;
+    interface_type_t if_type;
+    int family;
 } YYSTYPE;
 extern YYSTYPE yylval;
 
@@ -104,41 +128,63 @@ IPV6_HEX    {HEX}{1,4}
 
 %%
 
-"set"       { return SET; }
-"show"      { return SHOW; }
-"delete"    { return DELETE; }
-"commit"    { return COMMIT; }
-"save"      { return SAVE; }
+"set"       { yylval.cmd_type = CMD_SET; return SET; }
+"show"      { yylval.cmd_type = CMD_SHOW; return SHOW; }
+"delete"    { yylval.cmd_type = CMD_DELETE; return DELETE; }
+"commit"    { yylval.cmd_type = CMD_COMMIT; return COMMIT; }
+"save"      { yylval.cmd_type = CMD_SAVE; return SAVE; }
 
-"vrf"       { return VRF; }
-"interface" { return INTERFACE; }
-"route"     { return ROUTE; }
+"vrf"       { yylval.string = strdup("vrf"); return VRF; }
+"interface" { yylval.obj_type = OBJ_INTERFACE; return INTERFACE; }
+"route"     { yylval.obj_type = OBJ_ROUTE; return ROUTE; }
 
-"ethernet"      { return ETHERNET; }
-"wireless80211" { return WIRELESS80211; }
-"epair"         { return EPAIR; }
-"gif"           { return GIF; }
-"gre"           { return GRE; }
-"lagg"          { return LAGG; }
-"lo"            { return LO; }
-"ovpn"          { return OVPN; }
-"tun"           { return TUN; }
-"tap"           { return TAP; }
-"vlan"          { return VLAN; }
-"vxlan"         { return VXLAN; }
+"type"      { yylval.string = strdup("type"); return TYPE; }
+"name"      { yylval.string = strdup("name"); return NAME; }
 
-"inet"      { return INET; }
-"inet6"     { return INET6; }
+"ethernet"      { yylval.if_type = IF_TYPE_ETHERNET; return ETHERNET; }
+"wireless80211" { yylval.if_type = IF_TYPE_WIRELESS; return WIRELESS80211; }
+"epair"         { yylval.if_type = IF_TYPE_EPAIR; return EPAIR; }
+"gif"           { yylval.if_type = IF_TYPE_GIF; return GIF; }
+"gre"           { yylval.if_type = IF_TYPE_GRE; return GRE; }
+"lagg"          { yylval.if_type = IF_TYPE_LAGG; return LAGG; }
+"lo"            { yylval.if_type = IF_TYPE_LOOPBACK; return LO; }
+"ovpn"          { yylval.if_type = IF_TYPE_OVPN; return OVPN; }
+"tun"           { yylval.if_type = IF_TYPE_TUN; return TUN; }
+"tap"           { yylval.if_type = IF_TYPE_TAP; return TAP; }
+"vlan"          { yylval.if_type = IF_TYPE_VLAN; return VLAN; }
+"vxlan"         { yylval.if_type = IF_TYPE_VXLAN; return VXLAN; }
+"bridge"        { yylval.if_type = IF_TYPE_BRIDGE; return IDENTIFIER; }
+"vxlanid"          { yylval.string = strdup("vxlanid"); return VXLANID; }
+"vxlanlocal"       { yylval.string = strdup("vxlanlocal"); return VXLANLOCAL; }
+"vxlanremote"      { yylval.string = strdup("vxlanremote"); return VXLANREMOTE; }
+"vxlandev"         { yylval.string = strdup("vxlandev"); return VXLANDEV; }
 
-"table"     { return TABLE; }
-"static"    { return STATIC; }
-"address"   { return ADDRESS; }
-"mtu"       { return MTU; }
-"group"     { return GROUP; }
+"inet"      { yylval.family = AF_INET; return INET; }
+"inet6"     { yylval.family = AF_INET6; return INET6; }
+
+"table"     { yylval.string = strdup("table"); return TABLE; }
+"static"    { yylval.string = strdup("static"); return STATIC; }
+"address"   { yylval.string = strdup("address"); return ADDRESS; }
+"mtu"       { yylval.string = strdup("mtu"); return MTU; }
+"group"     { yylval.string = strdup("group"); return GROUP; }
 "protocol"  { return PROTOCOL; }
-"reject"    { return REJECT_TOKEN; }
-"blackhole" { return BLACKHOLE; }
-"id"        { return ID_TOKEN; }
+"reject"    { yylval.string = strdup("reject"); return REJECT_TOKEN; }
+"blackhole" { yylval.string = strdup("blackhole"); return BLACKHOLE; }
+"id"        { yylval.string = strdup("id"); return ID_TOKEN; }
+"member"    { yylval.string = strdup("member"); return MEMBER; }
+"laggproto" { yylval.string = strdup("laggproto"); return LAGGPROTO; }
+"laggport"  { yylval.string = strdup("laggport"); return LAGGPORT; }
+"peer"      { yylval.string = strdup("peer"); return PEER; }
+"vlandev"   { yylval.string = strdup("vlandev"); return VLANDEV; }
+"vlanproto" { yylval.string = strdup("vlanproto"); return VLANPROTO; }
+"tunnel"    { yylval.string = strdup("tunnel"); return TUNNEL; }
+"local"     { yylval.string = strdup("local"); return LOCAL; }
+"remote"    { yylval.string = strdup("remote"); return REMOTE; }
+"tunnelvrf" { yylval.string = strdup("tunnelvrf"); return TUNNELVRF; }
+"layer2"    { yylval.string = strdup("layer2"); return LAYER2; }
+"host"      { yylval.string = strdup("host"); return HOST; }
+"gateway"   { yylval.string = strdup("gateway"); return GATEWAY; }
+"iface"     { yylval.string = strdup("iface"); return IFACE; }
 
 {IPV4_OCTET}\.{IPV4_OCTET}\.{IPV4_OCTET}\.{IPV4_OCTET} {
     /* IPv4 address */

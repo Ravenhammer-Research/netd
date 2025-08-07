@@ -101,6 +101,10 @@ error:
  */
 void yang_cleanup_client(net_client_t *client) {
     if (client && client->yang_ctx) {
+        /* Clear any error messages that might be holding references */
+        ly_err_clean(client->yang_ctx, NULL);
+        
+        /* Destroy the YANG context */
         ly_ctx_destroy(client->yang_ctx);
         client->yang_ctx = NULL;
     }

@@ -165,7 +165,12 @@ error:
 void yang_cleanup(netd_state_t *state)
 {
     if (state && state->yang_ctx) {
-        debug_log(DEBUG_DEBUG, "Destroying YANG context");
+        debug_log(DEBUG_DEBUG, "Cleaning up YANG context");
+        
+        /* Clear any error messages that might be holding references */
+        ly_err_clean(state->yang_ctx, NULL);
+        
+        /* Destroy the YANG context */
         ly_ctx_destroy(state->yang_ctx);
         state->yang_ctx = NULL;
         debug_log(DEBUG_INFO, "YANG context cleaned up successfully");

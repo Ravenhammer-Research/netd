@@ -36,23 +36,22 @@
 /**
  * Print VRF table from XML response
  * @param xml_response XML response string
- * @return 0 on success, -1 on failure
  */
-int print_vrf_table(const char *xml_response)
+void print_vrf_table(const char *xml_response)
 {
     struct vrf_data vrfs[100]; /* Max 100 VRFs */
     struct table_format fmt;
     int count;
     
     if (!xml_response) {
-        return -1;
+        return;
     }
 
     /* Parse VRFs from XML using XML utilities */
     count = parse_vrfs_from_xml(xml_response, vrfs, 100);
     if (count < 0) {
         print_error("Failed to parse VRF XML");
-        return -1;
+        return;
     }
 
     /* Initialize table format */
@@ -87,5 +86,5 @@ int print_vrf_table(const char *xml_response)
     snprintf(footer_text, sizeof(footer_text), "Total VRFs: %d", count);
     table_print_footer(&fmt, footer_text);
 
-    return 0;
+    return;
 } 

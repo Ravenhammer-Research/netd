@@ -36,28 +36,23 @@
 /**
  * Print route table from XML response
  * @param xml_response XML response string
- * @return 0 on success, -1 on failure
  */
-int print_route_table(const char *xml_response)
+void print_route_table(const char *xml_response)
 {
-    struct route_data routes[100]; /* Max 100 routes */
-    int count;
+    struct route_data routes[1000]; /* Max 1000 routes */
     struct table_format fmt;
-    
-    debug_log(DEBUG_INFO, "Printing route table");
+    int count;
     
     if (!xml_response) {
-        return -1;
+        return;
     }
 
-    /* Parse routes from XML */
-    debug_log(DEBUG_DEBUG, "Parsing routes from XML");
-    count = parse_routes_from_xml(xml_response, routes, 100);
+    /* Parse routes from XML using XML utilities */
+    count = parse_routes_from_xml(xml_response, routes, 1000);
     if (count < 0) {
         print_error("Failed to parse route XML");
-        return -1;
+        return;
     }
-    debug_log(DEBUG_INFO, "Parsed %d routes from XML", count);
 
     /* Initialize table format */
     table_init(&fmt, "Route Table");
@@ -88,5 +83,5 @@ int print_route_table(const char *xml_response)
     snprintf(footer_text, sizeof(footer_text), "Total routes: %d", count);
     table_print_footer(&fmt, footer_text);
 
-    return 0;
+    return;
 } 

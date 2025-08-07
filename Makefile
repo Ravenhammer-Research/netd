@@ -67,9 +67,17 @@ CLIENT_SRCS = $(CLIENTDIR)/main.c \
               $(CLIENTDIR)/xml_utils.c \
               $(CLIENTDIR)/table_utils.c \
               $(CLIENTDIR)/if_table.c \
-              $(CLIENTDIR)/ifgrp_bridge_table.c \
-              $(CLIENTDIR)/ifgrp_table.c \
-              $(CLIENTDIR)/ifgrp_wlan_table.c \
+              $(CLIENTDIR)/iftype_bridge_table.c \
+              $(CLIENTDIR)/iftype_vlan_table.c \
+              $(CLIENTDIR)/iftype_lagg_table.c \
+              $(CLIENTDIR)/iftype_ethernet_table.c \
+              $(CLIENTDIR)/iftype_tap_table.c \
+              $(CLIENTDIR)/iftype_gif_table.c \
+              $(CLIENTDIR)/iftype_epair_table.c \
+              $(CLIENTDIR)/iftype_vxlan_table.c \
+              $(CLIENTDIR)/iftype_loopback_table.c \
+              $(CLIENTDIR)/iftype_table.c \
+              $(CLIENTDIR)/iftype_wlan_table.c \
               $(CLIENTDIR)/vrf_table.c \
               $(CLIENTDIR)/route_table.c
 
@@ -97,9 +105,17 @@ CLIENT_OBJS = $(CLIENT_BUILDDIR)/main.o \
               $(CLIENT_BUILDDIR)/xml_utils.o \
               $(CLIENT_BUILDDIR)/table_utils.o \
               $(CLIENT_BUILDDIR)/if_table.o \
-              $(CLIENT_BUILDDIR)/ifgrp_bridge_table.o \
-              $(CLIENT_BUILDDIR)/ifgrp_table.o \
-              $(CLIENT_BUILDDIR)/ifgrp_wlan_table.o \
+              $(CLIENT_BUILDDIR)/iftype_bridge_table.o \
+              $(CLIENT_BUILDDIR)/iftype_vlan_table.o \
+              $(CLIENT_BUILDDIR)/iftype_lagg_table.o \
+              $(CLIENT_BUILDDIR)/iftype_ethernet_table.o \
+              $(CLIENT_BUILDDIR)/iftype_tap_table.o \
+              $(CLIENT_BUILDDIR)/iftype_gif_table.o \
+              $(CLIENT_BUILDDIR)/iftype_epair_table.o \
+              $(CLIENT_BUILDDIR)/iftype_vxlan_table.o \
+              $(CLIENT_BUILDDIR)/iftype_loopback_table.o \
+              $(CLIENT_BUILDDIR)/iftype_table.o \
+              $(CLIENT_BUILDDIR)/iftype_wlan_table.o \
               $(CLIENT_BUILDDIR)/vrf_table.o \
               $(CLIENT_BUILDDIR)/route_table.o
 
@@ -215,17 +231,49 @@ $(CLIENT_BUILDDIR)/if_table.o: $(CLIENTDIR)/if_table.c
 	@mkdir -p $(CLIENT_BUILDDIR)
 	$(CC) $(CFLAGS) -I$(CLIENTDIR) -c -o $@ $(CLIENTDIR)/if_table.c
 
-$(CLIENT_BUILDDIR)/ifgrp_bridge_table.o: $(CLIENTDIR)/ifgrp_bridge_table.c
+$(CLIENT_BUILDDIR)/iftype_bridge_table.o: $(CLIENTDIR)/iftype_bridge_table.c
 	@mkdir -p $(CLIENT_BUILDDIR)
-	$(CC) $(CFLAGS) -I$(CLIENTDIR) -c -o $@ $(CLIENTDIR)/ifgrp_bridge_table.c
+	$(CC) $(CFLAGS) -I$(CLIENTDIR) -c -o $@ $(CLIENTDIR)/iftype_bridge_table.c
 
-$(CLIENT_BUILDDIR)/ifgrp_table.o: $(CLIENTDIR)/ifgrp_table.c
+$(CLIENT_BUILDDIR)/iftype_vlan_table.o: $(CLIENTDIR)/iftype_vlan_table.c
 	@mkdir -p $(CLIENT_BUILDDIR)
-	$(CC) $(CFLAGS) -I$(CLIENTDIR) -c -o $@ $(CLIENTDIR)/ifgrp_table.c
+	$(CC) $(CFLAGS) -I$(CLIENTDIR) -c -o $@ $(CLIENTDIR)/iftype_vlan_table.c
 
-$(CLIENT_BUILDDIR)/ifgrp_wlan_table.o: $(CLIENTDIR)/ifgrp_wlan_table.c
+$(CLIENT_BUILDDIR)/iftype_lagg_table.o: $(CLIENTDIR)/iftype_lagg_table.c
 	@mkdir -p $(CLIENT_BUILDDIR)
-	$(CC) $(CFLAGS) -I$(CLIENTDIR) -c -o $@ $(CLIENTDIR)/ifgrp_wlan_table.c
+	$(CC) $(CFLAGS) -I$(CLIENTDIR) -c -o $@ $(CLIENTDIR)/iftype_lagg_table.c
+
+$(CLIENT_BUILDDIR)/iftype_ethernet_table.o: $(CLIENTDIR)/iftype_ethernet_table.c
+	@mkdir -p $(CLIENT_BUILDDIR)
+	$(CC) $(CFLAGS) -I$(CLIENTDIR) -c -o $@ $(CLIENTDIR)/iftype_ethernet_table.c
+
+$(CLIENT_BUILDDIR)/iftype_tap_table.o: $(CLIENTDIR)/iftype_tap_table.c
+	@mkdir -p $(CLIENT_BUILDDIR)
+	$(CC) $(CFLAGS) -I$(CLIENTDIR) -c -o $@ $(CLIENTDIR)/iftype_tap_table.c
+
+$(CLIENT_BUILDDIR)/iftype_gif_table.o: $(CLIENTDIR)/iftype_gif_table.c
+	@mkdir -p $(CLIENT_BUILDDIR)
+	$(CC) $(CFLAGS) -I$(CLIENTDIR) -c -o $@ $(CLIENTDIR)/iftype_gif_table.c
+
+$(CLIENT_BUILDDIR)/iftype_epair_table.o: $(CLIENTDIR)/iftype_epair_table.c
+	@mkdir -p $(CLIENT_BUILDDIR)
+	$(CC) $(CFLAGS) -I$(CLIENTDIR) -c -o $@ $(CLIENTDIR)/iftype_epair_table.c
+
+$(CLIENT_BUILDDIR)/iftype_vxlan_table.o: $(CLIENTDIR)/iftype_vxlan_table.c
+	@mkdir -p $(CLIENT_BUILDDIR)
+	$(CC) $(CFLAGS) -I$(CLIENTDIR) -c -o $@ $(CLIENTDIR)/iftype_vxlan_table.c
+
+$(CLIENT_BUILDDIR)/iftype_loopback_table.o: $(CLIENTDIR)/iftype_loopback_table.c
+	@mkdir -p $(CLIENT_BUILDDIR)
+	$(CC) $(CFLAGS) -I$(CLIENTDIR) -c -o $@ $(CLIENTDIR)/iftype_loopback_table.c
+
+$(CLIENT_BUILDDIR)/iftype_table.o: $(CLIENTDIR)/iftype_table.c
+	@mkdir -p $(CLIENT_BUILDDIR)
+	$(CC) $(CFLAGS) -I$(CLIENTDIR) -c -o $@ $(CLIENTDIR)/iftype_table.c
+
+$(CLIENT_BUILDDIR)/iftype_wlan_table.o: $(CLIENTDIR)/iftype_wlan_table.c
+	@mkdir -p $(CLIENT_BUILDDIR)
+	$(CC) $(CFLAGS) -I$(CLIENTDIR) -c -o $@ $(CLIENTDIR)/iftype_wlan_table.c
 
 $(CLIENT_BUILDDIR)/vrf_table.o: $(CLIENTDIR)/vrf_table.c
 	@mkdir -p $(CLIENT_BUILDDIR)

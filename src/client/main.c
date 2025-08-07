@@ -142,9 +142,15 @@ int main(int argc, char *argv[])
 
         /* Parse and execute command */
         command_t cmd;
-        if (parse_command(cmd_line, &cmd) < 0) {
-            print_error("Failed to parse command: %s", cmd_line);
-            ret = 1;
+        if (parse_command_yacc(cmd_line, &cmd) < 0) {
+            /* Fall back to simple parser if YACC fails */
+            debug_log(DEBUG_DEBUG, "YACC parsing failed, trying simple parser");
+            if (parse_command(cmd_line, &cmd) < 0) {
+                print_error("Failed to parse command: %s", cmd_line);
+                ret = 1;
+            } else {
+                ret = execute_command(&client, &cmd);
+            }
         } else {
             ret = execute_command(&client, &cmd);
         }
