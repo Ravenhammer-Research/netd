@@ -93,7 +93,8 @@ static void char_data(void *userData, const char *s, int len)
         
         if (remaining > 0) {
             size_t copy_len = (len < (int)remaining) ? (size_t)len : remaining;
-            strncat(ctx->content, s, copy_len);
+            memcpy(ctx->content + current_len, s, copy_len);
+            ctx->content[current_len + copy_len] = '\0';
         }
     }
 }
@@ -326,14 +327,34 @@ static void interface_end_element(void *userData, const char *name)
             /* This is an IP address under ipv4 or ipv6 container */
             if (ctx->in_ipv4) {
                 if (ctx->current_interface->addr[0] != '\0') {
-                    strcat(ctx->current_interface->addr, ",");
+                    size_t current_len = strlen(ctx->current_interface->addr);
+                    if (current_len + 1 < sizeof(ctx->current_interface->addr)) {
+                        ctx->current_interface->addr[current_len] = ',';
+                        ctx->current_interface->addr[current_len + 1] = '\0';
+                    }
                 }
-                strncat(ctx->current_interface->addr, content, sizeof(ctx->current_interface->addr) - strlen(ctx->current_interface->addr) - 1);
+                size_t current_len = strlen(ctx->current_interface->addr);
+                size_t remaining = sizeof(ctx->current_interface->addr) - current_len - 1;
+                if (remaining > 0) {
+                    size_t copy_len = (strlen(content) < remaining) ? strlen(content) : remaining;
+                    memcpy(ctx->current_interface->addr + current_len, content, copy_len);
+                    ctx->current_interface->addr[current_len + copy_len] = '\0';
+                }
             } else if (ctx->in_ipv6) {
                 if (ctx->current_interface->addr6[0] != '\0') {
-                    strcat(ctx->current_interface->addr6, ",");
+                    size_t current_len = strlen(ctx->current_interface->addr6);
+                    if (current_len + 1 < sizeof(ctx->current_interface->addr6)) {
+                        ctx->current_interface->addr6[current_len] = ',';
+                        ctx->current_interface->addr6[current_len + 1] = '\0';
+                    }
                 }
-                strncat(ctx->current_interface->addr6, content, sizeof(ctx->current_interface->addr6) - strlen(ctx->current_interface->addr6) - 1);
+                size_t current_len = strlen(ctx->current_interface->addr6);
+                size_t remaining = sizeof(ctx->current_interface->addr6) - current_len - 1;
+                if (remaining > 0) {
+                    size_t copy_len = (strlen(content) < remaining) ? strlen(content) : remaining;
+                    memcpy(ctx->current_interface->addr6 + current_len, content, copy_len);
+                    ctx->current_interface->addr6[current_len + copy_len] = '\0';
+                }
             }
         }
         
@@ -359,7 +380,8 @@ static void interface_char_data(void *userData, const char *s, int len)
     
     if (remaining > 0) {
         size_t copy_len = (len < (int)remaining) ? (size_t)len : remaining;
-        strncat(ctx->temp_content, s, copy_len);
+        memcpy(ctx->temp_content + current_len, s, copy_len);
+        ctx->temp_content[current_len + copy_len] = '\0';
     }
     
     // debug_log(DEBUG_DEBUG, "XML: Char data: '%.*s' (len=%d)", len, s, len);
@@ -458,21 +480,6 @@ static void vrf_end_element(void *userData, const char *name)
     
     if (strcmp(name, "vrf") == 0) {
         if (ctx->current_vrf) {
-            /* Determine FIB number based on name */
-            if (strcmp(ctx->current_vrf->name, "default") == 0) {
-                ctx->current_vrf->fib = 0;
-            } else if (strcmp(ctx->current_vrf->name, "-") == 0) {
-                /* Auto-detected VRF with no name, extract FIB from description */
-                const char *desc = ctx->current_vrf->description;
-                if (strncmp(desc, "FIB ", 4) == 0) {
-                    ctx->current_vrf->fib = atoi(desc + 4);
-                } else {
-                    ctx->current_vrf->fib = 0;
-                }
-            } else {
-                /* Explicitly created VRF, we'd need FIB in XML */
-                ctx->current_vrf->fib = 0;
-            }
             ctx->vrf_count++;
         }
         ctx->in_vrf = 0;
@@ -482,6 +489,8 @@ static void vrf_end_element(void *userData, const char *name)
             strlcpy(ctx->current_vrf->name, ctx->temp_content, sizeof(ctx->current_vrf->name));
         } else if (strcmp(name, "description") == 0) {
             strlcpy(ctx->current_vrf->description, ctx->temp_content, sizeof(ctx->current_vrf->description));
+        } else if (strcmp(name, "id") == 0) {
+            ctx->current_vrf->fib = atoi(ctx->temp_content);
         }
     }
 }
@@ -499,7 +508,8 @@ static void vrf_char_data(void *userData, const char *s, int len)
         
         if (remaining > 0) {
             size_t copy_len = (len < (int)remaining) ? (size_t)len : remaining;
-            strncat(ctx->temp_content, s, copy_len);
+            memcpy(ctx->temp_content + current_len, s, copy_len);
+            ctx->temp_content[current_len + copy_len] = '\0';
         }
     }
 }
@@ -623,7 +633,8 @@ static void route_char_data(void *userData, const char *s, int len)
         
         if (remaining > 0) {
             size_t copy_len = (len < (int)remaining) ? (size_t)len : remaining;
-            strncat(ctx->temp_content, s, copy_len);
+            memcpy(ctx->temp_content + current_len, s, copy_len);
+            ctx->temp_content[current_len + copy_len] = '\0';
         }
     }
 }

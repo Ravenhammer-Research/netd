@@ -75,6 +75,12 @@ module netd {
   augment "/frr-vrf:lib/frr-vrf:vrf" {
     description "Route configuration extensions";
     
+    /* Route request marker - used to indicate route enumeration requests */
+    leaf route-request {
+      type empty;
+      description "Marker element to request route enumeration for this VRF";
+    }
+    
     list route {
       key "destination";
       description "Route entry";

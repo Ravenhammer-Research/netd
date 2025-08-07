@@ -118,7 +118,13 @@ int yang_init(netd_state_t *state)
         debug_log(DEBUG_DEBUG, "Loading module %d/%d: %s", i + 1, 
                   (int)(sizeof(modules) / sizeof(modules[0])), modules[i]);
         
-        mod = ly_ctx_load_module(state->yang_ctx, modules[i], NULL, NULL);
+        /* Enable writable-running feature for ietf-netconf module */
+        if (strcmp(modules[i], "ietf-netconf") == 0) {
+            const char *features[] = {"writable-running", NULL};
+            mod = ly_ctx_load_module(state->yang_ctx, modules[i], NULL, features);
+        } else {
+            mod = ly_ctx_load_module(state->yang_ctx, modules[i], NULL, NULL);
+        }
         if (!mod) {
             const struct ly_err_item *err = ly_err_last(state->yang_ctx);
             if (err) {
@@ -229,72 +235,6 @@ int yang_validate_xml(netd_state_t *state, const char *xml_data)
     }
     
     debug_log(DEBUG_DEBUG, "Tree validation completed successfully");
-    
-    /* Validate leafref references if tree exists */
-    if (tree) {
-        debug_log(DEBUG_DEBUG, "Validating leafref references");
-        /* Link leafref nodes to their targets */
-        result = lyd_leafref_link_node_tree(tree);
-        
-        /* Map result to descriptive constant name */
-        const char *result_name;
-        switch (result) {
-            case LYVE_SUCCESS:
-                result_name = "LYVE_SUCCESS (no error)";
-                break;
-            case LYVE_SYNTAX:
-                result_name = "LYVE_SYNTAX (generic syntax error)";
-                break;
-            case LYVE_SYNTAX_YANG:
-                result_name = "LYVE_SYNTAX_YANG (YANG-related syntax error)";
-                break;
-            case LYVE_SYNTAX_YIN:
-                result_name = "LYVE_SYNTAX_YIN (YIN-related syntax error)";
-                break;
-            case LYVE_REFERENCE:
-                result_name = "LYVE_REFERENCE (invalid referencing or using an item)";
-                break;
-            case LYVE_XPATH:
-                result_name = "LYVE_XPATH (invalid XPath expression)";
-                break;
-            case LYVE_SEMANTICS:
-                result_name = "LYVE_SEMANTICS (generic semantic error)";
-                break;
-            case LYVE_SYNTAX_XML:
-                result_name = "LYVE_SYNTAX_XML (XML-related syntax error)";
-                break;
-            case LYVE_SYNTAX_JSON:
-                result_name = "LYVE_SYNTAX_JSON (JSON-related syntax error)";
-                break;
-            case LYVE_DATA:
-                result_name = "LYVE_DATA (YANG data does not reflect some of the module restrictions)";
-                break;
-            case LYVE_OTHER:
-                result_name = "LYVE_OTHER (Unknown error)";
-                break;
-            default:
-                result_name = "UNKNOWN_ERROR";
-                break;
-        }
-        debug_log(DEBUG_ERROR, "Leafref validation result: %s", result_name);
-        
-        if (result != LY_SUCCESS) {
-            const struct ly_err_item *err = ly_err_last(state->yang_ctx);
-            if (err) {
-                debug_log(DEBUG_ERROR, "Leafref validation failed: %s", err->msg);
-                if (err->data_path) {
-                    debug_log(DEBUG_ERROR, "Data path: %s", err->data_path);
-                }
-                if (err->schema_path) {
-                    debug_log(DEBUG_ERROR, "Schema path: %s", err->schema_path);
-                }
-            }
-            lyd_free_all(tree);
-            return -1;
-        }
-        
-        debug_log(DEBUG_DEBUG, "Leafref validation completed successfully");
-    }
     
     /* Clean up the validated tree */
     if (tree) {

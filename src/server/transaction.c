@@ -473,4 +473,44 @@ int add_pending_route_add(netd_state_t *state, uint32_t fib, const char *destina
     debug_log(DEBUG_DEBUG, "Added pending route addition: %s via %s (FIB %u)", 
               destination, gateway ? gateway : "direct", fib);
     return 0;
+}
+
+/**
+ * Add a pending route deletion change
+ * @param state Server state
+ * @param fib FIB number
+ * @param destination Destination address
+ * @return 0 on success, -1 on failure
+ */
+int add_pending_route_delete(netd_state_t *state, uint32_t fib, const char *destination)
+{
+    pending_change_t *change;
+
+    if (!state || !destination) {
+        debug_log(DEBUG_ERROR, "Invalid parameters for pending route deletion: state=%p, destination=%s", 
+                  state, destination ? destination : "NULL");
+        return -1;
+    }
+
+    if (!state->transaction_active) {
+        debug_log(DEBUG_ERROR, "No active transaction for pending route deletion");
+        return -1;
+    }
+
+    change = malloc(sizeof(*change));
+    if (!change) {
+        debug_log(DEBUG_ERROR, "Failed to allocate memory for pending route deletion");
+        return -1;
+    }
+
+    change->type = CHANGE_ROUTE_DELETE;
+    change->data.route.fib = fib;
+    strlcpy(change->data.route.destination, destination, sizeof(change->data.route.destination));
+    change->data.route.gateway[0] = '\0';
+    change->data.route.interface[0] = '\0';
+    change->data.route.flags = 0;
+
+    TAILQ_INSERT_TAIL(&state->pending_changes, change, entries);
+    debug_log(DEBUG_DEBUG, "Added pending route deletion: %s (FIB %u)", destination, fib);
+    return 0;
 } 

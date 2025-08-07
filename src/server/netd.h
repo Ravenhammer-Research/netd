@@ -218,6 +218,9 @@ int config_save(netd_state_t *state);
 int transaction_begin(netd_state_t *state);
 int transaction_commit(netd_state_t *state);
 int transaction_rollback(netd_state_t *state);
+int add_pending_route_add(netd_state_t *state, uint32_t fib, const char *destination, 
+                         const char *gateway, const char *interface, int flags);
+int add_pending_route_delete(netd_state_t *state, uint32_t fib, const char *destination);
 
 /* YANG/Netconf functions */
 int yang_init(netd_state_t *state);

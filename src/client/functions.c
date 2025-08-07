@@ -116,30 +116,106 @@ int execute_set_command(net_client_t *client, const command_t *cmd) {
         return -1;
     }
     
-    /* Build a simple XML request for now */
-    snprintf(request, sizeof(request),
-        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-        "<rpc message-id=\"1\" xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">\n"
-        "  <edit-config>\n"
-        "    <target><running/></target>\n"
-        "    <config>\n"
-        "      <set xmlns=\"urn:ietf:params:xml:ns:yang:netd\">\n"
-        "        <object>%s</object>\n"
-        "        <name>%s</name>\n"
-        "        <property>%s</property>\n"
-        "        <value>%s</value>\n"
-        "      </set>\n"
-        "    </config>\n"
-        "  </edit-config>\n"
-        "</rpc>\n",
-        cmd->args[0], cmd->args[1], cmd->args[2], 
-        cmd->arg_count > 3 ? cmd->args[3] : "");
+    /* Debug logging to see command structure */
+    debug_log(DEBUG_DEBUG, "SET command object: %d, arg_count: %d", cmd->object, cmd->arg_count);
+    for (int i = 0; i < cmd->arg_count && i < 10; i++) {
+        debug_log(DEBUG_DEBUG, "args[%d]: '%s'", i, cmd->args[i]);
+    }
+    
+    /* Handle route setting commands */
+    if (cmd->arg_count >= 10 && strcmp(cmd->args[0], "vrf") == 0 && strcmp(cmd->args[1], "id") == 0 &&
+        strcmp(cmd->args[3], "protocol") == 0 && strcmp(cmd->args[4], "static") == 0 &&
+        (strcmp(cmd->args[5], "inet") == 0 || strcmp(cmd->args[5], "inet6") == 0) && 
+        strcmp(cmd->args[6], "network") == 0 && strcmp(cmd->args[8], "gateway") == 0) {
+        /* Format: set vrf id <fib> protocol static inet network <network> gateway <gateway> [iface <interface>] */
+        uint32_t fib = atoi(cmd->args[2]);  /* VRF ID/FIB */
+        const char *network = cmd->args[7];  /* Network (e.g., 10.0.0.0/32) */
+        const char *gateway = cmd->args[9];  /* Gateway (e.g., 192.168.32.129) */
+        const char *interface = NULL;        /* Optional interface */
+        
+        /* Check for optional interface parameter */
+        if (cmd->arg_count >= 12 && strcmp(cmd->args[10], "iface") == 0) {
+            interface = cmd->args[11];
+        }
+        
+        debug_log(DEBUG_INFO, "Setting route: FIB=%u, network=%s, gateway=%s, interface=%s", 
+                  fib, network, gateway, interface ? interface : "none");
+        
+        /* Build route setting XML request */
+        if (interface) {
+            snprintf(request, sizeof(request),
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                "<rpc message-id=\"1\" xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">\n"
+                "  <edit-config>\n"
+                "    <target><running/></target>\n"
+                "    <config>\n"
+                "      <lib xmlns=\"http://frrouting.org/yang/vrf\">\n"
+                "        <vrf>\n"
+                "          <name>%s</name>\n"
+                "          <route xmlns=\"urn:ietf:params:xml:ns:yang:netd\">\n"
+                "            <destination>%s</destination>\n"
+                "            <gateway>%s</gateway>\n"
+                "            <interface>%s</interface>\n"
+                "            <type>static</type>\n"
+                "            <enabled>true</enabled>\n"
+                "          </route>\n"
+                "        </vrf>\n"
+                "      </lib>\n"
+                "    </config>\n"
+                "  </edit-config>\n"
+                "</rpc>\n",
+                fib == 0 ? "default" : cmd->args[2], network, gateway, interface);
+        } else {
+            snprintf(request, sizeof(request),
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                "<rpc message-id=\"1\" xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">\n"
+                "  <edit-config>\n"
+                "    <target><running/></target>\n"
+                "    <config>\n"
+                "      <lib xmlns=\"http://frrouting.org/yang/vrf\">\n"
+                "        <vrf>\n"
+                "          <name>%s</name>\n"
+                "          <route xmlns=\"urn:ietf:params:xml:ns:yang:netd\">\n"
+                "            <destination>%s</destination>\n"
+                "            <gateway>%s</gateway>\n"
+                "            <type>static</type>\n"
+                "            <enabled>true</enabled>\n"
+                "          </route>\n"
+                "        </vrf>\n"
+                "      </lib>\n"
+                "    </config>\n"
+                "  </edit-config>\n"
+                "</rpc>\n",
+                fib == 0 ? "default" : cmd->args[2], network, gateway);
+        }
+    } else {
+        /* Generic set command for other objects */
+        snprintf(request, sizeof(request),
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+            "<rpc message-id=\"1\" xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">\n"
+            "  <edit-config>\n"
+            "    <target><running/></target>\n"
+            "    <config>\n"
+            "      <set xmlns=\"urn:ietf:params:xml:ns:yang:netd\">\n"
+            "        <object>%s</object>\n"
+            "        <name>%s</name>\n"
+            "        <property>%s</property>\n"
+            "        <value>%s</value>\n"
+            "      </set>\n"
+            "    </config>\n"
+            "  </edit-config>\n"
+            "</rpc>\n",
+            cmd->args[0], cmd->args[1], cmd->args[2], 
+            cmd->arg_count > 3 ? cmd->args[3] : "");
+    }
     
     /* Send request to server */
     if (netconf_send_request(client, request, &response) == 0) {
         if (response) {
             printf("SET command successful\n");
             free(response);
+            /* Mark that we have an active transaction on the server */
+            client->transaction.active = true;
         }
         return 0;
     } else {
@@ -265,29 +341,73 @@ int execute_delete_command(net_client_t *client, const command_t *cmd) {
         return -1;
     }
     
-    /* Build a simple XML request for now */
-    snprintf(request, sizeof(request),
-        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-        "<rpc message-id=\"1\" xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">\n"
-        "  <edit-config>\n"
-        "    <target><running/></target>\n"
-        "    <config>\n"
-        "      <delete xmlns=\"urn:ietf:params:xml:ns:yang:netd\">\n"
-        "        <object>%s</object>\n"
-        "        <name>%s</name>\n"
-        "        <property>%s</property>\n"
-        "      </delete>\n"
-        "    </config>\n"
-        "  </edit-config>\n"
-        "</rpc>\n",
-        cmd->args[0], cmd->args[1], 
-        cmd->arg_count > 2 ? cmd->args[2] : "");
+    /* Debug logging to see command structure */
+    debug_log(DEBUG_DEBUG, "DELETE command object: %d, arg_count: %d", cmd->object, cmd->arg_count);
+    for (int i = 0; i < cmd->arg_count && i < 12; i++) {
+        debug_log(DEBUG_DEBUG, "args[%d]: '%s'", i, cmd->args[i]);
+    }
+    
+    /* Handle route deletion commands */
+    if (cmd->arg_count >= 10 && strcmp(cmd->args[0], "vrf") == 0 && strcmp(cmd->args[1], "id") == 0 &&
+        strcmp(cmd->args[3], "protocol") == 0 && strcmp(cmd->args[4], "static") == 0 &&
+        (strcmp(cmd->args[5], "inet") == 0 || strcmp(cmd->args[5], "inet6") == 0) && 
+        strcmp(cmd->args[6], "network") == 0 && strcmp(cmd->args[8], "gateway") == 0) {
+        /* Format: delete vrf id <fib> protocol static inet network <network> gateway <gateway> */
+        uint32_t fib = atoi(cmd->args[2]);  /* VRF ID/FIB */
+        const char *network = cmd->args[7];  /* Network (e.g., 10.0.0.0/32) */
+        const char *gateway = cmd->args[9];  /* Gateway (e.g., 192.168.32.129) */
+        
+        debug_log(DEBUG_INFO, "Deleting route: FIB=%u, network=%s, gateway=%s", fib, network, gateway);
+        
+        /* Build route deletion XML request */
+        snprintf(request, sizeof(request),
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+            "<rpc message-id=\"1\" xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">\n"
+            "  <edit-config>\n"
+            "    <target><running/></target>\n"
+            "    <config>\n"
+            "      <lib xmlns=\"http://frrouting.org/yang/vrf\">\n"
+            "        <vrf>\n"
+            "          <name>%s</name>\n"
+            "          <route xmlns=\"urn:ietf:params:xml:ns:yang:netd\">\n"
+            "            <destination>%s</destination>\n"
+            "            <gateway>%s</gateway>\n"
+            "            <type>static</type>\n"
+            "            <enabled>false</enabled>\n"
+            "          </route>\n"
+            "        </vrf>\n"
+            "      </lib>\n"
+            "    </config>\n"
+            "  </edit-config>\n"
+            "</rpc>\n",
+            fib == 0 ? "default" : cmd->args[2], network, gateway);
+    } else {
+        /* Generic delete command for other objects */
+        snprintf(request, sizeof(request),
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+            "<rpc message-id=\"1\" xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">\n"
+            "  <edit-config>\n"
+            "    <target><running/></target>\n"
+            "    <config>\n"
+            "      <delete xmlns=\"urn:ietf:params:xml:ns:yang:netd\">\n"
+            "        <object>%s</object>\n"
+            "        <name>%s</name>\n"
+            "        <property>%s</property>\n"
+            "      </delete>\n"
+            "    </config>\n"
+            "  </edit-config>\n"
+            "</rpc>\n",
+            cmd->args[0], cmd->args[1], 
+            cmd->arg_count > 2 ? cmd->args[2] : "");
+    }
     
     /* Send request to server */
     if (netconf_send_request(client, request, &response) == 0) {
         if (response) {
             printf("DELETE command successful\n");
             free(response);
+            /* Mark that we have an active transaction on the server */
+            client->transaction.active = true;
         }
         return 0;
     } else {
@@ -350,19 +470,43 @@ int transaction_begin(net_client_t *client) {
  * Commit a transaction
  */
 int transaction_commit(net_client_t *client) {
+    char *response = NULL;
+    char request[1024];
+    
     if (!client || !client->transaction.active) {
+        print_error("No active transaction to commit");
         return -1;
     }
     
-    /* Process all pending commands */
-    for (int i = 0; i < client->transaction.command_count; i++) {
-        printf("Executing transaction command %d\n", i);
-        /* TODO: Actually execute the command */
-    }
+    /* Build commit XML request */
+    snprintf(request, sizeof(request),
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+        "<rpc message-id=\"1\" xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">\n"
+        "  <commit xmlns=\"urn:ietf:params:xml:ns:yang:netd\">\n"
+        "  </commit>\n"
+        "</rpc>\n");
     
-    /* Clear the transaction */
-    transaction_rollback(client);
-    return 0;
+    /* Send request to server */
+    if (netconf_send_request(client, request, &response) == 0) {
+        if (response) {
+            /* Check if the response contains an error */
+            if (strstr(response, "<rpc-error>") != NULL) {
+                print_error("COMMIT command failed - server error");
+                free(response);
+                return -1;
+            } else {
+                printf("COMMIT command successful\n");
+                free(response);
+                /* Clear the transaction */
+                transaction_rollback(client);
+                return 0;
+            }
+        }
+        return 0;
+    } else {
+        print_error("COMMIT command failed");
+        return -1;
+    }
 }
 
 /**

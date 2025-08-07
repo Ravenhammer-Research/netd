@@ -68,7 +68,13 @@ int yang_init_client(net_client_t *client) {
     
     /* Load required modules */
     for (i = 0; i < (int)(sizeof(modules) / sizeof(modules[0])); i++) {
-        mod = ly_ctx_load_module(client->yang_ctx, modules[i], NULL, NULL);
+        /* Enable writable-running feature for ietf-netconf module */
+        if (strcmp(modules[i], "ietf-netconf") == 0) {
+            const char *features[] = {"writable-running", NULL};
+            mod = ly_ctx_load_module(client->yang_ctx, modules[i], NULL, features);
+        } else {
+            mod = ly_ctx_load_module(client->yang_ctx, modules[i], NULL, NULL);
+        }
         if (!mod) {
             const struct ly_err_item *err = ly_err_last(client->yang_ctx);
             if (err) {
@@ -253,7 +259,7 @@ int yang_validate_rpc_client(net_client_t *client, const char *rpc_xml)
     
     /* Parse and validate NETCONF RPC using libyang */
     result = lyd_parse_op(client->yang_ctx, NULL, in, LYD_XML, LYD_TYPE_RPC_NETCONF, &tree, &op);
-    ly_in_free(in, 0);
+    /* Note: lyd_parse_op automatically frees the input structure, so we don't need to call ly_in_free */
     
     if (result != LY_SUCCESS) {
         err = ly_err_last(client->yang_ctx);
@@ -269,12 +275,9 @@ int yang_validate_rpc_client(net_client_t *client, const char *rpc_xml)
             debug_log(DEBUG_ERROR, "Client YANG RPC validation failed with unknown error");
         }
         
-        /* Clean up any partial tree and input structure */
+        /* Clean up any partial tree */
         if (tree) {
             lyd_free_all(tree);
-        }
-        if (in) {
-            ly_in_free(in, 0);
         }
         return -1;
     }
@@ -290,18 +293,12 @@ int yang_validate_rpc_client(net_client_t *client, const char *rpc_xml)
         if (tree) {
             lyd_free_all(tree);
         }
-        if (in) {
-            ly_in_free(in, 0);
-        }
         return -1;
     }
     
-    /* Clean up the validated tree and input structure */
+    /* Clean up the validated tree */
     if (tree) {
         lyd_free_all(tree);
-    }
-    if (in) {
-        ly_in_free(in, 0);
     }
     
     debug_log(DEBUG_DEBUG, "Client YANG RPC validation completed successfully");

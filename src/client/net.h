@@ -164,7 +164,7 @@ struct table_format {
 typedef struct command {
     command_type_t type;
     object_type_t object;
-    char args[10][64];  /* Up to 10 arguments, 64 chars each */
+    char args[12][64];  /* Up to 12 arguments, 64 chars each */
     int arg_count;
 } command_t;
 

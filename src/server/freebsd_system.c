@@ -393,10 +393,20 @@ int freebsd_route_add(uint32_t fib, const char *destination, const char *gateway
         return -1;
     }
 
+    /* Set FIB for the socket - only for non-default FIB */
+    if (fib > 0) {
+        if (setsockopt(sock, SOL_SOCKET, SO_SETFIB, &fib, sizeof(fib)) < 0) {
+            debug_log(DEBUG_ERROR, "Failed to set FIB %u for socket: %s", fib, strerror(errno));
+            close(sock);
+            return -1;
+        }
+        debug_log(DEBUG_DEBUG, "Set FIB %u for route socket", fib);
+    }
+
     /* Calculate message length */
-    len = sizeof(struct rt_msghdr) + sizeof(struct sockaddr_storage);
+    len = sizeof(struct rt_msghdr) + SA_SIZE((struct sockaddr *)&dest_addr);
     if (gateway) {
-        len += sizeof(struct sockaddr_storage);
+        len += SA_SIZE((struct sockaddr *)&gw_addr);
     }
     if (interface) {
         len += sizeof(struct sockaddr_dl);
@@ -413,7 +423,10 @@ int freebsd_route_add(uint32_t fib, const char *destination, const char *gateway
     /* Set up route message */
     memset(rtm, 0, len);
     rtm->rtm_type = RTM_ADD;
-    rtm->rtm_flags = flags | RTF_UP;
+    rtm->rtm_flags = flags | RTF_UP | RTF_STATIC;
+    if (gateway) {
+        rtm->rtm_flags |= RTF_GATEWAY;
+    }
     rtm->rtm_version = RTM_VERSION;
     rtm->rtm_seq = 1;
     rtm->rtm_addrs = RTA_DST;
@@ -423,14 +436,14 @@ int freebsd_route_add(uint32_t fib, const char *destination, const char *gateway
 
     /* Set destination address */
     cp = (char *)(rtm + 1);
-    memcpy(cp, &dest_addr, sizeof(struct sockaddr_storage));
-    cp += sizeof(struct sockaddr_storage);
+    memmove(cp, (char *)&dest_addr, SA_SIZE((struct sockaddr *)&dest_addr));
+    cp += SA_SIZE((struct sockaddr *)&dest_addr);
 
     /* Set gateway address if provided */
     if (gateway) {
         rtm->rtm_addrs |= RTA_GATEWAY;
-        memcpy(cp, &gw_addr, sizeof(struct sockaddr_storage));
-        cp += sizeof(struct sockaddr_storage);
+        memmove(cp, (char *)&gw_addr, SA_SIZE((struct sockaddr *)&gw_addr));
+        cp += SA_SIZE((struct sockaddr *)&gw_addr);
     }
 
     /* Set interface if provided */
@@ -444,8 +457,10 @@ int freebsd_route_add(uint32_t fib, const char *destination, const char *gateway
     }
 
     /* Send route message */
+    debug_log(DEBUG_DEBUG, "Sending route message: type=%d, flags=0x%x, addrs=0x%x, len=%d", 
+              rtm->rtm_type, rtm->rtm_flags, rtm->rtm_addrs, len);
     if (write(sock, rtm, len) < 0) {
-        debug_log(DEBUG_ERROR, "Failed to add route: %s", strerror(errno));
+        debug_log(DEBUG_ERROR, "Failed to add route: %s (errno=%d)", strerror(errno), errno);
         free(rtm);
         close(sock);
         return -1;
@@ -1265,7 +1280,7 @@ static int parse_route_message(netd_state_t *state, struct rt_msghdr *rtm, uint3
 int freebsd_route_enumerate_system(netd_state_t *state, uint32_t fib)
 {
     size_t needed;
-    int mib[6];
+    int mib[7];
     char *buf, *lim, *next;
     struct rt_msghdr *rtm;
     int retry_count = 0;
@@ -1282,7 +1297,8 @@ int freebsd_route_enumerate_system(netd_state_t *state, uint32_t fib)
     mib[2] = 0;        /* protocol */
     mib[3] = AF_INET;  /* IPv4 */
     mib[4] = NET_RT_DUMP; /* get all routes */
-    mib[5] = fib;      /* FIB number */
+    mib[5] = 0;        /* no flags */
+    mib[6] = fib;      /* FIB number */
 
 retry_ipv4:
     /* First, get the size needed */
@@ -1328,6 +1344,8 @@ retry_ipv4:
     /* Enumerate IPv6 routes */
     retry_count = 0;
     mib[3] = AF_INET6; /* IPv6 */
+    mib[5] = 0;        /* no flags */
+    mib[6] = fib;      /* FIB number */
 
 retry_ipv6:
     /* First, get the size needed */

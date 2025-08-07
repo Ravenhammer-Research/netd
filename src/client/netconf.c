@@ -295,13 +295,18 @@ int netconf_get_routes(net_client_t *client, uint32_t fib, int family, char **re
     (void)family; /* Suppress unused parameter warning */
 
     if (fib == 0) {
-        /* Default FIB - get all network instances */
+        /* Default FIB - get routes for default VRF */
         snprintf(request, sizeof(request),
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
             "<rpc message-id=\"3\" xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">\n"
             "  <get>\n"
             "    <filter type=\"subtree\">\n"
-            "      <lib xmlns=\"http://frrouting.org/yang/vrf\"/>\n"
+            "      <lib xmlns=\"http://frrouting.org/yang/vrf\">\n"
+            "        <vrf>\n"
+            "          <name>default</name>\n"
+            "          <route-request/>\n"
+            "        </vrf>\n"
+            "      </lib>\n"
             "    </filter>\n"
             "  </get>\n"
             "</rpc>\n");
@@ -314,7 +319,8 @@ int netconf_get_routes(net_client_t *client, uint32_t fib, int family, char **re
             "    <filter type=\"subtree\">\n"
             "      <lib xmlns=\"http://frrouting.org/yang/vrf\">\n"
             "        <vrf>\n"
-            "          <name>vrf%u</name>\n"
+            "          <name>%u</name>\n"
+            "          <route-request/>\n"
             "        </vrf>\n"
             "      </lib>\n"
             "    </filter>\n"

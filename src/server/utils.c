@@ -217,20 +217,54 @@ int parse_address(const char *addr_str, struct sockaddr_storage *addr)
 
     host_part = addr_copy;
 
-    /* Try to parse as IPv4 */
-    if (inet_pton(AF_INET, host_part, &((struct sockaddr_in *)addr)->sin_addr) == 1) {
-        addr->ss_family = AF_INET;
-        ((struct sockaddr_in *)addr)->sin_port = port_part ? htons(atoi(port_part)) : 0;
-        debug_log(DEBUG_DEBUG, "Successfully parsed as IPv4 address: %s", addr_str);
-        return 0;
+    /* Try to parse as IPv4 (with or without CIDR) */
+    char *cidr_part = strchr(host_part, '/');
+    char ip_part[256];
+    if (cidr_part) {
+        /* Handle CIDR notation */
+        size_t ip_len = cidr_part - host_part;
+        if (ip_len >= sizeof(ip_part)) {
+            debug_log(DEBUG_ERROR, "IP address part too long in CIDR notation: %s", addr_str);
+            return -1;
+        }
+        strlcpy(ip_part, host_part, ip_len + 1);
+        if (inet_pton(AF_INET, ip_part, &((struct sockaddr_in *)addr)->sin_addr) == 1) {
+            addr->ss_family = AF_INET;
+            addr->ss_len = sizeof(struct sockaddr_in);
+            ((struct sockaddr_in *)addr)->sin_port = port_part ? htons(atoi(port_part)) : 0;
+            debug_log(DEBUG_DEBUG, "Successfully parsed as IPv4 address with CIDR: %s", addr_str);
+            return 0;
+        }
+    } else {
+        /* Handle regular IPv4 without CIDR */
+        if (inet_pton(AF_INET, host_part, &((struct sockaddr_in *)addr)->sin_addr) == 1) {
+            addr->ss_family = AF_INET;
+            addr->ss_len = sizeof(struct sockaddr_in);
+            ((struct sockaddr_in *)addr)->sin_port = port_part ? htons(atoi(port_part)) : 0;
+            debug_log(DEBUG_DEBUG, "Successfully parsed as IPv4 address: %s", addr_str);
+            return 0;
+        }
     }
 
-    /* Try to parse as IPv6 */
-    if (inet_pton(AF_INET6, host_part, &((struct sockaddr_in6 *)addr)->sin6_addr) == 1) {
-        addr->ss_family = AF_INET6;
-        ((struct sockaddr_in6 *)addr)->sin6_port = port_part ? htons(atoi(port_part)) : 0;
-        debug_log(DEBUG_DEBUG, "Successfully parsed as IPv6 address: %s", addr_str);
-        return 0;
+    /* Try to parse as IPv6 (with or without CIDR) */
+    if (cidr_part) {
+        /* Handle IPv6 with CIDR notation */
+        if (inet_pton(AF_INET6, ip_part, &((struct sockaddr_in6 *)addr)->sin6_addr) == 1) {
+            addr->ss_family = AF_INET6;
+            addr->ss_len = sizeof(struct sockaddr_in6);
+            ((struct sockaddr_in6 *)addr)->sin6_port = port_part ? htons(atoi(port_part)) : 0;
+            debug_log(DEBUG_DEBUG, "Successfully parsed as IPv6 address with CIDR: %s", addr_str);
+            return 0;
+        }
+    } else {
+        /* Handle regular IPv6 without CIDR */
+        if (inet_pton(AF_INET6, host_part, &((struct sockaddr_in6 *)addr)->sin6_addr) == 1) {
+            addr->ss_family = AF_INET6;
+            addr->ss_len = sizeof(struct sockaddr_in6);
+            ((struct sockaddr_in6 *)addr)->sin6_port = port_part ? htons(atoi(port_part)) : 0;
+            debug_log(DEBUG_DEBUG, "Successfully parsed as IPv6 address: %s", addr_str);
+            return 0;
+        }
     }
 
     /* Try to resolve as hostname */
@@ -242,6 +276,12 @@ int parse_address(const char *addr_str, struct sockaddr_storage *addr)
     ret = getaddrinfo(host_part, port_part, &hints, &res);
     if (ret == 0) {
         memcpy(addr, res->ai_addr, res->ai_addrlen);
+        /* Ensure ss_len is set correctly */
+        if (addr->ss_family == AF_INET) {
+            addr->ss_len = sizeof(struct sockaddr_in);
+        } else if (addr->ss_family == AF_INET6) {
+            addr->ss_len = sizeof(struct sockaddr_in6);
+        }
         freeaddrinfo(res);
         debug_log(DEBUG_DEBUG, "Successfully resolved hostname: %s", addr_str);
         return 0;
