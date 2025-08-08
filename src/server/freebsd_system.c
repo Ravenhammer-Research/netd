@@ -35,6 +35,7 @@
 #include <sys/un.h>
 #include <net/if.h>
 #include <net/if_dl.h> // For struct sockaddr_dl
+#include <net/if_bridgevar.h>
 #include <sys/sockio.h> // For SIOCSIFFIB
 #include <net/if_mib.h> // For struct ifmibdata
 #include <ifaddrs.h> // For getifaddrs, freeifaddrs, struct ifaddrs
@@ -719,76 +720,97 @@ retry:
  */
 int freebsd_get_bridge_members(const char *ifname, char *members,
                                size_t members_size) {
-  struct ifaddrs *ifap, *ifa;
+  int sock;
+  struct ifdrv ifd;
+  struct ifbifconf bifc;
+  struct ifbreq *breq;
+  char *buf = NULL;
   char members_list[256] = "";
   int member_count = 0;
-  uint32_t bridge_fib = 0;
+  int buflen;
 
   if (!ifname || !members) {
     return -1;
   }
 
-  /* First get the FIB number for this bridge interface */
-  int sock = socket(AF_LOCAL, SOCK_DGRAM, 0);
-  if (sock >= 0) {
-    struct ifreq ifr;
-    memset(&ifr, 0, sizeof(ifr));
-    strlcpy(ifr.ifr_name, ifname, sizeof(ifr.ifr_name));
-
-    if (ioctl(sock, SIOCGIFFIB, &ifr) == 0) {
-      bridge_fib = ifr.ifr_fib;
-      debug_log(DEBUG_TRACE, "Bridge %s is in FIB %u", ifname, bridge_fib);
-    }
-    close(sock);
-  }
-
-  /* Get all interfaces and find those in the same FIB as the bridge */
-  if (getifaddrs(&ifap) != 0) {
-    debug_log(DEBUG_ERROR, "Failed to get interface list: %s", strerror(errno));
+  /* Create socket for ioctl */
+  sock = socket(AF_LOCAL, SOCK_DGRAM, 0);
+  if (sock < 0) {
+    debug_log(DEBUG_ERROR, "Failed to create socket for bridge members: %s", strerror(errno));
     strlcpy(members, "none", members_size);
     return -1;
   }
 
-  for (ifa = ifap; ifa != NULL; ifa = ifa->ifa_next) {
-    if (ifa->ifa_addr == NULL || ifa->ifa_addr->sa_family != AF_LINK) {
-      continue;
-    }
+  /* Set up ifdrv structure for bridge ioctl */
+  memset(&ifd, 0, sizeof(ifd));
+  strlcpy(ifd.ifd_name, ifname, sizeof(ifd.ifd_name));
+  ifd.ifd_cmd = BRDGGIFS;
+  ifd.ifd_len = sizeof(struct ifbifconf);
+  ifd.ifd_data = &bifc;
 
-    /* Skip the bridge interface itself */
-    if (strcmp(ifa->ifa_name, ifname) == 0) {
-      continue;
-    }
+  /* First call to get the required buffer size */
+  memset(&bifc, 0, sizeof(bifc));
+  bifc.ifbic_len = 0;
+  bifc.ifbic_req = NULL;
 
-    /* Get FIB for this interface */
-    sock = socket(AF_LOCAL, SOCK_DGRAM, 0);
-    if (sock >= 0) {
-      struct ifreq ifr;
-      memset(&ifr, 0, sizeof(ifr));
-      strlcpy(ifr.ifr_name, ifa->ifa_name, sizeof(ifr.ifr_name));
+  if (ioctl(sock, SIOCGDRVSPEC, &ifd) < 0) {
+    debug_log(DEBUG_ERROR, "Failed to get bridge members size for %s: %s", ifname, strerror(errno));
+    close(sock);
+    strlcpy(members, "none", members_size);
+    return -1;
+  }
 
-      if (ioctl(sock, SIOCGIFFIB, &ifr) == 0) {
-        if (ifr.ifr_fib == bridge_fib) {
-          /* This interface is in the same FIB as the bridge - likely a member
-           */
-          if (member_count > 0) {
-            strlcat(members_list, ",", sizeof(members_list));
-          }
-          strlcat(members_list, ifa->ifa_name, sizeof(members_list));
-          member_count++;
-          debug_log(DEBUG_TRACE, "Found potential bridge member: %s (FIB %u)",
-                    ifa->ifa_name, ifr.ifr_fib);
-        }
+  if (bifc.ifbic_len == 0) {
+    debug_log(DEBUG_INFO, "No bridge members found for %s", ifname);
+    close(sock);
+    strlcpy(members, "none", members_size);
+    return 0;
+  }
+
+  /* Allocate buffer for bridge member data */
+  buflen = bifc.ifbic_len;
+  buf = malloc(buflen);
+  if (!buf) {
+    debug_log(DEBUG_ERROR, "Failed to allocate memory for bridge members");
+    close(sock);
+    strlcpy(members, "none", members_size);
+    return -1;
+  }
+
+  /* Second call to get the actual bridge member data */
+  bifc.ifbic_req = (struct ifbreq *)buf;
+  if (ioctl(sock, SIOCGDRVSPEC, &ifd) < 0) {
+    debug_log(DEBUG_ERROR, "Failed to get bridge members for %s: %s", ifname, strerror(errno));
+    free(buf);
+    close(sock);
+    strlcpy(members, "none", members_size);
+    return -1;
+  }
+
+  /* Parse bridge members from the ifbreq structures */
+  breq = (struct ifbreq *)buf;
+  int count = bifc.ifbic_len / sizeof(struct ifbreq);
+  
+  for (int i = 0; i < count && member_count < 10; i++) {
+    /* Skip the bridge interface itself and empty entries */
+    if (strlen(breq[i].ifbr_ifsname) > 0 && 
+        strcmp(breq[i].ifbr_ifsname, ifname) != 0) {
+      
+      if (member_count > 0) {
+        strlcat(members_list, ",", sizeof(members_list));
       }
-      close(sock);
+      strlcat(members_list, breq[i].ifbr_ifsname, sizeof(members_list));
+      member_count++;
+      debug_log(DEBUG_TRACE, "Found bridge member: %s", breq[i].ifbr_ifsname);
     }
   }
 
-  freeifaddrs(ifap);
+  free(buf);
+  close(sock);
 
   if (strlen(members_list) > 0) {
     strlcpy(members, members_list, members_size);
-    debug_log(DEBUG_TRACE, "Found bridge members for %s: '%s'", ifname,
-              members);
+    debug_log(DEBUG_TRACE, "Found bridge members for %s: '%s'", ifname, members);
   } else {
     strlcpy(members, "none", members_size);
     debug_log(DEBUG_INFO, "No bridge members found for %s", ifname);
