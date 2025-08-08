@@ -5,8 +5,8 @@
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
@@ -18,14 +18,15 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include <sys/types.h>
@@ -50,22 +51,21 @@ static debug_level_t current_debug_level = DEBUG_NONE;
  * @param type Command type
  * @return String representation
  */
-const char *command_type_to_string(command_type_t type)
-{
-    switch (type) {
-        case CMD_SET:
-            return "set";
-        case CMD_SHOW:
-            return "show";
-        case CMD_DELETE:
-            return "delete";
-        case CMD_COMMIT:
-            return "commit";
-        case CMD_SAVE:
-            return "save";
-        default:
-            return "unknown";
-    }
+const char *command_type_to_string(command_type_t type) {
+  switch (type) {
+  case CMD_SET:
+    return "set";
+  case CMD_SHOW:
+    return "show";
+  case CMD_DELETE:
+    return "delete";
+  case CMD_COMMIT:
+    return "commit";
+  case CMD_SAVE:
+    return "save";
+  default:
+    return "unknown";
+  }
 }
 
 /**
@@ -73,25 +73,24 @@ const char *command_type_to_string(command_type_t type)
  * @param str Command type string
  * @return Command type enum
  */
-command_type_t command_type_from_string(const char *str)
-{
-    if (!str) {
-        return CMD_UNKNOWN;
-    }
-
-    if (strcmp(str, "set") == 0) {
-        return CMD_SET;
-    } else if (strcmp(str, "show") == 0) {
-        return CMD_SHOW;
-    } else if (strcmp(str, "delete") == 0) {
-        return CMD_DELETE;
-    } else if (strcmp(str, "commit") == 0) {
-        return CMD_COMMIT;
-    } else if (strcmp(str, "save") == 0) {
-        return CMD_SAVE;
-    }
-
+command_type_t command_type_from_string(const char *str) {
+  if (!str) {
     return CMD_UNKNOWN;
+  }
+
+  if (strcmp(str, "set") == 0) {
+    return CMD_SET;
+  } else if (strcmp(str, "show") == 0) {
+    return CMD_SHOW;
+  } else if (strcmp(str, "delete") == 0) {
+    return CMD_DELETE;
+  } else if (strcmp(str, "commit") == 0) {
+    return CMD_COMMIT;
+  } else if (strcmp(str, "save") == 0) {
+    return CMD_SAVE;
+  }
+
+  return CMD_UNKNOWN;
 }
 
 /**
@@ -99,18 +98,17 @@ command_type_t command_type_from_string(const char *str)
  * @param type Object type
  * @return String representation
  */
-const char *object_type_to_string(object_type_t type)
-{
-    switch (type) {
-        case OBJ_VRF:
-            return "vrf";
-        case OBJ_INTERFACE:
-            return "interface";
-        case OBJ_ROUTE:
-            return "route";
-        default:
-            return "unknown";
-    }
+const char *object_type_to_string(object_type_t type) {
+  switch (type) {
+  case OBJ_VRF:
+    return "vrf";
+  case OBJ_INTERFACE:
+    return "interface";
+  case OBJ_ROUTE:
+    return "route";
+  default:
+    return "unknown";
+  }
 }
 
 /**
@@ -118,21 +116,20 @@ const char *object_type_to_string(object_type_t type)
  * @param str Object type string
  * @return Object type enum
  */
-object_type_t object_type_from_string(const char *str)
-{
-    if (!str) {
-        return OBJ_UNKNOWN;
-    }
-
-    if (strcmp(str, "vrf") == 0) {
-        return OBJ_VRF;
-    } else if (strcmp(str, "interface") == 0) {
-        return OBJ_INTERFACE;
-    } else if (strcmp(str, "route") == 0) {
-        return OBJ_ROUTE;
-    }
-
+object_type_t object_type_from_string(const char *str) {
+  if (!str) {
     return OBJ_UNKNOWN;
+  }
+
+  if (strcmp(str, "vrf") == 0) {
+    return OBJ_VRF;
+  } else if (strcmp(str, "interface") == 0) {
+    return OBJ_INTERFACE;
+  } else if (strcmp(str, "route") == 0) {
+    return OBJ_ROUTE;
+  }
+
+  return OBJ_UNKNOWN;
 }
 
 /**
@@ -140,38 +137,37 @@ object_type_t object_type_from_string(const char *str)
  * @param type Interface type
  * @return String representation
  */
-const char *interface_type_to_string(interface_type_t type)
-{
-    switch (type) {
-        case IF_TYPE_ETHERNET:
-            return "ethernetCsmacd";
-        case IF_TYPE_WIRELESS:
-            return "ieee80211";
-        case IF_TYPE_EPAIR:
-            return "epair";
-        case IF_TYPE_GIF:
-            return "gif";
-        case IF_TYPE_GRE:
-            return "gre";
-        case IF_TYPE_LAGG:
-            return "lagg";
-        case IF_TYPE_LOOPBACK:
-            return "softwareLoopback";
-        case IF_TYPE_OVPN:
-            return "ovpn";
-        case IF_TYPE_TUN:
-            return "tun";
-        case IF_TYPE_TAP:
-            return "tap";
-        case IF_TYPE_VLAN:
-            return "l2vlan";
-        case IF_TYPE_VXLAN:
-            return "vxlan";
-        case IF_TYPE_BRIDGE:
-            return "bridge";
-        default:
-            return "other";
-    }
+const char *interface_type_to_string(interface_type_t type) {
+  switch (type) {
+  case IF_TYPE_ETHERNET:
+    return "ethernetCsmacd";
+  case IF_TYPE_WIRELESS:
+    return "ieee80211";
+  case IF_TYPE_EPAIR:
+    return "epair";
+  case IF_TYPE_GIF:
+    return "gif";
+  case IF_TYPE_GRE:
+    return "gre";
+  case IF_TYPE_LAGG:
+    return "lagg";
+  case IF_TYPE_LOOPBACK:
+    return "softwareLoopback";
+  case IF_TYPE_OVPN:
+    return "ovpn";
+  case IF_TYPE_TUN:
+    return "tun";
+  case IF_TYPE_TAP:
+    return "tap";
+  case IF_TYPE_VLAN:
+    return "l2vlan";
+  case IF_TYPE_VXLAN:
+    return "vxlan";
+  case IF_TYPE_BRIDGE:
+    return "bridge";
+  default:
+    return "other";
+  }
 }
 
 /**
@@ -179,41 +175,43 @@ const char *interface_type_to_string(interface_type_t type)
  * @param str Interface type string
  * @return Interface type enum
  */
-interface_type_t interface_type_from_string(const char *str)
-{
-    if (!str) {
-        return IF_TYPE_UNKNOWN;
-    }
-
-    if (strcmp(str, "ethernet") == 0 || strcmp(str, "ethernetCsmacd") == 0) {
-        return IF_TYPE_ETHERNET;
-    } else if (strcmp(str, "wireless") == 0 || strcmp(str, "wireless80211") == 0 || strcmp(str, "ieee80211") == 0) {
-        return IF_TYPE_WIRELESS;
-    } else if (strcmp(str, "epair") == 0) {
-        return IF_TYPE_EPAIR;
-    } else if (strcmp(str, "gif") == 0) {
-        return IF_TYPE_GIF;
-    } else if (strcmp(str, "gre") == 0) {
-        return IF_TYPE_GRE;
-    } else if (strcmp(str, "lagg") == 0) {
-        return IF_TYPE_LAGG;
-    } else if (strcmp(str, "lo") == 0 || strcmp(str, "loopback") == 0 || strcmp(str, "softwareLoopback") == 0) {
-        return IF_TYPE_LOOPBACK;
-    } else if (strcmp(str, "ovpn") == 0 || strcmp(str, "tunnel") == 0) {
-        return IF_TYPE_OVPN;
-    } else if (strcmp(str, "tun") == 0) {
-        return IF_TYPE_TUN;
-    } else if (strcmp(str, "tap") == 0) {
-        return IF_TYPE_TAP;
-    } else if (strcmp(str, "vlan") == 0 || strcmp(str, "l2vlan") == 0) {
-        return IF_TYPE_VLAN;
-    } else if (strcmp(str, "vxlan") == 0) {
-        return IF_TYPE_VXLAN;
-    } else if (strcmp(str, "bridge") == 0) {
-        return IF_TYPE_BRIDGE;
-    }
-
+interface_type_t interface_type_from_string(const char *str) {
+  if (!str) {
     return IF_TYPE_UNKNOWN;
+  }
+
+  if (strcmp(str, "ethernet") == 0 || strcmp(str, "ethernetCsmacd") == 0) {
+    return IF_TYPE_ETHERNET;
+  } else if (strcmp(str, "wireless") == 0 ||
+             strcmp(str, "wireless80211") == 0 ||
+             strcmp(str, "ieee80211") == 0) {
+    return IF_TYPE_WIRELESS;
+  } else if (strcmp(str, "epair") == 0) {
+    return IF_TYPE_EPAIR;
+  } else if (strcmp(str, "gif") == 0) {
+    return IF_TYPE_GIF;
+  } else if (strcmp(str, "gre") == 0) {
+    return IF_TYPE_GRE;
+  } else if (strcmp(str, "lagg") == 0) {
+    return IF_TYPE_LAGG;
+  } else if (strcmp(str, "lo") == 0 || strcmp(str, "loopback") == 0 ||
+             strcmp(str, "softwareLoopback") == 0) {
+    return IF_TYPE_LOOPBACK;
+  } else if (strcmp(str, "ovpn") == 0 || strcmp(str, "tunnel") == 0) {
+    return IF_TYPE_OVPN;
+  } else if (strcmp(str, "tun") == 0) {
+    return IF_TYPE_TUN;
+  } else if (strcmp(str, "tap") == 0) {
+    return IF_TYPE_TAP;
+  } else if (strcmp(str, "vlan") == 0 || strcmp(str, "l2vlan") == 0) {
+    return IF_TYPE_VLAN;
+  } else if (strcmp(str, "vxlan") == 0) {
+    return IF_TYPE_VXLAN;
+  } else if (strcmp(str, "bridge") == 0) {
+    return IF_TYPE_BRIDGE;
+  }
+
+  return IF_TYPE_UNKNOWN;
 }
 
 /**
@@ -222,86 +220,93 @@ interface_type_t interface_type_from_string(const char *str)
  * @param cmd Command structure to fill
  * @return 0 on success, -1 on failure
  */
-int parse_command(const char *line, command_t *cmd)
-{
-    char *line_copy, *token, *saveptr;
-    int arg_count = 0;
+int parse_command(const char *line, command_t *cmd) {
+  char *line_copy, *token, *saveptr;
+  int arg_count = 0;
 
-    if (!line || !cmd) {
-        return -1;
-    }
+  if (!line || !cmd) {
+    return -1;
+  }
 
-    /* Initialize command structure */
-    memset(cmd, 0, sizeof(*cmd));
+  /* Initialize command structure */
+  memset(cmd, 0, sizeof(*cmd));
 
-    /* Make a copy of the line for parsing */
-    line_copy = strdup(line);
-    if (!line_copy) {
-        return -1;
-    }
+  /* Make a copy of the line for parsing */
+  line_copy = strdup(line);
+  if (!line_copy) {
+    return -1;
+  }
 
-    /* Parse first token (command type) */
-    token = strtok_r(line_copy, " ", &saveptr);
-    if (!token) {
-        free(line_copy);
-        return -1;
-    }
-
-    cmd->type = command_type_from_string(token);
-    if (cmd->type == CMD_UNKNOWN) {
-        print_error("Unknown command: %s", token);
-        free(line_copy);
-        return -1;
-    }
-
-    /* Parse remaining tokens */
-    while ((token = strtok_r(NULL, " ", &saveptr)) != NULL && arg_count < 10) {
-        strlcpy(cmd->args[arg_count], token, sizeof(cmd->args[arg_count]));
-        arg_count++;
-    }
-
-    cmd->arg_count = arg_count;
-
-    /* Determine object type based on arguments */
-    if (arg_count > 0) {
-        cmd->object = object_type_from_string(cmd->args[0]);
-    }
-
-    /* Special handling for set interface commands with complex structure */
-    debug_log(DEBUG_DEBUG, "Checking for set interface command: type=%d, object=%d, arg_count=%d", cmd->type, cmd->object, arg_count);
-    if (cmd->type == CMD_SET && cmd->object == OBJ_INTERFACE && arg_count >= 10) {
-        /* Check if this is a set interface type <type> name <name> peer <peer> vrf id <number> command */
-        if (strcmp(cmd->args[1], "type") == 0 && strcmp(cmd->args[3], "name") == 0 && 
-            strcmp(cmd->args[5], "peer") == 0 && strcmp(cmd->args[7], "vrf") == 0 && 
-            strcmp(cmd->args[8], "id") == 0) {
-            
-            /* Reorganize the arguments to match the expected format */
-            char temp_args[10][64];
-            for (int i = 0; i < arg_count; i++) {
-                strlcpy(temp_args[i], cmd->args[i], sizeof(temp_args[i]));
-            }
-            
-            /* args[0] = interface type (epair) */
-            strlcpy(cmd->args[0], temp_args[2], sizeof(cmd->args[0]));
-            /* args[1] = interface name (epair127) */
-            strlcpy(cmd->args[1], temp_args[4], sizeof(cmd->args[1]));
-            /* args[2] = property (peer) */
-            strlcpy(cmd->args[2], temp_args[5], sizeof(cmd->args[2]));
-            /* args[3] = value (b) */
-            strlcpy(cmd->args[3], temp_args[6], sizeof(cmd->args[3]));
-            /* args[4] = sub property (vrf) */
-            strlcpy(cmd->args[4], temp_args[7], sizeof(cmd->args[4]));
-            /* args[5] = sub value (18) */
-            strlcpy(cmd->args[5], temp_args[9], sizeof(cmd->args[5]));
-            
-            cmd->arg_count = 6;
-            debug_log(DEBUG_DEBUG, "Reorganized set interface command: type=%s, name=%s, property=%s, value=%s, sub_property=%s, sub_value=%s",
-                      cmd->args[0], cmd->args[1], cmd->args[2], cmd->args[3], cmd->args[4], cmd->args[5]);
-        }
-    }
-
+  /* Parse first token (command type) */
+  token = strtok_r(line_copy, " ", &saveptr);
+  if (!token) {
     free(line_copy);
-    return 0;
+    return -1;
+  }
+
+  cmd->type = command_type_from_string(token);
+  if (cmd->type == CMD_UNKNOWN) {
+    print_error("Unknown command: %s", token);
+    free(line_copy);
+    return -1;
+  }
+
+  /* Parse remaining tokens */
+  while ((token = strtok_r(NULL, " ", &saveptr)) != NULL && arg_count < 10) {
+    strlcpy(cmd->args[arg_count], token, sizeof(cmd->args[arg_count]));
+    arg_count++;
+  }
+
+  cmd->arg_count = arg_count;
+
+  /* Determine object type based on arguments */
+  if (arg_count > 0) {
+    cmd->object = object_type_from_string(cmd->args[0]);
+  }
+
+  /* Special handling for set interface commands with complex structure */
+  debug_log(
+      DEBUG_DEBUG,
+      "Checking for set interface command: type=%d, object=%d, arg_count=%d",
+      cmd->type, cmd->object, arg_count);
+  if (cmd->type == CMD_SET && cmd->object == OBJ_INTERFACE && arg_count >= 10) {
+    /* Check if this is a set interface type <type> name <name> peer <peer> vrf
+     * id <number> command */
+    if (strcmp(cmd->args[1], "type") == 0 &&
+        strcmp(cmd->args[3], "name") == 0 &&
+        strcmp(cmd->args[5], "peer") == 0 && strcmp(cmd->args[7], "vrf") == 0 &&
+        strcmp(cmd->args[8], "id") == 0) {
+
+      /* Reorganize the arguments to match the expected format */
+      char temp_args[10][64];
+      for (int i = 0; i < arg_count; i++) {
+        strlcpy(temp_args[i], cmd->args[i], sizeof(temp_args[i]));
+      }
+
+      /* args[0] = interface type (epair) */
+      strlcpy(cmd->args[0], temp_args[2], sizeof(cmd->args[0]));
+      /* args[1] = interface name (epair127) */
+      strlcpy(cmd->args[1], temp_args[4], sizeof(cmd->args[1]));
+      /* args[2] = property (peer) */
+      strlcpy(cmd->args[2], temp_args[5], sizeof(cmd->args[2]));
+      /* args[3] = value (b) */
+      strlcpy(cmd->args[3], temp_args[6], sizeof(cmd->args[3]));
+      /* args[4] = sub property (vrf) */
+      strlcpy(cmd->args[4], temp_args[7], sizeof(cmd->args[4]));
+      /* args[5] = sub value (18) */
+      strlcpy(cmd->args[5], temp_args[9], sizeof(cmd->args[5]));
+
+      cmd->arg_count = 6;
+      debug_log(DEBUG_DEBUG,
+                "Reorganized set interface command: type=%s, name=%s, "
+                "property=%s, value=%s, sub_property=%s, sub_value=%s",
+                cmd->args[0], cmd->args[1], cmd->args[2], cmd->args[3],
+                cmd->args[4], cmd->args[5]);
+    }
+  }
+
+  free(line_copy);
+  return 0;
 }
 
 /**
@@ -310,58 +315,59 @@ int parse_command(const char *line, command_t *cmd)
  * @param cmd Command structure to fill
  * @return 0 on success, -1 on failure
  */
-int parse_command_yacc(const char *line, command_t *cmd)
-{
-    extern int yyparse(void);
-    extern void yyrestart(FILE *);
-    extern FILE *yyin;
-    extern command_t *current_command;
-    extern int parse_error;
-    
-    if (!line || !cmd) {
-        return -1;
-    }
+int parse_command_yacc(const char *line, command_t *cmd) {
+  extern int yyparse(void);
+  extern void yyrestart(FILE *);
+  extern FILE *yyin;
+  extern command_t *current_command;
+  extern int parse_error;
 
-    /* Initialize command structure */
-    memset(cmd, 0, sizeof(*cmd));
-    
-    /* Set up global variables for parser */
-    current_command = cmd;
-    parse_error = 0;
-    
-    /* Create a temporary file with the command line */
-    FILE *temp_file = tmpfile();
-    if (!temp_file) {
-        debug_log(DEBUG_ERROR, "Failed to create temporary file for YACC parsing");
-        return -1;
-    }
-    
-    /* Write command line to temporary file */
-    fprintf(temp_file, "%s\n", line);
-    rewind(temp_file);
-    
-    /* Set up YACC input */
-    yyin = temp_file;
-    
-    /* Parse the command */
-    debug_log(DEBUG_DEBUG, "Starting YACC parse for command: %s", line);
-    int result = yyparse();
-    debug_log(DEBUG_DEBUG, "YACC parse result: %d, parse_error: %d", result, parse_error);
-    
-    /* Clean up */
-    fclose(temp_file);
-    yyin = NULL;
-    current_command = NULL;
-    
-    if (parse_error || result != 0) {
-        debug_log(DEBUG_ERROR, "YACC parsing failed for command: %s", line);
-        return -1;
-    }
-    
-    debug_log(DEBUG_DEBUG, "YACC parsing successful: type=%d, object=%d, arg_count=%d", 
-              cmd->type, cmd->object, cmd->arg_count);
-    
-    return 0;
+  if (!line || !cmd) {
+    return -1;
+  }
+
+  /* Initialize command structure */
+  memset(cmd, 0, sizeof(*cmd));
+
+  /* Set up global variables for parser */
+  current_command = cmd;
+  parse_error = 0;
+
+  /* Create a temporary file with the command line */
+  FILE *temp_file = tmpfile();
+  if (!temp_file) {
+    debug_log(DEBUG_ERROR, "Failed to create temporary file for YACC parsing");
+    return -1;
+  }
+
+  /* Write command line to temporary file */
+  fprintf(temp_file, "%s\n", line);
+  rewind(temp_file);
+
+  /* Set up YACC input */
+  yyin = temp_file;
+
+  /* Parse the command */
+  debug_log(DEBUG_DEBUG, "Starting YACC parse for command: %s", line);
+  int result = yyparse();
+  debug_log(DEBUG_DEBUG, "YACC parse result: %d, parse_error: %d", result,
+            parse_error);
+
+  /* Clean up */
+  fclose(temp_file);
+  yyin = NULL;
+  current_command = NULL;
+
+  if (parse_error || result != 0) {
+    debug_log(DEBUG_ERROR, "YACC parsing failed for command: %s", line);
+    return -1;
+  }
+
+  debug_log(DEBUG_DEBUG,
+            "YACC parsing successful: type=%d, object=%d, arg_count=%d",
+            cmd->type, cmd->object, cmd->arg_count);
+
+  return 0;
 }
 
 /**
@@ -370,55 +376,58 @@ int parse_command_yacc(const char *line, command_t *cmd)
  * @param addr Output sockaddr_storage structure
  * @return 0 on success, -1 on failure
  */
-int parse_address(const char *addr_str, struct sockaddr_storage *addr)
-{
-    struct addrinfo hints, *res;
-    char *host_part, *port_part;
-    char addr_copy[256];
-    int ret;
+int parse_address(const char *addr_str, struct sockaddr_storage *addr) {
+  struct addrinfo hints, *res;
+  char *host_part, *port_part;
+  char addr_copy[256];
+  int ret;
 
-    if (!addr_str || !addr) {
-        return -1;
-    }
-
-    strlcpy(addr_copy, addr_str, sizeof(addr_copy));
-
-    /* Split address and port */
-    port_part = strchr(addr_copy, ':');
-    if (port_part) {
-        *port_part = '\0';
-        port_part++;
-    }
-
-    host_part = addr_copy;
-
-    /* Try to parse as IPv4 */
-    if (inet_pton(AF_INET, host_part, &((struct sockaddr_in *)addr)->sin_addr) == 1) {
-        addr->ss_family = AF_INET;
-        ((struct sockaddr_in *)addr)->sin_port = port_part ? htons(atoi(port_part)) : 0;
-        return 0;
-    }
-
-    /* Try to parse as IPv6 */
-    if (inet_pton(AF_INET6, host_part, &((struct sockaddr_in6 *)addr)->sin6_addr) == 1) {
-        addr->ss_family = AF_INET6;
-        ((struct sockaddr_in6 *)addr)->sin6_port = port_part ? htons(atoi(port_part)) : 0;
-        return 0;
-    }
-
-    /* Try to resolve as hostname */
-    memset(&hints, 0, sizeof(hints));
-    hints.ai_family = AF_UNSPEC;
-    hints.ai_socktype = SOCK_STREAM;
-
-    ret = getaddrinfo(host_part, port_part, &hints, &res);
-    if (ret == 0) {
-        memcpy(addr, res->ai_addr, res->ai_addrlen);
-        freeaddrinfo(res);
-        return 0;
-    }
-
+  if (!addr_str || !addr) {
     return -1;
+  }
+
+  strlcpy(addr_copy, addr_str, sizeof(addr_copy));
+
+  /* Split address and port */
+  port_part = strchr(addr_copy, ':');
+  if (port_part) {
+    *port_part = '\0';
+    port_part++;
+  }
+
+  host_part = addr_copy;
+
+  /* Try to parse as IPv4 */
+  if (inet_pton(AF_INET, host_part, &((struct sockaddr_in *)addr)->sin_addr) ==
+      1) {
+    addr->ss_family = AF_INET;
+    ((struct sockaddr_in *)addr)->sin_port =
+        port_part ? htons(atoi(port_part)) : 0;
+    return 0;
+  }
+
+  /* Try to parse as IPv6 */
+  if (inet_pton(AF_INET6, host_part,
+                &((struct sockaddr_in6 *)addr)->sin6_addr) == 1) {
+    addr->ss_family = AF_INET6;
+    ((struct sockaddr_in6 *)addr)->sin6_port =
+        port_part ? htons(atoi(port_part)) : 0;
+    return 0;
+  }
+
+  /* Try to resolve as hostname */
+  memset(&hints, 0, sizeof(hints));
+  hints.ai_family = AF_UNSPEC;
+  hints.ai_socktype = SOCK_STREAM;
+
+  ret = getaddrinfo(host_part, port_part, &hints, &res);
+  if (ret == 0) {
+    memcpy(addr, res->ai_addr, res->ai_addrlen);
+    freeaddrinfo(res);
+    return 0;
+  }
+
+  return -1;
 }
 
 /**
@@ -428,37 +437,36 @@ int parse_address(const char *addr_str, struct sockaddr_storage *addr)
  * @param len Buffer length
  * @return 0 on success, -1 on failure
  */
-int format_address(const struct sockaddr_storage *addr, char *str, size_t len)
-{
-    if (!addr || !str || len == 0) {
-        return -1;
-    }
+int format_address(const struct sockaddr_storage *addr, char *str, size_t len) {
+  if (!addr || !str || len == 0) {
+    return -1;
+  }
 
-    switch (addr->ss_family) {
-        case AF_INET: {
-            struct sockaddr_in *sin = (struct sockaddr_in *)addr;
-            if (inet_ntop(AF_INET, &sin->sin_addr, str, len) == NULL) {
-                return -1;
-            }
-            break;
-        }
-        case AF_INET6: {
-            struct sockaddr_in6 *sin6 = (struct sockaddr_in6 *)addr;
-            if (inet_ntop(AF_INET6, &sin6->sin6_addr, str, len) == NULL) {
-                return -1;
-            }
-            break;
-        }
-        case AF_LINK: {
-            struct sockaddr_dl *sdl = (struct sockaddr_dl *)addr;
-            snprintf(str, len, "link#%d", sdl->sdl_index);
-            break;
-        }
-        default:
-            return -1;
+  switch (addr->ss_family) {
+  case AF_INET: {
+    struct sockaddr_in *sin = (struct sockaddr_in *)addr;
+    if (inet_ntop(AF_INET, &sin->sin_addr, str, len) == NULL) {
+      return -1;
     }
+    break;
+  }
+  case AF_INET6: {
+    struct sockaddr_in6 *sin6 = (struct sockaddr_in6 *)addr;
+    if (inet_ntop(AF_INET6, &sin6->sin6_addr, str, len) == NULL) {
+      return -1;
+    }
+    break;
+  }
+  case AF_LINK: {
+    struct sockaddr_dl *sdl = (struct sockaddr_dl *)addr;
+    snprintf(str, len, "link#%d", sdl->sdl_index);
+    break;
+  }
+  default:
+    return -1;
+  }
 
-    return 0;
+  return 0;
 }
 
 /**
@@ -466,12 +474,11 @@ int format_address(const struct sockaddr_storage *addr, char *str, size_t len)
  * @param addr sockaddr_storage structure
  * @return Address family
  */
-int get_address_family(const struct sockaddr_storage *addr)
-{
-    if (!addr) {
-        return AF_UNSPEC;
-    }
-    return addr->ss_family;
+int get_address_family(const struct sockaddr_storage *addr) {
+  if (!addr) {
+    return AF_UNSPEC;
+  }
+  return addr->ss_family;
 }
 
 /**
@@ -479,45 +486,44 @@ int get_address_family(const struct sockaddr_storage *addr)
  * @param addr sockaddr_storage structure containing netmask
  * @return Prefix length
  */
-int get_prefix_length(const struct sockaddr_storage *addr)
-{
-    int prefix_len = 0;
-    unsigned char *bytes;
-    int byte_count;
+int get_prefix_length(const struct sockaddr_storage *addr) {
+  int prefix_len = 0;
+  unsigned char *bytes;
+  int byte_count;
 
-    if (!addr) {
-        return -1;
+  if (!addr) {
+    return -1;
+  }
+
+  switch (addr->ss_family) {
+  case AF_INET:
+    bytes = (unsigned char *)&((struct sockaddr_in *)addr)->sin_addr;
+    byte_count = 4;
+    break;
+  case AF_INET6:
+    bytes = (unsigned char *)&((struct sockaddr_in6 *)addr)->sin6_addr;
+    byte_count = 16;
+    break;
+  default:
+    return -1;
+  }
+
+  for (int i = 0; i < byte_count; i++) {
+    unsigned char byte = bytes[i];
+    if (byte == 0xff) {
+      prefix_len += 8;
+    } else if (byte == 0) {
+      break;
+    } else {
+      while (byte & 0x80) {
+        prefix_len++;
+        byte <<= 1;
+      }
+      break;
     }
+  }
 
-    switch (addr->ss_family) {
-        case AF_INET:
-            bytes = (unsigned char *)&((struct sockaddr_in *)addr)->sin_addr;
-            byte_count = 4;
-            break;
-        case AF_INET6:
-            bytes = (unsigned char *)&((struct sockaddr_in6 *)addr)->sin6_addr;
-            byte_count = 16;
-            break;
-        default:
-            return -1;
-    }
-
-    for (int i = 0; i < byte_count; i++) {
-        unsigned char byte = bytes[i];
-        if (byte == 0xff) {
-            prefix_len += 8;
-        } else if (byte == 0) {
-            break;
-        } else {
-            while (byte & 0x80) {
-                prefix_len++;
-                byte <<= 1;
-            }
-            break;
-        }
-    }
-
-    return prefix_len;
+  return prefix_len;
 }
 
 /**
@@ -525,13 +531,12 @@ int get_prefix_length(const struct sockaddr_storage *addr)
  * @param format Format string
  * @param ... Variable arguments
  */
-void print_error(const char *format, ...)
-{
-    va_list args;
-    va_start(args, format);
-    vfprintf(stderr, format, args);
-    fprintf(stderr, "\n");
-    va_end(args);
+void print_error(const char *format, ...) {
+  va_list args;
+  va_start(args, format);
+  vfprintf(stderr, format, args);
+  fprintf(stderr, "\n");
+  va_end(args);
 }
 
 /**
@@ -539,13 +544,12 @@ void print_error(const char *format, ...)
  * @param format Format string
  * @param ... Variable arguments
  */
-void print_success(const char *format, ...)
-{
-    va_list args;
-    va_start(args, format);
-    vfprintf(stdout, format, args);
-    fprintf(stdout, "\n");
-    va_end(args);
+void print_success(const char *format, ...) {
+  va_list args;
+  va_start(args, format);
+  vfprintf(stdout, format, args);
+  fprintf(stdout, "\n");
+  va_end(args);
 }
 
 /**
@@ -553,23 +557,19 @@ void print_success(const char *format, ...)
  * @param format Format string
  * @param ... Variable arguments
  */
-void print_info(const char *format, ...)
-{
-    va_list args;
-    va_start(args, format);
-    vfprintf(stdout, format, args);
-    fprintf(stdout, "\n");
-    va_end(args);
+void print_info(const char *format, ...) {
+  va_list args;
+  va_start(args, format);
+  vfprintf(stdout, format, args);
+  fprintf(stdout, "\n");
+  va_end(args);
 }
 
 /**
  * Initialize debug logging
  * @param level Debug level
  */
-void debug_init(debug_level_t level)
-{
-    current_debug_level = level;
-}
+void debug_init(debug_level_t level) { current_debug_level = level; }
 
 /**
  * Log debug message
@@ -577,32 +577,32 @@ void debug_init(debug_level_t level)
  * @param format Format string
  * @param ... Variable arguments
  */
-void debug_log(debug_level_t level, const char *format, ...)
-{
-    va_list args;
-    time_t now;
-    struct tm *tm_info;
-    char time_str[26];
+void debug_log(debug_level_t level, const char *format, ...) {
+  va_list args;
+  time_t now;
+  struct tm *tm_info;
+  char time_str[26];
 
-    if (level > current_debug_level) {
-        return;
-    }
+  if (level > current_debug_level) {
+    return;
+  }
 
-    /* Get current time */
-    time(&now);
-    tm_info = localtime(&now);
-    strftime(time_str, 26, "%Y-%m-%d %H:%M:%S", tm_info);
+  /* Get current time */
+  time(&now);
+  tm_info = localtime(&now);
+  strftime(time_str, 26, "%Y-%m-%d %H:%M:%S", tm_info);
 
-    /* Print timestamp and message to stderr */
-    fprintf(stderr, "[%s] [%s] ", time_str, 
-            level == DEBUG_ERROR ? "ERROR" :
-            level == DEBUG_WARN ? "WARNING" :
-            level == DEBUG_INFO ? "INFO" :
-            level == DEBUG_DEBUG ? "DEBUG" :
-            level == DEBUG_TRACE ? "TRACE" : "UNKNOWN");
+  /* Print timestamp and message to stderr */
+  fprintf(stderr, "[%s] [%s] ", time_str,
+          level == DEBUG_ERROR   ? "ERROR"
+          : level == DEBUG_WARN  ? "WARNING"
+          : level == DEBUG_INFO  ? "INFO"
+          : level == DEBUG_DEBUG ? "DEBUG"
+          : level == DEBUG_TRACE ? "TRACE"
+                                 : "UNKNOWN");
 
-    va_start(args, format);
-    vfprintf(stderr, format, args);
-    fprintf(stderr, "\n");
-    va_end(args);
-} 
+  va_start(args, format);
+  vfprintf(stderr, format, args);
+  fprintf(stderr, "\n");
+  va_end(args);
+}

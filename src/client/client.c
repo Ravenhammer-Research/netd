@@ -5,8 +5,8 @@
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
@@ -18,19 +18,20 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "net.h"
-#include <string.h>
 #include <stdio.h>
+#include <string.h>
 
 /**
  * Initialize client
@@ -38,67 +39,66 @@
  * @param interactive Whether running in interactive mode
  * @return 0 on success, -1 on failure
  */
-int client_init(net_client_t *client, bool interactive)
-{
-    if (!client) {
-        return -1;
-    }
+int client_init(net_client_t *client, bool interactive) {
+  if (!client) {
+    return -1;
+  }
 
-    debug_log(DEBUG_INFO, "Initializing client (interactive: %s)", interactive ? "yes" : "no");
+  debug_log(DEBUG_INFO, "Initializing client (interactive: %s)",
+            interactive ? "yes" : "no");
 
-    /* Initialize client structure */
-    memset(client, 0, sizeof(*client));
-    client->socket_fd = -1;
-    client->connected = false;
-    client->transaction.active = false;
-    client->transaction.command_count = 0;
+  /* Initialize client structure */
+  memset(client, 0, sizeof(*client));
+  client->socket_fd = -1;
+  client->connected = false;
+  client->transaction.active = false;
+  client->transaction.command_count = 0;
 
-    /* Initialize YANG context */
-    debug_log(DEBUG_DEBUG, "Initializing YANG context");
-    if (yang_init_client(client) < 0) {
-        print_error("Failed to initialize YANG context");
-        return -1;
-    }
+  /* Initialize YANG context */
+  debug_log(DEBUG_DEBUG, "Initializing YANG context");
+  if (yang_init_client(client) < 0) {
+    print_error("Failed to initialize YANG context");
+    return -1;
+  }
 
-    /* Connect to server */
-    debug_log(DEBUG_DEBUG, "Connecting to netd server");
-    if (netconf_connect(client) < 0) {
-        print_error("Failed to connect to netd server");
-        yang_cleanup_client(client);
-        return -1;
-    }
+  /* Connect to server */
+  debug_log(DEBUG_DEBUG, "Connecting to netd server");
+  if (netconf_connect(client) < 0) {
+    print_error("Failed to connect to netd server");
+    yang_cleanup_client(client);
+    return -1;
+  }
 
-    /* Initialize readline if interactive */
-    if (interactive) {
-        debug_log(DEBUG_DEBUG, "Initializing readline for interactive mode");
-        initialize_readline();
-    }
+  /* Initialize readline if interactive */
+  if (interactive) {
+    debug_log(DEBUG_DEBUG, "Initializing readline for interactive mode");
+    initialize_readline();
+  }
 
-    debug_log(DEBUG_INFO, "Client initialization completed successfully");
-    return 0;
+  debug_log(DEBUG_INFO, "Client initialization completed successfully");
+  return 0;
 }
 
 /**
  * Cleanup client
  * @param client Client structure
  */
-void client_cleanup(net_client_t *client)
-{
-    if (client) {
-        debug_log(DEBUG_DEBUG, "Cleaning up client");
-        
-        /* Rollback any active transaction */
-        if (client->transaction.active) {
-            debug_log(DEBUG_DEBUG, "Rolling back active transaction");
-            transaction_rollback(client);
-        }
-        
-        debug_log(DEBUG_DEBUG, "Disconnecting from server");
-        netconf_disconnect(client);
-        
-        debug_log(DEBUG_DEBUG, "Cleaning up YANG context");
-        yang_cleanup_client(client);
-        
-        debug_log(DEBUG_INFO, "Client cleanup completed");
+void client_cleanup(net_client_t *client) {
+  if (client) {
+    debug_log(DEBUG_DEBUG, "Cleaning up client");
+
+    /* Rollback any active transaction */
+    if (client->transaction.active) {
+      debug_log(DEBUG_DEBUG, "Rolling back active transaction");
+      transaction_rollback(client);
     }
-} 
+
+    debug_log(DEBUG_DEBUG, "Disconnecting from server");
+    netconf_disconnect(client);
+
+    debug_log(DEBUG_DEBUG, "Cleaning up YANG context");
+    yang_cleanup_client(client);
+
+    debug_log(DEBUG_INFO, "Client cleanup completed");
+  }
+}
