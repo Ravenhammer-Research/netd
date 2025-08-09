@@ -47,7 +47,12 @@ VPATH = $(SERVERDIR):$(CLIENTDIR)
 SERVER_SRCS = $(SERVERDIR)/main.c \
               $(SERVERDIR)/debug.c \
               $(SERVERDIR)/utils.c \
-              $(SERVERDIR)/freebsd_system.c \
+              $(SERVERDIR)/system/freebsd/interface.c \
+              $(SERVERDIR)/system/freebsd/route.c \
+              $(SERVERDIR)/system/freebsd/bridge.c \
+              $(SERVERDIR)/system/freebsd/vlan.c \
+              $(SERVERDIR)/system/freebsd/wireless.c \
+              $(SERVERDIR)/system/freebsd/system.c \
               $(SERVERDIR)/transaction.c \
               $(SERVERDIR)/netconf_vrf.c \
               $(SERVERDIR)/netconf_interface.c \
@@ -85,7 +90,12 @@ CLIENT_SRCS = $(CLIENTDIR)/main.c \
 SERVER_OBJS = $(SERVER_BUILDDIR)/main.o \
               $(SERVER_BUILDDIR)/debug.o \
               $(SERVER_BUILDDIR)/utils.o \
-              $(SERVER_BUILDDIR)/freebsd_system.o \
+              $(SERVER_BUILDDIR)/interface.o \
+              $(SERVER_BUILDDIR)/route.o \
+              $(SERVER_BUILDDIR)/bridge.o \
+              $(SERVER_BUILDDIR)/vlan.o \
+              $(SERVER_BUILDDIR)/wireless.o \
+              $(SERVER_BUILDDIR)/system.o \
               $(SERVER_BUILDDIR)/transaction.o \
               $(SERVER_BUILDDIR)/netconf_vrf.o \
               $(SERVER_BUILDDIR)/netconf_interface.o \
@@ -193,6 +203,31 @@ $(SERVER_BUILDDIR)/yang.o: $(SERVERDIR)/yang.c
 $(SERVER_BUILDDIR)/netconf.o: $(SERVERDIR)/netconf.c
 	@mkdir -p $(SERVER_BUILDDIR)
 	$(CC) $(CFLAGS) -I$(SERVERDIR) -c -o $@ $(SERVERDIR)/netconf.c
+
+# Compilation rules for split FreeBSD system files
+$(SERVER_BUILDDIR)/interface.o: $(SERVERDIR)/system/freebsd/interface.c
+	@mkdir -p $(SERVER_BUILDDIR)
+	$(CC) $(CFLAGS) -I$(SERVERDIR) -c -o $@ $(SERVERDIR)/system/freebsd/interface.c
+
+$(SERVER_BUILDDIR)/route.o: $(SERVERDIR)/system/freebsd/route.c
+	@mkdir -p $(SERVER_BUILDDIR)
+	$(CC) $(CFLAGS) -I$(SERVERDIR) -c -o $@ $(SERVERDIR)/system/freebsd/route.c
+
+$(SERVER_BUILDDIR)/bridge.o: $(SERVERDIR)/system/freebsd/bridge.c
+	@mkdir -p $(SERVER_BUILDDIR)
+	$(CC) $(CFLAGS) -I$(SERVERDIR) -c -o $@ $(SERVERDIR)/system/freebsd/bridge.c
+
+$(SERVER_BUILDDIR)/vlan.o: $(SERVERDIR)/system/freebsd/vlan.c
+	@mkdir -p $(SERVER_BUILDDIR)
+	$(CC) $(CFLAGS) -I$(SERVERDIR) -c -o $@ $(SERVERDIR)/system/freebsd/vlan.c
+
+$(SERVER_BUILDDIR)/wireless.o: $(SERVERDIR)/system/freebsd/wireless.c
+	@mkdir -p $(SERVER_BUILDDIR)
+	$(CC) $(CFLAGS) -I$(SERVERDIR) -c -o $@ $(SERVERDIR)/system/freebsd/wireless.c
+
+$(SERVER_BUILDDIR)/system.o: $(SERVERDIR)/system/freebsd/system.c
+	@mkdir -p $(SERVER_BUILDDIR)
+	$(CC) $(CFLAGS) -I$(SERVERDIR) -c -o $@ $(SERVERDIR)/system/freebsd/system.c
 
 # Compilation rules for client objects
 $(CLIENT_BUILDDIR)/main.o: $(CLIENTDIR)/main.c
@@ -314,7 +349,12 @@ uninstall:
 $(SERVER_BUILDDIR)/main.o: $(SERVERDIR)/netd.h
 $(SERVER_BUILDDIR)/debug.o: $(SERVERDIR)/netd.h
 $(SERVER_BUILDDIR)/utils.o: $(SERVERDIR)/netd.h
-$(SERVER_BUILDDIR)/freebsd_system.o: $(SERVERDIR)/netd.h
+$(SERVER_BUILDDIR)/interface.o: $(SERVERDIR)/netd.h
+$(SERVER_BUILDDIR)/route.o: $(SERVERDIR)/netd.h
+$(SERVER_BUILDDIR)/bridge.o: $(SERVERDIR)/netd.h
+$(SERVER_BUILDDIR)/vlan.o: $(SERVERDIR)/netd.h
+$(SERVER_BUILDDIR)/wireless.o: $(SERVERDIR)/netd.h
+$(SERVER_BUILDDIR)/system.o: $(SERVERDIR)/netd.h
 $(SERVER_BUILDDIR)/transaction.o: $(SERVERDIR)/netd.h
 $(SERVER_BUILDDIR)/netconf_vrf.o: $(SERVERDIR)/netd.h
 $(SERVER_BUILDDIR)/netconf_interface.o: $(SERVERDIR)/netd.h
