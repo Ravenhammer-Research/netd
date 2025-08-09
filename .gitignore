@@ -1,5 +1,6 @@
 # Build directory
 build/
+example/
 # Generated parser/lexer files
 src/client/parser.c
 src/client/lexer.c
