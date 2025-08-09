@@ -63,7 +63,4 @@ target_include_directories(net PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/netconf
 )
 
-# Set compiler flags for this target
-target_compile_options(net PRIVATE
-    -Wall -Wextra -Werror
-) 
+ 

@@ -30,6 +30,7 @@
  */
 
 #include "netd.h"
+#include "interface.h"
 #include <sys/types.h>
 #include <fcntl.h>
 #include <sys/un.h>
@@ -63,90 +64,82 @@
 #include <sys/linker.h>
 
 /**
- * Get VLAN information for an interface
- * @param ifname Interface name
- * @param vlan_id VLAN ID (output)
- * @param vlan_proto VLAN protocol (output)
- * @param proto_size Size of vlan_proto buffer
- * @param vlan_pcp VLAN Priority Code Point (output)
- * @param vlan_parent Parent interface name (output)
- * @param parent_size Size of vlan_parent buffer
+ * Delete a network interface
+ * @param name Interface name
  * @return 0 on success, -1 on failure
  */
-int freebsd_get_vlan_info(const char *ifname, int *vlan_id, char *vlan_proto,
-                          size_t proto_size, int *vlan_pcp, char *vlan_parent,
-                          size_t parent_size) {
+int freebsd_interface_delete(const char *name) {
   int sock;
   struct ifreq ifr;
-  struct vlanreq vreq;
-  int found = 0;
 
-  if (!ifname || !vlan_id || !vlan_proto || !vlan_pcp || !vlan_parent) {
+  if (!name) {
     return -1;
   }
 
-  /* Initialize output parameters */
-  *vlan_id = -1;
-  *vlan_pcp = 0;
-  vlan_proto[0] = '\0';
-  vlan_parent[0] = '\0';
-
   /* Create socket for ioctl */
-  sock = socket(AF_LOCAL, SOCK_DGRAM, 0);
+  sock = socket(AF_INET, SOCK_DGRAM, 0);
   if (sock < 0) {
-    debug_log(DEBUG_ERROR, "Failed to create socket for vlan info: %s", strerror(errno));
+    debug_log(DEBUG_ERROR, "Failed to create socket for interface deletion: %s",
+              strerror(errno));
     return -1;
   }
 
   /* Set up interface request */
   memset(&ifr, 0, sizeof(ifr));
-  strlcpy(ifr.ifr_name, ifname, sizeof(ifr.ifr_name));
+  strlcpy(ifr.ifr_name, name, sizeof(ifr.ifr_name));
 
-  /* Check if interface exists */
-  if (ioctl(sock, SIOCGIFFLAGS, &ifr) < 0) {
-    debug_log(DEBUG_ERROR, "Interface %s does not exist", ifname);
+  /* Delete interface */
+  if (ioctl(sock, SIOCIFDESTROY, &ifr) < 0) {
+    debug_log(DEBUG_ERROR, "Failed to delete interface %s: %s", name,
+              strerror(errno));
     close(sock);
     return -1;
   }
 
-  /* Get VLAN information using VLAN ioctls */
-  memset(&vreq, 0, sizeof(vreq));
-  strlcpy(vreq.vlr_parent, ifname, sizeof(vreq.vlr_parent));
+  debug_log(DEBUG_INFO, "Deleted interface %s", name);
+  close(sock);
+  return 0;
+}
 
-  /* Get VLAN configuration */
-  if (ioctl(sock, SIOCGETVLAN, &vreq) == 0) {
-    *vlan_id = vreq.vlr_tag;
-    *vlan_pcp = 0; /* PCP is not available in vlanreq structure */
-    
-    /* Set protocol based on vreq.vlr_proto */
-    switch (vreq.vlr_proto) {
-      case ETHERTYPE_VLAN:
-        strlcpy(vlan_proto, "802.1q", proto_size);
-        break;
-      default:
-        snprintf(vlan_proto, proto_size, "0x%04x", vreq.vlr_proto);
-        break;
-    }
-    
-    strlcpy(vlan_parent, vreq.vlr_parent, parent_size);
-    found = 1;
-  } else {
-    /* Fallback: try to infer VLAN info from interface name */
-    char *dot = strchr(ifname, '.');
-    if (dot) {
-      /* This is a VLAN interface like em0.18 */
-      strlcpy(vlan_parent, ifname, dot - ifname + 1);
-      *vlan_id = atoi(dot + 1);
-      strlcpy(vlan_proto, "802.1q", proto_size);
-      found = 1;
-    } else if (strncmp(ifname, "vlan", 4) == 0) {
-      /* This is a VLAN interface like vlan28 */
-      *vlan_id = atoi(ifname + 4);
-      strlcpy(vlan_proto, "802.1q", proto_size);
-      found = 1;
-    }
+/**
+ * Delete interface address
+ * @param name Interface name
+ * @param family Address family
+ * @return 0 on success, -1 on failure
+ */
+int freebsd_interface_delete_address(const char *name, int family) {
+  int sock;
+  struct ifreq ifr;
+  struct sockaddr_storage addr;
+
+  if (!name) {
+    return -1;
   }
 
+  /* Create socket for ioctl */
+  sock = socket(family, SOCK_DGRAM, 0);
+  if (sock < 0) {
+    debug_log(DEBUG_ERROR, "Failed to create socket for address deletion: %s",
+              strerror(errno));
+    return -1;
+  }
+
+  /* Set up interface request */
+  memset(&ifr, 0, sizeof(ifr));
+  strlcpy(ifr.ifr_name, name, sizeof(ifr.ifr_name));
+  memset(&addr, 0, sizeof(addr));
+  addr.ss_family = family;
+  memcpy(&ifr.ifr_addr, &addr, sizeof(ifr.ifr_addr));
+
+  /* Delete address */
+  if (ioctl(sock, SIOCDIFADDR, &ifr) < 0) {
+    debug_log(DEBUG_ERROR, "Failed to delete address from interface %s: %s",
+              name, strerror(errno));
+    close(sock);
+    return -1;
+  }
+
+  debug_log(DEBUG_INFO, "Deleted address from interface %s", name);
   close(sock);
-  return found ? 0 : -1;
+  return 0;
 } 

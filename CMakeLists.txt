@@ -69,9 +69,10 @@ include_directories(${NETCONF_INCLUDE_DIRS})
 
 # Add subdirectories
 add_subdirectory(src/client)
+add_subdirectory(src/server)
 
 # Install targets
-install(TARGETS net
+install(TARGETS net netd
     RUNTIME DESTINATION bin
 )
 

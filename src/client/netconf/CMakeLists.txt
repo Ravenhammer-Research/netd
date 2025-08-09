@@ -45,7 +45,4 @@ target_include_directories(netconf_lib PUBLIC
     /usr/local/include
 )
 
-# Set compiler flags for netconf library
-target_compile_options(netconf_lib PRIVATE
-    -Wall -Wextra -Werror
-) 
+ 

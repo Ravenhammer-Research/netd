@@ -30,6 +30,7 @@
  */
 
 #include "netd.h"
+#include "interface.h"
 #include <sys/types.h>
 #include <fcntl.h>
 #include <sys/un.h>
@@ -61,15 +62,6 @@
 #include <time.h>
 #include <sys/module.h>
 #include <sys/linker.h>
-
-/**
- * Get interface operational status based on flags
- * @param flags Interface flags
- * @return "up" if IFF_RUNNING is set, "down" otherwise
- */
-const char *freebsd_get_interface_oper_status(int flags) {
-  return (flags & IFF_RUNNING) ? "up" : "down";
-}
 
 /**
  * Create a network interface
@@ -148,74 +140,6 @@ int freebsd_interface_create(const char *name, interface_type_t type) {
     debug_log(DEBUG_INFO, "Created interface %s of type %s", name, type_str);
   }
 
-  close(sock);
-  return 0;
-}
-
-/**
- * Check if interface exists in system
- * @param name Interface name
- * @return true if exists, false otherwise
- */
-bool freebsd_interface_exists(const char *name) {
-  int sock;
-  struct ifreq ifr;
-
-  if (!name) {
-    return false;
-  }
-
-  /* Create socket for ioctl */
-  sock = socket(AF_INET, SOCK_DGRAM, 0);
-  if (sock < 0) {
-    return false;
-  }
-
-  /* Set up interface request */
-  memset(&ifr, 0, sizeof(ifr));
-  strlcpy(ifr.ifr_name, name, sizeof(ifr.ifr_name));
-
-  /* Try to get interface flags - if it exists, this will succeed */
-  bool exists = (ioctl(sock, SIOCGIFFLAGS, &ifr) == 0);
-
-  close(sock);
-  return exists;
-}
-
-/**
- * Delete a network interface
- * @param name Interface name
- * @return 0 on success, -1 on failure
- */
-int freebsd_interface_delete(const char *name) {
-  int sock;
-  struct ifreq ifr;
-
-  if (!name) {
-    return -1;
-  }
-
-  /* Create socket for ioctl */
-  sock = socket(AF_INET, SOCK_DGRAM, 0);
-  if (sock < 0) {
-    debug_log(DEBUG_ERROR, "Failed to create socket for interface deletion: %s",
-              strerror(errno));
-    return -1;
-  }
-
-  /* Set up interface request */
-  memset(&ifr, 0, sizeof(ifr));
-  strlcpy(ifr.ifr_name, name, sizeof(ifr.ifr_name));
-
-  /* Delete interface */
-  if (ioctl(sock, SIOCIFDESTROY, &ifr) < 0) {
-    debug_log(DEBUG_ERROR, "Failed to delete interface %s: %s", name,
-              strerror(errno));
-    close(sock);
-    return -1;
-  }
-
-  debug_log(DEBUG_INFO, "Deleted interface %s", name);
   close(sock);
   return 0;
 }
@@ -310,49 +234,6 @@ int freebsd_interface_set_address(const char *name, const char *address,
 }
 
 /**
- * Delete interface address
- * @param name Interface name
- * @param family Address family
- * @return 0 on success, -1 on failure
- */
-int freebsd_interface_delete_address(const char *name, int family) {
-  int sock;
-  struct ifreq ifr;
-  struct sockaddr_storage addr;
-
-  if (!name) {
-    return -1;
-  }
-
-  /* Create socket for ioctl */
-  sock = socket(family, SOCK_DGRAM, 0);
-  if (sock < 0) {
-    debug_log(DEBUG_ERROR, "Failed to create socket for address deletion: %s",
-              strerror(errno));
-    return -1;
-  }
-
-  /* Set up interface request */
-  memset(&ifr, 0, sizeof(ifr));
-  strlcpy(ifr.ifr_name, name, sizeof(ifr.ifr_name));
-  memset(&addr, 0, sizeof(addr));
-  addr.ss_family = family;
-  memcpy(&ifr.ifr_addr, &addr, sizeof(ifr.ifr_addr));
-
-  /* Delete address */
-  if (ioctl(sock, SIOCDIFADDR, &ifr) < 0) {
-    debug_log(DEBUG_ERROR, "Failed to delete address from interface %s: %s",
-              name, strerror(errno));
-    close(sock);
-    return -1;
-  }
-
-  debug_log(DEBUG_INFO, "Deleted address from interface %s", name);
-  close(sock);
-  return 0;
-}
-
-/**
  * Set interface MTU
  * @param name Interface name
  * @param mtu MTU value
@@ -390,153 +271,4 @@ int freebsd_interface_set_mtu(const char *name, int mtu) {
   debug_log(DEBUG_INFO, "Set MTU %d for interface %s", mtu, name);
   close(sock);
   return 0;
-}
-
-/**
- * Get interface FIB
- * @param name Interface name
- * @param fib Pointer to store FIB number
- * @return 0 on success, -1 on failure
- */
-int freebsd_interface_get_fib(const char *name, uint32_t *fib) {
-  int sock;
-  struct ifreq ifr;
-
-  if (!name || !fib) {
-    return -1;
-  }
-
-  /* Create socket for ioctl */
-  sock = socket(AF_INET, SOCK_DGRAM, 0);
-  if (sock < 0) {
-    debug_log(DEBUG_ERROR, "Failed to create socket for FIB query: %s",
-              strerror(errno));
-    return -1;
-  }
-
-  /* Set up interface request */
-  memset(&ifr, 0, sizeof(ifr));
-  strlcpy(ifr.ifr_name, name, sizeof(ifr.ifr_name));
-
-  /* Get FIB */
-  if (ioctl(sock, SIOCGIFFIB, &ifr) < 0) {
-    debug_log(DEBUG_ERROR, "Failed to get FIB for interface %s: %s", name,
-              strerror(errno));
-    close(sock);
-    return -1;
-  }
-
-  *fib = ifr.ifr_fib;
-  close(sock);
-  return 0;
-}
-
-/**
- * Get interface MTU
- * @param name Interface name
- * @param mtu Pointer to store MTU value
- * @return 0 on success, -1 on failure
- */
-int freebsd_interface_get_mtu(const char *name, int *mtu) {
-  int sock;
-  struct ifreq ifr;
-
-  if (!name || !mtu) {
-    return -1;
-  }
-
-  /* Create socket for ioctl */
-  sock = socket(AF_INET, SOCK_DGRAM, 0);
-  if (sock < 0) {
-    debug_log(DEBUG_ERROR, "Failed to create socket for MTU query: %s",
-              strerror(errno));
-    return -1;
-  }
-
-  /* Set up interface request */
-  memset(&ifr, 0, sizeof(ifr));
-  strlcpy(ifr.ifr_name, name, sizeof(ifr.ifr_name));
-
-  /* Get MTU */
-  if (ioctl(sock, SIOCGIFMTU, &ifr) < 0) {
-    debug_log(DEBUG_ERROR, "Failed to get MTU for interface %s: %s", name,
-              strerror(errno));
-    close(sock);
-    return -1;
-  }
-
-  *mtu = ifr.ifr_mtu;
-  close(sock);
-  return 0;
-}
-
-/**
- * Get interface groups
- * @param name Interface name
- * @param groups Array to store group names
- * @param max_groups Maximum number of groups to store
- * @param group_count Pointer to store actual number of groups
- * @return 0 on success, -1 on failure
- */
-int freebsd_interface_get_groups(const char *name,
-                                 char (*groups)[MAX_GROUP_NAME_LEN],
-                                 int max_groups, int *group_count) {
-  int sock;
-  struct ifgroupreq ifgr;
-  struct ifg_req *ifg;
-  size_t len;
-
-  if (!name || !groups || !group_count) {
-    return -1;
-  }
-
-  *group_count = 0;
-
-  /* Create socket for ioctl */
-  sock = socket(AF_INET, SOCK_DGRAM, 0);
-  if (sock < 0) {
-    debug_log(DEBUG_ERROR, "Failed to create socket for group query: %s",
-              strerror(errno));
-    return -1;
-  }
-
-  /* Set up interface group request */
-  memset(&ifgr, 0, sizeof(ifgr));
-  strlcpy(ifgr.ifgr_name, name, IFNAMSIZ);
-
-  /* First call to get the required buffer size */
-  if (ioctl(sock, SIOCGIFGROUP, (caddr_t)&ifgr) < 0) {
-    debug_log(DEBUG_ERROR, "Failed to get group info for %s: %s", name,
-              strerror(errno));
-    close(sock);
-    return -1;
-  }
-
-  len = ifgr.ifgr_len;
-  if (len > 0) {
-    /* Allocate memory for group list */
-    ifgr.ifgr_groups = (struct ifg_req *)calloc(len / sizeof(struct ifg_req),
-                                                sizeof(struct ifg_req));
-    if (ifgr.ifgr_groups != NULL) {
-      /* Second call to get the actual group data */
-      if (ioctl(sock, SIOCGIFGROUP, (caddr_t)&ifgr) == 0) {
-        /* Process each group */
-        for (ifg = ifgr.ifgr_groups;
-             ifg && len >= sizeof(*ifg) && *group_count < max_groups; ifg++) {
-          len -= sizeof(*ifg);
-          strlcpy(groups[*group_count], ifg->ifgrq_group, MAX_GROUP_NAME_LEN);
-          (*group_count)++;
-        }
-      } else {
-        debug_log(DEBUG_ERROR, "Failed to get groups for %s: %s", name,
-                  strerror(errno));
-      }
-      free(ifgr.ifgr_groups);
-    }
-  }
-
-  close(sock);
-  return 0;
-}
-
- 
+} 

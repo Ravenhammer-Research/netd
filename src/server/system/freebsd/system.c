@@ -30,6 +30,7 @@
  */
 
 #include "netd.h"
+#include "proto.h"
 #include <sys/types.h>
 #include <fcntl.h>
 #include <sys/un.h>

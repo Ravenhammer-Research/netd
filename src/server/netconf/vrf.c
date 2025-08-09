@@ -90,6 +90,186 @@ int vrf_create(netd_state_t *state, const char *name, uint32_t fib_number) {
 }
 
 /**
+ * Create VRFs XML response
+ * @param state Server state
+ * @param message_id Message ID for the response
+ * @return VRFs XML response string (allocated)
+ */
+char *create_vrfs_xml_response(netd_state_t *state, const char *message_id) {
+  char *response;
+  char *temp;
+  int len, total_len;
+  vrf_t *vrf;
+
+  if (!state || !message_id) {
+    return NULL;
+  }
+
+  /* Calculate total length needed */
+  total_len = snprintf(NULL, 0,
+                       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                       "<rpc-reply xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\" "
+                       "message-id=\"%s\">\n"
+                       "  <data>\n"
+                       "    <vrfs xmlns=\"urn:ietf:params:xml:ns:yang:frr-vrf\">\n",
+                       message_id);
+
+  /* Add VRF entries */
+  TAILQ_FOREACH(vrf, &state->vrfs, entries) {
+    len = snprintf(NULL, 0,
+                   "      <vrf>\n"
+                   "        <name>%s</name>\n"
+                   "        <fib>%u</fib>\n"
+                   "        <description>%s</description>\n"
+                   "      </vrf>\n",
+                   vrf->name, vrf->fib_number, vrf->description);
+    total_len += len;
+  }
+
+  total_len += snprintf(NULL, 0,
+                        "    </vrfs>\n"
+                        "  </data>\n"
+                        "</rpc-reply>");
+
+  /* Allocate and build response */
+  response = malloc(total_len + 1);
+  if (!response) {
+    debug_log(DEBUG_ERROR, "Failed to allocate memory for VRFs response");
+    return NULL;
+  }
+
+  len = snprintf(response, total_len + 1,
+                 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                 "<rpc-reply xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\" "
+                 "message-id=\"%s\">\n"
+                 "  <data>\n"
+                 "    <vrfs xmlns=\"urn:ietf:params:xml:ns:yang:frr-vrf\">\n",
+                 message_id);
+
+  /* Add VRF entries */
+  TAILQ_FOREACH(vrf, &state->vrfs, entries) {
+    temp = response + len;
+    len += snprintf(temp, total_len + 1 - len,
+                   "      <vrf>\n"
+                   "        <name>%s</name>\n"
+                   "        <fib>%u</fib>\n"
+                   "        <description>%s</description>\n"
+                   "      </vrf>\n",
+                   vrf->name, vrf->fib_number, vrf->description);
+  }
+
+  len += snprintf(response + len, total_len + 1 - len,
+                  "    </vrfs>\n"
+                  "  </data>\n"
+                  "</rpc-reply>");
+
+  return response;
+}
+
+/**
+ * Create VRF routes XML response
+ * @param state Server state
+ * @param message_id Message ID for the response
+ * @param vrf VRF structure
+ * @return VRF routes XML response string (allocated)
+ */
+char *create_vrf_routes_xml_response(netd_state_t *state, const char *message_id, vrf_t *vrf) {
+  char *response;
+  char *temp;
+  int len, total_len;
+  netd_route_t *route;
+  char dest_str[64], gw_str[64];
+
+  if (!state || !message_id || !vrf) {
+    return NULL;
+  }
+
+  /* Calculate total length needed */
+  total_len = snprintf(NULL, 0,
+                       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                       "<rpc-reply xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\" "
+                       "message-id=\"%s\">\n"
+                       "  <data>\n"
+                       "    <vrf-routes xmlns=\"urn:ietf:params:xml:ns:yang:frr-vrf\">\n"
+                       "      <vrf>\n"
+                       "        <name>%s</name>\n"
+                       "        <fib>%u</fib>\n"
+                       "        <routes>\n",
+                       message_id, vrf->name, vrf->fib_number);
+
+  /* Add route entries for this VRF */
+  TAILQ_FOREACH(route, &state->routes, entries) {
+    if (route->fib == vrf->fib_number) {
+      format_address(&route->destination, dest_str, sizeof(dest_str));
+      format_address(&route->gateway, gw_str, sizeof(gw_str));
+      
+      len = snprintf(NULL, 0,
+                     "          <route>\n"
+                     "            <destination>%s</destination>\n"
+                     "            <gateway>%s</gateway>\n"
+                     "            <interface>%s</interface>\n"
+                     "            <flags>0x%x</flags>\n"
+                     "          </route>\n",
+                     dest_str, gw_str, route->interface, route->flags);
+      total_len += len;
+    }
+  }
+
+  total_len += snprintf(NULL, 0,
+                        "        </routes>\n"
+                        "      </vrf>\n"
+                        "    </vrf-routes>\n"
+                        "  </data>\n"
+                        "</rpc-reply>");
+
+  /* Allocate and build response */
+  response = malloc(total_len + 1);
+  if (!response) {
+    debug_log(DEBUG_ERROR, "Failed to allocate memory for VRF routes response");
+    return NULL;
+  }
+
+  len = snprintf(response, total_len + 1,
+                 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                 "<rpc-reply xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\" "
+                 "message-id=\"%s\">\n"
+                 "  <data>\n"
+                 "    <vrf-routes xmlns=\"urn:ietf:params:xml:ns:yang:frr-vrf\">\n"
+                 "      <vrf>\n"
+                 "        <name>%s</name>\n"
+                 "        <fib>%u</fib>\n"
+                         "        <routes>\n",
+                 message_id, vrf->name, vrf->fib_number);
+
+  /* Add route entries for this VRF */
+  TAILQ_FOREACH(route, &state->routes, entries) {
+    if (route->fib == vrf->fib_number) {
+      format_address(&route->destination, dest_str, sizeof(dest_str));
+      format_address(&route->gateway, gw_str, sizeof(gw_str));
+      
+      temp = response + len;
+      len += snprintf(temp, total_len + 1 - len,
+                     "          <route>\n"
+                     "            <destination>%s</destination>\n"
+                     "            <gateway>%s</gateway>\n"
+                     "            <interface>%s</interface>\n"
+                     "            <flags>0x%x</flags>\n"
+                     "          </route>\n",
+                     dest_str, gw_str, route->interface, route->flags);
+    }
+  }
+
+  len += snprintf(response + len, total_len + 1 - len,
+                  "        </routes>\n"
+                  "      </vrf>\n"
+                  "    </vrf-routes>\n"
+                  "  </data>\n"
+                  "</rpc-reply>");
+
+  return response;
+}
+
+/**
  * Delete a VRF
  * @param state Server state
  * @param name VRF name

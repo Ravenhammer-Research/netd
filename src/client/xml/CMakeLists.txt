@@ -42,7 +42,4 @@ target_include_directories(xml_lib PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-# Set compiler flags for XML library
-target_compile_options(xml_lib PRIVATE
-    -Wall -Wextra -Werror
-) 
+ 

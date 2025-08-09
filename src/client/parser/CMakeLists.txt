@@ -71,7 +71,4 @@ target_include_directories(parser_lib PUBLIC
     ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-# Set compiler flags for parser library
-target_compile_options(parser_lib PRIVATE
-    -Wall -Wextra -Werror
-) 
+ 

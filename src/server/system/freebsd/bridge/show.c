@@ -30,6 +30,7 @@
  */
 
 #include "netd.h"
+#include "bridge.h"
 #include <sys/types.h>
 #include <fcntl.h>
 #include <sys/un.h>
@@ -61,6 +62,114 @@
 #include <time.h>
 #include <sys/module.h>
 #include <sys/linker.h>
+
+/**
+ * Get bridge member information for a bridge interface
+ * @param ifname Interface name
+ * @param members Buffer to store member information
+ * @param members_size Size of the members buffer
+ * @return 0 on success, -1 on failure
+ */
+int freebsd_get_bridge_members(const char *ifname, char *members,
+                               size_t members_size) {
+  int sock;
+  struct ifdrv ifd;
+  struct ifbifconf bifc;
+  struct ifbreq *breq;
+  char *buf = NULL;
+  char members_list[256] = "";
+  int member_count = 0;
+  int buflen;
+
+  if (!ifname || !members) {
+    return -1;
+  }
+
+  /* Create socket for ioctl */
+  sock = socket(AF_LOCAL, SOCK_DGRAM, 0);
+  if (sock < 0) {
+    debug_log(DEBUG_ERROR, "Failed to create socket for bridge members: %s", strerror(errno));
+    strlcpy(members, "none", members_size);
+    return -1;
+  }
+
+  /* Set up ifdrv structure for bridge ioctl */
+  memset(&ifd, 0, sizeof(ifd));
+  strlcpy(ifd.ifd_name, ifname, sizeof(ifd.ifd_name));
+  ifd.ifd_cmd = BRDGGIFS;
+  ifd.ifd_len = sizeof(struct ifbifconf);
+  ifd.ifd_data = &bifc;
+
+  /* First call to get the required buffer size */
+  memset(&bifc, 0, sizeof(bifc));
+  bifc.ifbic_len = 0;
+  bifc.ifbic_req = NULL;
+
+  if (ioctl(sock, SIOCGDRVSPEC, &ifd) < 0) {
+    debug_log(DEBUG_ERROR, "Failed to get bridge members size for %s: %s", ifname, strerror(errno));
+    close(sock);
+    strlcpy(members, "none", members_size);
+    return -1;
+  }
+
+  if (bifc.ifbic_len == 0) {
+    debug_log(DEBUG_INFO, "No bridge members found for %s", ifname);
+    close(sock);
+    strlcpy(members, "none", members_size);
+    return 0;
+  }
+
+  /* Allocate buffer for bridge member data */
+  buflen = bifc.ifbic_len;
+  buf = malloc(buflen);
+  if (!buf) {
+    debug_log(DEBUG_ERROR, "Failed to allocate memory for bridge members");
+    close(sock);
+    strlcpy(members, "none", members_size);
+    return -1;
+  }
+
+  /* Second call to get the actual bridge member data */
+  bifc.ifbic_req = (struct ifbreq *)buf;
+  if (ioctl(sock, SIOCGDRVSPEC, &ifd) < 0) {
+    debug_log(DEBUG_ERROR, "Failed to get bridge members for %s: %s", ifname, strerror(errno));
+    free(buf);
+    close(sock);
+    strlcpy(members, "none", members_size);
+    return -1;
+  }
+
+  /* Parse bridge members from the ifbreq structures */
+  breq = (struct ifbreq *)buf;
+  int count = bifc.ifbic_len / sizeof(struct ifbreq);
+  
+  for (int i = 0; i < count && member_count < 10; i++) {
+    /* Skip the bridge interface itself and empty entries */
+    if (strlen(breq[i].ifbr_ifsname) > 0 && 
+        strcmp(breq[i].ifbr_ifsname, ifname) != 0) {
+      
+      if (member_count > 0) {
+        strlcat(members_list, ",", sizeof(members_list));
+      }
+      strlcat(members_list, breq[i].ifbr_ifsname, sizeof(members_list));
+      member_count++;
+      debug_log(DEBUG_TRACE, "Found bridge member: %s", breq[i].ifbr_ifsname);
+    }
+  }
+
+  free(buf);
+  close(sock);
+
+  if (strlen(members_list) > 0) {
+    strlcpy(members, members_list, members_size);
+    debug_log(DEBUG_TRACE, "Found bridge members for %s: '%s'", ifname, members);
+  } else {
+    strlcpy(members, "none", members_size);
+    debug_log(DEBUG_INFO, "No bridge members found for %s", ifname);
+  }
+
+  return 0;
+}
 
 /**
  * Get bridge member information for a bridge interface

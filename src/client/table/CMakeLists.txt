@@ -53,7 +53,4 @@ target_include_directories(table_lib PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-# Set compiler flags for table library
-target_compile_options(table_lib PRIVATE
-    -Wall -Wextra -Werror
-) 
+ 

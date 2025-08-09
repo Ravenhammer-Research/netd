@@ -129,6 +129,17 @@ typedef struct interface {
   int wifi_bintval;        /* Beacon interval */
   char wifi_parent[64];    /* Parent interface name */
 
+  /* Epair-specific fields */
+  char peer_name[64];      /* Peer interface name */
+
+  /* GIF-specific fields */
+  char tunnel_local[64];   /* Local tunnel endpoint address */
+  char tunnel_remote[64];  /* Remote tunnel endpoint address */
+
+  /* LAGG-specific fields */
+  char lagg_proto[16];     /* LAGG protocol (e.g., "failover", "lacp", "roundrobin") */
+  char lagg_members[256];  /* LAGG member interfaces as comma-separated string */
+
   TAILQ_ENTRY(interface) entries;
 } interface_t;
 
