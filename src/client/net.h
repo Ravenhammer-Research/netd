@@ -35,12 +35,12 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#ifdef __FreeBSD__
 #include <sys/socket.h>
-#endif
+
 
 /* Constants */
 #define NETD_SOCKET_PATH "/var/run/netd.sock"
+#define NETCONF_SOCKET_PATH "/var/run/netconf.sock"
 #define MAX_COLUMNS 16
 
 /* Command types */
@@ -50,7 +50,12 @@ typedef enum {
   CMD_SHOW,
   CMD_DELETE,
   CMD_COMMIT,
-  CMD_SAVE
+  CMD_SAVE,
+  CMD_QUIT,
+  CMD_EXIT,
+  CMD_HELP,
+  CMD_CLEAR,
+  CMD_ROLLBACK
 } command_type_t;
 
 /* Object types */
@@ -58,7 +63,8 @@ typedef enum {
   OBJ_UNKNOWN = 0,
   OBJ_VRF,
   OBJ_INTERFACE,
-  OBJ_ROUTE
+  OBJ_ROUTE,
+  OBJ_NONE
 } object_type_t;
 
 /* Interface types */
@@ -110,6 +116,7 @@ struct route_data {
 /* Interface data structure */
 struct interface_data {
   char name[64];
+  char type[16];  /* Interface type: ethernet, vlan, vxlan, etc. */
   char enabled[16];
   char fib[16];
   char mtu[16];
@@ -122,12 +129,16 @@ struct interface_data {
   int addr6_count;         /* Number of IPv6 addresses */
   char groups[256];
   char bridge_members[256];
+  char lagg_members[256];
 
   /* VLAN-specific fields */
   int vlan_id;
   char vlan_proto[16];
   int vlan_pcp;
   char vlan_parent[64];
+
+  /* VXLAN-specific fields */
+  int vni;  /* VXLAN Network Identifier */
 
   /* WiFi-specific fields */
   char wifi_regdomain[16];
@@ -209,41 +220,21 @@ typedef struct net_client {
 
 /* Function declarations */
 
-/* Client initialization and cleanup */
+/* Client functions */
 int client_init(net_client_t *client, bool interactive);
 void client_cleanup(net_client_t *client);
-int execute_save_command(net_client_t *client, const command_t *cmd);
 
-/* Command parsing and execution */
-int parse_command(const char *line, command_t *cmd);
-int parse_command_yacc(const char *line, command_t *cmd);
-int execute_command(net_client_t *client, const command_t *cmd);
-int execute_set_command(net_client_t *client, const command_t *cmd);
-int execute_show_command(net_client_t *client, const command_t *cmd);
-int execute_delete_command(net_client_t *client, const command_t *cmd);
-
-/* Transaction management */
-int transaction_begin(net_client_t *client);
-int transaction_commit(net_client_t *client);
-int transaction_rollback(net_client_t *client);
-int transaction_add_command(net_client_t *client, const command_t *cmd);
-
-/* Interactive mode */
-int interactive_mode(net_client_t *client);
+/* Interactive mode functions */
 void initialize_readline(void);
-char *command_generator(const char *text, int state);
-char **command_completion(const char *text, int start, int end);
+char *command_completion(const char *text, int state);
+char **command_generator(const char *text, int start, int end);
+int interactive_mode(net_client_t *client);
 
-/* NETCONF communication */
-int netconf_connect(net_client_t *client);
-void netconf_disconnect(net_client_t *client);
-int netconf_send_request(net_client_t *client, const char *request,
-                         char **response);
-int netconf_get_interfaces(net_client_t *client, char **response);
-int netconf_get_vrfs(net_client_t *client, char **response);
-int netconf_get_routes(net_client_t *client, uint32_t fib, int family,
-                       char **response);
-int netconf_get_interface_groups(net_client_t *client, char **response);
+/* Include module headers */
+#include "xml/xml.h"
+#include "table/table.h"
+#include "netconf/netconf.h"
+#include "parser/utils.h"
 
 /* YANG context management */
 int yang_init_client(net_client_t *client);
@@ -254,81 +245,22 @@ int yang_validate_response_client(net_client_t *client,
                                   const char *response_xml);
 int yang_validate_data_client(net_client_t *client, const char *data_xml);
 
-/* Utility functions */
-const char *command_type_to_string(command_type_t type);
-command_type_t command_type_from_string(const char *str);
-const char *object_type_to_string(object_type_t type);
-object_type_t object_type_from_string(const char *str);
-const char *interface_type_to_string(interface_type_t type);
-interface_type_t interface_type_from_string(const char *str);
-int parse_address(const char *addr_str, struct sockaddr_storage *addr);
-int format_address(const struct sockaddr_storage *addr, char *str, size_t len);
-int get_address_family(const struct sockaddr_storage *addr);
-int get_prefix_length(const struct sockaddr_storage *addr);
-
-/* Output functions */
-void print_error(const char *format, ...);
-void print_success(const char *format, ...);
-void print_info(const char *format, ...);
-
-/* XML utilities */
-int find_tag_content(const char *xml, const char *tag, char *content,
-                     size_t max_len);
-char *extract_xml_content(const char *xml, const char *tag, char *buffer,
-                          size_t max_len);
-int parse_interfaces_from_xml(const char *xml,
-                              struct interface_data *interfaces,
-                              int max_interfaces);
-int parse_vrfs_from_xml(const char *xml, struct vrf_data *vrfs, int max_vrfs);
-int parse_routes_from_xml(const char *xml, struct route_data *routes,
-                          int max_routes);
-
-/* Table display functions */
-void print_interface_table(const char *xml_data);
-void print_iftype_bridge_table(const char *xml_data);
-void print_iftype_vlan_table(const char *xml_data);
-void print_iftype_lagg_table(const char *xml_data);
-void print_iftype_ethernet_table(const char *xml_data);
-void print_iftype_tap_table(const char *xml_data);
-void print_iftype_gif_table(const char *xml_data);
-void print_iftype_epair_table(const char *xml_data);
-void print_iftype_vxlan_table(const char *xml_data);
-void print_iftype_loopback_table(const char *xml_data);
-void print_vrf_table(const char *xml_data);
-void print_route_table(const char *xml_data);
-void print_interface_table_filtered(const char *xml_data, const char *group);
-void print_iftype_wlan_table(const char *xml_data);
-
-/* Table utility functions */
-void table_init(struct table_format *fmt, const char *title);
-void table_add_column(struct table_format *fmt, const char *header,
-                      int min_width);
-void table_update_width(struct table_format *fmt, int col_idx, int content_len);
-void table_print_header(const struct table_format *fmt);
-void table_print_row(const struct table_format *fmt, ...);
-void table_print_row_multiline(const struct table_format *fmt, int num_lines,
-                               ...);
-void table_print_footer(const struct table_format *fmt,
-                        const char *footer_text);
-void print_separator(int width);
-void format_interface_flags(int flags, char *flag_str, size_t max_len);
-
-/* Interface table helper functions */
-void calculate_column_widths(const char *xml_response,
-                             struct if_table_widths *widths);
-void extract_interface_data(const char *pos, struct interface_data *data);
-void print_interface_row(const struct interface_data *data,
-                         const struct if_table_widths *widths);
-void print_interface_header(const struct if_table_widths *widths);
-void print_interface_footer(void);
-
-/* WLAN interface functions */
-int parse_wlan_interfaces_from_xml(const char *xml,
-                                   struct wlan_interface_data *interfaces,
-                                   int max_interfaces);
-
-/* Debug logging */
+/* Debug functions */
 void debug_init(debug_level_t level);
 void debug_log(debug_level_t level, const char *format, ...);
+
+/* XML utilities */
+/* XML parsing functions are now in xml/xml.h */
+
+/* Table display functions */
+/* Table functions are now in table/table.h */
+
+/* Table utility functions are now in table/table.h */
+
+/* Interface table helper functions are now in table/table.h */
+
+/* WLAN interface functions are now in table/table.h */
+
+/* Utility functions are now in parser/utils.h and netconf/netconf_utils.h */
 
 #endif /* NET_H */

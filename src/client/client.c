@@ -31,7 +31,10 @@
 
 #include "net.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <readline/readline.h>
+#include <readline/history.h>
 
 /**
  * Initialize client
@@ -90,7 +93,7 @@ void client_cleanup(net_client_t *client) {
     /* Rollback any active transaction */
     if (client->transaction.active) {
       debug_log(DEBUG_DEBUG, "Rolling back active transaction");
-      transaction_rollback(client);
+      transaction_rollback();
     }
 
     debug_log(DEBUG_DEBUG, "Disconnecting from server");
@@ -101,4 +104,119 @@ void client_cleanup(net_client_t *client) {
 
     debug_log(DEBUG_INFO, "Client cleanup completed");
   }
+}
+
+/**
+ * Initialize readline
+ */
+void initialize_readline(void) {
+    /* Set readline completion function */
+    rl_completion_entry_function = command_completion;
+    
+    /* Set readline generator function */
+    rl_attempted_completion_function = command_generator;
+    
+    /* Set readline prompt */
+    rl_prompt = "net> ";
+}
+
+/**
+ * Command completion function for readline
+ */
+char *command_completion(const char *text, int state) {
+    static int list_index, len;
+    static const char *commands[] = {
+        "show", "set", "delete", "commit", "save", "quit", "help",
+        "interfaces", "vrf", "routes", "bridge", "vlan", "ethernet",
+        "lagg", "tap", "gif", "epair", "vxlan", "loopback", "wlan",
+        NULL
+    };
+    char *name;
+    
+    /* If this is a new word to complete, initialize */
+    if (!state) {
+        list_index = 0;
+        len = strlen(text);
+    }
+    
+    /* Return next name that matches */
+    while ((name = (char *)commands[list_index++])) {
+        if (strncmp(name, text, len) == 0) {
+            return strdup(name);
+        }
+    }
+    
+    return NULL;
+}
+
+/**
+ * Command generator function for readline
+ */
+char **command_generator(const char *text, int start, int end) {
+    char **matches = NULL;
+    
+    /* Don't complete if we're not at the beginning of the line */
+    if (start == 0) {
+        matches = rl_completion_matches(text, command_completion);
+    }
+    
+    /* end parameter is not used in this implementation but required by readline API */
+    (void)end; /* Suppress unused parameter warning */
+    
+    return matches;
+}
+
+/**
+ * Interactive mode - main command loop
+ */
+int interactive_mode(net_client_t *client) {
+    char *line;
+    command_t cmd;
+    int ret = 0;
+    
+    printf("Welcome to net client interactive mode\n");
+    printf("Type 'help' for available commands, 'quit' to exit\n\n");
+    
+    /* Initialize readline */
+    initialize_readline();
+    
+    while (1) {
+        line = readline(rl_prompt);
+        if (!line) {
+            break;
+        }
+        
+        /* Skip empty lines */
+        if (strlen(line) == 0) {
+            free(line);
+            continue;
+        }
+        
+        /* Add to history */
+        add_history(line);
+        
+        /* Parse command */
+        if (parse_command(line, &cmd) < 0) {
+            print_error("Invalid command syntax");
+            free(line);
+            continue;
+        }
+        
+        /* Handle quit command */
+        if (cmd.type == CMD_QUIT) {
+            free(line);
+            break;
+        }
+        
+        /* Execute command */
+        ret = execute_command(client, &cmd);
+        if (ret < 0) {
+            printf("Command failed\n");
+        }
+        
+        free(line);
+    }
+    
+    printf("Goodbye!\n");
+    return ret;
 }
