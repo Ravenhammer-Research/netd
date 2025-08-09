@@ -32,14 +32,18 @@
 #include "netd.h"
 #include <sys/types.h>
 #include <ctype.h>
-#include <netdb.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/sysctl.h>
+#include <netinet/in.h>
 #include <net/if_dl.h>
+#include <netdb.h>
 #include <string.h>
 #include <arpa/inet.h>
-#include <netinet/in.h>
 #include <stdlib.h>
-#include <sys/socket.h>
 #include <stdio.h>
+#include <errno.h>
+
 /**
  * Convert interface type enum to string
  * @param type Interface type
@@ -209,10 +213,57 @@ bool is_valid_vrf_name(const char *name) {
  * @param fib FIB number
  * @return true if valid, false otherwise
  */
+/**
+ * Get the number of FIBs configured in the system
+ * @return Number of FIBs, or 1 if unable to determine
+ */
+uint32_t get_system_fib_count(void) {
+  /* Try to determine the number of FIBs by attempting to enumerate routes
+   * for different FIB numbers. Start with 1 and increment until we fail. */
+  uint32_t fib_count = 1;
+  int mib[6];
+  size_t needed;
+  
+  /* Use the same sysctl approach as the working route enumeration code */
+  mib[0] = CTL_NET;
+  mib[1] = PF_ROUTE;
+  mib[2] = 0;           /* protocol */
+  mib[3] = 0;           /* address family (0 = all) */
+  mib[4] = NET_RT_DUMP; /* get all routes */
+  
+  /* Try FIB numbers starting from 0 */
+  for (uint32_t test_fib = 0; test_fib < 256; test_fib++) { /* Reasonable upper limit */
+    mib[5] = test_fib;  /* FIB number */
+    
+    /* Try to get the size needed for this FIB */
+    if (sysctl(mib, 6, NULL, &needed, NULL, 0) < 0) {
+      if (errno == EINVAL || errno == ENOTSUP) {
+        /* This FIB doesn't exist, we've found the limit */
+        fib_count = test_fib;
+        break;
+      } else if (errno == ENOENT) {
+        /* This FIB exists but has no routes, continue */
+        fib_count = test_fib + 1; /* Count it even if empty */
+      } else {
+        /* Some other error, assume this is the limit */
+        fib_count = test_fib;
+        break;
+      }
+    } else {
+      /* This FIB exists and has routes */
+      fib_count = test_fib + 1;
+    }
+  }
+  
+  debug_log(DEBUG_DEBUG, "System has %u FIBs configured", fib_count);
+  return fib_count;
+}
+
 bool is_valid_fib_number(uint32_t fib) {
-  bool valid = (fib <= 255);
-  debug_log(DEBUG_DEBUG, "FIB number validation: %u is %s", fib,
-            valid ? "valid" : "invalid");
+  uint32_t max_fibs = get_system_fib_count();
+  bool valid = (fib < max_fibs);
+  debug_log(DEBUG_DEBUG, "FIB number validation: %u is %s (max: %u)", fib,
+            valid ? "valid" : "invalid", max_fibs);
   return valid;
 }
 
@@ -239,81 +290,54 @@ int parse_address(const char *addr_str, struct sockaddr_storage *addr) {
 
   strlcpy(addr_copy, addr_str, sizeof(addr_copy));
 
-  /* Split address and port */
+  /* Try to parse as IPv4 or IPv6 first (these functions handle the formats correctly) */
+  if (inet_pton(AF_INET, addr_copy, &((struct sockaddr_in *)addr)->sin_addr) == 1) {
+    addr->ss_family = AF_INET;
+    addr->ss_len = sizeof(struct sockaddr_in);
+    ((struct sockaddr_in *)addr)->sin_port = 0;
+    debug_log(DEBUG_DEBUG, "Successfully parsed as IPv4 address: %s", addr_str);
+    return 0;
+  }
+  
+  if (inet_pton(AF_INET6, addr_copy, &((struct sockaddr_in6 *)addr)->sin6_addr) == 1) {
+    addr->ss_family = AF_INET6;
+    addr->ss_len = sizeof(struct sockaddr_in6);
+    ((struct sockaddr_in6 *)addr)->sin6_port = 0;
+    debug_log(DEBUG_DEBUG, "Successfully parsed as IPv6 address: %s", addr_str);
+    return 0;
+  }
+
+  /* Check if this is a link#<n> address */
+  if (strncmp(addr_copy, "link#", 5) == 0) {
+    int link_index = atoi(addr_copy + 6);
+    if (link_index > 0) {
+      struct sockaddr_dl *sdl = (struct sockaddr_dl *)addr;
+      memset(sdl, 0, sizeof(*sdl));
+      sdl->sdl_len = sizeof(*sdl);
+      sdl->sdl_family = AF_LINK;
+      sdl->sdl_index = link_index;
+      addr->ss_family = AF_LINK;
+      addr->ss_len = sizeof(*sdl);
+      debug_log(DEBUG_DEBUG, "Successfully parsed as link address: %s (index %d)", addr_str, link_index);
+      return 0;
+    }
+  }
+
+  /* Now try to handle hostname:port format */
   port_part = strchr(addr_copy, ':');
   if (port_part) {
     *port_part = '\0';
     port_part++;
-    debug_log(DEBUG_DEBUG, "Address has port: host='%s', port='%s'", addr_copy,
-              port_part);
+    debug_log(DEBUG_DEBUG, "Address has port: host='%s', port='%s'", addr_copy, port_part);
   } else {
     debug_log(DEBUG_DEBUG, "Address has no port: host='%s'", addr_copy);
   }
 
   host_part = addr_copy;
 
-  /* Try to parse as IPv4 (with or without CIDR) */
-  char *cidr_part = strchr(host_part, '/');
-  char ip_part[256];
-  if (cidr_part) {
-    /* Handle CIDR notation */
-    size_t ip_len = cidr_part - host_part;
-    if (ip_len >= sizeof(ip_part)) {
-      debug_log(DEBUG_ERROR, "IP address part too long in CIDR notation: %s",
-                addr_str);
-      return -1;
-    }
-    strlcpy(ip_part, host_part, ip_len + 1);
-    if (inet_pton(AF_INET, ip_part, &((struct sockaddr_in *)addr)->sin_addr) ==
-        1) {
-      addr->ss_family = AF_INET;
-      addr->ss_len = sizeof(struct sockaddr_in);
-      ((struct sockaddr_in *)addr)->sin_port =
-          port_part ? htons(atoi(port_part)) : 0;
-      debug_log(DEBUG_DEBUG,
-                "Successfully parsed as IPv4 address with CIDR: %s", addr_str);
-      return 0;
-    }
-  } else {
-    /* Handle regular IPv4 without CIDR */
-    if (inet_pton(AF_INET, host_part,
-                  &((struct sockaddr_in *)addr)->sin_addr) == 1) {
-      addr->ss_family = AF_INET;
-      addr->ss_len = sizeof(struct sockaddr_in);
-      ((struct sockaddr_in *)addr)->sin_port =
-          port_part ? htons(atoi(port_part)) : 0;
-      debug_log(DEBUG_DEBUG, "Successfully parsed as IPv4 address: %s",
-                addr_str);
-      return 0;
-    }
-  }
 
-  /* Try to parse as IPv6 (with or without CIDR) */
-  if (cidr_part) {
-    /* Handle IPv6 with CIDR notation */
-    if (inet_pton(AF_INET6, ip_part,
-                  &((struct sockaddr_in6 *)addr)->sin6_addr) == 1) {
-      addr->ss_family = AF_INET6;
-      addr->ss_len = sizeof(struct sockaddr_in6);
-      ((struct sockaddr_in6 *)addr)->sin6_port =
-          port_part ? htons(atoi(port_part)) : 0;
-      debug_log(DEBUG_DEBUG,
-                "Successfully parsed as IPv6 address with CIDR: %s", addr_str);
-      return 0;
-    }
-  } else {
-    /* Handle regular IPv6 without CIDR */
-    if (inet_pton(AF_INET6, host_part,
-                  &((struct sockaddr_in6 *)addr)->sin6_addr) == 1) {
-      addr->ss_family = AF_INET6;
-      addr->ss_len = sizeof(struct sockaddr_in6);
-      ((struct sockaddr_in6 *)addr)->sin6_port =
-          port_part ? htons(atoi(port_part)) : 0;
-      debug_log(DEBUG_DEBUG, "Successfully parsed as IPv6 address: %s",
-                addr_str);
-      return 0;
-    }
-  }
+
+
 
   /* Try to resolve as hostname */
   debug_log(DEBUG_DEBUG, "Attempting to resolve as hostname: '%s'", host_part);

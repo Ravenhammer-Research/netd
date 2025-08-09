@@ -69,14 +69,21 @@ int config_load(netd_state_t *state) {
     return -1;
   }
 
-  /* Enumerate system routes */
+  /* Enumerate system routes for all available FIBs */
   debug_log(DEBUG_INFO, "Enumerating existing system routes");
-  if (route_enumerate_system(state, 0) < 0) {
-    debug_log(DEBUG_ERROR,
-              "Failed to enumerate system routes during configuration loading");
-    return -1;
+  uint32_t fib_count = get_system_fib_count();
+  debug_log(DEBUG_INFO, "System has %u FIBs, enumerating routes for each", fib_count);
+  
+  for (uint32_t fib = 0; fib < fib_count; fib++) {
+    debug_log(DEBUG_DEBUG, "Enumerating routes for FIB %u", fib);
+    if (route_enumerate_system(state, fib) < 0) {
+      debug_log(DEBUG_WARN,
+                "Failed to enumerate system routes for FIB %u (continuing)", fib);
+    } else {
+      debug_log(DEBUG_DEBUG, "Successfully enumerated routes for FIB %u", fib);
+    }
   }
-  debug_log(DEBUG_INFO, "System route enumeration completed successfully");
+  debug_log(DEBUG_INFO, "System route enumeration completed for all FIBs");
 
   /* Now try to load config if it exists */
   fp = fopen(NETD_CONFIG_FILE, "r");

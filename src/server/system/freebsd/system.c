@@ -344,30 +344,28 @@ int freebsd_enumerate_interfaces(netd_state_t *state) {
 }
 
 /**
- * Check if an interface name represents a FreeBSD hardware interface
- * @param name Interface name to check
+ * Check if an interface type represents a FreeBSD hardware interface
+ * @param type Interface type to check
  * @return true if it's a hardware interface, false otherwise
  */
-bool freebsd_is_hardware_interface(const char *name) {
-  if (!name) {
+bool freebsd_is_hardware_interface(interface_type_t type) {
+  switch (type) {
+  case IF_TYPE_ETHERNET:
+  case IF_TYPE_WIRELESS:
+  case IF_TYPE_LOOPBACK:
+    return true;
+  case IF_TYPE_EPAIR:
+  case IF_TYPE_GIF:
+  case IF_TYPE_GRE:
+  case IF_TYPE_LAGG:
+  case IF_TYPE_OVPN:
+  case IF_TYPE_TUN:
+  case IF_TYPE_TAP:
+  case IF_TYPE_VLAN:
+  case IF_TYPE_VXLAN:
+  case IF_TYPE_BRIDGE:
+  case IF_TYPE_UNKNOWN:
+  default:
     return false;
   }
-
-  /* Check for FreeBSD hardware interface names */
-  if (strncmp(name, "em", 2) == 0 || strncmp(name, "igb", 3) == 0 ||
-      strncmp(name, "ix", 2) == 0 || strncmp(name, "bge", 3) == 0 ||
-      strncmp(name, "fxp", 3) == 0 || strncmp(name, "re", 2) == 0 ||
-      strncmp(name, "rl", 2) == 0 || strncmp(name, "sk", 2) == 0 ||
-      strncmp(name, "ti", 2) == 0 || strncmp(name, "tx", 2) == 0 ||
-      strncmp(name, "vr", 2) == 0 || strncmp(name, "xl", 2) == 0 ||
-      strncmp(name, "wlan", 4) == 0 || strncmp(name, "ath", 3) == 0 ||
-      strncmp(name, "iwn", 3) == 0 || strncmp(name, "iwm", 3) == 0 ||
-      strncmp(name, "iwl", 3) == 0 || strncmp(name, "bwi", 3) == 0 ||
-      strncmp(name, "rum", 3) == 0 || strncmp(name, "run", 3) == 0 ||
-      strncmp(name, "ural", 4) == 0 || strncmp(name, "urtw", 4) == 0 ||
-      strncmp(name, "zyd", 3) == 0 || strcmp(name, "lo0") == 0) {
-    return true;
-  }
-
-  return false;
 } 

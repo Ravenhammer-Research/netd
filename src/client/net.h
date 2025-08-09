@@ -101,6 +101,10 @@ struct route_data {
   char destination[64];
   char gateway[64];
   char interface[64];
+  int prefix_length;
+  char scope_interface[64];
+  int flags;
+  int expire;
 };
 
 /* Interface data structure */

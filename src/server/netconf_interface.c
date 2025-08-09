@@ -70,8 +70,9 @@ int interface_create(netd_state_t *state, const char *name,
   }
 
   /* Check if this is a hardware interface that already exists in the system */
-  bool is_hardware = freebsd_is_hardware_interface(name);
-  debug_log(DEBUG_DEBUG, "Interface %s is %s", name,
+  bool is_hardware = freebsd_is_hardware_interface(type);
+  debug_log(DEBUG_DEBUG, "Interface %s (type: %s) is %s", name,
+            interface_type_to_string(type),
             is_hardware ? "hardware" : "virtual");
 
   /* Allocate new interface */

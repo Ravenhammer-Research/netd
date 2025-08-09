@@ -49,6 +49,7 @@
 #include <net/route.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <netinet6/in6_var.h> /* For IPv6 address macros */
 #include <errno.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -266,19 +267,20 @@ int freebsd_route_delete(uint32_t fib, const char *destination) {
  */
 int freebsd_route_list(uint32_t fib, int family) {
   size_t needed;
-  int mib[6];
+  int mib[7];
   char *buf, *lim, *next;
   struct rt_msghdr *rtm;
   int retry_count = 0;
   const int max_retries = 3;
 
-  /* Use sysctl to get all routing information */
+  /* Use sysctl to get all routing information for a specific FIB */
   mib[0] = CTL_NET;
   mib[1] = PF_ROUTE;
   mib[2] = 0;           /* protocol */
   mib[3] = family;      /* address family */
   mib[4] = NET_RT_DUMP; /* get all routes */
-  mib[5] = fib;         /* FIB number */
+  mib[5] = 0;           /* flags */
+  mib[6] = fib;         /* FIB number */
 
 retry:
   /* First, get the size needed */
@@ -394,7 +396,7 @@ static int parse_route_message(netd_state_t *state, struct rt_msghdr *rtm,
                                uint32_t fib) {
   char *cp;
   struct sockaddr *sp[RTAX_MAX];
-  struct sockaddr_storage dest_addr, gw_addr;
+  struct sockaddr_storage dest_addr, gw_addr, netmask_addr;
   char dest_str[INET6_ADDRSTRLEN];
   char gw_str[INET6_ADDRSTRLEN];
   char ifname[IFNAMSIZ];
@@ -407,6 +409,7 @@ static int parse_route_message(netd_state_t *state, struct rt_msghdr *rtm,
   /* Initialize */
   memset(&dest_addr, 0, sizeof(dest_addr));
   memset(&gw_addr, 0, sizeof(gw_addr));
+  memset(&netmask_addr, 0, sizeof(netmask_addr));
   memset(ifname, 0, sizeof(ifname));
 
   /* Parse addresses from the message */
@@ -426,11 +429,20 @@ static int parse_route_message(netd_state_t *state, struct rt_msghdr *rtm,
       case RTAX_GATEWAY:
         memcpy(&gw_addr, sp[i], sp[i]->sa_len);
         break;
+      case RTAX_NETMASK:
+        memcpy(&netmask_addr, sp[i], sp[i]->sa_len);
+        break;
       case RTAX_IFP:
         if (sp[i]->sa_family == AF_LINK) {
           struct sockaddr_dl *sdl = (struct sockaddr_dl *)sp[i];
           if (sdl->sdl_nlen > 0) {
-            strlcpy(ifname, sdl->sdl_data, sizeof(ifname));
+            /* Copy interface name with proper length limit */
+            size_t copy_len = (sdl->sdl_nlen < sizeof(ifname) - 1) ? sdl->sdl_nlen : sizeof(ifname) - 1;
+            memcpy(ifname, sdl->sdl_data, copy_len);
+            ifname[copy_len] = '\0';
+          } else if (sdl->sdl_index > 0) {
+            /* If no interface name, use link#<index> format */
+            snprintf(ifname, sizeof(ifname), "link#%d", sdl->sdl_index);
           }
         }
         break;
@@ -462,32 +474,56 @@ static int parse_route_message(netd_state_t *state, struct rt_msghdr *rtm,
   /* Initialize route */
   memset(route, 0, sizeof(*route));
   
-  /* Convert addresses to sockaddr_storage format */
-  if (format_address(&dest_addr, dest_str, sizeof(dest_str)) >= 0) {
-    if (parse_address(dest_str, &route->destination) < 0) {
-      debug_log(DEBUG_ERROR, "Failed to parse destination address for route");
-      free(route);
-      return -1;
-    }
-  }
+  /* Copy addresses directly - no need to convert to string and back */
+  memcpy(&route->destination, &dest_addr, sizeof(dest_addr));
   
   if (gw_addr.ss_family != AF_UNSPEC) {
-    if (format_address(&gw_addr, gw_str, sizeof(gw_str)) >= 0) {
-      if (parse_address(gw_str, &route->gateway) < 0) {
-        debug_log(DEBUG_ERROR, "Failed to parse gateway address for route");
-        free(route);
-        return -1;
-      }
-    }
+    memcpy(&route->gateway, &gw_addr, sizeof(gw_addr));
+  } else {
+    /* For direct routes, set gateway to AF_UNSPEC */
+    memset(&route->gateway, 0, sizeof(route->gateway));
+    route->gateway.ss_family = AF_UNSPEC;
   }
   
   strlcpy(route->interface, ifname, sizeof(route->interface));
   route->fib = fib;
   route->flags = rtm->rtm_flags;
+  
+  /* Extract prefix length from netmask */
+  if (netmask_addr.ss_family != AF_UNSPEC) {
+    route->prefix_length = get_prefix_length(&netmask_addr);
+  } else {
+    route->prefix_length = 0;
+  }
+  
+  /* Extract scope interface for IPv6 link-local addresses */
+  if (dest_addr.ss_family == AF_INET6) {
+    struct sockaddr_in6 *sin6 = (struct sockaddr_in6 *)&dest_addr;
+    if (IN6_IS_ADDR_LINKLOCAL(&sin6->sin6_addr)) {
+      /* For link-local addresses, use the interface name as scope */
+      strlcpy(route->scope_interface, ifname, sizeof(route->scope_interface));
+    } else {
+      route->scope_interface[0] = '\0';
+    }
+  } else {
+    route->scope_interface[0] = '\0';
+  }
+  
+  /* Extract expiration time if available */
+  route->expire = 0; /* TODO: Extract from rtm_rmx if available */
 
   /* Add to route list */
   TAILQ_INSERT_TAIL(&state->routes, route, entries);
 
+  /* Format gateway string for debug output */
+  if (gw_addr.ss_family == AF_UNSPEC) {
+    strlcpy(gw_str, "direct", sizeof(gw_str));
+  } else {
+    if (format_address(&gw_addr, gw_str, sizeof(gw_str)) < 0) {
+      strlcpy(gw_str, "unknown", sizeof(gw_str));
+    }
+  }
+  
   debug_log(DEBUG_DEBUG, "Added route: %s via %s on %s (FIB %u)", dest_str,
             gw_str, ifname, fib);
 
@@ -502,7 +538,7 @@ static int parse_route_message(netd_state_t *state, struct rt_msghdr *rtm,
  */
 int freebsd_route_enumerate_system(netd_state_t *state, uint32_t fib) {
   size_t needed;
-  int mib[6];
+  int mib[7];
   char *buf, *lim, *next;
   struct rt_msghdr *rtm;
   int retry_count = 0;
@@ -512,13 +548,14 @@ int freebsd_route_enumerate_system(netd_state_t *state, uint32_t fib) {
     return -1;
   }
 
-  /* Use sysctl to get all routing information */
+  /* Use sysctl to get all routing information for a specific FIB */
   mib[0] = CTL_NET;
   mib[1] = PF_ROUTE;
   mib[2] = 0;           /* protocol */
   mib[3] = 0;           /* address family (0 = all) */
   mib[4] = NET_RT_DUMP; /* get all routes */
-  mib[5] = fib;         /* FIB number */
+  mib[5] = 0;           /* flags */
+  mib[6] = fib;         /* FIB number */
 
 retry:
   /* First, get the size needed */

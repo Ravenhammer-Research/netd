@@ -710,6 +710,15 @@ static void route_end_element(void *userData, const char *name) {
     } else if (strcmp(name, "outgoing-interface") == 0) {
       strlcpy(ctx->current_route->interface, ctx->temp_content,
               sizeof(ctx->current_route->interface));
+    } else if (strcmp(name, "prefix-length") == 0) {
+      ctx->current_route->prefix_length = atoi(ctx->temp_content);
+    } else if (strcmp(name, "scope-interface") == 0) {
+      strlcpy(ctx->current_route->scope_interface, ctx->temp_content,
+              sizeof(ctx->current_route->scope_interface));
+    } else if (strcmp(name, "flags") == 0) {
+      ctx->current_route->flags = atoi(ctx->temp_content);
+    } else if (strcmp(name, "expire") == 0) {
+      ctx->current_route->expire = atoi(ctx->temp_content);
     }
   }
 }

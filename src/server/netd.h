@@ -139,6 +139,9 @@ typedef struct netd_route {
   char interface[MAX_IFNAME_LEN];
   uint32_t fib;
   int flags;
+  int prefix_length;        /* CIDR prefix length */
+  char scope_interface[MAX_IFNAME_LEN]; /* Interface for scope (IPv6) */
+  int expire;               /* Route expiration time */
   TAILQ_ENTRY(netd_route) entries;
 } netd_route_t;
 
@@ -302,7 +305,7 @@ int freebsd_get_wifi_info(const char *ifname, char *regdomain,
                           int *scanvalid, char *features, size_t features_size,
                           int *bintval, char *parent, size_t parent_size);
 int freebsd_enumerate_interfaces(netd_state_t *state);
-bool freebsd_is_hardware_interface(const char *name);
+bool freebsd_is_hardware_interface(interface_type_t type);
 const char *freebsd_get_interface_oper_status(int flags);
 
 /* Route functions */
@@ -318,6 +321,7 @@ const char *interface_type_get_namespace(interface_type_t type);
 interface_type_t interface_type_from_string(const char *str);
 bool is_valid_interface_name(const char *name);
 bool is_valid_vrf_name(const char *name);
+uint32_t get_system_fib_count(void);
 bool is_valid_fib_number(uint32_t fib);
 int parse_address(const char *addr_str, struct sockaddr_storage *addr);
 int format_address(const struct sockaddr_storage *addr, char *str, size_t len);

@@ -410,9 +410,18 @@ char *route_get_all(netd_state_t *state) {
              "                <next-hop-address>%s</next-hop-address>\n"
              "                <outgoing-interface>%s</outgoing-interface>\n"
              "              </next-hop>\n"
+             "              <prefix-length>%d</prefix-length>\n"
+             "              <scope-interface>%s</scope-interface>\n"
+             "              <flags>%d</flags>\n"
+             "              <expire>%d</expire>\n"
              "            </route>\n",
-             dest_str, gw_str,
-             route->interface[0] != '\0' ? route->interface : "");
+             dest_str,
+             gw_str,
+             route->interface[0] != '\0' ? route->interface : "",
+             route->prefix_length,
+             route->scope_interface[0] != '\0' ? route->scope_interface : "",
+             route->flags,
+             route->expire);
 
     if (temp_xml) {
       char *new_xml;
