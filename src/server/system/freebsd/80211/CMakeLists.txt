@@ -1,16 +1,18 @@
-set(WIRELESS_SOURCES
+set(80211_SOURCES
     set.c
     delete.c
     show.c
 )
 
-add_library(freebsd_80211 STATIC ${WIRELESS_SOURCES})
+add_library(freebsd_80211 STATIC ${80211_SOURCES})
 
 target_include_directories(freebsd_80211 PRIVATE
-    ${CMAKE_SOURCE_DIR}/src/server
-    ${CMAKE_SOURCE_DIR}/src/server/system/freebsd
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/..
+    ${CMAKE_CURRENT_SOURCE_DIR}/../..
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../..
 )
 
 target_link_libraries(freebsd_80211
-    netd_common
+    netd
 ) 

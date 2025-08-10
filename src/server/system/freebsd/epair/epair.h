@@ -32,7 +32,7 @@
 #ifndef FREEBSD_EPAIR_H
 #define FREEBSD_EPAIR_H
 
-#include "proto.h"
+#include <stddef.h>
 
 /* Epair interface operations */
 int freebsd_epair_create(const char *name);

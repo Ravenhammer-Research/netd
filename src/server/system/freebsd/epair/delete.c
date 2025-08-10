@@ -29,9 +29,11 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "epair.h"
+#include <epair.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <net/if.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -39,6 +41,8 @@
 #include <sys/socket.h>
 #include <sys/sockio.h>
 #include <unistd.h>
+
+#include <netd.h>
 
 /**
  * Delete an epair interface

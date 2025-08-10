@@ -42,6 +42,7 @@ add_library(netconf_lib STATIC ${NETCONF_SRCS})
 # Set include directories for netconf library
 target_include_directories(netconf_lib PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/..
     /usr/local/include
 )
 

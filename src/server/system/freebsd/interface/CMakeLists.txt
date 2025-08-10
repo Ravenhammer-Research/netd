@@ -7,10 +7,12 @@ set(INTERFACE_SOURCES
 add_library(freebsd_interface STATIC ${INTERFACE_SOURCES})
 
 target_include_directories(freebsd_interface PRIVATE
-    ${CMAKE_SOURCE_DIR}/src/server
-    ${CMAKE_SOURCE_DIR}/src/server/system/freebsd
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/..
+    ${CMAKE_CURRENT_SOURCE_DIR}/../..
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../..
 )
 
 target_link_libraries(freebsd_interface
-    netd_common
+    netd
 ) 

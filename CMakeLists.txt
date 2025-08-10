@@ -59,11 +59,7 @@ link_directories(/usr/local/lib /usr/lib)
 
 
 # Include directories
-include_directories(${CMAKE_SOURCE_DIR}/src/client)
-include_directories(${CMAKE_SOURCE_DIR}/src/client/parser)
-include_directories(${CMAKE_SOURCE_DIR}/src/client/xml)
-include_directories(${CMAKE_SOURCE_DIR}/src/client/table)
-include_directories(${CMAKE_SOURCE_DIR}/src/client/netconf)
+include_directories(${CMAKE_SOURCE_DIR}/src/common)
 include_directories(${YANG_INCLUDE_DIRS})
 include_directories(${NETCONF_INCLUDE_DIRS})
 

@@ -1,7 +1,7 @@
 #ifndef PARSER_UTILS_H
 #define PARSER_UTILS_H
 
-#include "net.h"
+#include <net.h>
 
 /* Enum conversion functions */
 const char *command_type_to_string(command_type_t type);

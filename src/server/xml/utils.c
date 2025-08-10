@@ -29,8 +29,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "xml.h"
-#include <bsdxml.h>
+#include <xml.h>
+#include <expat.h>
+#include <netd.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -100,12 +101,12 @@ struct xml_check_data {
   int element_count;
 };
 
-#define MAX_XML_ELEMENTS 10
-
 /* Callback for checking XML elements */
 static void xml_check_start_element(void *userData, const XML_Char *name,
                                    const XML_Char **atts) {
   struct xml_check_data *data = (struct xml_check_data *)userData;
+  
+  debug_log(DEBUG_DEBUG, "XML element: %s, attributes: %p", name, (void*)atts);
   
   if (data->element_count < MAX_XML_ELEMENTS) {
     data->element_names[data->element_count] = strdup(name);

@@ -32,11 +32,10 @@
 #ifndef FREEBSD_TAP_H
 #define FREEBSD_TAP_H
 
-#include "proto.h"
-
 /* TAP interface operations */
 int freebsd_tap_create(const char *name);
 int freebsd_tap_set_permissions(const char *name, int owner, int group);
+int freebsd_tap_get_permissions(const char *name, int *owner, int *group);
 int freebsd_tap_up(const char *name);
 int freebsd_tap_down(const char *name);
 int freebsd_tap_delete(const char *name);

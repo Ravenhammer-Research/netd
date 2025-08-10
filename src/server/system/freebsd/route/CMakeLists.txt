@@ -1,16 +1,17 @@
+# CMakeLists.txt for FreeBSD route module
+# Copyright (c) 2025 Paige Thompson / Raven Hammer Research
+
+# Route module source files
 set(ROUTE_SOURCES
-    set.c
     delete.c
+    set.c
     show.c
 )
 
-add_library(freebsd_route STATIC ${ROUTE_SOURCES})
-
-target_include_directories(freebsd_route PRIVATE
-    ${CMAKE_SOURCE_DIR}/src/server
-    ${CMAKE_SOURCE_DIR}/src/server/system/freebsd
+# Route module headers
+set(ROUTE_HEADERS
+    route.h
 )
 
-target_link_libraries(freebsd_route
-    netd_common
-) 
+# Add route sources to parent scope
+set(FREEBSD_SOURCES ${FREEBSD_SOURCES} ${ROUTE_SOURCES} PARENT_SCOPE)

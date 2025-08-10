@@ -29,8 +29,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "xml.h"
-#include "../netd.h"
+#include <xml.h>
+#include <netd.h>
 #include <bsdxml.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -44,6 +44,8 @@
 static void edit_config_start_element(void *userData, const XML_Char *name,
                                       const XML_Char **atts) {
   struct edit_config_data *data = (struct edit_config_data *)userData;
+
+  debug_log(DEBUG_DEBUG, "Edit config start element: %s with %d attributes", name, atts ? 0 : 0);
 
   if (strcmp(name, "edit-config") == 0) {
     data->is_edit_config = true;
@@ -193,9 +195,9 @@ static int process_edit_config_data(netd_state_t *state,
     int flags = 0;
     if (strlen(data->route_type) > 0) {
       if (strcmp(data->route_type, "reject") == 0) {
-        flags |= RTF_REJECT;
+        flags |= ROUTE_FLAG_REJECT;
       } else if (strcmp(data->route_type, "blackhole") == 0) {
-        flags |= RTF_BLACKHOLE;
+        flags |= ROUTE_FLAG_BLACKHOLE;
       }
     }
 

@@ -29,8 +29,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "net.h"
-#include "netconf.h"
+#include <net.h>
+#include <netconf.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -131,7 +131,7 @@ int netconf_get_routes(net_client_t *client, uint32_t fib, int family, char **re
         family_ns = "urn:ietf:params:xml:ns:yang:ietf-ipv6-unicast-routing";
         family_tag = "ipv6";
     } else {
-        print_error("Unsupported address family: %d", family);
+        fprintf(stderr, "Unsupported address family: %d\n", family);
         return -1;
     }
     

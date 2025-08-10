@@ -7,7 +7,6 @@ set(INTERFACE_SOURCES
     show.c
     bridge.c
     vlan.c
-    wireless.c
     epair.c
     gif.c
     lagg.c
@@ -25,6 +24,8 @@ target_include_directories(interface PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/..
     ${CMAKE_CURRENT_SOURCE_DIR}/../..
     ${CMAKE_CURRENT_SOURCE_DIR}/../../..
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../system
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../system/freebsd
 )
 
  

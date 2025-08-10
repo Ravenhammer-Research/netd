@@ -29,7 +29,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "net.h"
+#include <net.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -60,7 +60,7 @@ int client_init(net_client_t *client, bool interactive) {
   /* Initialize YANG context */
   debug_log(DEBUG_DEBUG, "Initializing YANG context");
   if (yang_init_client(client) < 0) {
-    print_error("Failed to initialize YANG context");
+    fprintf(stderr, "Failed to initialize YANG context\n");
     return -1;
   }
 
@@ -197,9 +197,9 @@ int interactive_mode(net_client_t *client) {
         
         /* Parse command */
         if (parse_command(line, &cmd) < 0) {
-            print_error("Invalid command syntax");
-            free(line);
-            continue;
+          print_error("Invalid command syntax");
+          free(line);
+          continue;
         }
         
         /* Handle quit command */

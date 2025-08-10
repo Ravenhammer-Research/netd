@@ -7,10 +7,12 @@ set(VLAN_SOURCES
 add_library(freebsd_vlan STATIC ${VLAN_SOURCES})
 
 target_include_directories(freebsd_vlan PRIVATE
-    ${CMAKE_SOURCE_DIR}/src/server
-    ${CMAKE_SOURCE_DIR}/src/server/system/freebsd
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/..
+    ${CMAKE_CURRENT_SOURCE_DIR}/../..
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../..
 )
 
 target_link_libraries(freebsd_vlan
-    netd_common
+    netd
 ) 

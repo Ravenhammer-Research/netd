@@ -34,10 +34,11 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <netd.h>
 
-/* Forward declaration for netd_state_t */
-struct netd_state;
-typedef struct netd_state netd_state_t;
+/* Maximum number of XML elements to track during parsing.
+ * Set to 8192 to handle complex nested XML structures without practical limits */
+#define MAX_XML_ELEMENTS 8192
 
 /* Edit config data structure */
 struct edit_config_data {

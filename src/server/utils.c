@@ -29,7 +29,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "netd.h"
+#include <netd.h>
 #include <sys/types.h>
 #include <ctype.h>
 #include <sys/types.h>

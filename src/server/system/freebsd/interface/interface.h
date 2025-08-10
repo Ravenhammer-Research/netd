@@ -35,9 +35,7 @@
 #include <sys/types.h>
 #include <stdint.h>
 #include <stdbool.h>
-
-/* Forward declarations */
-typedef enum interface_type interface_type_t;
+#include <netd.h>
 
 /**
  * Get interface operational status based on flags

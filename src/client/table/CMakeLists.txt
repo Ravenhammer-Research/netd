@@ -51,6 +51,8 @@ add_library(table_lib STATIC ${TABLE_SRCS})
 # Set include directories for table library
 target_include_directories(table_lib PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/..
+    ${CMAKE_CURRENT_SOURCE_DIR}/../netconf
 )
 
  

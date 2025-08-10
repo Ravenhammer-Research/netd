@@ -17,8 +17,8 @@
  *    this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
  * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
  * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
  * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
@@ -29,12 +29,16 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FREEBSD_LOOPBACK_H
-#define FREEBSD_LOOPBACK_H
+#include <net.h>
+#include <stdarg.h>
+#include <stdio.h>
 
-/* Loopback interface operations */
-int freebsd_loopback_create(const char *name);
-int freebsd_loopback_delete(const char *name);
-int freebsd_loopback_show(const char *name);
-
-#endif /* FREEBSD_LOOPBACK_H */ 
+/* Error handling function */
+void print_error(const char *format, ...) {
+    va_list args;
+    va_start(args, format);
+    fprintf(stderr, "Error: ");
+    vfprintf(stderr, format, args);
+    fprintf(stderr, "\n");
+    va_end(args);
+} 

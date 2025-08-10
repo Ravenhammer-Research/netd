@@ -29,8 +29,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "netconf.h"
-#include "interface/interface.h"
+#include <netconf.h>
+#include <interface/interface.h>
 #include <libnetconf2/netconf.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -81,11 +81,9 @@ int netconf_handle_request(netd_state_t *state, const char *request,
     ret = handle_get_vrf_routes_request(state, request, message_id, response);
   } else {
     debug_log(DEBUG_ERROR, "Unknown or unsupported NETCONF request type");
-    ret = create_error_response(message_id, "operation-not-supported",
+    *response = create_error_response(message_id, "operation-not-supported",
                                "Request type not supported");
-    if (ret == 0) {
-      *response = strdup(""); /* Empty response for unsupported operations */
-    }
+    ret = -1;
   }
 
   free(message_id);
@@ -100,23 +98,25 @@ int netconf_handle_request(netd_state_t *state, const char *request,
  * @param response Response string
  * @return 0 on success, -1 on failure
  */
-static int handle_commit_request(netd_state_t *state, const char *request,
+int handle_commit_request(netd_state_t *state, const char *request,
                                 const char *message_id, char **response) {
   int ret;
 
-  debug_log(DEBUG_INFO, "Handling commit request");
+  debug_log(DEBUG_INFO, "Handling commit request for request: %s", request ? request : "NULL");
 
   if (!state->transaction_active) {
     debug_log(DEBUG_ERROR, "No active transaction to commit");
-    return create_error_response(message_id, "operation-failed",
+    *response = create_error_response(message_id, "operation-failed",
                                "No active transaction to commit");
+    return -1;
   }
 
   ret = transaction_commit(state);
   if (ret < 0) {
     debug_log(DEBUG_ERROR, "Failed to commit transaction");
-    return create_error_response(message_id, "operation-failed",
+    *response = create_error_response(message_id, "operation-failed",
                                "Failed to commit transaction");
+    return -1;
   }
 
   /* Create success response */
@@ -132,17 +132,18 @@ static int handle_commit_request(netd_state_t *state, const char *request,
  * @param response Response string
  * @return 0 on success, -1 on failure
  */
-static int handle_save_request(netd_state_t *state, const char *request,
+int handle_save_request(netd_state_t *state, const char *request,
                                const char *message_id, char **response) {
   int ret;
 
-  debug_log(DEBUG_INFO, "Handling save request");
+  debug_log(DEBUG_INFO, "Handling save request for request: %s", request ? request : "NULL");
 
   ret = config_save(state);
   if (ret < 0) {
     debug_log(DEBUG_ERROR, "Failed to save configuration");
-    return create_error_response(message_id, "operation-failed",
+    *response = create_error_response(message_id, "operation-failed",
                                "Failed to save configuration");
+    return -1;
   }
 
   /* Create success response */
@@ -158,18 +159,19 @@ static int handle_save_request(netd_state_t *state, const char *request,
  * @param response Response string
  * @return 0 on success, -1 on failure
  */
-static int handle_get_interfaces_request(netd_state_t *state, const char *request,
+int handle_get_interfaces_request(netd_state_t *state, const char *request,
                                          const char *message_id, char **response) {
   char *xml_response;
   int ret;
 
-  debug_log(DEBUG_INFO, "Handling get-interfaces request");
+  debug_log(DEBUG_INFO, "Handling get-interfaces request for request: %s", request ? request : "NULL");
 
   ret = interface_list(state, IF_TYPE_UNKNOWN);
   if (ret < 0) {
     debug_log(DEBUG_ERROR, "Failed to list interfaces");
-    return create_error_response(message_id, "operation-failed",
+    *response = create_error_response(message_id, "operation-failed",
                                "Failed to list interfaces");
+    return -1;
   }
 
   /* Create XML response with interface data */
@@ -191,18 +193,19 @@ static int handle_get_interfaces_request(netd_state_t *state, const char *reques
  * @param response Response string
  * @return 0 on success, -1 on failure
  */
-static int handle_get_vrfs_request(netd_state_t *state, const char *request,
+int handle_get_vrfs_request(netd_state_t *state, const char *request,
                                    const char *message_id, char **response) {
   char *xml_response;
   int ret;
 
-  debug_log(DEBUG_INFO, "Handling get-vrfs request");
+  debug_log(DEBUG_INFO, "Handling get-vrfs request for request: %s", request ? request : "NULL");
 
   ret = vrf_list(state);
   if (ret < 0) {
     debug_log(DEBUG_ERROR, "Failed to list VRFs");
-    return create_error_response(message_id, "operation-failed",
+    *response = create_error_response(message_id, "operation-failed",
                                "Failed to list VRFs");
+    return -1;
   }
 
   /* Create XML response with VRF data */
@@ -224,7 +227,7 @@ static int handle_get_vrfs_request(netd_state_t *state, const char *request,
  * @param response Response string
  * @return 0 on success, -1 on failure
  */
-static int handle_get_routes_request(netd_state_t *state, const char *request,
+int handle_get_routes_request(netd_state_t *state, const char *request,
                                      const char *message_id, char **response) {
   char *xml_response;
   int ret;
@@ -238,8 +241,9 @@ static int handle_get_routes_request(netd_state_t *state, const char *request,
   ret = route_list(state, fib, AF_UNSPEC);
   if (ret < 0) {
     debug_log(DEBUG_ERROR, "Failed to list routes");
-    return create_error_response(message_id, "operation-failed",
+    *response = create_error_response(message_id, "operation-failed",
                                "Failed to list routes");
+    return -1;
   }
 
   /* Create XML response with route data */
@@ -261,7 +265,7 @@ static int handle_get_routes_request(netd_state_t *state, const char *request,
  * @param response Response string
  * @return 0 on success, -1 on failure
  */
-static int handle_get_vrf_routes_request(netd_state_t *state, const char *request,
+int handle_get_vrf_routes_request(netd_state_t *state, const char *request,
                                          const char *message_id, char **response) {
   char *xml_response;
   char *vrf_name;
@@ -273,8 +277,9 @@ static int handle_get_vrf_routes_request(netd_state_t *state, const char *reques
   vrf_name = extract_vrf_name_from_request(request);
   if (!vrf_name) {
     debug_log(DEBUG_ERROR, "Failed to extract VRF name from request");
-    return create_error_response(message_id, "operation-failed",
+    *response = create_error_response(message_id, "operation-failed",
                                "Failed to extract VRF name");
+    return -1;
   }
 
   /* Find VRF and get its FIB */
@@ -282,8 +287,9 @@ static int handle_get_vrf_routes_request(netd_state_t *state, const char *reques
   if (!vrf) {
     debug_log(DEBUG_ERROR, "VRF %s not found", vrf_name);
     free(vrf_name);
-    return create_error_response(message_id, "operation-failed",
+    *response = create_error_response(message_id, "operation-failed",
                                "VRF not found");
+    return -1;
   }
 
   ret = route_list(state, vrf->fib_number, AF_UNSPEC);
@@ -291,8 +297,9 @@ static int handle_get_vrf_routes_request(netd_state_t *state, const char *reques
 
   if (ret < 0) {
     debug_log(DEBUG_ERROR, "Failed to list VRF routes");
-    return create_error_response(message_id, "operation-failed",
+    *response = create_error_response(message_id, "operation-failed",
                                "Failed to list VRF routes");
+    return -1;
   }
 
   /* Create XML response with VRF route data */

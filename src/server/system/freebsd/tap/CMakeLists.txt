@@ -7,10 +7,12 @@ set(TAP_SOURCES
 add_library(freebsd_tap STATIC ${TAP_SOURCES})
 
 target_include_directories(freebsd_tap PRIVATE
-    ${CMAKE_SOURCE_DIR}/src/server
-    ${CMAKE_SOURCE_DIR}/src/server/system/freebsd
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/..
+    ${CMAKE_CURRENT_SOURCE_DIR}/../..
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../..
 )
 
 target_link_libraries(freebsd_tap
-    netd_common
+    netd
 ) 

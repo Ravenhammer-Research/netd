@@ -29,8 +29,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "net.h"
-#include "netconf.h"
+#include <net.h>
+#include <netconf.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <unistd.h>
@@ -53,7 +53,7 @@ int netconf_connect(net_client_t *client) {
     /* Create socket */
     client->socket_fd = socket(AF_UNIX, SOCK_STREAM, 0);
     if (client->socket_fd < 0) {
-        print_error("Failed to create socket: %s", strerror(errno));
+        fprintf(stderr, "Failed to create socket: %s\n", strerror(errno));
         return -1;
     }
     
@@ -64,7 +64,7 @@ int netconf_connect(net_client_t *client) {
     
     /* Connect to server */
     if (connect(client->socket_fd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
-        print_error("Failed to connect to server: %s", strerror(errno));
+        fprintf(stderr, "Failed to connect to server: %s\n", strerror(errno));
         close(client->socket_fd);
         client->socket_fd = -1;
         return -1;
@@ -111,19 +111,19 @@ int netconf_send_request(net_client_t *client, const char *request, char **respo
     }
     
     if (!client->connected) {
-        print_error("Not connected to server");
+        fprintf(stderr, "Not connected to server\n");
         return -1;
     }
     
     /* Send request */
     sent = send(client->socket_fd, request, strlen(request), 0);
     if (sent < 0) {
-        print_error("Failed to send request: %s", strerror(errno));
+        fprintf(stderr, "Failed to send request: %s\n", strerror(errno));
         return -1;
     }
     
     if (sent != (ssize_t)strlen(request)) {
-        print_error("Incomplete send: %zd of %zu bytes", sent, strlen(request));
+        fprintf(stderr, "Incomplete send: %zd of %zu bytes\n", sent, strlen(request));
         return -1;
     }
     
@@ -138,7 +138,7 @@ int netconf_send_request(net_client_t *client, const char *request, char **respo
                 usleep(10000); /* 10ms */
                 continue;
             }
-            print_error("Failed to receive response: %s", strerror(errno));
+            fprintf(stderr, "Failed to receive response: %s\n", strerror(errno));
             return -1;
         }
         
@@ -153,7 +153,7 @@ int netconf_send_request(net_client_t *client, const char *request, char **respo
         /* Append to full response */
         char *new_response = realloc(full_response, response_size + received + 1);
         if (!new_response) {
-            print_error("Failed to allocate memory for response");
+            fprintf(stderr, "Failed to allocate memory for response\n");
             free(full_response);
             return -1;
         }
@@ -169,7 +169,7 @@ int netconf_send_request(net_client_t *client, const char *request, char **respo
     }
     
     if (!full_response) {
-        print_error("No response received");
+        fprintf(stderr, "No response received\n");
         return -1;
     }
     

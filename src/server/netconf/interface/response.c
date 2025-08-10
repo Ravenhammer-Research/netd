@@ -29,8 +29,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "../../system/freebsd/proto.h"
-#include "../../netd.h"
+#include <netd.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>

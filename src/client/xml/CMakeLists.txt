@@ -40,6 +40,8 @@ add_library(xml_lib STATIC ${XML_SRCS})
 # Set include directories for XML library
 target_include_directories(xml_lib PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/..
+    ${CMAKE_CURRENT_SOURCE_DIR}/../netconf
 )
 
  

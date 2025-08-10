@@ -38,32 +38,18 @@
 #include <stdint.h>
 #include <sys/queue.h>
 
-/* Forward declarations for libyang structures */
-struct ly_ctx;
-struct lyd_node;
-
-/* Socket address family constants */
-#define AF_UNSPEC 0
-#define AF_INET 2
-#define AF_INET6 28
-
 /* Constants */
-#define NETD_SOCKET_PATH "/var/run/netd.sock"
-#define NETD_CONFIG_FILE "/etc/netd.conf"
-#define MAX_IFNAME_LEN 64
+/* Maximum VRF name length - VRF names are typically short identifiers like "vrf1", "mgmt", etc. */
 #define MAX_VRF_NAME_LEN 64
-#define MAX_GROUP_NAME_LEN 64
-#define MAX_GROUPS_PER_IF 10
 
-/* Debug levels */
-typedef enum {
-  DEBUG_NONE = 0,
-  DEBUG_ERROR,
-  DEBUG_WARN,
-  DEBUG_INFO,
-  DEBUG_DEBUG,
-  DEBUG_TRACE
-} debug_level_t;
+/* Maximum interface name length - FreeBSD interface names like "em0", "lagg0", "vlan100" are typically under 32 chars */
+#define MAX_IFNAME_LEN 64
+
+/* Maximum interface group name length - Group names like "lan", "wan", "dmz" are typically short */
+#define MAX_GROUP_NAME_LEN 64
+
+/* Maximum number of groups per interface - Most interfaces belong to 1-3 groups, rarely more than 8 */
+#define MAX_GROUPS_PER_IF 16
 
 /* Interface types */
 typedef enum {
@@ -82,6 +68,36 @@ typedef enum {
   IF_TYPE_VXLAN,
   IF_TYPE_BRIDGE
 } interface_type_t;
+
+/* Debug levels */
+typedef enum {
+  DEBUG_NONE = 0,
+  DEBUG_ERROR = 1,
+  DEBUG_WARN = 2,
+  DEBUG_INFO = 3,
+  DEBUG_DEBUG = 4,
+  DEBUG_TRACE = 5
+} debug_level_t;
+
+/* Route flags - simplified versions for our application */
+typedef enum {
+  ROUTE_FLAG_NONE = 0,
+  ROUTE_FLAG_REJECT = 1,    /* Route rejects packets */
+  ROUTE_FLAG_BLACKHOLE = 2  /* Route blackholes packets */
+} route_flag_t;
+
+/* Forward declarations for libyang structures */
+struct ly_ctx;
+struct lyd_node;
+
+/* Socket address family constants */
+#define AF_UNSPEC 0
+#define AF_INET 2
+#define AF_INET6 28
+
+/* Constants */
+#define NETD_SOCKET_PATH "/var/run/netd.sock"
+#define NETD_CONFIG_FILE "/etc/netd.conf"
 
 /* Route flags - use system definitions from net/route.h */
 

@@ -29,7 +29,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "netd.h"
+#include <netd.h>
 #include <libyang/libyang.h>
 #include <libyang/log.h>
 #include <libyang/tree_data.h>

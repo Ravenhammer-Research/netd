@@ -32,13 +32,13 @@
 #ifndef FREEBSD_LAGG_H
 #define FREEBSD_LAGG_H
 
-#include "proto.h"
+#include <stddef.h>
 
 /* LAGG interface operations */
 int freebsd_lagg_create(const char *name, const char *protocol);
-int freebsd_lagg_add_member(const char *lagg_name, const char *member_name);
-int freebsd_lagg_remove_member(const char *lagg_name, const char *member_name);
 int freebsd_lagg_set_protocol(const char *name, const char *protocol);
+int freebsd_lagg_add_member(const char *name, const char *member);
+int freebsd_lagg_remove_member(const char *name, const char *member);
 int freebsd_lagg_delete(const char *name);
 int freebsd_lagg_show(const char *name, char *protocol, size_t protocol_size, 
                       char *members, size_t members_size);

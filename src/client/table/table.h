@@ -32,7 +32,10 @@
 #ifndef TABLE_H
 #define TABLE_H
 
-#include "net.h"
+#include <net.h>
+
+/* Error handling function */
+void print_error(const char *format, ...);
 
 /* Table utility functions */
 void table_init(struct table_format *fmt, const char *title);

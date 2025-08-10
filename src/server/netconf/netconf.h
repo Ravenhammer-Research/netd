@@ -32,8 +32,8 @@
 #ifndef NETCONF_H
 #define NETCONF_H
 
-#include "../netd.h"
-#include "../xml/xml.h"
+#include <netd.h>
+#include <xml.h>
 
 /* Forward declarations */
 struct netd_state;
@@ -75,6 +75,10 @@ int handle_get_vrf_routes_request(netd_state_t *state, const char *request,
 char *create_success_response(const char *message_id);
 char *create_error_response(const char *message_id, const char *error_type,
                             const char *error_message);
+char *create_interfaces_xml_response(netd_state_t *state, const char *message_id);
+char *create_vrfs_xml_response(netd_state_t *state, const char *message_id);
+char *create_routes_xml_response(netd_state_t *state, const char *message_id, uint32_t fib);
+char *create_vrf_routes_xml_response(netd_state_t *state, const char *message_id, vrf_t *vrf);
 
 /* External function declarations for pending changes */
 extern int add_pending_vrf_create(netd_state_t *state, const char *name,

@@ -11,10 +11,10 @@ set(XML_SOURCES
 add_library(xml STATIC ${XML_SOURCES})
 
 # Set include directories
-target_include_directories(xml PRIVATE
+target_include_directories(xml PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/..
-    ${CMAKE_CURRENT_SOURCE_DIR}/../..
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../yang
 )
 
 # Link dependencies

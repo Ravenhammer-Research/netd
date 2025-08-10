@@ -29,8 +29,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "netconf.h"
-#include "../xml/xml.h"
+#include <netconf.h>
+#include <xml.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>

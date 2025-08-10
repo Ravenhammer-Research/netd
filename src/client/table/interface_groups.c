@@ -29,7 +29,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "net.h"
+#include <net.h>
 #include <bsdxml.h>
 #include <stdbool.h>
 #include <stdio.h>

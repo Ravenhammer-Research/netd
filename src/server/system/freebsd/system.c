@@ -29,8 +29,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "netd.h"
-#include "proto.h"
+#include <netd.h>
+#include <vlan/vlan.h>
+#include <80211/80211.h>
 #include <sys/types.h>
 #include <fcntl.h>
 #include <sys/un.h>
@@ -227,9 +228,9 @@ int freebsd_enumerate_interfaces(netd_state_t *state) {
 
     /* Get VLAN information for VLAN interfaces */
     if (type == IF_TYPE_VLAN || strchr(ifa->ifa_name, '.') != NULL) {
-      freebsd_get_vlan_info(ifa->ifa_name, &iface->vlan_id, iface->vlan_proto,
-                            sizeof(iface->vlan_proto), &iface->vlan_pcp,
-                            iface->vlan_parent, sizeof(iface->vlan_parent));
+      freebsd_vlan_show(ifa->ifa_name, &iface->vlan_id, iface->vlan_proto,
+                        sizeof(iface->vlan_proto), &iface->vlan_pcp,
+                        iface->vlan_parent, sizeof(iface->vlan_parent));
       debug_log(DEBUG_TRACE,
                 "Found VLAN info for %s: id=%d, proto=%s, pcp=%d, parent=%s",
                 ifa->ifa_name, iface->vlan_id, iface->vlan_proto,
@@ -238,7 +239,7 @@ int freebsd_enumerate_interfaces(netd_state_t *state) {
 
     /* Get WiFi information for wireless interfaces */
     if (type == IF_TYPE_WIRELESS) {
-      freebsd_get_wifi_info(
+      freebsd_wireless_show(
           ifa->ifa_name, iface->wifi_regdomain, sizeof(iface->wifi_regdomain),
           iface->wifi_country, sizeof(iface->wifi_country),
           iface->wifi_authmode, sizeof(iface->wifi_authmode),

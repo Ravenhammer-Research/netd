@@ -29,8 +29,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "netd.h"
-#include "route.h"
+#include <netd.h>
+#include <route.h>
 #include <sys/types.h>
 #include <fcntl.h>
 #include <sys/un.h>

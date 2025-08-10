@@ -31,6 +31,7 @@ set(CLIENT_SRCS
     main.c
     client.c
     debug.c
+    error.c
 )
 
 # Add subdirectories

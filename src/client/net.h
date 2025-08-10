@@ -220,6 +220,9 @@ typedef struct net_client {
 
 /* Function declarations */
 
+/* Error handling functions */
+void print_error(const char *format, ...);
+
 /* Client functions */
 int client_init(net_client_t *client, bool interactive);
 void client_cleanup(net_client_t *client);
@@ -231,19 +234,12 @@ char **command_generator(const char *text, int start, int end);
 int interactive_mode(net_client_t *client);
 
 /* Include module headers */
-#include "xml/xml.h"
-#include "table/table.h"
-#include "netconf/netconf.h"
-#include "parser/utils.h"
+#include <xml/xml.h>
+#include <table/table.h>
+#include <netconf/netconf.h>
+#include <parser/utils.h>
 
-/* YANG context management */
-int yang_init_client(net_client_t *client);
-void yang_cleanup_client(net_client_t *client);
-int yang_validate_xml_client(net_client_t *client, const char *xml_data);
-int yang_validate_rpc_client(net_client_t *client, const char *rpc_xml);
-int yang_validate_response_client(net_client_t *client,
-                                  const char *response_xml);
-int yang_validate_data_client(net_client_t *client, const char *data_xml);
+
 
 /* Debug functions */
 void debug_init(debug_level_t level);

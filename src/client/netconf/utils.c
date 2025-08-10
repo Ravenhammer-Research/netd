@@ -29,7 +29,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "net.h"
+#include <net.h>
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
@@ -198,19 +198,6 @@ int get_prefix_length(const struct sockaddr_storage *addr) {
   }
 
   return prefix_len;
-}
-
-/**
- * Print error message
- * @param format Format string
- * @param ... Variable arguments
- */
-void print_error(const char *format, ...) {
-  va_list args;
-  va_start(args, format);
-  vfprintf(stderr, format, args);
-  fprintf(stderr, "\n");
-  va_end(args);
 }
 
 /**

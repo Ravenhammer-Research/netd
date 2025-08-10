@@ -7,10 +7,12 @@ set(GIF_SOURCES
 add_library(freebsd_gif STATIC ${GIF_SOURCES})
 
 target_include_directories(freebsd_gif PRIVATE
-    ${CMAKE_SOURCE_DIR}/src/server
-    ${CMAKE_SOURCE_DIR}/src/server/system/freebsd
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/..
+    ${CMAKE_CURRENT_SOURCE_DIR}/../..
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../..
 )
 
 target_link_libraries(freebsd_gif
-    netd_common
+    netd
 ) 

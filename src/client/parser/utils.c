@@ -29,7 +29,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "net.h"
+#include <net.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -239,7 +239,7 @@ int parse_command(const char *line, command_t *cmd) {
 
   cmd->type = command_type_from_string(token);
   if (cmd->type == CMD_UNKNOWN) {
-    print_error("Unknown command: %s", token);
+    fprintf(stderr, "Unknown command: %s\n", token);
     free(line_copy);
     return -1;
   }

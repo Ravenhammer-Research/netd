@@ -29,14 +29,14 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "netd.h"
-#include "../../system/freebsd/proto.h"
+#include <netd.h>
 #include <errno.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <system/freebsd/epair/epair.h>
 
 /**
  * Create an epair interface

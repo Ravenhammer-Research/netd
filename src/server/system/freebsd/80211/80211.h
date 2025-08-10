@@ -32,7 +32,8 @@
 #ifndef FREEBSD_80211_H
 #define FREEBSD_80211_H
 
-#include "proto.h"
+#include <stddef.h>  /* for size_t */
+#include <netd.h>    /* for debug functions and types */
 
 /* IEEE 802.11 wireless interface operations */
 

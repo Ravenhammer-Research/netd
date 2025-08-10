@@ -45,4 +45,28 @@
 int freebsd_get_bridge_members(const char *ifname, char *members,
                                size_t members_size);
 
+/**
+ * Add a member interface to a bridge
+ * @param bridge_name Bridge interface name
+ * @param member_name Member interface name
+ * @return 0 on success, -1 on failure
+ */
+int freebsd_bridge_add_member(const char *bridge_name, const char *member_name);
+
+/**
+ * Remove a member interface from a bridge
+ * @param bridge_name Bridge interface name
+ * @param member_name Member interface name
+ * @return 0 on success, -1 on failure
+ */
+int freebsd_bridge_remove_member(const char *bridge_name, const char *member_name);
+
+/**
+ * Set STP mode for a bridge
+ * @param bridge_name Bridge interface name
+ * @param stp_mode STP mode (0=disabled, 1=enabled)
+ * @return 0 on success, -1 on failure
+ */
+int freebsd_bridge_set_stp(const char *bridge_name, int stp_mode);
+
 #endif /* BRIDGE_H */ 

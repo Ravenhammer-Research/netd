@@ -31,7 +31,7 @@
 #ifndef GRAMMAR_H
 #define GRAMMAR_H
 
-#include "net.h"
+#include <net.h>
 
 
 /* Global variables for parser */

@@ -5,8 +5,8 @@
 #include <syslog.h>
 #include <net/if.h>
 
-#include "netd.h"
-#include "../../system/freebsd/proto.h"
+#include <netd.h>
+#include <system/freebsd/tap/tap.h>
 
 /**
  * Create a TAP interface

@@ -29,15 +29,16 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "net.h"
-#include "netconf.h"
+#include <net.h>
+#include <netconf.h>
+#include <parser/utils.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 /* Transaction state */
 static bool transaction_active = false;
-static char transaction_commands[10][256];
+static char transaction_commands[10][256]; /* Up to 10 commands, 256 chars each */
 static int transaction_command_count = 0;
 
 /**
@@ -45,7 +46,7 @@ static int transaction_command_count = 0;
  */
 int transaction_begin(void) {
     if (transaction_active) {
-        print_error("Transaction already in progress");
+        fprintf(stderr, "Transaction already in progress\n");
         return -1;
     }
     
@@ -60,12 +61,12 @@ int transaction_begin(void) {
  */
 int transaction_add_command(const char *command) {
     if (!transaction_active) {
-        print_error("No transaction in progress");
+        fprintf(stderr, "No transaction in progress\n");
         return -1;
     }
     
     if (transaction_command_count >= 10) {
-        print_error("Transaction command limit reached");
+        fprintf(stderr, "Transaction command limit reached\n");
         return -1;
     }
     
@@ -82,12 +83,12 @@ int transaction_add_command(const char *command) {
  */
 int transaction_commit(net_client_t *client) {
     if (!transaction_active) {
-        print_error("No transaction in progress");
+        fprintf(stderr, "No transaction in progress\n");
         return -1;
     }
     
     if (transaction_command_count == 0) {
-        print_error("No commands in transaction");
+        fprintf(stderr, "No commands in transaction\n");
         return -1;
     }
     
@@ -98,7 +99,7 @@ int transaction_commit(net_client_t *client) {
         command_t cmd;
         if (parse_command(transaction_commands[i], &cmd) == 0) {
             if (execute_command(client, &cmd) < 0) {
-                print_error("Transaction failed at command %d: %s", i + 1, transaction_commands[i]);
+                fprintf(stderr, "Transaction failed at command %d: %s\n", i + 1, transaction_commands[i]);
                 transaction_rollback();
                 return -1;
             }
@@ -118,7 +119,7 @@ int transaction_commit(net_client_t *client) {
  */
 int transaction_rollback(void) {
     if (!transaction_active) {
-        print_error("No transaction in progress");
+        fprintf(stderr, "No transaction in progress\n");
         return -1;
     }
     

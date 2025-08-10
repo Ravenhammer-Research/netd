@@ -32,7 +32,7 @@
 #ifndef FREEBSD_GIF_H
 #define FREEBSD_GIF_H
 
-#include "proto.h"
+#include <stddef.h>
 
 /* GIF interface operations */
 int freebsd_gif_create(const char *name);

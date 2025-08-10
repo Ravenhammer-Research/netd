@@ -21,7 +21,10 @@ add_library(netconf STATIC ${NETCONF_SOURCES})
 target_include_directories(netconf PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/..
-    ${CMAKE_CURRENT_SOURCE_DIR}/../..
+    ${CMAKE_CURRENT_SOURCE_DIR}/../xml
+    ${CMAKE_CURRENT_SOURCE_DIR}/../system
+    ${CMAKE_CURRENT_SOURCE_DIR}/../system/freebsd
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../yang
 )
 
 # Link dependencies

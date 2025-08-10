@@ -25,7 +25,7 @@
  * SUCH DAMAGE.
  */
 
-#include "80211.h"
+#include <80211.h>
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>

@@ -29,7 +29,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "net.h"
+#include <net.h>
 #include <getopt.h>
 #include <stdarg.h>
 #include <stdio.h>

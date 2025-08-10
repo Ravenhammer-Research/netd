@@ -17,8 +17,8 @@
  *    this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
  * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
  * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
  * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
@@ -32,12 +32,13 @@
 #ifndef FREEBSD_VLAN_H
 #define FREEBSD_VLAN_H
 
-#include "proto.h"
+#include <stddef.h>
+#include <stdint.h>
 
 /* VLAN interface operations */
-int freebsd_vlan_create(const char *name, const char *parent_name, int vlan_id);
-int freebsd_vlan_set_priority(const char *name, uint8_t priority);
+int freebsd_vlan_create(const char *name, const char *parent, int vlan_id);
 int freebsd_vlan_set_protocol(const char *name, const char *protocol);
+int freebsd_vlan_set_priority(const char *name, uint8_t priority);
 int freebsd_vlan_delete(const char *name);
 int freebsd_vlan_show(const char *name, int *vlan_id, char *vlan_proto,
                       size_t proto_size, int *vlan_pcp, char *vlan_parent,

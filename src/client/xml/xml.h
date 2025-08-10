@@ -32,7 +32,7 @@
 #ifndef XML_H
 #define XML_H
 
-#include "net.h"
+#include <net.h>
 
 /* Common XML utilities */
 int find_tag_content(const char *xml, const char *tag_start, const char *tag_end,

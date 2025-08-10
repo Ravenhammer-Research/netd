@@ -29,8 +29,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "net.h"
-#include "netconf.h"
+#include <net.h>
+#include <netconf.h>
 #include <sys/socket.h>
 #include <sys/queue.h>
 #include <unistd.h>
@@ -52,7 +52,7 @@ int execute_command(net_client_t *client, const command_t *cmd) {
   if (!client->connected) {
     debug_log(DEBUG_INFO, "Connecting to server...");
     if (netconf_connect(client) < 0) {
-      print_error("Failed to connect to server");
+      fprintf(stderr, "Failed to connect to server\n");
       return -1;
     }
     debug_log(DEBUG_INFO, "Connected to server");
@@ -71,7 +71,7 @@ int execute_command(net_client_t *client, const command_t *cmd) {
   case CMD_SAVE:
     return execute_save_command(client, cmd);
   default:
-    print_error("Unknown command type: %d", cmd->type);
+    fprintf(stderr, "Unknown command type: %d\n", cmd->type);
     return -1;
   }
 }
@@ -88,7 +88,7 @@ int execute_set_command(net_client_t *client, const command_t *cmd) {
   }
 
   if (cmd->arg_count < 3) {
-    print_error("SET command requires object, name, and property");
+    fprintf(stderr, "SET command requires object, name, and property\n");
     return -1;
   }
 
@@ -199,7 +199,7 @@ int execute_set_command(net_client_t *client, const command_t *cmd) {
 
         debug_log(DEBUG_INFO, "Sending route SET request: %s", request);
         if (netconf_send_request(client, request, &response) < 0) {
-          print_error("Failed to send route SET request");
+          fprintf(stderr, "Failed to send route SET request\n");
           return -1;
         }
 
@@ -239,7 +239,7 @@ int execute_set_command(net_client_t *client, const command_t *cmd) {
     } else if (strcmp(property, "mtu") == 0) {
       int mtu = atoi(value);
       if (mtu <= 0 || mtu > 9000) {
-        print_error("Invalid MTU value: %s", value);
+        fprintf(stderr, "Invalid MTU value: %s\n", value);
         return -1;
       }
       snprintf(request, sizeof(request),
@@ -277,13 +277,13 @@ int execute_set_command(net_client_t *client, const command_t *cmd) {
                "</rpc>",
                ifname, enabled ? "true" : "false");
     } else {
-      print_error("Unknown interface property: %s", property);
+      fprintf(stderr, "Unknown interface property: %s\n", property);
       return -1;
     }
 
     debug_log(DEBUG_INFO, "Sending interface SET request: %s", request);
     if (netconf_send_request(client, request, &response) < 0) {
-      print_error("Failed to send interface SET request");
+      fprintf(stderr, "Failed to send interface SET request\n");
       return -1;
     }
 
@@ -316,13 +316,13 @@ int execute_set_command(net_client_t *client, const command_t *cmd) {
                  "</rpc>",
                  fib, value);
       } else {
-        print_error("Unknown VRF property: %s", property);
+        fprintf(stderr, "Unknown VRF property: %s\n", property);
         return -1;
       }
 
       debug_log(DEBUG_INFO, "Sending VRF SET request: %s", request);
       if (netconf_send_request(client, request, &response) < 0) {
-        print_error("Failed to send VRF SET request");
+        fprintf(stderr, "Failed to send VRF SET request\n");
         return -1;
       }
 
@@ -332,7 +332,7 @@ int execute_set_command(net_client_t *client, const command_t *cmd) {
     }
   }
 
-  print_error("Unsupported SET command format");
+  fprintf(stderr, "Unsupported SET command format\n");
   return -1;
 }
 
@@ -348,7 +348,7 @@ int execute_show_command(net_client_t *client, const command_t *cmd) {
   }
 
   if (cmd->arg_count < 1) {
-    print_error("SHOW command requires an object to display");
+    fprintf(stderr, "SHOW command requires an object to display\n");
     return -1;
   }
 
@@ -356,7 +356,7 @@ int execute_show_command(net_client_t *client, const command_t *cmd) {
 
   if (strcmp(object, "interfaces") == 0) {
     if (netconf_get_interfaces(client, &response) < 0) {
-      print_error("Failed to get interfaces");
+      fprintf(stderr, "Failed to get interfaces\n");
       return -1;
     }
 
@@ -388,7 +388,7 @@ int execute_show_command(net_client_t *client, const command_t *cmd) {
     }
 
     if (netconf_get_routes(client, fib, family, &response) < 0) {
-      print_error("Failed to get routes");
+      fprintf(stderr, "Failed to get routes\n");
       return -1;
     }
 
@@ -396,7 +396,7 @@ int execute_show_command(net_client_t *client, const command_t *cmd) {
     free(response);
   } else if (strcmp(object, "vrfs") == 0) {
     if (netconf_get_vrfs(client, &response) < 0) {
-      print_error("Failed to get VRFs");
+      fprintf(stderr, "Failed to get VRFs\n");
       return -1;
     }
 
@@ -410,7 +410,7 @@ int execute_show_command(net_client_t *client, const command_t *cmd) {
              ifname, type ? type : "all");
 
     if (netconf_get_interfaces(client, &response) < 0) {
-      print_error("Failed to get interfaces");
+      fprintf(stderr, "Failed to get interfaces\n");
       return -1;
     }
 
@@ -437,7 +437,7 @@ int execute_show_command(net_client_t *client, const command_t *cmd) {
       } else if (strcmp(type, "wlan") == 0) {
         print_wlan_table(response);
       } else {
-        print_error("Unknown interface type: %s", type);
+        fprintf(stderr, "Unknown interface type: %s\n", type);
         ret = -1;
       }
     } else {
@@ -447,7 +447,7 @@ int execute_show_command(net_client_t *client, const command_t *cmd) {
 
     free(response);
   } else {
-    print_error("Unknown SHOW object: %s", object);
+    fprintf(stderr, "Unknown SHOW object: %s\n", object);
     ret = -1;
   }
 
@@ -466,7 +466,7 @@ int execute_delete_command(net_client_t *client, const command_t *cmd) {
   }
 
   if (cmd->arg_count < 3) {
-    print_error("DELETE command requires object, name, and property");
+    fprintf(stderr, "DELETE command requires object, name, and property\n");
     return -1;
   }
 
@@ -510,13 +510,13 @@ int execute_delete_command(net_client_t *client, const command_t *cmd) {
                "</rpc>",
                name);
     } else {
-      print_error("Unknown interface property to delete: %s", property);
+      fprintf(stderr, "Unknown interface property to delete: %s\n", property);
       return -1;
     }
 
     debug_log(DEBUG_INFO, "Sending interface DELETE request: %s", request);
     if (netconf_send_request(client, request, &response) < 0) {
-      print_error("Failed to send interface DELETE request");
+      fprintf(stderr, "Failed to send interface DELETE request\n");
       return -1;
     }
 
@@ -545,13 +545,13 @@ int execute_delete_command(net_client_t *client, const command_t *cmd) {
                  "</rpc>",
                  fib);
       } else {
-        print_error("Unknown VRF property to delete: %s", vrf_property);
+        fprintf(stderr, "Unknown VRF property to delete: %s\n", vrf_property);
         return -1;
       }
 
       debug_log(DEBUG_INFO, "Sending VRF DELETE request: %s", request);
       if (netconf_send_request(client, request, &response) < 0) {
-        print_error("Failed to send VRF DELETE request");
+        fprintf(stderr, "Failed to send VRF DELETE request\n");
         return -1;
       }
 
@@ -561,7 +561,7 @@ int execute_delete_command(net_client_t *client, const command_t *cmd) {
     }
   }
 
-  print_error("Unsupported DELETE command format");
+  fprintf(stderr, "Unsupported DELETE command format\n");
   return -1;
 }
 
@@ -587,7 +587,7 @@ int execute_save_command(net_client_t *client, const command_t *cmd) {
 
   debug_log(DEBUG_INFO, "Sending save request: %s", request);
   if (netconf_send_request(client, request, &response) < 0) {
-    print_error("Failed to save configuration");
+    fprintf(stderr, "Failed to save configuration\n");
     return -1;
   }
 

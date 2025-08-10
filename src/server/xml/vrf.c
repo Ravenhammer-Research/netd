@@ -29,7 +29,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "xml.h"
+#include <xml.h>
 #include <bsdxml.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -53,6 +53,8 @@ static void fib_start_element(void *userData, const XML_Char *name,
                               const XML_Char **atts) {
   struct fib_data *data = (struct fib_data *)userData;
 
+  debug_log(DEBUG_DEBUG, "FIB start element: %s with %d attributes", name, atts ? 0 : 0);
+  
   if (strcmp(name, "fib") == 0) {
     data->found = true;
   }
@@ -118,6 +120,8 @@ static void vrf_name_start_element(void *userData, const XML_Char *name,
                                    const XML_Char **atts) {
   struct vrf_name_data *data = (struct vrf_name_data *)userData;
 
+  debug_log(DEBUG_DEBUG, "VRF name start element: %s with %d attributes", name, atts ? 0 : 0);
+  
   if (strcmp(name, "vrf") == 0) {
     data->found = true;
   }

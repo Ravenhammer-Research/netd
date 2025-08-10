@@ -29,7 +29,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "netd.h"
+#include <netd.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <ifaddrs.h>

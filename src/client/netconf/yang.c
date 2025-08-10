@@ -29,7 +29,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "net.h"
+#include <net.h>
 #include <libyang/libyang.h>
 #include <stdio.h>
 #include <stdlib.h>

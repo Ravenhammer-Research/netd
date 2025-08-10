@@ -29,7 +29,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "netconf.h"
+#include <netconf.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>

@@ -29,7 +29,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "netd.h"
+#include <netd.h>
 #include <errno.h>
 #include <stdbool.h>
 #include <stdint.h>

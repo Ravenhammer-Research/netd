@@ -29,10 +29,10 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "vlan.h"
 #include <sys/types.h>
 #include <net/if.h>
 #include <net/if_vlan_var.h>
+#include <net/ethernet.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 #include <sys/sockio.h>
@@ -41,6 +41,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+
+#include <netd.h>
 
 /**
  * Show VLAN interface information

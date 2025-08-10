@@ -32,8 +32,8 @@
 #ifndef NETCONF_H
 #define NETCONF_H
 
-#include "net.h"
-#include "utils.h"
+#include <net.h>
+#include <utils.h>
 
 /* Command execution functions */
 int execute_command(net_client_t *client, const command_t *cmd);
@@ -60,5 +60,13 @@ int netconf_get_interfaces(net_client_t *client, char **response);
 int netconf_get_vrfs(net_client_t *client, char **response);
 int netconf_get_routes(net_client_t *client, uint32_t fib, int family, char **response);
 int netconf_get_interface_groups(net_client_t *client, char **response);
+
+/* YANG context management */
+int yang_init_client(net_client_t *client);
+void yang_cleanup_client(net_client_t *client);
+int yang_validate_xml_client(net_client_t *client, const char *xml_data);
+int yang_validate_rpc_client(net_client_t *client, const char *rpc_xml);
+int yang_validate_response_client(net_client_t *client, const char *response_xml);
+int yang_validate_data_client(net_client_t *client, const char *data_xml);
 
 #endif /* NETCONF_H */ 
