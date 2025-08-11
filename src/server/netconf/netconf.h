@@ -33,7 +33,9 @@
 #define NETCONF_H
 
 #include <netd.h>
-#include <xml.h>
+#include <xml/xml.h>
+
+#define NETCONF_RESPONSE_BUFFER_SIZE (128 * 1024 * 1024) /* 128MB */
 
 /* Forward declarations */
 struct netd_state;
@@ -76,6 +78,9 @@ char *create_interfaces_xml_response(netd_state_t *state, const char *message_id
 char *create_vrfs_xml_response(netd_state_t *state, const char *message_id);
 char *create_routes_xml_response(netd_state_t *state, const char *message_id, uint32_t fib);
 char *create_vrf_routes_xml_response(netd_state_t *state, const char *message_id, vrf_t *vrf);
+
+/* Utility functions */
+int prepare_response(char *response, int len, const char *format, ...);
 
 /* External function declarations for pending changes */
 extern int add_pending_vrf_create(netd_state_t *state, const char *name,

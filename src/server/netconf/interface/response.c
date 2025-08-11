@@ -35,6 +35,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <netconf/netconf.h>
+
+
 
 /**
  * Create interfaces XML response
@@ -44,97 +47,21 @@
  */
 char *create_interfaces_xml_response(netd_state_t *state, const char *message_id) {
   char *response;
-  char *temp;
-  int len, total_len;
+  int len;
   interface_t *iface;
 
   if (!state || !message_id) {
     return NULL;
   }
 
-  /* Calculate total length needed */
-  total_len = snprintf(NULL, 0,
-                       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-                       "<rpc-reply xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\" "
-                       "message-id=\"%s\">\n"
-                       "  <data>\n"
-                       "    <interfaces xmlns=\"urn:ietf:params:xml:ns:yang:ietf-interfaces\">\n",
-                       message_id);
-
-  /* Add interface entries */
-  TAILQ_FOREACH(iface, &state->interfaces, entries) {
-    /* Build groups string */
-    char groups_str[256] = "";
-    if (iface->group_count > 0) {
-      for (int i = 0; i < iface->group_count; i++) {
-        if (i > 0) strcat(groups_str, ",");
-        strcat(groups_str, iface->groups[i]);
-      }
-    }
-    
-    /* Find VRF name for this FIB */
-    char vrf_name[64] = "";
-    if (iface->fib > 0) {
-      vrf_t *vrf = vrf_find_by_fib(state, iface->fib);
-      if (vrf) {
-        snprintf(vrf_name, sizeof(vrf_name), "%s", vrf->name);
-      } else {
-        snprintf(vrf_name, sizeof(vrf_name), "fib%d", iface->fib);
-      }
-    } else {
-      strcpy(vrf_name, "default");
-    }
-    
-    len = snprintf(NULL, 0,
-                   "      <interface>\n"
-                   "        <name>%s</name>\n"
-                   "        <type xmlns:ianaift=\"urn:ietf:params:xml:ns:yang:iana-if-type\">"
-                   "ianaift:%s</type>\n"
-                   "        <enabled>%s</enabled>\n"
-                   "        <fib>%u</fib>\n"
-                   "        <vrf>%s</vrf>\n"
-                   "        <mtu>%d</mtu>\n"
-                   "        <flags>%d</flags>\n"
-                   "        <ipv4 xmlns=\"urn:ietf:params:xml:ns:yang:ietf-ip\">\n"
-                   "          <address>\n"
-                   "            <ip>%s</ip>\n"
-                   "            <prefix-length>24</prefix-length>\n"
-                   "          </address>\n"
-                   "        </ipv4>\n"
-                   "        <ipv6 xmlns=\"urn:ietf:params:xml:ns:yang:ietf-ip\">\n"
-                   "          <address>\n"
-                   "            <ip>%s</ip>\n"
-                   "            <prefix-length>64</prefix-length>\n"
-                   "          </address>\n"
-                   "        </ipv6>\n"
-                   "        <groups>%s</groups>\n"
-                   "      </interface>\n",
-                   iface->name,
-                   interface_type_to_string(iface->type),
-                   iface->enabled ? "true" : "false",
-                   iface->fib,
-                   vrf_name,
-                   iface->mtu,
-                   iface->flags,
-                   iface->primary_address[0] ? iface->primary_address : "",
-                   iface->primary_address6[0] ? iface->primary_address6 : "",
-                   groups_str);
-    total_len += len;
-  }
-
-  total_len += snprintf(NULL, 0,
-                        "    </interfaces>\n"
-                        "  </data>\n"
-                        "</rpc-reply>");
-
-  /* Allocate and build response */
-  response = malloc(total_len + 1);
+  /* Allocate buffer for response */
+  response = malloc(NETCONF_RESPONSE_BUFFER_SIZE);
   if (!response) {
     debug_log(ERROR, "Failed to allocate memory for interfaces response");
     return NULL;
   }
 
-  len = snprintf(response, total_len + 1,
+  len = prepare_response(response, 0,
                  "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                  "<rpc-reply xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\" "
                  "message-id=\"%s\">\n"
@@ -143,7 +70,10 @@ char *create_interfaces_xml_response(netd_state_t *state, const char *message_id
                  message_id);
 
   /* Add interface entries */
+  int interface_count = 0;
   TAILQ_FOREACH(iface, &state->interfaces, entries) {
+    interface_count++;
+    debug_log(DEBUG, "Processing interface %d: %s", interface_count, iface->name);
     /* Build groups string */
     char groups_str[256] = "";
     if (iface->group_count > 0) {
@@ -166,47 +96,66 @@ char *create_interfaces_xml_response(netd_state_t *state, const char *message_id
       strcpy(vrf_name, "default");
     }
     
-    temp = response + len;
-    len += snprintf(temp, total_len + 1 - len,
+    len = prepare_response(response, len,
                    "      <interface>\n"
                    "        <name>%s</name>\n"
                    "        <type xmlns:ianaift=\"urn:ietf:params:xml:ns:yang:iana-if-type\">"
                    "ianaift:%s</type>\n"
                    "        <enabled>%s</enabled>\n"
-                   "        <fib>%u</fib>\n"
-                   "        <vrf>%s</vrf>\n"
+                   "        <bind-ni-name>%s</bind-ni-name>\n"
                    "        <mtu>%d</mtu>\n"
-                   "        <flags>%d</flags>\n"
-                   "        <ipv4 xmlns=\"urn:ietf:params:xml:ns:yang:ietf-ip\">\n"
-                   "          <address>\n"
-                   "            <ip>%s</ip>\n"
-                   "            <prefix-length>24</prefix-length>\n"
-                   "          </address>\n"
-                   "        </ipv4>\n"
-                   "        <ipv6 xmlns=\"urn:ietf:params:xml:ns:yang:ietf-ip\">\n"
-                   "          <address>\n"
-                   "            <ip>%s</ip>\n"
-                   "            <prefix-length>64</prefix-length>\n"
-                   "          </address>\n"
-                   "        </ipv6>\n"
-                   "        <groups>%s</groups>\n"
-                   "      </interface>\n",
+                   "        <flags>%d</flags>\n",
                    iface->name,
                    interface_type_to_string(iface->type),
                    iface->enabled ? "true" : "false",
-                   iface->fib,
                    vrf_name,
                    iface->mtu,
-                   iface->flags,
-                   iface->primary_address[0] ? iface->primary_address : "",
-                   iface->primary_address6[0] ? iface->primary_address6 : "",
+                   iface->flags);
+
+    /* Add IPv4 addresses */
+    if (iface->address_count > 0) {
+      len = prepare_response(response, len,
+                     "        <ipv4 xmlns=\"urn:ietf:params:xml:ns:yang:ietf-ip\">\n");
+      for (int i = 0; i < iface->address_count; i++) {
+        len = prepare_response(response, len,
+                       "          <address>\n"
+                       "            <ip>%s</ip>\n"
+                       "            <prefix-length>%d</prefix-length>\n"
+                       "          </address>\n",
+                       iface->addresses[i].addr,
+                       iface->addresses[i].prefixlen);
+      }
+      len = prepare_response(response, len, "        </ipv4>\n");
+    }
+
+    /* Add IPv6 addresses */
+    if (iface->address_count6 > 0) {
+      len = prepare_response(response, len,
+                     "        <ipv6 xmlns=\"urn:ietf:params:xml:ns:yang:ietf-ip\">\n");
+      for (int i = 0; i < iface->address_count6; i++) {
+        len = prepare_response(response, len,
+                       "          <address>\n"
+                       "            <ip>%s</ip>\n"
+                       "            <prefix-length>%d</prefix-length>\n"
+                       "          </address>\n",
+                       iface->addresses6[i].addr,
+                       iface->addresses6[i].prefixlen);
+      }
+      len = prepare_response(response, len, "        </ipv6>\n");
+    }
+
+    len = prepare_response(response, len,
+                   "        <groups>%s</groups>\n"
+                   "      </interface>\n",
                    groups_str);
+    debug_log(DEBUG, "Completed interface %d: %s", interface_count, iface->name);
   }
 
-  len += snprintf(response + len, total_len + 1 - len,
-                  "    </interfaces>\n"
-                  "  </data>\n"
-                  "</rpc-reply>");
+    len = prepare_response(response, len,
+                 "    </interfaces>\n"
+                 "  </data>\n"
+                 "</rpc-reply>");
 
+  debug_log(DEBUG, "Generated interfaces XML response: %d bytes", len);
   return response;
 } 

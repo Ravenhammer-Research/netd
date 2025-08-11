@@ -172,7 +172,7 @@ int freebsd_enumerate_interfaces(netd_state_t *state) {
       type = IF_TYPE_VXLAN;
     } else if (strncmp(ifa->ifa_name, "bridge", 6) == 0) {
       type = IF_TYPE_BRIDGE;
-      debug_log(DEBUG2, "Processing bridge interface: %s", ifa->ifa_name);
+              debug_log(DEBUG, "Processing bridge interface: %s", ifa->ifa_name);
     }
 
     /* Allocate new interface */
@@ -198,14 +198,14 @@ int freebsd_enumerate_interfaces(netd_state_t *state) {
 
     /* Get FIB */
     if (freebsd_interface_get_fib(ifa->ifa_name, &iface->fib) == 0) {
-      debug_log(DEBUG2, "Found FIB for %s: %u", ifa->ifa_name, iface->fib);
+              debug_log(DEBUG, "Found FIB for %s: %u", ifa->ifa_name, iface->fib);
     } else {
       debug_log(DEBUG, "Failed to get FIB for %s", ifa->ifa_name);
     }
 
     /* Get MTU */
     if (freebsd_interface_get_mtu(ifa->ifa_name, &iface->mtu) == 0) {
-      debug_log(DEBUG2, "Found MTU for %s: %d", ifa->ifa_name, iface->mtu);
+              debug_log(DEBUG, "Found MTU for %s: %d", ifa->ifa_name, iface->mtu);
     } else {
       debug_log(DEBUG, "Failed to get MTU for %s", ifa->ifa_name);
     }
@@ -214,8 +214,8 @@ int freebsd_enumerate_interfaces(netd_state_t *state) {
     if (freebsd_interface_get_groups(ifa->ifa_name, iface->groups,
                                      MAX_GROUPS_PER_IF,
                                      &iface->group_count) == 0) {
-      debug_log(DEBUG2, "Found %d groups for %s", iface->group_count,
-                ifa->ifa_name);
+              debug_log(DEBUG, "Found %d groups for %s", iface->group_count,
+                 ifa->ifa_name);
     } else {
       debug_log(DEBUG, "Failed to get groups for %s", ifa->ifa_name);
     }
@@ -259,8 +259,6 @@ int freebsd_enumerate_interfaces(netd_state_t *state) {
 
     /* Get all addresses */
     struct ifaddrs *ifa_addr;
-    bool primary_ipv4_found = false;
-    bool primary_ipv6_found = false;
 
     for (ifa_addr = ifap; ifa_addr; ifa_addr = ifa_addr->ifa_next) {
       if (strcmp(ifa_addr->ifa_name, ifa->ifa_name) == 0 &&
@@ -270,48 +268,40 @@ int freebsd_enumerate_interfaces(netd_state_t *state) {
           char addr_str[64];
           inet_ntop(AF_INET, &sin->sin_addr, addr_str, sizeof(addr_str));
 
-          if (!primary_ipv4_found) {
-            /* First IPv4 address is primary */
-            strncpy(iface->primary_address, addr_str,
-                    sizeof(iface->primary_address) - 1);
-            iface->primary_address[sizeof(iface->primary_address) - 1] = '\0';
-            primary_ipv4_found = true;
-            debug_log(DEBUG2, "Found primary IPv4 address for %s: %s",
-                      ifa->ifa_name, iface->primary_address);
-          } else if (iface->alias_count < 10) {
-            /* Additional IPv4 addresses are aliases */
-            strncpy(iface->alias_addresses[iface->alias_count], addr_str,
-                    sizeof(iface->alias_addresses[0]) - 1);
-            iface->alias_addresses[iface->alias_count]
-                                  [sizeof(iface->alias_addresses[0]) - 1] =
-                '\0';
-            iface->alias_count++;
-            debug_log(DEBUG2, "Found IPv4 alias for %s: %s", ifa->ifa_name,
-                      addr_str);
+          /* Get prefix length from netmask */
+          int prefix_length = 32; /* Default for host routes */
+          if (ifa_addr->ifa_netmask) {
+            struct sockaddr_in *mask = (struct sockaddr_in *)ifa_addr->ifa_netmask;
+            prefix_length = get_prefix_length((struct sockaddr_storage *)mask);
+          }
+
+          if (iface->address_count < 11) {
+            /* Add IPv4 address to array */
+            strncpy(iface->addresses[iface->address_count].addr, addr_str,
+                    sizeof(iface->addresses[0].addr) - 1);
+            iface->addresses[iface->address_count].addr[sizeof(iface->addresses[0].addr) - 1] = '\0';
+            iface->addresses[iface->address_count].prefixlen = prefix_length;
+            iface->address_count++;
           }
         } else if (ifa_addr->ifa_addr->sa_family == AF_INET6) {
           struct sockaddr_in6 *sin6 = (struct sockaddr_in6 *)ifa_addr->ifa_addr;
           char addr_str[64];
           inet_ntop(AF_INET6, &sin6->sin6_addr, addr_str, sizeof(addr_str));
 
-          if (!primary_ipv6_found) {
-            /* First IPv6 address is primary */
-            strncpy(iface->primary_address6, addr_str,
-                    sizeof(iface->primary_address6) - 1);
-            iface->primary_address6[sizeof(iface->primary_address6) - 1] = '\0';
-            primary_ipv6_found = true;
-            debug_log(DEBUG2, "Found primary IPv6 address for %s: %s",
-                      ifa->ifa_name, iface->primary_address6);
-          } else if (iface->alias_count6 < 10) {
-            /* Additional IPv6 addresses are aliases */
-            strncpy(iface->alias_addresses6[iface->alias_count6], addr_str,
-                    sizeof(iface->alias_addresses6[0]) - 1);
-            iface->alias_addresses6[iface->alias_count6]
-                                   [sizeof(iface->alias_addresses6[0]) - 1] =
-                '\0';
-            iface->alias_count6++;
-            debug_log(DEBUG2, "Found IPv6 alias for %s: %s", ifa->ifa_name,
-                      addr_str);
+          /* Get prefix length from netmask */
+          int prefix_length = 128; /* Default for host routes */
+          if (ifa_addr->ifa_netmask) {
+            struct sockaddr_in6 *mask = (struct sockaddr_in6 *)ifa_addr->ifa_netmask;
+            prefix_length = get_prefix_length((struct sockaddr_storage *)mask);
+          }
+
+          if (iface->address_count6 < 11) {
+            /* Add IPv6 address to array */
+            strncpy(iface->addresses6[iface->address_count6].addr, addr_str,
+                    sizeof(iface->addresses6[0].addr) - 1);
+            iface->addresses6[iface->address_count6].addr[sizeof(iface->addresses6[0].addr) - 1] = '\0';
+            iface->addresses6[iface->address_count6].prefixlen = prefix_length;
+            iface->address_count6++;
           }
         }
       }
@@ -320,19 +310,9 @@ int freebsd_enumerate_interfaces(netd_state_t *state) {
     /* Add to interface list */
     TAILQ_INSERT_TAIL(&state->interfaces, iface, entries);
 
-    if (strncmp(ifa->ifa_name, "bridge", 6) == 0) {
-      debug_log(DEBUG2, "Added bridge interface to list: %s",
-                ifa->ifa_name);
-    }
 
-    debug_log(DEBUG2,
-              "Added system interface %s (type: %s, enabled: %s, fib: %u, mtu: "
-              "%d, addr: %s, addr6: %s, groups: %d)",
-              ifa->ifa_name, interface_type_to_string(type),
-              iface->enabled ? "yes" : "no", iface->fib, iface->mtu,
-              iface->primary_address[0] ? iface->primary_address : "none",
-              iface->primary_address6[0] ? iface->primary_address6 : "none",
-              iface->group_count);
+
+
 
     last_name = strdup(ifa->ifa_name);
   }

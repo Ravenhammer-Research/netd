@@ -9,6 +9,7 @@ set(NETCONF_SOURCES
     route.c
     vrf.c
     yang.c
+    utils.c
 )
 
 # Add interface subdirectory

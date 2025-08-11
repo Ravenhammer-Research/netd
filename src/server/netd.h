@@ -52,6 +52,12 @@
 /* Maximum number of groups per interface - Most interfaces belong to 1-3 groups, rarely more than 8 */
 #define MAX_GROUPS_PER_IF 16
 
+/* Interface address structure */
+typedef struct if_addr {
+  char addr[64];
+  int prefixlen;
+} if_addr_t;
+
 /* Interface types */
 typedef enum {
   IF_TYPE_UNKNOWN = 0,
@@ -111,12 +117,10 @@ typedef struct interface {
   bool enabled;
   int mtu;
   int flags;
-  char primary_address[64];      /* Primary IPv4 address */
-  char primary_address6[64];     /* Primary IPv6 address */
-  char alias_addresses[10][64];  /* Up to 10 IPv4 alias addresses */
-  char alias_addresses6[10][64]; /* Up to 10 IPv6 alias addresses */
-  int alias_count;
-  int alias_count6;
+  if_addr_t addresses[11];  /* IPv4 addresses (primary at index 0, aliases at 1-10) */
+  if_addr_t addresses6[11]; /* IPv6 addresses (primary at index 0, aliases at 1-10) */
+  int address_count;             /* Total IPv4 addresses (0-11) */
+  int address_count6;            /* Total IPv6 addresses (0-11) */
   char bridge_members[64]; /* Bridge member interfaces as comma-separated string
                             */
 
