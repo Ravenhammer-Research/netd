@@ -36,7 +36,61 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <interface.h>
 #include <system/freebsd/bridge/bridge.h>
+
+/**
+ * Find bridge by name
+ * @param state Server state
+ * @param name Bridge name
+ * @return bridge_t pointer or NULL if not found
+ */
+static bridge_t *bridge_find(netd_state_t *state, const char *name) {
+  bridge_t *bridge;
+  
+  if (!state || !name) {
+    return NULL;
+  }
+  
+  TAILQ_FOREACH(bridge, &state->bridges, entries) {
+    if (strcmp(bridge->name, name) == 0) {
+      return bridge;
+    }
+  }
+  
+  return NULL;
+}
+
+/**
+ * Create bridge struct
+ * @param state Server state
+ * @param name Bridge name
+ * @return bridge_t pointer or NULL on failure
+ */
+static bridge_t *bridge_create(netd_state_t *state, const char *name) {
+  bridge_t *bridge;
+  
+  if (!state || !name) {
+    return NULL;
+  }
+  
+  bridge = calloc(1, sizeof(bridge_t));
+  if (!bridge) {
+    debug_log(ERROR, "Failed to allocate memory for bridge %s", name);
+    return NULL;
+  }
+  
+  strlcpy(bridge->name, name, MAX_IFNAME_LEN);
+  bridge->member_count = 0;
+  bridge->maxaddr = 1000;
+  bridge->timeout = 1200;
+  strlcpy(bridge->protocol, "stp", sizeof(bridge->protocol));
+  
+  TAILQ_INSERT_TAIL(&state->bridges, bridge, entries);
+  
+  debug_log(DEBUG, "Created bridge struct for %s", name);
+  return bridge;
+}
 
 /**
  * Create a bridge interface
@@ -61,6 +115,13 @@ int bridge_interface_create(netd_state_t *state, const char *name) {
     return -1;
   }
 
+  /* Create bridge-specific data structure */
+  bridge_t *bridge = bridge_create(state, name);
+  if (!bridge) {
+    debug_log(ERROR, "Failed to create bridge struct for %s", name);
+    return -1;
+  }
+
   /* Additional bridge-specific setup can go here */
   debug_log(INFO, "Created bridge interface %s", name);
   return 0;
@@ -76,6 +137,7 @@ int bridge_interface_create(netd_state_t *state, const char *name) {
 int bridge_add_member(netd_state_t *state, const char *bridge_name,
                       const char *member_name) {
   interface_t *bridge_iface;
+  bridge_t *bridge;
 
   if (!state || !bridge_name || !member_name) {
     debug_log(ERROR,
@@ -101,6 +163,16 @@ int bridge_add_member(netd_state_t *state, const char *bridge_name,
     return -1;
   }
 
+  /* Find or create bridge struct */
+  bridge = bridge_find(state, bridge_name);
+  if (!bridge) {
+    bridge = bridge_create(state, bridge_name);
+    if (!bridge) {
+      debug_log(ERROR, "Failed to create bridge struct for %s", bridge_name);
+      return -1;
+    }
+  }
+
   /* Add member to bridge in FreeBSD */
   if (freebsd_bridge_add_member(bridge_name, member_name) < 0) {
     debug_log(ERROR,
@@ -109,18 +181,11 @@ int bridge_add_member(netd_state_t *state, const char *bridge_name,
     return -1;
   }
 
-  /* Update bridge members in state */
-  if (strlen(bridge_iface->bridge_members) == 0) {
-    strlcpy(bridge_iface->bridge_members, member_name,
-            sizeof(bridge_iface->bridge_members));
-  } else {
-    /* Append to existing members */
-    char temp[sizeof(bridge_iface->bridge_members)];
-    strlcpy(temp, bridge_iface->bridge_members, sizeof(temp));
-    strlcat(temp, ",", sizeof(temp));
-    strlcat(temp, member_name, sizeof(temp));
-    strlcpy(bridge_iface->bridge_members, temp,
-            sizeof(bridge_iface->bridge_members));
+  /* Update bridge members in bridge struct */
+  if (bridge->member_count < MAX_BRIDGE_MEMBERS) {
+    strlcpy(bridge->members[bridge->member_count], 
+            member_name, MAX_IFNAME_LEN);
+    bridge->member_count++;
   }
 
   debug_log(INFO, "Added member %s to bridge %s", member_name,
@@ -138,6 +203,7 @@ int bridge_add_member(netd_state_t *state, const char *bridge_name,
 int bridge_remove_member(netd_state_t *state, const char *bridge_name,
                          const char *member_name) {
   interface_t *bridge_iface;
+  bridge_t *bridge;
 
   if (!state || !bridge_name || !member_name) {
     debug_log(ERROR,
@@ -163,6 +229,13 @@ int bridge_remove_member(netd_state_t *state, const char *bridge_name,
     return -1;
   }
 
+  /* Find bridge struct */
+  bridge = bridge_find(state, bridge_name);
+  if (!bridge) {
+    debug_log(ERROR, "Bridge struct for %s not found", bridge_name);
+    return -1;
+  }
+
   /* Remove member from bridge in FreeBSD */
   if (freebsd_bridge_remove_member(bridge_name, member_name) < 0) {
     debug_log(ERROR,
@@ -171,24 +244,16 @@ int bridge_remove_member(netd_state_t *state, const char *bridge_name,
     return -1;
   }
 
-  /* Update bridge members in state */
-  if (strstr(bridge_iface->bridge_members, member_name)) {
-    /* Simple removal - in a real implementation you'd want more sophisticated
-     * parsing */
-    char *pos = strstr(bridge_iface->bridge_members, member_name);
-    if (pos) {
-      /* Remove the member from the string */
-      memmove(pos, pos + strlen(member_name), strlen(pos + strlen(member_name)) + 1);
-      /* Clean up any leading/trailing commas */
-      if (bridge_iface->bridge_members[0] == ',') {
-        memmove(bridge_iface->bridge_members,
-                bridge_iface->bridge_members + 1,
-                strlen(bridge_iface->bridge_members));
+  /* Update bridge members in bridge struct */
+  for (int i = 0; i < bridge->member_count; i++) {
+    if (strcmp(bridge->members[i], member_name) == 0) {
+      /* Remove member by shifting remaining members */
+      for (int j = i; j < bridge->member_count - 1; j++) {
+        strlcpy(bridge->members[j], 
+                bridge->members[j + 1], MAX_IFNAME_LEN);
       }
-      char *last_comma = strrchr(bridge_iface->bridge_members, ',');
-      if (last_comma && *(last_comma + 1) == '\0') {
-        *last_comma = '\0';
-      }
+      bridge->member_count--;
+      break;
     }
   }
 
@@ -206,6 +271,7 @@ int bridge_remove_member(netd_state_t *state, const char *bridge_name,
  */
 int bridge_set_stp(netd_state_t *state, const char *bridge_name, int stp_mode) {
   interface_t *bridge_iface;
+  bridge_t *bridge;
 
   if (!state || !bridge_name) {
     debug_log(ERROR,
@@ -226,6 +292,13 @@ int bridge_set_stp(netd_state_t *state, const char *bridge_name, int stp_mode) {
 
   if (bridge_iface->type != IF_TYPE_BRIDGE) {
     debug_log(ERROR, "Interface %s is not a bridge", bridge_name);
+    return -1;
+  }
+
+  /* Find bridge struct */
+  bridge = bridge_find(state, bridge_name);
+  if (!bridge) {
+    debug_log(ERROR, "Bridge struct for %s not found", bridge_name);
     return -1;
   }
 

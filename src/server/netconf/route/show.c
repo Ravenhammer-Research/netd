@@ -30,186 +30,15 @@
  */
 
 #include <netd.h>
+#include <netconf.h>
+#include <route.h>
 #include <errno.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-/**
- * Add a route to the routing table
- * @param state Server state
- * @param fib FIB number
- * @param destination Destination address
- * @param gateway Gateway address (can be NULL for reject/blackhole)
- * @param interface Interface name (can be NULL)
- * @param flags Route flags
- * @return 0 on success, -1 on failure
- */
-int route_add(netd_state_t *state, uint32_t fib, const char *destination,
-              const char *gateway, const char *interface, int flags) {
-  netd_route_t *route;
-  int ret;
-
-  if (!state || !destination || !is_valid_fib_number(fib)) {
-    debug_log(ERROR,
-              "Invalid parameters for route addition: state=%p, "
-              "destination=%s, fib=%u",
-              state, destination ? destination : "NULL", fib);
-    return -1;
-  }
-
-  debug_log(DEBUG, "Adding route to %s via %s on %s (FIB %u, flags 0x%x)",
-            destination, gateway ? gateway : "direct",
-            interface ? interface : "none", fib, flags);
-
-  /* Allocate new route entry */
-  route = malloc(sizeof(*route));
-  if (!route) {
-    debug_log(ERROR, "Failed to allocate memory for route to %s",
-              destination);
-    return -1;
-  }
-
-  /* Initialize route */
-  memset(route, 0, sizeof(*route));
-  if (parse_address(destination, &route->destination) < 0) {
-    debug_log(ERROR, "Failed to parse destination address %s",
-              destination);
-    free(route);
-    return -1;
-  }
-  debug_log(DEBUG, "Parsed destination address %s successfully",
-            destination);
-
-  if (gateway && parse_address(gateway, &route->gateway) < 0) {
-    debug_log(ERROR, "Failed to parse gateway address %s", gateway);
-    free(route);
-    return -1;
-  }
-  if (gateway) {
-    debug_log(DEBUG, "Parsed gateway address %s successfully", gateway);
-  }
-
-  if (interface) {
-    strlcpy(route->interface, interface, sizeof(route->interface));
-    debug_log(DEBUG, "Set interface to %s", interface);
-  }
-  route->fib = fib;
-  route->flags = flags;
-
-  /* Add route in FreeBSD */
-  debug_log(DEBUG, "Adding route to FreeBSD kernel");
-  ret = freebsd_route_add(fib, destination, gateway, interface, flags);
-  if (ret < 0) {
-    debug_log(ERROR, "Failed to add route to FreeBSD kernel");
-    free(route);
-    return -1;
-  }
-
-  /* Add to route list */
-  TAILQ_INSERT_TAIL(&state->routes, route, entries);
-  debug_log(DEBUG, "Added route to internal state list");
-
-  debug_log(INFO, "Added route to %s via %s in FIB %u", destination,
-            gateway ? gateway : "direct", fib);
-  return 0;
-}
-
-/**
- * Delete a route from the routing table
- * @param state Server state
- * @param fib FIB number
- * @param destination Destination address
- * @return 0 on success, -1 on failure
- */
-int route_delete(netd_state_t *state, uint32_t fib, const char *destination) {
-  netd_route_t *route;
-  struct sockaddr_storage dest_addr;
-
-  if (!state || !destination || !is_valid_fib_number(fib)) {
-    debug_log(ERROR,
-              "Invalid parameters for route deletion: state=%p, "
-              "destination=%s, fib=%u",
-              state, destination ? destination : "NULL", fib);
-    return -1;
-  }
-
-  debug_log(DEBUG, "Deleting route to %s in FIB %u", destination, fib);
-
-  /* Parse destination address */
-  if (parse_address(destination, &dest_addr) < 0) {
-    debug_log(ERROR, "Failed to parse destination address %s",
-              destination);
-    return -1;
-  }
-  debug_log(DEBUG, "Parsed destination address %s successfully",
-            destination);
-
-  /* Find and remove route from list */
-  int found_in_state = 0;
-  TAILQ_FOREACH(route, &state->routes, entries) {
-    if (route->fib == fib &&
-        memcmp(&route->destination, &dest_addr, sizeof(dest_addr)) == 0) {
-      TAILQ_REMOVE(&state->routes, route, entries);
-      free(route);
-      found_in_state = 1;
-      debug_log(DEBUG, "Removed route from internal state list");
-      break;
-    }
-  }
-
-  if (!found_in_state) {
-    debug_log(DEBUG, "Route not found in internal state list");
-  }
-
-  /* Delete route in FreeBSD */
-  debug_log(DEBUG, "Deleting route from FreeBSD kernel");
-  if (freebsd_route_delete(fib, destination) < 0) {
-    debug_log(ERROR, "Failed to delete route from FreeBSD kernel");
-    return -1;
-  }
-
-  debug_log(INFO, "Deleted route to %s in FIB %u", destination, fib);
-  return 0;
-}
-
-/**
- * Flush all routes for a FIB
- * @param state Server state
- * @param fib FIB number
- * @return 0 on success, -1 on failure
- */
-int route_flush_fib(netd_state_t *state, uint32_t fib) {
-  debug_log(DEBUG1, "route_flush_fib called with state=%p, fib=%u", state, fib);
-  
-  /* Not implemented: FreeBSD doesn't have a direct "flush all routes for FIB" operation */
-  /* We would need to iterate through all routes and delete them individually */
-  return -1;
-}
-
-/**
- * Clear all routes from state
- * @param state Server state
- * @return 0 on success, -1 on failure
- */
-int route_clear_all(netd_state_t *state) {
-  netd_route_t *route, *next;
-  int cleared_count = 0;
-
-  if (!state) {
-    return -1;
-  }
-
-  TAILQ_FOREACH_SAFE(route, &state->routes, entries, next) {
-    TAILQ_REMOVE(&state->routes, route, entries);
-    free(route);
-    cleared_count++;
-  }
-
-  return cleared_count;
-}
+#include <system/freebsd/route/route.h>
 
 /**
  * Query route table and return as XML for NETCONF response
@@ -332,3 +161,52 @@ char *route_table_query(netd_state_t *state, uint32_t fib) {
             xml ? strlen(xml) : 0);
   return xml;
 }
+
+/**
+ * Create routes XML response for NETCONF
+ * @param state Server state
+ * @param message_id Message ID for the response
+ * @param fib FIB number to filter routes
+ * @return Routes XML response string (allocated)
+ */
+char *create_routes_xml_response(netd_state_t *state, const char *message_id, uint32_t fib) {
+  char *response;
+  char *routes_xml;
+
+  if (!state || !message_id) {
+    return NULL;
+  }
+
+  /* Get routes XML for the specified FIB */
+  routes_xml = route_table_query(state, fib);
+  if (!routes_xml) {
+    debug_log(ERROR, "Failed to get routes XML for FIB %u", fib);
+    return NULL;
+  }
+
+  /* Allocate buffer for response */
+  response = malloc(NETCONF_RESPONSE_BUFFER_SIZE);
+  if (!response) {
+    debug_log(ERROR, "Failed to allocate memory for routes response");
+    free(routes_xml);
+    return NULL;
+  }
+
+  if (prepare_response(response,
+                 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                 "<rpc-reply xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\" "
+                 "message-id=\"%s\">\n"
+                 "  <data>\n"
+                 "%s"
+                 "  </data>\n"
+                 "</rpc-reply>\n",
+                 message_id, routes_xml) == -1) {
+    free(routes_xml);
+    free(response);
+    return NULL;
+  }
+
+  free(routes_xml);
+  debug_log(INFO, "Created routes XML response for FIB %u", fib);
+  return response;
+} 

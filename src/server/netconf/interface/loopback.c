@@ -1,11 +1,11 @@
+#include <netd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
 #include <syslog.h>
 #include <net/if.h>
-
-#include <netd.h>
+#include <interface.h>
 #include <system/freebsd/loopback/loopback.h>
 
 /**

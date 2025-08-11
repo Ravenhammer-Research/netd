@@ -17,8 +17,8 @@
  *    this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
  * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
  * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
  * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
@@ -29,18 +29,24 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FREEBSD_LAGG_H
-#define FREEBSD_LAGG_H
+#ifndef VRF_H
+#define VRF_H
 
-#include <stddef.h>
+#include <netd.h>
+#include <stdint.h>
 
-/* LAGG interface operations */
-int freebsd_lagg_create(const char *name, const char *protocol);
-int freebsd_lagg_set_protocol(const char *name, const char *protocol);
-int freebsd_lagg_add_member(const char *name, const char *member);
-int freebsd_lagg_remove_member(const char *name, const char *member);
-int freebsd_lagg_delete(const char *name);
-int freebsd_lagg_show(const char *name, char *protocol, size_t protocol_size, 
-                      char (*members)[MAX_IFNAME_LEN], int max_members, int *member_count);
+char *create_vrfs_xml_response(netd_state_t *state, const char *message_id);
+char *create_vrf_routes_xml_response(netd_state_t *state, const char *message_id, vrf_t *vrf);
+/* VRF management */
+int vrf_create(netd_state_t *state, const char *name, uint32_t fib_number);
+int vrf_delete(netd_state_t *state, const char *name);
+vrf_t *vrf_find_by_name(netd_state_t *state, const char *name);
+vrf_t *vrf_find_by_fib(netd_state_t *state, uint32_t fib_number);
+int vrf_list(netd_state_t *state);
+char *vrf_get_all(netd_state_t *state);
+int handle_get_vrfs_request(netd_state_t *state, const char *request,
+    const char *message_id, char **response);
+int handle_get_vrf_routes_request(netd_state_t *state, const char *request,
+          const char *message_id, char **response);
 
-#endif /* FREEBSD_LAGG_H */ 
+#endif 

@@ -34,6 +34,36 @@
 
 #include <net.h>
 
+/* Structure to hold interface parsing context */
+struct interface_parse_context {
+    struct interface_data *interfaces;
+    int max_interfaces;
+    int interface_count;
+    struct interface_data *current_interface;
+    int in_interface;
+    int in_group;
+    int in_alias;
+    char current_tag[64];
+    char temp_content[256];
+    int in_ipv4;
+    int in_ipv6;
+    char interface_type[32]; /* Store the interface type for later use */
+  };
+  
+  /* Structure to hold bridge interface parsing context */
+  struct bridge_parse_context {
+    struct bridge_interface_data *interfaces;
+    int max_interfaces;
+    int interface_count;
+    struct bridge_interface_data *current_interface;
+    int in_interface;
+    int in_bridge_members;
+    char current_tag[64];
+    char temp_content[256];
+    int in_ipv4;
+    int in_ipv6;
+  };
+
 /* Common XML utilities */
 int find_tag_content(const char *xml, const char *tag_start, const char *tag_end,
                      char *result, int max_len);
@@ -54,6 +84,11 @@ char *extract_xml_content_bounded(const char *xml, const char *end_boundary,
 int parse_interfaces_from_xml(const char *xml,
                               struct interface_data *interfaces,
                               int max_interfaces);
+
+/* Bridge interface XML parsing */
+int parse_bridge_interfaces_from_xml(const char *xml,
+                                     struct bridge_interface_data *interfaces,
+                                     int max_interfaces);
 
 /* Route XML parsing */
 int parse_routes_from_xml(const char *xml, struct route_data *routes,

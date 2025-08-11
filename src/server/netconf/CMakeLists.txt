@@ -6,14 +6,18 @@ set(NETCONF_SOURCES
     request.c
     edit.c
     response.c
-    route.c
-    vrf.c
     yang.c
     utils.c
 )
 
 # Add interface subdirectory
 add_subdirectory(interface)
+
+# Add route subdirectory
+add_subdirectory(route)
+
+# Add vrf subdirectory
+add_subdirectory(vrf)
 
 # Create netconf library
 add_library(netconf STATIC ${NETCONF_SOURCES})
@@ -34,6 +38,8 @@ target_link_libraries(netconf
     netd
     xml
     interface
+    route
+    vrf
 )
 
 

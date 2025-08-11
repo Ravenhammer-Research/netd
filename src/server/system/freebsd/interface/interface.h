@@ -29,103 +29,32 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef INTERFACE_H
-#define INTERFACE_H
+#ifndef FREEBSD_INTERFACE_H
+#define FREEBSD_INTERFACE_H
 
 #include <sys/types.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include <netd.h>
 
-/**
- * Get interface operational status based on flags
- * @param flags Interface flags
- * @return "up" if IFF_RUNNING is set, "down" otherwise
- */
-const char *freebsd_get_interface_oper_status(int flags);
-
-/**
- * Create a network interface
- * @param name Interface name
- * @param type Interface type
- * @return 0 on success, -1 on failure
- */
+/* System interface functions */
 int freebsd_interface_create(const char *name, interface_type_t type);
-
-/**
- * Check if interface exists in system
- * @param name Interface name
- * @return true if exists, false otherwise
- */
 bool freebsd_interface_exists(const char *name);
-
-/**
- * Delete a network interface
- * @param name Interface name
- * @return 0 on success, -1 on failure
- */
 int freebsd_interface_delete(const char *name);
-
-/**
- * Set interface FIB assignment
- * @param name Interface name
- * @param fib FIB number
- * @return 0 on success, -1 on failure
- */
 int freebsd_interface_set_fib(const char *name, uint32_t fib);
-
-/**
- * Set interface address
- * @param name Interface name
- * @param address Address string
- * @param family Address family
- * @return 0 on success, -1 on failure
- */
+int freebsd_interface_get_fib(const char *name, uint32_t *fib);
 int freebsd_interface_set_address(const char *name, const char *address,
                                   int family);
-
-/**
- * Delete interface address
- * @param name Interface name
- * @param family Address family
- * @return 0 on success, -1 on failure
- */
 int freebsd_interface_delete_address(const char *name, int family);
-
-/**
- * Set interface MTU
- * @param name Interface name
- * @param mtu MTU value
- * @return 0 on success, -1 on failure
- */
 int freebsd_interface_set_mtu(const char *name, int mtu);
-
-/**
- * Get interface FIB
- * @param name Interface name
- * @param fib Pointer to store FIB number
- * @return 0 on success, -1 on failure
- */
-int freebsd_interface_get_fib(const char *name, uint32_t *fib);
-
-/**
- * Get interface MTU
- * @param name Interface name
- * @param mtu Pointer to store MTU value
- * @return 0 on success, -1 on failure
- */
 int freebsd_interface_get_mtu(const char *name, int *mtu);
-
-/**
- * Get interface groups
- * @param name Interface name
- * @param groups Array to store group names
- * @param max_groups Maximum number of groups to store
- * @param group_count Pointer to store actual number of groups
- * @return 0 on success, -1 on failure
- */
 int freebsd_interface_get_groups(const char *name,
                                  char (*groups)[MAX_GROUP_NAME_LEN],
                                  int max_groups, int *group_count);
+int freebsd_enumerate_interfaces(netd_state_t *state);
+bool freebsd_is_hardware_interface(interface_type_t type);
+const char *freebsd_get_interface_oper_status(int flags);
 
-#endif /* INTERFACE_H */ 
+
+
+#endif /* FREEBSD_INTERFACE_H */ 

@@ -36,7 +36,59 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <interface.h>
 #include <system/freebsd/gif/gif.h>
+
+/**
+ * Find gif by name
+ * @param state Server state
+ * @param name GIF name
+ * @return gif_t pointer or NULL if not found
+ */
+static gif_t *gif_find(netd_state_t *state, const char *name) {
+  gif_t *gif;
+  
+  if (!state || !name) {
+    return NULL;
+  }
+  
+  TAILQ_FOREACH(gif, &state->gifs, entries) {
+    if (strcmp(gif->name, name) == 0) {
+      return gif;
+    }
+  }
+  
+  return NULL;
+}
+
+/**
+ * Create gif struct
+ * @param state Server state
+ * @param name GIF name
+ * @return gif_t pointer or NULL on failure
+ */
+static gif_t *gif_create(netd_state_t *state, const char *name) {
+  gif_t *gif;
+  
+  if (!state || !name) {
+    return NULL;
+  }
+  
+  gif = calloc(1, sizeof(gif_t));
+  if (!gif) {
+    debug_log(ERROR, "Failed to allocate memory for gif %s", name);
+    return NULL;
+  }
+  
+  strlcpy(gif->name, name, MAX_IFNAME_LEN);
+  gif->tunnel_local[0] = '\0';
+  gif->tunnel_remote[0] = '\0';
+  
+  TAILQ_INSERT_TAIL(&state->gifs, gif, entries);
+  
+  debug_log(DEBUG, "Created gif struct for %s", name);
+  return gif;
+}
 
 /**
  * Create a GIF interface
@@ -45,6 +97,8 @@
  * @return 0 on success, -1 on failure
  */
 int gif_interface_create(netd_state_t *state, const char *name) {
+  gif_t *gif;
+
   if (!state || !name) {
     debug_log(ERROR,
               "Invalid parameters for GIF creation: state=%p, name=%s",
@@ -61,12 +115,22 @@ int gif_interface_create(netd_state_t *state, const char *name) {
     return -1;
   }
 
+  /* Create gif-specific data structure */
+  gif = gif_create(state, name);
+  if (!gif) {
+    debug_log(ERROR, "Failed to create gif struct for %s", name);
+    interface_delete(state, name);
+    return -1;
+  }
+
   /* Create GIF in FreeBSD */
   if (freebsd_gif_create(name) < 0) {
     debug_log(ERROR,
               "Failed to create GIF interface %s in FreeBSD", name);
-    /* Clean up the interface from state */
+    /* Clean up the interface and gif struct from state */
     interface_delete(state, name);
+    TAILQ_REMOVE(&state->gifs, gif, entries);
+    free(gif);
     return -1;
   }
 
@@ -85,6 +149,7 @@ int gif_interface_create(netd_state_t *state, const char *name) {
 int gif_set_tunnel(netd_state_t *state, const char *name,
                     const char *local_addr, const char *remote_addr) {
   interface_t *gif_iface;
+  gif_t *gif;
 
   if (!state || !name || !local_addr || !remote_addr) {
     debug_log(ERROR,
@@ -111,6 +176,13 @@ int gif_set_tunnel(netd_state_t *state, const char *name,
     return -1;
   }
 
+  /* Find gif struct */
+  gif = gif_find(state, name);
+  if (!gif) {
+    debug_log(ERROR, "Gif struct for %s not found", name);
+    return -1;
+  }
+
   /* Set tunnel endpoints in FreeBSD */
   if (freebsd_gif_set_tunnel(name, local_addr, remote_addr) < 0) {
     debug_log(ERROR,
@@ -118,9 +190,9 @@ int gif_set_tunnel(netd_state_t *state, const char *name,
     return -1;
   }
 
-  /* Update interface state */
-  strlcpy(gif_iface->tunnel_local, local_addr, sizeof(gif_iface->tunnel_local));
-  strlcpy(gif_iface->tunnel_remote, remote_addr, sizeof(gif_iface->tunnel_remote));
+  /* Update gif struct */
+  strlcpy(gif->tunnel_local, local_addr, sizeof(gif->tunnel_local));
+  strlcpy(gif->tunnel_remote, remote_addr, sizeof(gif->tunnel_remote));
 
   debug_log(INFO,
             "Set tunnel endpoints for GIF interface %s: local=%s, remote=%s",
@@ -141,6 +213,7 @@ int gif_set_tunnel(netd_state_t *state, const char *name,
 int gif_get_tunnel(netd_state_t *state, const char *name, char *local_addr,
                     size_t local_len, char *remote_addr, size_t remote_len) {
   interface_t *gif_iface;
+  gif_t *gif;
 
   if (!state || !name) {
     debug_log(ERROR,
@@ -161,16 +234,23 @@ int gif_get_tunnel(netd_state_t *state, const char *name, char *local_addr,
     return -1;
   }
 
+  /* Find gif struct */
+  gif = gif_find(state, name);
+  if (!gif) {
+    debug_log(ERROR, "Gif struct for %s not found", name);
+    return -1;
+  }
+
   /* Return tunnel endpoints */
   if (local_addr && local_len > 0) {
-    strlcpy(local_addr, gif_iface->tunnel_local, local_len);
+    strlcpy(local_addr, gif->tunnel_local, local_len);
   }
   if (remote_addr && remote_len > 0) {
-    strlcpy(remote_addr, gif_iface->tunnel_remote, remote_len);
+    strlcpy(remote_addr, gif->tunnel_remote, remote_len);
   }
 
   debug_log(DEBUG,
             "Retrieved tunnel endpoints for GIF interface %s: local=%s, remote=%s",
-            name, gif_iface->tunnel_local, gif_iface->tunnel_remote);
+            name, gif->tunnel_local, gif->tunnel_remote);
   return 0;
 } 

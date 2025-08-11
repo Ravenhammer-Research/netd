@@ -29,6 +29,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <netd.h>
 #include <netconf.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -43,13 +44,18 @@
  */
 char *create_success_response(const char *message_id) {
   char *response;
-  int len;
 
   if (!message_id) {
     return NULL;
   }
 
-  len = snprintf(NULL, 0,
+  response = malloc(NETCONF_RESPONSE_BUFFER_SIZE);
+  if (!response) {
+    debug_log(ERROR, "Failed to allocate memory for success response");
+    return NULL;
+  }
+
+  int result = prepare_response(response,
                  "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                  "<rpc-reply xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\" "
                  "message-id=\"%s\">\n"
@@ -57,19 +63,11 @@ char *create_success_response(const char *message_id) {
                  "</rpc-reply>",
                  message_id);
 
-  response = malloc(len + 1);
-  if (!response) {
-    debug_log(ERROR, "Failed to allocate memory for success response");
+  if (result == -1) {
+    debug_log(ERROR, "Response too big");
+    free(response);
     return NULL;
   }
-
-  snprintf(response, len + 1,
-           "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-           "<rpc-reply xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\" "
-           "message-id=\"%s\">\n"
-           "  <ok/>\n"
-           "</rpc-reply>",
-           message_id);
 
   return response;
 }
@@ -84,13 +82,18 @@ char *create_success_response(const char *message_id) {
 char *create_error_response(const char *message_id, const char *error_type,
                             const char *error_message) {
   char *response;
-  int len;
 
   if (!message_id || !error_type || !error_message) {
     return NULL;
   }
 
-  len = snprintf(NULL, 0,
+  response = malloc(NETCONF_RESPONSE_BUFFER_SIZE);
+  if (!response) {
+    debug_log(ERROR, "Failed to allocate memory for error response");
+    return NULL;
+  }
+
+  int result = prepare_response(response,
                  "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                  "<rpc-reply xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\" "
                  "message-id=\"%s\">\n"
@@ -103,24 +106,11 @@ char *create_error_response(const char *message_id, const char *error_type,
                  "</rpc-reply>",
                  message_id, error_type, error_message);
 
-  response = malloc(len + 1);
-  if (!response) {
-    debug_log(ERROR, "Failed to allocate memory for error response");
+  if (result == -1) {
+    debug_log(ERROR, "Response too big");
+    free(response);
     return NULL;
   }
-
-  snprintf(response, len + 1,
-           "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-           "<rpc-reply xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\" "
-           "message-id=\"%s\">\n"
-           "  <rpc-error>\n"
-           "    <error-type>%s</error-type>\n"
-           "    <error-tag>operation-failed</error-tag>\n"
-           "    <error-severity>error</error-severity>\n"
-           "    <error-message>%s</error-message>\n"
-           "  </rpc-error>\n"
-           "</rpc-reply>",
-           message_id, error_type, error_message);
 
   return response;
 }

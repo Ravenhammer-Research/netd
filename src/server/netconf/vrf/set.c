@@ -29,49 +29,64 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef BRIDGE_H
-#define BRIDGE_H
-
-#include <sys/types.h>
-#include <stddef.h>
-
-int freebsd_get_bridge_members_array(const char *ifname,
-    char (*members)[MAX_IFNAME_LEN],
-    int max_members, int *member_count);
-
-
-/**
- * Get bridge member information for a bridge interface
- * @param ifname Interface name
- * @param members Buffer to store member information
- * @param members_size Size of the members buffer
- * @return 0 on success, -1 on failure
- */
-int freebsd_get_bridge_members(const char *ifname, char *members,
-                               size_t members_size);
+#include <netd.h>
+#include <netconf.h>
+#include <vrf.h>
+#include <errno.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 /**
- * Add a member interface to a bridge
- * @param bridge_name Bridge interface name
- * @param member_name Member interface name
+ * Create a new VRF
+ * @param state Server state
+ * @param name VRF name
+ * @param fib_number FIB number
  * @return 0 on success, -1 on failure
  */
-int freebsd_bridge_add_member(const char *bridge_name, const char *member_name);
+int vrf_create(netd_state_t *state, const char *name, uint32_t fib_number) {
+  vrf_t *vrf;
 
-/**
- * Remove a member interface from a bridge
- * @param bridge_name Bridge interface name
- * @param member_name Member interface name
- * @return 0 on success, -1 on failure
- */
-int freebsd_bridge_remove_member(const char *bridge_name, const char *member_name);
+  if (!state || !name || !is_valid_vrf_name(name) ||
+      !is_valid_fib_number(fib_number)) {
+    debug_log(ERROR,
+              "Invalid parameters for VRF creation: state=%p, name=%s, fib=%u",
+              state, name ? name : "NULL", fib_number);
+    return -1;
+  }
 
-/**
- * Set STP mode for a bridge
- * @param bridge_name Bridge interface name
- * @param stp_mode STP mode (0=disabled, 1=enabled)
- * @return 0 on success, -1 on failure
- */
-int freebsd_bridge_set_stp(const char *bridge_name, int stp_mode);
+  debug_log(DEBUG, "Creating VRF '%s' with FIB %u", name, fib_number);
 
-#endif /* BRIDGE_H */ 
+  /* Check if VRF already exists */
+  if (vrf_find_by_name(state, name)) {
+    debug_log(ERROR, "VRF %s already exists in state", name);
+    return -1;
+  }
+
+  if (vrf_find_by_fib(state, fib_number)) {
+    debug_log(ERROR, "FIB %u already assigned to another VRF",
+              fib_number);
+    return -1;
+  }
+
+  /* Allocate new VRF */
+  vrf = malloc(sizeof(*vrf));
+  if (!vrf) {
+    debug_log(ERROR, "Failed to allocate memory for VRF %s", name);
+    return -1;
+  }
+
+  /* Initialize VRF */
+  memset(vrf, 0, sizeof(*vrf));
+  strlcpy(vrf->name, name, sizeof(vrf->name));
+  vrf->fib_number = fib_number;
+
+  /* Add to VRF list */
+  TAILQ_INSERT_TAIL(&state->vrfs, vrf, entries);
+  debug_log(DEBUG, "Added VRF %s to state list", name);
+
+  debug_log(INFO, "Created VRF %s with FIB %u", name, fib_number);
+  return 0;
+} 

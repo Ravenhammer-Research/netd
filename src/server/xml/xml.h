@@ -68,6 +68,7 @@ struct edit_config_data {
   char temp_content[256];
 };
 
+
 /* General XML parsing utilities */
 char *extract_message_id(const char *request);
 bool xml_contains_elements(const char *request, const char **elements, int element_count);
@@ -78,5 +79,8 @@ char *extract_vrf_name_from_request(const char *request);
 /* Edit-config XML parsing utilities */
 bool is_edit_config_request(const char *request);
 int process_edit_config_request(netd_state_t *state, const char *request);
+
+/* Interface type extraction utility */
+const char *extract_type_from_xml_request(const char *request);
 
 #endif /* XML_H */ 

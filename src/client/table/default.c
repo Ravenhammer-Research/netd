@@ -269,12 +269,9 @@ void print_interface_table(const char *xml_response) {
           end--;
         *(end + 1) = '\0';
 
-        /* Skip "all" group - it's not a real group */
-        if (strcmp(token, "all") != 0) {
           strncpy(group_array[group_count], token, sizeof(group_array[0]) - 1);
           group_array[group_count][sizeof(group_array[0]) - 1] = '\0';
           group_count++;
-        }
         token = strtok(NULL, ",");
       }
       free(groups_copy);

@@ -30,8 +30,16 @@
  */
 
 #include <netd.h>
+#include <interface/interface.h>
 #include <vlan/vlan.h>
 #include <80211/80211.h>
+#include <bridge/bridge.h>
+#include <lagg/lagg.h>
+#include <gif/gif.h>
+#include <epair/epair.h>
+//#include <vxlan/vxlan.h>
+//#include <gre/gre.h>
+//#include <tun/tun.h>
 #include <sys/types.h>
 #include <fcntl.h>
 #include <sys/un.h>
@@ -192,7 +200,7 @@ int freebsd_enumerate_interfaces(netd_state_t *state) {
     iface->enabled = (ifa->ifa_flags & IFF_UP) != 0;
     iface->flags = ifa->ifa_flags;
     iface->mtu = 0;                  /* Will be set below */
-    iface->bridge_members[0] = '\0'; /* Initialize bridge members to empty */
+
 
     /* Get additional interface information using system.c functions */
 
@@ -222,39 +230,170 @@ int freebsd_enumerate_interfaces(netd_state_t *state) {
 
     /* Get bridge member information for bridge interfaces */
     if (type == IF_TYPE_BRIDGE) {
-      freebsd_get_bridge_members(ifa->ifa_name, iface->bridge_members,
-                                 sizeof(iface->bridge_members));
+      debug_log(DEBUG, "Getting bridge members for %s", ifa->ifa_name);
+      
+      /* Create bridge struct and populate it */
+      bridge_t *bridge = calloc(1, sizeof(bridge_t));
+      if (bridge) {
+        strlcpy(bridge->name, ifa->ifa_name, MAX_IFNAME_LEN);
+        bridge->member_count = 0;
+        bridge->maxaddr = 1000;
+        bridge->timeout = 1200;
+        strlcpy(bridge->protocol, "stp", sizeof(bridge->protocol));
+        
+        if (freebsd_get_bridge_members_array(ifa->ifa_name, bridge->members,
+                                             MAX_BRIDGE_MEMBERS, &bridge->member_count) == 0) {
+          debug_log(DEBUG, "Found %d bridge members for %s", bridge->member_count, ifa->ifa_name);
+        } else {
+          debug_log(DEBUG, "Failed to get bridge members for %s", ifa->ifa_name);
+        }
+        
+        TAILQ_INSERT_TAIL(&state->bridges, bridge, entries);
+      } else {
+        debug_log(ERROR, "Failed to allocate bridge struct for %s", ifa->ifa_name);
+      }
     }
 
     /* Get VLAN information for VLAN interfaces */
     if (type == IF_TYPE_VLAN || strchr(ifa->ifa_name, '.') != NULL) {
-      freebsd_vlan_show(ifa->ifa_name, &iface->vlan_id, iface->vlan_proto,
-                        sizeof(iface->vlan_proto), &iface->vlan_pcp,
-                        iface->vlan_parent, sizeof(iface->vlan_parent));
-      debug_log(DEBUG2,
-                "Found VLAN info for %s: id=%d, proto=%s, pcp=%d, parent=%s",
-                ifa->ifa_name, iface->vlan_id, iface->vlan_proto,
-                iface->vlan_pcp, iface->vlan_parent);
+      debug_log(DEBUG, "Getting VLAN info for %s", ifa->ifa_name);
+      
+      /* Create VLAN struct and populate it */
+      vlan_t *vlan = calloc(1, sizeof(vlan_t));
+      if (vlan) {
+        strlcpy(vlan->name, ifa->ifa_name, MAX_IFNAME_LEN);
+        vlan->vlan_id = 0;
+        vlan->vlan_pcp = 0;
+        strlcpy(vlan->vlan_proto, "802.1Q", sizeof(vlan->vlan_proto));
+        vlan->vlan_parent[0] = '\0';
+        
+        freebsd_vlan_show(ifa->ifa_name, &vlan->vlan_id, vlan->vlan_proto,
+                          sizeof(vlan->vlan_proto), &vlan->vlan_pcp,
+                          vlan->vlan_parent, sizeof(vlan->vlan_parent));
+        
+        debug_log(DEBUG2,
+                  "Found VLAN info for %s: id=%d, proto=%s, pcp=%d, parent=%s",
+                  ifa->ifa_name, vlan->vlan_id, vlan->vlan_proto,
+                  vlan->vlan_pcp, vlan->vlan_parent);
+        
+        TAILQ_INSERT_TAIL(&state->vlans, vlan, entries);
+      } else {
+        debug_log(ERROR, "Failed to allocate VLAN struct for %s", ifa->ifa_name);
+      }
+    }
+
+    /* Get epair information for epair interfaces */
+    if (type == IF_TYPE_EPAIR) {
+      debug_log(DEBUG, "Getting epair info for %s", ifa->ifa_name);
+      
+      /* Create epair struct and populate it */
+      epair_t *epair = calloc(1, sizeof(epair_t));
+      if (epair) {
+        strlcpy(epair->name, ifa->ifa_name, MAX_IFNAME_LEN);
+        epair->peer_name[0] = '\0';
+        
+        /* Get epair peer information */
+        freebsd_epair_show(ifa->ifa_name, epair->peer_name, sizeof(epair->peer_name));
+        
+        debug_log(DEBUG2, "Found epair info for %s: peer=%s",
+                  ifa->ifa_name, epair->peer_name);
+        
+        TAILQ_INSERT_TAIL(&state->epairs, epair, entries);
+      } else {
+        debug_log(ERROR, "Failed to allocate epair struct for %s", ifa->ifa_name);
+      }
+    }
+
+    /* Get gif information for gif interfaces */
+    if (type == IF_TYPE_GIF) {
+      debug_log(DEBUG, "Getting gif info for %s", ifa->ifa_name);
+      
+      /* Create gif struct and populate it */
+      gif_t *gif = calloc(1, sizeof(gif_t));
+      if (gif) {
+        strlcpy(gif->name, ifa->ifa_name, MAX_IFNAME_LEN);
+        gif->tunnel_local[0] = '\0';
+        gif->tunnel_remote[0] = '\0';
+        
+        /* Get gif tunnel information */
+        freebsd_gif_show(ifa->ifa_name, gif->tunnel_local, sizeof(gif->tunnel_local),
+                         gif->tunnel_remote, sizeof(gif->tunnel_remote));
+        
+        debug_log(DEBUG2, "Found gif info for %s: local=%s, remote=%s",
+                  ifa->ifa_name, gif->tunnel_local, gif->tunnel_remote);
+        
+        TAILQ_INSERT_TAIL(&state->gifs, gif, entries);
+      } else {
+        debug_log(ERROR, "Failed to allocate gif struct for %s", ifa->ifa_name);
+      }
+    }
+
+    /* Get lagg information for lagg interfaces */
+    if (type == IF_TYPE_LAGG) {
+      debug_log(DEBUG, "Getting lagg info for %s", ifa->ifa_name);
+      
+      /* Create lagg struct and populate it */
+      lagg_t *lagg = calloc(1, sizeof(lagg_t));
+      if (lagg) {
+        strlcpy(lagg->name, ifa->ifa_name, MAX_IFNAME_LEN);
+        lagg->lagg_proto[0] = '\0';
+        lagg->member_count = 0;
+        
+        /* Get lagg information */
+        freebsd_lagg_show(ifa->ifa_name, lagg->lagg_proto, sizeof(lagg->lagg_proto),
+                          lagg->members, MAX_LAGG_MEMBERS, &lagg->member_count);
+        
+        debug_log(DEBUG2, "Found lagg info for %s: proto=%s, members=%d",
+                  ifa->ifa_name, lagg->lagg_proto, lagg->member_count);
+        
+        TAILQ_INSERT_TAIL(&state->laggs, lagg, entries);
+      } else {
+        debug_log(ERROR, "Failed to allocate lagg struct for %s", ifa->ifa_name);
+      }
     }
 
     /* Get WiFi information for wireless interfaces */
     if (type == IF_TYPE_WIRELESS) {
-      freebsd_wireless_show(
-          ifa->ifa_name, iface->wifi_regdomain, sizeof(iface->wifi_regdomain),
-          iface->wifi_country, sizeof(iface->wifi_country),
-          iface->wifi_authmode, sizeof(iface->wifi_authmode),
-          iface->wifi_privacy, sizeof(iface->wifi_privacy),
-          &iface->wifi_txpower, &iface->wifi_bmiss, &iface->wifi_scanvalid,
-          iface->wifi_features, sizeof(iface->wifi_features),
-          &iface->wifi_bintval, iface->wifi_parent, sizeof(iface->wifi_parent));
-      debug_log(DEBUG2,
-                "Found WiFi info for %s: regdomain=%s, country=%s, "
-                "authmode=%s, privacy=%s, txpower=%d, bmiss=%d, scanvalid=%d, "
-                "features=%s, bintval=%d, parent=%s",
-                ifa->ifa_name, iface->wifi_regdomain, iface->wifi_country,
-                iface->wifi_authmode, iface->wifi_privacy, iface->wifi_txpower,
-                iface->wifi_bmiss, iface->wifi_scanvalid, iface->wifi_features,
-                iface->wifi_bintval, iface->wifi_parent);
+      debug_log(DEBUG, "Getting wifi info for %s", ifa->ifa_name);
+      
+      /* Create wifi struct and populate it */
+      wifi_t *wifi = calloc(1, sizeof(wifi_t));
+      if (wifi) {
+        strlcpy(wifi->name, ifa->ifa_name, MAX_IFNAME_LEN);
+        wifi->parent[0] = '\0';
+        wifi->regdomain[0] = '\0';
+        wifi->country[0] = '\0';
+        wifi->authmode[0] = '\0';
+        wifi->privacy[0] = '\0';
+        wifi->features[0] = '\0';
+        wifi->txpower = 0;
+        wifi->bmiss = 0;
+        wifi->scanvalid = 0;
+        wifi->bintval = 0;
+        
+        /* Get wifi information */
+        freebsd_wireless_show(
+            ifa->ifa_name, wifi->regdomain, sizeof(wifi->regdomain),
+            wifi->country, sizeof(wifi->country),
+            wifi->authmode, sizeof(wifi->authmode),
+            wifi->privacy, sizeof(wifi->privacy),
+            &wifi->txpower, &wifi->bmiss, &wifi->scanvalid,
+            wifi->features, sizeof(wifi->features),
+            &wifi->bintval, wifi->parent, sizeof(wifi->parent));
+        
+        debug_log(DEBUG2,
+                  "Found WiFi info for %s: regdomain=%s, country=%s, "
+                  "authmode=%s, privacy=%s, txpower=%d, bmiss=%d, scanvalid=%d, "
+                  "features=%s, bintval=%d, parent=%s",
+                  ifa->ifa_name, wifi->regdomain, wifi->country,
+                  wifi->authmode, wifi->privacy, wifi->txpower,
+                  wifi->bmiss, wifi->scanvalid, wifi->features,
+                  wifi->bintval, wifi->parent);
+        
+        TAILQ_INSERT_TAIL(&state->wifis, wifi, entries);
+      } else {
+        debug_log(ERROR, "Failed to allocate wifi struct for %s", ifa->ifa_name);
+      }
     }
 
     /* Get all addresses */

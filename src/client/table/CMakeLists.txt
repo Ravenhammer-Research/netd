@@ -40,7 +40,6 @@ set(TABLE_SRCS
     vxlan.c
     loopback.c
     wlan.c
-    interface_groups.c
     vrf.c
     routes.c
 )

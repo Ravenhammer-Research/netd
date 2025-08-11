@@ -45,11 +45,14 @@ static void edit_config_start_element(void *userData, const XML_Char *name,
                                       const XML_Char **atts) {
   struct edit_config_data *data = (struct edit_config_data *)userData;
 
-  debug_log(DEBUG, "Edit config start element: %s with %d attributes", name, atts ? 0 : 0);
-
   if (strcmp(name, "edit-config") == 0) {
     data->is_edit_config = true;
-  } else if (strcmp(name, "config") == 0) {
+    debug_log(DEBUG, "Found edit-config element");
+  } else if (data->is_edit_config) {
+    /* Only log elements when we're in an edit-config context */
+    debug_log(DEBUG, "Edit config start element: %s with %d attributes", name, atts ? 0 : 0);
+    
+    if (strcmp(name, "config") == 0) {
     data->in_config = true;
   } else if (strcmp(name, "vrf") == 0) {
     data->in_vrf = true;
@@ -60,6 +63,7 @@ static void edit_config_start_element(void *userData, const XML_Char *name,
   } else if (strcmp(name, "set") == 0) {
     data->in_set = true;
     data->has_set_config = true;
+    }
   }
 
   strlcpy(data->current_tag, name, sizeof(data->current_tag));

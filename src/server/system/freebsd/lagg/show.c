@@ -29,6 +29,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+ #include <netd.h>
 #include <lagg.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -41,23 +42,23 @@
 #include <sys/sockio.h>
 #include <unistd.h>
 
-#include <netd.h>
-
 /**
  * Show LAGG interface information
  * @param name LAGG interface name
  * @param protocol Buffer to store protocol name
  * @param protocol_size Size of protocol buffer
- * @param members Buffer to store member list
- * @param members_size Size of members buffer
+ * @param members Array to store member names
+ * @param max_members Maximum number of members
+ * @param member_count Pointer to store actual member count
  * @return 0 on success, -1 on failure
  */
 int freebsd_lagg_show(const char *name, char *protocol, size_t protocol_size, 
-                      char *members, size_t members_size) {
+                      char (*members)[MAX_IFNAME_LEN], int max_members, int *member_count) {
+  (void)max_members; /* Unused in this simplified implementation */
   int sock;
   struct ifreq ifr;
 
-  if (!name || !protocol || !members) {
+  if (!name || !protocol || !members || !member_count) {
     debug_log(ERROR, "Invalid parameters for LAGG show");
     return -1;
   }
@@ -85,7 +86,7 @@ int freebsd_lagg_show(const char *name, char *protocol, size_t protocol_size,
   /* For LAGG interfaces, we can try to get protocol and member info */
   /* This is a simplified implementation - actual info may require more complex logic */
   strlcpy(protocol, "unknown", protocol_size);
-  strlcpy(members, "unknown", members_size);
+  *member_count = 0; /* No members found in this simplified implementation */
 
   close(sock);
   debug_log(INFO, "Showed LAGG interface %s", name);

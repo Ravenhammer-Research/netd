@@ -66,7 +66,7 @@ void print_wlan_table(const char *xml_response);
 
 /* General table functions */
 void print_interface_table(const char *xml_response);
-void print_interface_groups_table(const char *xml_response);
+
 void print_vrf_table(const char *xml_response);
 void print_routes_table(const char *xml_response);
 int print_interface_groups_summary(const char *xml_response);

@@ -37,6 +37,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <interface.h>
+#include <system/freebsd/interface/interface.h>
 
 /**
  * Set interface FIB assignment

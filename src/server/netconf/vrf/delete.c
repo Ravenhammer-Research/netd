@@ -17,8 +17,8 @@
  *    this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
  * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
  * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
  * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
@@ -29,18 +29,26 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FREEBSD_LAGG_H
-#define FREEBSD_LAGG_H
+#include <netd.h>
+#include <netconf.h>
+#include <vrf.h>
+#include <errno.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-#include <stddef.h>
-
-/* LAGG interface operations */
-int freebsd_lagg_create(const char *name, const char *protocol);
-int freebsd_lagg_set_protocol(const char *name, const char *protocol);
-int freebsd_lagg_add_member(const char *name, const char *member);
-int freebsd_lagg_remove_member(const char *name, const char *member);
-int freebsd_lagg_delete(const char *name);
-int freebsd_lagg_show(const char *name, char *protocol, size_t protocol_size, 
-                      char (*members)[MAX_IFNAME_LEN], int max_members, int *member_count);
-
-#endif /* FREEBSD_LAGG_H */ 
+/**
+ * Delete a VRF
+ * @param state Server state
+ * @param name VRF name
+ * @return 0 on success, -1 on failure
+ */
+int vrf_delete(netd_state_t *state, const char *name) {
+  debug_log(DEBUG1, "vrf_delete called with state=%p, name=%s", state, name);
+  
+  /* Not implemented: VRF deletion requires careful handling of interfaces and routes */
+  /* Would need to move interfaces to default VRF and flush routes for the FIB */
+  return -1;
+} 

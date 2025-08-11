@@ -36,7 +36,61 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <interface.h>
 #include <system/freebsd/vlan/vlan.h>
+
+/**
+ * Find VLAN by name
+ * @param state Server state
+ * @param name VLAN name
+ * @return vlan_t pointer or NULL if not found
+ */
+static vlan_t *vlan_find(netd_state_t *state, const char *name) {
+  vlan_t *vlan;
+  
+  if (!state || !name) {
+    return NULL;
+  }
+  
+  TAILQ_FOREACH(vlan, &state->vlans, entries) {
+    if (strcmp(vlan->name, name) == 0) {
+      return vlan;
+    }
+  }
+  
+  return NULL;
+}
+
+/**
+ * Create VLAN struct
+ * @param state Server state
+ * @param name VLAN name
+ * @return vlan_t pointer or NULL on failure
+ */
+static vlan_t *vlan_create(netd_state_t *state, const char *name) {
+  vlan_t *vlan;
+  
+  if (!state || !name) {
+    return NULL;
+  }
+  
+  vlan = calloc(1, sizeof(vlan_t));
+  if (!vlan) {
+    debug_log(ERROR, "Failed to allocate memory for VLAN %s", name);
+    return NULL;
+  }
+  
+  strlcpy(vlan->name, name, MAX_IFNAME_LEN);
+  vlan->vlan_id = 0;
+  vlan->vlan_pcp = 0;
+  strlcpy(vlan->vlan_proto, "802.1Q", sizeof(vlan->vlan_proto));
+  vlan->vlan_parent[0] = '\0';
+  
+  TAILQ_INSERT_TAIL(&state->vlans, vlan, entries);
+  
+  debug_log(DEBUG, "Created VLAN struct for %s", name);
+  return vlan;
+}
 
 /**
  * Create a VLAN interface
@@ -50,7 +104,7 @@
 int vlan_interface_create(netd_state_t *state, const char *name,
                           const char *parent_name, uint16_t vlan_id,
                           const char *vlan_proto) {
-  interface_t *vlan_iface;
+  vlan_t *vlan;
 
   if (!state || !name || !parent_name) {
     debug_log(ERROR,
@@ -75,21 +129,22 @@ int vlan_interface_create(netd_state_t *state, const char *name,
     return -1;
   }
 
-  /* Find the created interface and set VLAN-specific properties */
-  vlan_iface = interface_find(state, name);
-  if (!vlan_iface) {
-    debug_log(ERROR, "Failed to find created VLAN interface %s", name);
+  /* Create VLAN-specific data structure */
+  vlan = vlan_create(state, name);
+  if (!vlan) {
+    debug_log(ERROR, "Failed to create VLAN struct for %s", name);
+    interface_delete(state, name);
     return -1;
   }
 
   /* Set VLAN properties */
-  vlan_iface->vlan_id = vlan_id;
-  strlcpy(vlan_iface->vlan_parent, parent_name, sizeof(vlan_iface->vlan_parent));
+  vlan->vlan_id = vlan_id;
+  strlcpy(vlan->vlan_parent, parent_name, sizeof(vlan->vlan_parent));
   
   if (vlan_proto) {
-    strlcpy(vlan_iface->vlan_proto, vlan_proto, sizeof(vlan_iface->vlan_proto));
+    strlcpy(vlan->vlan_proto, vlan_proto, sizeof(vlan->vlan_proto));
   } else {
-    strlcpy(vlan_iface->vlan_proto, "802.1Q", sizeof(vlan_iface->vlan_proto));
+    strlcpy(vlan->vlan_proto, "802.1Q", sizeof(vlan->vlan_proto));
   }
 
   /* Create VLAN in FreeBSD */
@@ -97,8 +152,10 @@ int vlan_interface_create(netd_state_t *state, const char *name,
     debug_log(ERROR,
               "Failed to create VLAN %s on parent %s in FreeBSD", name,
               parent_name);
-    /* Clean up the interface from state */
+    /* Clean up the interface and VLAN struct from state */
     interface_delete(state, name);
+    TAILQ_REMOVE(&state->vlans, vlan, entries);
+    free(vlan);
     return -1;
   }
 
@@ -116,6 +173,7 @@ int vlan_interface_create(netd_state_t *state, const char *name,
  */
 int vlan_set_priority(netd_state_t *state, const char *name, uint8_t priority) {
   interface_t *vlan_iface;
+  vlan_t *vlan;
 
   if (!state || !name) {
     debug_log(ERROR,
@@ -144,6 +202,13 @@ int vlan_set_priority(netd_state_t *state, const char *name, uint8_t priority) {
     return -1;
   }
 
+  /* Find VLAN struct */
+  vlan = vlan_find(state, name);
+  if (!vlan) {
+    debug_log(ERROR, "VLAN struct for %s not found", name);
+    return -1;
+  }
+
   /* Set priority in FreeBSD */
   if (freebsd_vlan_set_priority(name, priority) < 0) {
     debug_log(ERROR,
@@ -152,8 +217,8 @@ int vlan_set_priority(netd_state_t *state, const char *name, uint8_t priority) {
     return -1;
   }
 
-  /* Update interface state */
-  vlan_iface->vlan_pcp = priority;
+  /* Update VLAN struct */
+  vlan->vlan_pcp = priority;
 
   debug_log(INFO, "Set priority %d for VLAN interface %s", priority,
             name);
@@ -170,6 +235,7 @@ int vlan_set_priority(netd_state_t *state, const char *name, uint8_t priority) {
 int vlan_set_protocol(netd_state_t *state, const char *name,
                        const char *protocol) {
   interface_t *vlan_iface;
+  vlan_t *vlan;
 
   if (!state || !name || !protocol) {
     debug_log(ERROR,
@@ -194,6 +260,13 @@ int vlan_set_protocol(netd_state_t *state, const char *name,
     return -1;
   }
 
+  /* Find VLAN struct */
+  vlan = vlan_find(state, name);
+  if (!vlan) {
+    debug_log(ERROR, "VLAN struct for %s not found", name);
+    return -1;
+  }
+
   /* Set protocol in FreeBSD */
   if (freebsd_vlan_set_protocol(name, protocol) < 0) {
     debug_log(ERROR,
@@ -202,8 +275,8 @@ int vlan_set_protocol(netd_state_t *state, const char *name,
     return -1;
   }
 
-  /* Update interface state */
-  strlcpy(vlan_iface->vlan_proto, protocol, sizeof(vlan_iface->vlan_proto));
+  /* Update VLAN struct */
+  strlcpy(vlan->vlan_proto, protocol, sizeof(vlan->vlan_proto));
 
   debug_log(INFO, "Set protocol %s for VLAN interface %s", protocol,
             name);
@@ -224,6 +297,7 @@ int vlan_get_info(netd_state_t *state, const char *name, uint16_t *vlan_id,
                    char *parent_name, size_t parent_len, char *protocol,
                    size_t protocol_len, uint8_t *priority) {
   interface_t *vlan_iface;
+  vlan_t *vlan;
 
   if (!state || !name) {
     debug_log(ERROR,
@@ -244,23 +318,30 @@ int vlan_get_info(netd_state_t *state, const char *name, uint16_t *vlan_id,
     return -1;
   }
 
+  /* Find VLAN struct */
+  vlan = vlan_find(state, name);
+  if (!vlan) {
+    debug_log(ERROR, "VLAN struct for %s not found", name);
+    return -1;
+  }
+
   /* Return VLAN information */
   if (vlan_id) {
-    *vlan_id = vlan_iface->vlan_id;
+    *vlan_id = vlan->vlan_id;
   }
   if (parent_name && parent_len > 0) {
-    strlcpy(parent_name, vlan_iface->vlan_parent, parent_len);
+    strlcpy(parent_name, vlan->vlan_parent, parent_len);
   }
   if (protocol && protocol_len > 0) {
-    strlcpy(protocol, vlan_iface->vlan_proto, protocol_len);
+    strlcpy(protocol, vlan->vlan_proto, protocol_len);
   }
   if (priority) {
-    *priority = vlan_iface->vlan_pcp;
+    *priority = vlan->vlan_pcp;
   }
 
   debug_log(DEBUG, "Retrieved VLAN info for %s: id=%d, parent=%s, "
             "protocol=%s, priority=%d",
-            name, vlan_iface->vlan_id, vlan_iface->vlan_parent,
-            vlan_iface->vlan_proto, vlan_iface->vlan_pcp);
+            name, vlan->vlan_id, vlan->vlan_parent,
+            vlan->vlan_proto, vlan->vlan_pcp);
   return 0;
 } 

@@ -36,7 +36,58 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <interface.h>
 #include <system/freebsd/epair/epair.h>
+
+/**
+ * Find epair by name
+ * @param state Server state
+ * @param name Epair name
+ * @return epair_t pointer or NULL if not found
+ */
+static epair_t *epair_find(netd_state_t *state, const char *name) {
+  epair_t *epair;
+  
+  if (!state || !name) {
+    return NULL;
+  }
+  
+  TAILQ_FOREACH(epair, &state->epairs, entries) {
+    if (strcmp(epair->name, name) == 0) {
+      return epair;
+    }
+  }
+  
+  return NULL;
+}
+
+/**
+ * Create epair struct
+ * @param state Server state
+ * @param name Epair name
+ * @return epair_t pointer or NULL on failure
+ */
+static epair_t *epair_create(netd_state_t *state, const char *name) {
+  epair_t *epair;
+  
+  if (!state || !name) {
+    return NULL;
+  }
+  
+  epair = calloc(1, sizeof(epair_t));
+  if (!epair) {
+    debug_log(ERROR, "Failed to allocate memory for epair %s", name);
+    return NULL;
+  }
+  
+  strlcpy(epair->name, name, MAX_IFNAME_LEN);
+  epair->peer_name[0] = '\0';
+  
+  TAILQ_INSERT_TAIL(&state->epairs, epair, entries);
+  
+  debug_log(DEBUG, "Created epair struct for %s", name);
+  return epair;
+}
 
 /**
  * Create an epair interface
@@ -45,6 +96,8 @@
  * @return 0 on success, -1 on failure
  */
 int epair_interface_create(netd_state_t *state, const char *name) {
+  epair_t *epair;
+
   if (!state || !name) {
     debug_log(ERROR,
               "Invalid parameters for epair creation: state=%p, name=%s",
@@ -61,12 +114,22 @@ int epair_interface_create(netd_state_t *state, const char *name) {
     return -1;
   }
 
+  /* Create epair-specific data structure */
+  epair = epair_create(state, name);
+  if (!epair) {
+    debug_log(ERROR, "Failed to create epair struct for %s", name);
+    interface_delete(state, name);
+    return -1;
+  }
+
   /* Create epair in FreeBSD */
   if (freebsd_epair_create(name) < 0) {
     debug_log(ERROR,
               "Failed to create epair interface %s in FreeBSD", name);
-    /* Clean up the interface from state */
+    /* Clean up the interface and epair struct from state */
     interface_delete(state, name);
+    TAILQ_REMOVE(&state->epairs, epair, entries);
+    free(epair);
     return -1;
   }
 
@@ -84,6 +147,7 @@ int epair_interface_create(netd_state_t *state, const char *name) {
 int epair_set_peer(netd_state_t *state, const char *name,
                     const char *peer_name) {
   interface_t *epair_iface;
+  epair_t *epair;
 
   if (!state || !name || !peer_name) {
     debug_log(ERROR,
@@ -108,6 +172,13 @@ int epair_set_peer(netd_state_t *state, const char *name,
     return -1;
   }
 
+  /* Find epair struct */
+  epair = epair_find(state, name);
+  if (!epair) {
+    debug_log(ERROR, "Epair struct for %s not found", name);
+    return -1;
+  }
+
   /* Set peer in FreeBSD */
   if (freebsd_epair_set_peer(name, peer_name) < 0) {
     debug_log(ERROR,
@@ -115,8 +186,8 @@ int epair_set_peer(netd_state_t *state, const char *name,
     return -1;
   }
 
-  /* Update interface state */
-  strlcpy(epair_iface->peer_name, peer_name, sizeof(epair_iface->peer_name));
+  /* Update epair struct */
+  strlcpy(epair->peer_name, peer_name, sizeof(epair->peer_name));
 
   debug_log(INFO, "Set peer %s for epair interface %s", peer_name, name);
   return 0;
@@ -133,6 +204,7 @@ int epair_set_peer(netd_state_t *state, const char *name,
 int epair_get_peer(netd_state_t *state, const char *name, char *peer_name,
                     size_t peer_len) {
   interface_t *epair_iface;
+  epair_t *epair;
 
   if (!state || !name || !peer_name || peer_len == 0) {
     debug_log(ERROR,
@@ -154,10 +226,17 @@ int epair_get_peer(netd_state_t *state, const char *name, char *peer_name,
     return -1;
   }
 
+  /* Find epair struct */
+  epair = epair_find(state, name);
+  if (!epair) {
+    debug_log(ERROR, "Epair struct for %s not found", name);
+    return -1;
+  }
+
   /* Return peer name */
-  strlcpy(peer_name, epair_iface->peer_name, peer_len);
+  strlcpy(peer_name, epair->peer_name, peer_len);
 
   debug_log(DEBUG, "Retrieved peer %s for epair interface %s",
-            epair_iface->peer_name, name);
+            epair->peer_name, name);
   return 0;
 } 

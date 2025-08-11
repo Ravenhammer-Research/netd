@@ -40,6 +40,10 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
+#include <netconf/netconf.h>
+#include <netconf/interface/interface.h>
+#include <netconf/route/route.h>
+#include <netconf/vrf/vrf.h>
 
 /**
  * Load configuration from file

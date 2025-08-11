@@ -36,7 +36,59 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <interface.h>
 #include <system/freebsd/lagg/lagg.h>
+
+/**
+ * Find lagg by name
+ * @param state Server state
+ * @param name LAGG name
+ * @return lagg_t pointer or NULL if not found
+ */
+static lagg_t *lagg_find(netd_state_t *state, const char *name) {
+  lagg_t *lagg;
+  
+  if (!state || !name) {
+    return NULL;
+  }
+  
+  TAILQ_FOREACH(lagg, &state->laggs, entries) {
+    if (strcmp(lagg->name, name) == 0) {
+      return lagg;
+    }
+  }
+  
+  return NULL;
+}
+
+/**
+ * Create lagg struct
+ * @param state Server state
+ * @param name LAGG name
+ * @return lagg_t pointer or NULL on failure
+ */
+static lagg_t *lagg_create(netd_state_t *state, const char *name) {
+  lagg_t *lagg;
+  
+  if (!state || !name) {
+    return NULL;
+  }
+  
+  lagg = calloc(1, sizeof(lagg_t));
+  if (!lagg) {
+    debug_log(ERROR, "Failed to allocate memory for lagg %s", name);
+    return NULL;
+  }
+  
+  strlcpy(lagg->name, name, MAX_IFNAME_LEN);
+  lagg->lagg_proto[0] = '\0';
+  lagg->member_count = 0;
+  
+  TAILQ_INSERT_TAIL(&state->laggs, lagg, entries);
+  
+  debug_log(DEBUG, "Created lagg struct for %s", name);
+  return lagg;
+}
 
 /**
  * Create a LAGG interface
@@ -47,7 +99,7 @@
  */
 int lagg_interface_create(netd_state_t *state, const char *name,
                           const char *lagg_proto) {
-  interface_t *lagg_iface;
+  lagg_t *lagg;
 
   if (!state || !name) {
     debug_log(ERROR,
@@ -65,31 +117,34 @@ int lagg_interface_create(netd_state_t *state, const char *name,
     return -1;
   }
 
-  /* Find the created interface and set LAGG-specific properties */
-  lagg_iface = interface_find(state, name);
-  if (!lagg_iface) {
-    debug_log(ERROR, "Failed to find created LAGG interface %s", name);
+  /* Create lagg-specific data structure */
+  lagg = lagg_create(state, name);
+  if (!lagg) {
+    debug_log(ERROR, "Failed to create lagg struct for %s", name);
+    interface_delete(state, name);
     return -1;
   }
 
   /* Set LAGG protocol */
   if (lagg_proto) {
-    strlcpy(lagg_iface->lagg_proto, lagg_proto, sizeof(lagg_iface->lagg_proto));
+    strlcpy(lagg->lagg_proto, lagg_proto, sizeof(lagg->lagg_proto));
   } else {
-    strlcpy(lagg_iface->lagg_proto, "failover", sizeof(lagg_iface->lagg_proto));
+    strlcpy(lagg->lagg_proto, "failover", sizeof(lagg->lagg_proto));
   }
 
   /* Create LAGG in FreeBSD */
-  if (freebsd_lagg_create(name, lagg_iface->lagg_proto) < 0) {
+  if (freebsd_lagg_create(name, lagg->lagg_proto) < 0) {
     debug_log(ERROR,
               "Failed to create LAGG interface %s in FreeBSD", name);
-    /* Clean up the interface from state */
+    /* Clean up the interface and lagg struct from state */
     interface_delete(state, name);
+    TAILQ_REMOVE(&state->laggs, lagg, entries);
+    free(lagg);
     return -1;
   }
 
   debug_log(INFO, "Created LAGG interface %s with protocol %s", name,
-            lagg_iface->lagg_proto);
+            lagg->lagg_proto);
   return 0;
 }
 
@@ -103,6 +158,7 @@ int lagg_interface_create(netd_state_t *state, const char *name,
 int lagg_add_member(netd_state_t *state, const char *lagg_name,
                      const char *member_name) {
   interface_t *lagg_iface;
+  lagg_t *lagg;
 
   if (!state || !lagg_name || !member_name) {
     debug_log(ERROR,
@@ -128,6 +184,13 @@ int lagg_add_member(netd_state_t *state, const char *lagg_name,
     return -1;
   }
 
+  /* Find lagg struct */
+  lagg = lagg_find(state, lagg_name);
+  if (!lagg) {
+    debug_log(ERROR, "Lagg struct for %s not found", lagg_name);
+    return -1;
+  }
+
   /* Add member to LAGG in FreeBSD */
   if (freebsd_lagg_add_member(lagg_name, member_name) < 0) {
     debug_log(ERROR,
@@ -136,18 +199,13 @@ int lagg_add_member(netd_state_t *state, const char *lagg_name,
     return -1;
   }
 
-  /* Update LAGG members in state */
-  if (strlen(lagg_iface->lagg_members) == 0) {
-    strlcpy(lagg_iface->lagg_members, member_name,
-            sizeof(lagg_iface->lagg_members));
+  /* Update LAGG members in lagg struct */
+  if (lagg->member_count < MAX_LAGG_MEMBERS) {
+    strlcpy(lagg->members[lagg->member_count], member_name, MAX_IFNAME_LEN);
+    lagg->member_count++;
   } else {
-    /* Append to existing members */
-    char temp[sizeof(lagg_iface->lagg_members)];
-    strlcpy(temp, lagg_iface->lagg_members, sizeof(temp));
-    strlcat(temp, ",", sizeof(temp));
-    strlcat(temp, member_name, sizeof(temp));
-    strlcpy(lagg_iface->lagg_members, temp,
-            sizeof(lagg_iface->lagg_members));
+    debug_log(ERROR, "LAGG %s has reached maximum member limit", lagg_name);
+    return -1;
   }
 
   debug_log(INFO, "Added member %s to LAGG %s", member_name, lagg_name);
@@ -164,6 +222,8 @@ int lagg_add_member(netd_state_t *state, const char *lagg_name,
 int lagg_remove_member(netd_state_t *state, const char *lagg_name,
                         const char *member_name) {
   interface_t *lagg_iface;
+  lagg_t *lagg;
+  int i, j;
 
   if (!state || !lagg_name || !member_name) {
     debug_log(ERROR,
@@ -189,6 +249,13 @@ int lagg_remove_member(netd_state_t *state, const char *lagg_name,
     return -1;
   }
 
+  /* Find lagg struct */
+  lagg = lagg_find(state, lagg_name);
+  if (!lagg) {
+    debug_log(ERROR, "Lagg struct for %s not found", lagg_name);
+    return -1;
+  }
+
   /* Remove member from LAGG in FreeBSD */
   if (freebsd_lagg_remove_member(lagg_name, member_name) < 0) {
     debug_log(ERROR,
@@ -197,24 +264,15 @@ int lagg_remove_member(netd_state_t *state, const char *lagg_name,
     return -1;
   }
 
-  /* Update LAGG members in state */
-  if (strstr(lagg_iface->lagg_members, member_name)) {
-    /* Simple removal - in a real implementation you'd want more sophisticated
-     * parsing */
-    char *pos = strstr(lagg_iface->lagg_members, member_name);
-    if (pos) {
-      /* Remove the member from the string */
-      memmove(pos, pos + strlen(member_name), strlen(pos + strlen(member_name)) + 1);
-      /* Clean up any leading/trailing commas */
-      if (lagg_iface->lagg_members[0] == ',') {
-        memmove(lagg_iface->lagg_members,
-                lagg_iface->lagg_members + 1,
-                strlen(lagg_iface->lagg_members));
+  /* Update LAGG members in lagg struct */
+  for (i = 0; i < lagg->member_count; i++) {
+    if (strcmp(lagg->members[i], member_name) == 0) {
+      /* Remove member by shifting remaining members */
+      for (j = i; j < lagg->member_count - 1; j++) {
+        strlcpy(lagg->members[j], lagg->members[j + 1], MAX_IFNAME_LEN);
       }
-      char *last_comma = strrchr(lagg_iface->lagg_members, ',');
-      if (last_comma && *(last_comma + 1) == '\0') {
-        *last_comma = '\0';
-      }
+      lagg->member_count--;
+      break;
     }
   }
 
@@ -233,6 +291,7 @@ int lagg_remove_member(netd_state_t *state, const char *lagg_name,
 int lagg_set_protocol(netd_state_t *state, const char *lagg_name,
                        const char *protocol) {
   interface_t *lagg_iface;
+  lagg_t *lagg;
 
   if (!state || !lagg_name || !protocol) {
     debug_log(ERROR,
@@ -258,6 +317,13 @@ int lagg_set_protocol(netd_state_t *state, const char *lagg_name,
     return -1;
   }
 
+  /* Find lagg struct */
+  lagg = lagg_find(state, lagg_name);
+  if (!lagg) {
+    debug_log(ERROR, "Lagg struct for %s not found", lagg_name);
+    return -1;
+  }
+
   /* Set protocol in FreeBSD */
   if (freebsd_lagg_set_protocol(lagg_name, protocol) < 0) {
     debug_log(ERROR,
@@ -266,8 +332,8 @@ int lagg_set_protocol(netd_state_t *state, const char *lagg_name,
     return -1;
   }
 
-  /* Update interface state */
-  strlcpy(lagg_iface->lagg_proto, protocol, sizeof(lagg_iface->lagg_proto));
+  /* Update lagg struct */
+  strlcpy(lagg->lagg_proto, protocol, sizeof(lagg->lagg_proto));
 
   debug_log(INFO, "Set protocol %s for LAGG interface %s", protocol,
             lagg_name);

@@ -30,66 +30,12 @@
  */
 
 #include <net.h>
+#include <xml/xml.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-/**
- * Parse bridge interfaces from XML
- * @param xml XML string
- * @param interfaces Array to populate
- * @param max_interfaces Maximum number of interfaces
- * @return Number of interfaces parsed, -1 on error
- */
-int parse_bridge_interfaces_from_xml(const char *xml,
-                                     struct bridge_interface_data *interfaces,
-                                     int max_interfaces) {
-  debug_log(DEBUG, "Parsing bridge interfaces from XML");
 
-  if (!xml || !interfaces || max_interfaces <= 0) {
-    return -1;
-  }
-
-  /* For now, we'll use the existing interface parsing and extend it */
-  struct interface_data *base_interfaces =
-      malloc(max_interfaces * sizeof(struct interface_data));
-  if (!base_interfaces) {
-    return -1;
-  }
-
-  int count = parse_interfaces_from_xml(xml, base_interfaces, max_interfaces);
-  if (count < 0) {
-    free(base_interfaces);
-    return -1;
-  }
-
-  /* Convert to bridge_interface_data and extract bridge-specific info */
-  int bridge_count = 0;
-  for (int i = 0; i < count && bridge_count < max_interfaces; i++) {
-    /* Only process bridge interfaces */
-    if (strstr(base_interfaces[i].type, "bridge") != NULL) {
-      /* Copy base data */
-      memcpy(&interfaces[bridge_count].base, &base_interfaces[i],
-             sizeof(struct interface_data));
-
-      /* Initialize bridge-specific fields */
-      strcpy(interfaces[bridge_count].bridge_members, "");
-      interfaces[bridge_count].bridge_maxaddr = 0;
-      interfaces[bridge_count].bridge_timeout = 0;
-      strcpy(interfaces[bridge_count].bridge_protocol, "");
-
-      /* TODO: Extract bridge-specific data from XML */
-      /* This would require extending the XML parsing to handle bridge
-       * attributes */
-
-      bridge_count++;
-    }
-  }
-
-  free(base_interfaces);
-  debug_log(INFO, "Parsed %d bridge interfaces from XML", bridge_count);
-  return bridge_count;
-}
 
 /**
  * Print bridge interface table from XML response
@@ -285,12 +231,9 @@ void print_bridge_table(const char *xml_response) {
           end--;
         *(end + 1) = '\0';
 
-        /* Skip "all" group - it's not a real group */
-        if (strcmp(token, "all") != 0) {
-          strncpy(group_array[group_count], token, sizeof(group_array[0]) - 1);
-          group_array[group_count][sizeof(group_array[0]) - 1] = '\0';
-          group_count++;
-        }
+        strncpy(group_array[group_count], token, sizeof(group_array[0]) - 1);
+        group_array[group_count][sizeof(group_array[0]) - 1] = '\0';
+        group_count++;
         token = strtok(NULL, ",");
       }
       free(groups_copy);

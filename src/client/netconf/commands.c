@@ -31,6 +31,7 @@
 
 #include <net.h>
 #include <netconf.h>
+#include <table/table.h>
 #include <sys/socket.h>
 #include <sys/queue.h>
 #include <unistd.h>
@@ -354,17 +355,13 @@ int execute_show_command(net_client_t *client, const command_t *cmd) {
 
   const char *object = cmd->args[0];
 
-  if (strcmp(object, "interfaces") == 0 || strcmp(object, "interface") == 0) {
-    if (netconf_get_interfaces(client, &response) < 0) {
+  if (strcmp(object, "interfaces") == 0 || (strcmp(object, "interface") == 0 && cmd->arg_count == 1)) {
+    if (netconf_get_interfaces(client, &response, NULL) < 0) {
       fprintf(stderr, "Failed to get interfaces\n");
       return -1;
     }
 
-    if (cmd->arg_count >= 2 && strcmp(cmd->args[1], "groups") == 0) {
-      print_interface_groups_table(response);
-    } else {
       print_interface_table(response);
-    }
 
     free(response);
   } else if (strcmp(object, "routes") == 0 || strcmp(object, "route") == 0) {
@@ -431,45 +428,32 @@ int execute_show_command(net_client_t *client, const command_t *cmd) {
     free(response);
     }
   } else if (strcmp(object, "interface") == 0 && cmd->arg_count >= 2) {
-    const char *ifname = cmd->args[1];
-    const char *type = (cmd->arg_count >= 3) ? cmd->args[2] : NULL;
+    const char *type = NULL;
 
-    debug_log(INFO, "SHOW interface: name=%s, type=%s", 
-             ifname, type ? type : "all");
+    debug_log(DEBUG, "SHOW interface command: arg_count=%d", cmd->arg_count);
+    for (int i = 0; i < cmd->arg_count; i++) {
+      debug_log(DEBUG, "SHOW interface args[%d]: '%s'", i, cmd->args[i]);
+    }
 
-    if (netconf_get_interfaces(client, &response) < 0) {
-      fprintf(stderr, "Failed to get interfaces\n");
+    /* Check if this is "show interface type <type>" */
+    if (cmd->arg_count == 3 && strcmp(cmd->args[1], "type") == 0) {
+      type = cmd->args[2];
+      debug_log(DEBUG, "Found type filter: %s", type);
+    } else {
+      debug_log(DEBUG, "No type filter found");
+    }
+
+    debug_log(INFO, "SHOW interface type: %s", type ? type : "all");
+
+    if (netconf_get_interfaces(client, &response, type) < 0) {
+      fprintf(stderr, "Failed to get interfaces%s\n", type ? " of specified type" : "");
       return -1;
     }
 
-    /* Filter and display specific interface */
-    if (type) {
-      if (strcmp(type, "bridge") == 0) {
+    /* Display using appropriate table */
+    if (type && strcmp(type, "bridge") == 0) {
         print_bridge_table(response);
-      } else if (strcmp(type, "vlan") == 0) {
-        print_vlan_table(response);
-      } else if (strcmp(type, "ethernet") == 0) {
-        print_ethernet_table(response);
-      } else if (strcmp(type, "lagg") == 0) {
-        print_lagg_table(response);
-      } else if (strcmp(type, "tap") == 0) {
-        print_tap_table(response);
-      } else if (strcmp(type, "gif") == 0) {
-        print_gif_table(response);
-      } else if (strcmp(type, "epair") == 0) {
-        print_epair_table(response);
-      } else if (strcmp(type, "vxlan") == 0) {
-        print_vxlan_table(response);
-      } else if (strcmp(type, "loopback") == 0) {
-        print_loopback_table(response);
-      } else if (strcmp(type, "wlan") == 0) {
-        print_wlan_table(response);
-      } else {
-        fprintf(stderr, "Unknown interface type: %s\n", type);
-        ret = -1;
-      }
     } else {
-      /* Show all interfaces - could be enhanced to filter by ifname */
       print_interface_table(response);
     }
 

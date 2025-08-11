@@ -39,25 +39,32 @@
 /**
  * Format a string into the response buffer, checking for overflow
  * @param response Response buffer
- * @param len Current length in buffer
  * @param format Format string
  * @param ... Variable arguments
  * @return New length, or -1 if overflow
  */
-int prepare_response(char *response, int len, const char *format, ...) {
+int prepare_response(char *response, const char *format, ...) {
   va_list args;
   va_start(args, format);
   
   int needed = vsnprintf(NULL, 0, format, args);
   va_end(args);
   
-  if (needed < 0 || len + needed >= NETCONF_RESPONSE_BUFFER_SIZE) {
+  if (needed < 0) {
+    return -1; /* Format error */
+  }
+  
+  /* Get current length of response */
+  int current_len = strlen(response);
+  
+  /* Check if adding the new content would overflow */
+  if (current_len + needed >= NETCONF_RESPONSE_BUFFER_SIZE) {
     return -1; /* Overflow */
   }
   
   va_start(args, format);
-  int written = vsnprintf(response + len, NETCONF_RESPONSE_BUFFER_SIZE - len, format, args);
+  int written = vsnprintf(response + current_len, NETCONF_RESPONSE_BUFFER_SIZE - current_len, format, args);
   va_end(args);
   
-  return len + written;
+  return current_len + written;
 } 

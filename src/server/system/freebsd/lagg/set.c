@@ -29,6 +29,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <netd.h>
 #include <lagg.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -40,8 +41,6 @@
 #include <sys/socket.h>
 #include <sys/sockio.h>
 #include <unistd.h>
-
-#include <netd.h>
 
 /**
  * Create a LAGG interface

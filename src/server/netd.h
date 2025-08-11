@@ -52,6 +52,12 @@
 /* Maximum number of groups per interface - Most interfaces belong to 1-3 groups, rarely more than 8 */
 #define MAX_GROUPS_PER_IF 16
 
+/* Maximum number of bridge members per bridge interface */
+#define MAX_BRIDGE_MEMBERS 32
+
+/* Maximum number of LAGG members per LAGG interface */
+#define MAX_LAGG_MEMBERS 8
+
 /* Interface address structure */
 typedef struct if_addr {
   char addr[64];
@@ -121,40 +127,69 @@ typedef struct interface {
   if_addr_t addresses6[11]; /* IPv6 addresses (primary at index 0, aliases at 1-10) */
   int address_count;             /* Total IPv4 addresses (0-11) */
   int address_count6;            /* Total IPv6 addresses (0-11) */
-  char bridge_members[64]; /* Bridge member interfaces as comma-separated string
-                            */
+  TAILQ_ENTRY(interface) entries;
+} interface_t;
 
-  /* VLAN-specific fields */
+/* Bridge-specific data structure */
+typedef struct bridge {
+  char name[MAX_IFNAME_LEN];
+  char members[MAX_BRIDGE_MEMBERS][MAX_IFNAME_LEN]; /* Bridge member interfaces as array */
+  int member_count; /* Number of bridge members */
+  int maxaddr;
+  int timeout;
+  char protocol[16];
+  TAILQ_ENTRY(bridge) entries;
+} bridge_t;
+
+/* VLAN-specific data structure */
+typedef struct vlan {
+  char name[MAX_IFNAME_LEN];
   int vlan_id;          /* VLAN ID */
   char vlan_proto[16];  /* VLAN protocol (e.g., "802.1q", "802.1ad") */
   int vlan_pcp;         /* VLAN Priority Code Point */
   char vlan_parent[64]; /* Parent interface name */
+  TAILQ_ENTRY(vlan) entries;
+} vlan_t;
 
-  /* WiFi-specific fields */
-  char wifi_regdomain[16]; /* Regulatory domain (e.g., "FCC") */
-  char wifi_country[8];    /* Country code (e.g., "US") */
-  char wifi_authmode[16];  /* Authentication mode (e.g., "OPEN", "WPA") */
-  char wifi_privacy[8];    /* Privacy setting (e.g., "OFF", "ON") */
-  int wifi_txpower;        /* Transmit power in dBm */
-  int wifi_bmiss;          /* Beacon miss threshold */
-  int wifi_scanvalid;      /* Scan validity period */
-  char wifi_features[64];  /* WiFi features (e.g., "wme") */
-  int wifi_bintval;        /* Beacon interval */
-  char wifi_parent[64];    /* Parent interface name */
+/* WiFi-specific data structure */
+typedef struct wifi {
+  char name[MAX_IFNAME_LEN];
+  char regdomain[16];   /* Regulatory domain (e.g., "FCC") */
+  char country[8];      /* Country code (e.g., "US") */
+  char authmode[16];    /* Authentication mode (e.g., "OPEN", "WPA") */
+  char privacy[8];      /* Privacy setting (e.g., "OFF", "ON") */
+  int txpower;          /* Transmit power in dBm */
+  int bmiss;            /* Beacon miss threshold */
+  int scanvalid;        /* Scan validity period */
+  char features[64];    /* WiFi features (e.g., "wme") */
+  int bintval;          /* Beacon interval */
+  char parent[64];      /* Parent interface name */
+  TAILQ_ENTRY(wifi) entries;
+} wifi_t;
 
-  /* Epair-specific fields */
-  char peer_name[64];      /* Peer interface name */
+/* Epair-specific data structure */
+typedef struct epair {
+  char name[MAX_IFNAME_LEN];
+  char peer_name[64];   /* Peer interface name */
+  TAILQ_ENTRY(epair) entries;
+} epair_t;
 
-  /* GIF-specific fields */
+/* GIF-specific data structure */
+typedef struct gif {
+  char name[MAX_IFNAME_LEN];
   char tunnel_local[64];   /* Local tunnel endpoint address */
   char tunnel_remote[64];  /* Remote tunnel endpoint address */
+  TAILQ_ENTRY(gif) entries;
+} gif_t;
 
-  /* LAGG-specific fields */
-  char lagg_proto[16];     /* LAGG protocol (e.g., "failover", "lacp", "roundrobin") */
-  char lagg_members[256];  /* LAGG member interfaces as comma-separated string */
-
-  TAILQ_ENTRY(interface) entries;
-} interface_t;
+/* LAGG-specific data structure */
+typedef struct lagg {
+  char name[MAX_IFNAME_LEN];
+  char lagg_proto[16];       /* LAGG protocol (e.g., "failover", "lacp", "roundrobin") */
+  char members[MAX_LAGG_MEMBERS][MAX_IFNAME_LEN]; /* LAGG member interfaces as array */
+  int member_count;     /* Number of LAGG members */
+  TAILQ_ENTRY(lagg) entries;
+} lagg_t;
 
 typedef struct netd_route {
   struct sockaddr_storage destination;
@@ -212,6 +247,12 @@ typedef struct pending_change {
 typedef struct netd_state {
   TAILQ_HEAD(vrf_list, vrf) vrfs;
   TAILQ_HEAD(interface_list, interface) interfaces;
+  TAILQ_HEAD(bridge_list, bridge) bridges;
+  TAILQ_HEAD(vlan_list, vlan) vlans;
+  TAILQ_HEAD(wifi_list, wifi) wifis;
+  TAILQ_HEAD(epair_list, epair) epairs;
+  TAILQ_HEAD(gif_list, gif) gifs;
+  TAILQ_HEAD(lagg_list, lagg) laggs;
   TAILQ_HEAD(route_list, netd_route) routes;
   TAILQ_HEAD(pending_list, pending_change) pending_changes;
   struct ly_ctx *yang_ctx;
@@ -221,48 +262,6 @@ typedef struct netd_state {
 } netd_state_t;
 
 /* Function declarations */
-
-/* Debug logging */
-
-
-/* VRF management */
-int vrf_create(netd_state_t *state, const char *name, uint32_t fib_number);
-int vrf_delete(netd_state_t *state, const char *name);
-vrf_t *vrf_find_by_name(netd_state_t *state, const char *name);
-vrf_t *vrf_find_by_fib(netd_state_t *state, uint32_t fib_number);
-int vrf_list(netd_state_t *state);
-char *vrf_get_all(netd_state_t *state);
-
-/* Interface management */
-int interface_create(netd_state_t *state, const char *name,
-                     interface_type_t type);
-int interface_delete(netd_state_t *state, const char *name);
-int interface_set_fib(netd_state_t *state, const char *name, uint32_t fib);
-int interface_add_group(netd_state_t *state, const char *name,
-                        const char *group);
-int interface_remove_group(netd_state_t *state, const char *name,
-                           const char *group);
-int interface_set_address(netd_state_t *state, const char *name,
-                          const char *address, int family);
-int interface_delete_address(netd_state_t *state, const char *name, int family);
-int interface_set_mtu(netd_state_t *state, const char *name, int mtu);
-int interface_add(netd_state_t *state, const char *name);
-int interface_modify(netd_state_t *state, const char *name,
-                     const char *property, const char *value);
-interface_t *interface_find(netd_state_t *state, const char *name);
-int interface_list(netd_state_t *state, interface_type_t type);
-int interface_enumerate_system(netd_state_t *state);
-char *interface_get_all(netd_state_t *state);
-
-/* Route management */
-int route_add(netd_state_t *state, uint32_t fib, const char *destination,
-              const char *gateway, const char *interface, int flags);
-int route_delete(netd_state_t *state, uint32_t fib, const char *destination);
-int route_list(netd_state_t *state, uint32_t fib, int family);
-int route_flush_fib(netd_state_t *state, uint32_t fib);
-int route_clear_all(netd_state_t *state);
-char *route_table_query(netd_state_t *state, uint32_t fib);
-
 /* Configuration management */
 int config_load(netd_state_t *state);
 int config_save(netd_state_t *state);
@@ -283,39 +282,8 @@ int add_pending_interface_create(netd_state_t *state, const char *name,
 int add_pending_interface_set_fib(netd_state_t *state, const char *name,
                                   uint32_t fib);
 
-/* YANG/Netconf functions */
-int yang_init(netd_state_t *state);
-void yang_cleanup(netd_state_t *state);
-int yang_validate_xml(netd_state_t *state, const char *xml_data);
-int yang_validate_config(netd_state_t *state, const char *xml_config);
-int yang_validate_rpc(netd_state_t *state, const char *rpc_xml);
-int yang_validate_leafrefs(netd_state_t *state, struct lyd_node *data_tree);
-char *yang_get_validation_error(const struct ly_ctx *ctx);
-int yang_validate_netd_operation(netd_state_t *state, const char *operation,
-                                 const char *data);
-bool yang_module_loaded(netd_state_t *state, const char *module_name);
-void yang_log_callback(LY_LOG_LEVEL level, const char *msg,
-                       const char *data_path, const char *schema_path,
-                       uint64_t line);
-int netconf_handle_request(netd_state_t *state, const char *request,
-                           char **response);
 
-/* System interface functions */
-int freebsd_interface_create(const char *name, interface_type_t type);
-bool freebsd_interface_exists(const char *name);
-int freebsd_interface_delete(const char *name);
-int freebsd_interface_set_fib(const char *name, uint32_t fib);
-int freebsd_interface_get_fib(const char *name, uint32_t *fib);
-int freebsd_interface_set_address(const char *name, const char *address,
-                                  int family);
-int freebsd_interface_delete_address(const char *name, int family);
-int freebsd_interface_set_mtu(const char *name, int mtu);
-int freebsd_interface_get_mtu(const char *name, int *mtu);
-int freebsd_interface_get_groups(const char *name,
-                                 char (*groups)[MAX_GROUP_NAME_LEN],
-                                 int max_groups, int *group_count);
-int freebsd_get_bridge_members(const char *ifname, char *members,
-                               size_t members_size);
+
 int freebsd_get_vlan_info(const char *ifname, int *vlan_id, char *vlan_proto,
                           size_t proto_size, int *vlan_pcp, char *vlan_parent,
                           size_t parent_size);
@@ -326,16 +294,6 @@ int freebsd_get_wifi_info(const char *ifname, char *regdomain,
                           size_t privacy_size, int *txpower, int *bmiss,
                           int *scanvalid, char *features, size_t features_size,
                           int *bintval, char *parent, size_t parent_size);
-int freebsd_enumerate_interfaces(netd_state_t *state);
-bool freebsd_is_hardware_interface(interface_type_t type);
-const char *freebsd_get_interface_oper_status(int flags);
-
-/* Route functions */
-int freebsd_route_add(uint32_t fib, const char *destination,
-                      const char *gateway, const char *interface, int flags);
-int freebsd_route_delete(uint32_t fib, const char *destination);
-int freebsd_route_list(netd_state_t *state, uint32_t fib, int family);
-int freebsd_route_enumerate_system(netd_state_t *state, uint32_t fib);
 
 /* Utility functions */
 const char *interface_type_to_string(interface_type_t type);

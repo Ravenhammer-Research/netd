@@ -103,24 +103,24 @@ module netd {
       description "Interface flags (system-specific)";
     }
     
-    leaf primary-address {
-      type inet:ipv4-address;
-      description "Primary IPv4 address";
-    }
-    
-    leaf primary-address6 {
-      type inet:ipv6-address;
-      description "Primary IPv6 address";
-    }
-    
-    leaf bridge-members {
-      type string;
+    list bridge-members {
+      key "member";
       description "Bridge member interfaces";
+      
+      leaf member {
+        type string;
+        description "Bridge member interface name";
+      }
     }
     
-    leaf group {
-      type string;
-      description "Interface group";
+    list groups {
+      key "group";
+      description "Interface groups";
+      
+      leaf group {
+        type string;
+        description "Interface group name";
+      }
     }
     
     container vlan-info {

@@ -36,7 +36,67 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <interface.h>
 #include <system/freebsd/80211/80211.h>
+
+/**
+ * Find wifi by name
+ * @param state Server state
+ * @param name WiFi name
+ * @return wifi_t pointer or NULL if not found
+ */
+static wifi_t *wifi_find(netd_state_t *state, const char *name) {
+  wifi_t *wifi;
+  
+  if (!state || !name) {
+    return NULL;
+  }
+  
+  TAILQ_FOREACH(wifi, &state->wifis, entries) {
+    if (strcmp(wifi->name, name) == 0) {
+      return wifi;
+    }
+  }
+  
+  return NULL;
+}
+
+/**
+ * Create wifi struct
+ * @param state Server state
+ * @param name WiFi name
+ * @return wifi_t pointer or NULL on failure
+ */
+static wifi_t *wifi_create(netd_state_t *state, const char *name) {
+  wifi_t *wifi;
+  
+  if (!state || !name) {
+    return NULL;
+  }
+  
+  wifi = calloc(1, sizeof(wifi_t));
+  if (!wifi) {
+    debug_log(ERROR, "Failed to allocate memory for wifi %s", name);
+    return NULL;
+  }
+  
+  strlcpy(wifi->name, name, MAX_IFNAME_LEN);
+  wifi->parent[0] = '\0';
+  wifi->regdomain[0] = '\0';
+  wifi->country[0] = '\0';
+  wifi->authmode[0] = '\0';
+  wifi->privacy[0] = '\0';
+  wifi->features[0] = '\0';
+  wifi->txpower = 0;
+  wifi->bmiss = 0;
+  wifi->scanvalid = 0;
+  wifi->bintval = 0;
+  
+  TAILQ_INSERT_TAIL(&state->wifis, wifi, entries);
+  
+  debug_log(DEBUG, "Created wifi struct for %s", name);
+  return wifi;
+}
 
 /**
  * Create a wireless interface
@@ -47,7 +107,7 @@
  */
 int wireless_interface_create(netd_state_t *state, const char *name,
                               const char *parent_name) {
-  interface_t *wireless_iface;
+  wifi_t *wifi;
 
   if (!state || !name) {
     debug_log(ERROR,
@@ -65,41 +125,38 @@ int wireless_interface_create(netd_state_t *state, const char *name,
     return -1;
   }
 
-  /* Find the created interface and set wireless-specific properties */
-  wireless_iface = interface_find(state, name);
-  if (!wireless_iface) {
-    debug_log(ERROR, "Failed to find created wireless interface %s", name);
+  /* Create wifi-specific data structure */
+  wifi = wifi_create(state, name);
+  if (!wifi) {
+    debug_log(ERROR, "Failed to create wifi struct for %s", name);
+    interface_delete(state, name);
     return -1;
   }
 
   /* Set wireless properties */
   if (parent_name) {
-    strlcpy(wireless_iface->wifi_parent, parent_name,
-            sizeof(wireless_iface->wifi_parent));
+    strlcpy(wifi->parent, parent_name, sizeof(wifi->parent));
   }
 
   /* Set default wireless parameters */
-  strlcpy(wireless_iface->wifi_regdomain, "US",
-          sizeof(wireless_iface->wifi_regdomain));
-  strlcpy(wireless_iface->wifi_country, "US",
-          sizeof(wireless_iface->wifi_country));
-  strlcpy(wireless_iface->wifi_authmode, "open",
-          sizeof(wireless_iface->wifi_authmode));
-  strlcpy(wireless_iface->wifi_privacy, "off",
-          sizeof(wireless_iface->wifi_privacy));
-  wireless_iface->wifi_txpower = 30; /* Default 30 dBm */
-  wireless_iface->wifi_bmiss = 10;   /* Default 10 seconds */
-  wireless_iface->wifi_scanvalid = 300; /* Default 5 minutes */
-  strlcpy(wireless_iface->wifi_features, "none",
-          sizeof(wireless_iface->wifi_features));
-  wireless_iface->wifi_bintval = 100; /* Default 100ms */
+  strlcpy(wifi->regdomain, "US", sizeof(wifi->regdomain));
+  strlcpy(wifi->country, "US", sizeof(wifi->country));
+  strlcpy(wifi->authmode, "open", sizeof(wifi->authmode));
+  strlcpy(wifi->privacy, "off", sizeof(wifi->privacy));
+  wifi->txpower = 30; /* Default 30 dBm */
+  wifi->bmiss = 10;   /* Default 10 seconds */
+  wifi->scanvalid = 300; /* Default 5 minutes */
+  strlcpy(wifi->features, "none", sizeof(wifi->features));
+  wifi->bintval = 100; /* Default 100ms */
 
   /* Create wireless interface in FreeBSD */
   if (freebsd_wireless_create(name, parent_name) < 0) {
     debug_log(ERROR,
               "Failed to create wireless interface %s in FreeBSD", name);
-    /* Clean up the interface from state */
+    /* Clean up the interface and wifi struct from state */
     interface_delete(state, name);
+    TAILQ_REMOVE(&state->wifis, wifi, entries);
+    free(wifi);
     return -1;
   }
 
@@ -117,6 +174,7 @@ int wireless_interface_create(netd_state_t *state, const char *name,
 int wireless_set_regdomain(netd_state_t *state, const char *name,
                            const char *regdomain) {
   interface_t *wireless_iface;
+  wifi_t *wifi;
 
   if (!state || !name || !regdomain) {
     debug_log(ERROR,
@@ -141,6 +199,13 @@ int wireless_set_regdomain(netd_state_t *state, const char *name,
     return -1;
   }
 
+  /* Find wifi struct */
+  wifi = wifi_find(state, name);
+  if (!wifi) {
+    debug_log(ERROR, "Wifi struct for %s not found", name);
+    return -1;
+  }
+
   /* Set regdomain in FreeBSD */
   if (freebsd_wireless_set_regdomain(name, regdomain) < 0) {
     debug_log(ERROR,
@@ -149,9 +214,8 @@ int wireless_set_regdomain(netd_state_t *state, const char *name,
     return -1;
   }
 
-  /* Update interface state */
-  strlcpy(wireless_iface->wifi_regdomain, regdomain,
-          sizeof(wireless_iface->wifi_regdomain));
+  /* Update wifi struct */
+  strlcpy(wifi->regdomain, regdomain, sizeof(wifi->regdomain));
 
   debug_log(INFO, "Set regdomain %s for wireless interface %s",
             regdomain, name);
@@ -168,6 +232,7 @@ int wireless_set_regdomain(netd_state_t *state, const char *name,
 int wireless_set_country(netd_state_t *state, const char *name,
                          const char *country) {
   interface_t *wireless_iface;
+  wifi_t *wifi;
 
   if (!state || !name || !country) {
     debug_log(ERROR,
@@ -192,6 +257,13 @@ int wireless_set_country(netd_state_t *state, const char *name,
     return -1;
   }
 
+  /* Find wifi struct */
+  wifi = wifi_find(state, name);
+  if (!wifi) {
+    debug_log(ERROR, "Wifi struct for %s not found", name);
+    return -1;
+  }
+
   /* Set country in FreeBSD */
   if (freebsd_wireless_set_country(name, country) < 0) {
     debug_log(ERROR,
@@ -200,9 +272,8 @@ int wireless_set_country(netd_state_t *state, const char *name,
     return -1;
   }
 
-  /* Update interface state */
-  strlcpy(wireless_iface->wifi_country, country,
-          sizeof(wireless_iface->wifi_country));
+  /* Update wifi struct */
+  strlcpy(wifi->country, country, sizeof(wifi->country));
 
   debug_log(INFO, "Set country %s for wireless interface %s", country,
             name);
@@ -219,6 +290,7 @@ int wireless_set_country(netd_state_t *state, const char *name,
 int wireless_set_authmode(netd_state_t *state, const char *name,
                           const char *authmode) {
   interface_t *wireless_iface;
+  wifi_t *wifi;
 
   if (!state || !name || !authmode) {
     debug_log(ERROR,
@@ -243,6 +315,13 @@ int wireless_set_authmode(netd_state_t *state, const char *name,
     return -1;
   }
 
+  /* Find wifi struct */
+  wifi = wifi_find(state, name);
+  if (!wifi) {
+    debug_log(ERROR, "Wifi struct for %s not found", name);
+    return -1;
+  }
+
   /* Set authmode in FreeBSD */
   if (freebsd_wireless_set_authmode(name, authmode) < 0) {
     debug_log(ERROR,
@@ -251,9 +330,8 @@ int wireless_set_authmode(netd_state_t *state, const char *name,
     return -1;
   }
 
-  /* Update interface state */
-  strlcpy(wireless_iface->wifi_authmode, authmode,
-          sizeof(wireless_iface->wifi_authmode));
+  /* Update wifi struct */
+  strlcpy(wifi->authmode, authmode, sizeof(wifi->authmode));
 
   debug_log(INFO, "Set authmode %s for wireless interface %s", authmode,
             name);
@@ -270,6 +348,7 @@ int wireless_set_authmode(netd_state_t *state, const char *name,
 int wireless_set_privacy(netd_state_t *state, const char *name,
                          const char *privacy) {
   interface_t *wireless_iface;
+  wifi_t *wifi;
 
   if (!state || !name || !privacy) {
     debug_log(ERROR,
@@ -294,6 +373,13 @@ int wireless_set_privacy(netd_state_t *state, const char *name,
     return -1;
   }
 
+  /* Find wifi struct */
+  wifi = wifi_find(state, name);
+  if (!wifi) {
+    debug_log(ERROR, "Wifi struct for %s not found", name);
+    return -1;
+  }
+
   /* Set privacy in FreeBSD */
   if (freebsd_wireless_set_privacy(name, privacy) < 0) {
     debug_log(ERROR,
@@ -302,9 +388,8 @@ int wireless_set_privacy(netd_state_t *state, const char *name,
     return -1;
   }
 
-  /* Update interface state */
-  strlcpy(wireless_iface->wifi_privacy, privacy,
-          sizeof(wireless_iface->wifi_privacy));
+  /* Update wifi struct */
+  strlcpy(wifi->privacy, privacy, sizeof(wifi->privacy));
 
   debug_log(INFO, "Set privacy %s for wireless interface %s", privacy,
             name);
@@ -320,6 +405,7 @@ int wireless_set_privacy(netd_state_t *state, const char *name,
  */
 int wireless_set_txpower(netd_state_t *state, const char *name, int txpower) {
   interface_t *wireless_iface;
+  wifi_t *wifi;
 
   if (!state || !name) {
     debug_log(ERROR,
@@ -349,6 +435,13 @@ int wireless_set_txpower(netd_state_t *state, const char *name, int txpower) {
     return -1;
   }
 
+  /* Find wifi struct */
+  wifi = wifi_find(state, name);
+  if (!wifi) {
+    debug_log(ERROR, "Wifi struct for %s not found", name);
+    return -1;
+  }
+
   /* Set txpower in FreeBSD */
   if (freebsd_wireless_set_txpower(name, txpower) < 0) {
     debug_log(ERROR,
@@ -357,8 +450,8 @@ int wireless_set_txpower(netd_state_t *state, const char *name, int txpower) {
     return -1;
   }
 
-  /* Update interface state */
-  wireless_iface->wifi_txpower = txpower;
+  /* Update wifi struct */
+  wifi->txpower = txpower;
 
   debug_log(INFO, "Set txpower %d for wireless interface %s", txpower,
             name);

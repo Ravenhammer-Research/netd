@@ -31,206 +31,14 @@
 
 #include <netd.h>
 #include <netconf.h>
+#include <vrf.h>
+#include <route.h>
 #include <errno.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-/**
- * Create a new VRF
- * @param state Server state
- * @param name VRF name
- * @param fib_number FIB number
- * @return 0 on success, -1 on failure
- */
-int vrf_create(netd_state_t *state, const char *name, uint32_t fib_number) {
-  vrf_t *vrf;
-
-  if (!state || !name || !is_valid_vrf_name(name) ||
-      !is_valid_fib_number(fib_number)) {
-    debug_log(ERROR,
-              "Invalid parameters for VRF creation: state=%p, name=%s, fib=%u",
-              state, name ? name : "NULL", fib_number);
-    return -1;
-  }
-
-  debug_log(DEBUG, "Creating VRF '%s' with FIB %u", name, fib_number);
-
-  /* Check if VRF already exists */
-  if (vrf_find_by_name(state, name)) {
-    debug_log(ERROR, "VRF %s already exists in state", name);
-    return -1;
-  }
-
-  if (vrf_find_by_fib(state, fib_number)) {
-    debug_log(ERROR, "FIB %u already assigned to another VRF",
-              fib_number);
-    return -1;
-  }
-
-  /* Allocate new VRF */
-  vrf = malloc(sizeof(*vrf));
-  if (!vrf) {
-    debug_log(ERROR, "Failed to allocate memory for VRF %s", name);
-    return -1;
-  }
-
-  /* Initialize VRF */
-  memset(vrf, 0, sizeof(*vrf));
-  strlcpy(vrf->name, name, sizeof(vrf->name));
-  vrf->fib_number = fib_number;
-
-  /* Add to VRF list */
-  TAILQ_INSERT_TAIL(&state->vrfs, vrf, entries);
-  debug_log(DEBUG, "Added VRF %s to state list", name);
-
-  debug_log(INFO, "Created VRF %s with FIB %u", name, fib_number);
-  return 0;
-}
-
-/**
- * Create VRFs XML response
- * @param state Server state
- * @param message_id Message ID for the response
- * @return VRFs XML response string (allocated)
- */
-char *create_vrfs_xml_response(netd_state_t *state, const char *message_id) {
-  char *response;
-  char *temp;
-  int len, total_len;
-  vrf_t *vrf;
-
-  if (!state || !message_id) {
-    return NULL;
-  }
-
-  /* Calculate total length needed */
-  total_len = snprintf(NULL, 0,
-                       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-                       "<rpc-reply xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\" "
-                       "message-id=\"%s\">\n"
-                       "  <data>\n"
-                       "    <lib xmlns=\"http://frrouting.org/yang/vrf\">\n",
-                       message_id);
-
-  /* Always include default VRF (FIB 0) */
-  len = snprintf(NULL, 0,
-                 "      <vrf>\n"
-                 "        <name>default</name>\n"
-                 "        <state>\n"
-                 "          <id>0</id>\n"
-                 "          <active>true</active>\n"
-                 "        </state>\n"
-                 "      </vrf>\n");
-  total_len += len;
-
-  /* Add explicitly created VRF entries */
-  TAILQ_FOREACH(vrf, &state->vrfs, entries) {
-    len = snprintf(NULL, 0,
-                   "      <vrf>\n"
-                   "        <name>%s</name>\n"
-                   "        <state>\n"
-                   "          <id>%u</id>\n"
-                   "          <active>true</active>\n"
-                   "        </state>\n"
-                   "      </vrf>\n",
-                   vrf->name, vrf->fib_number);
-    total_len += len;
-  }
-
-  total_len += snprintf(NULL, 0,
-                        "    </lib>\n"
-                        "  </data>\n"
-                        "</rpc-reply>");
-
-  /* Allocate and build response */
-  response = malloc(total_len + 1);
-  if (!response) {
-    debug_log(ERROR, "Failed to allocate memory for VRFs response");
-    return NULL;
-  }
-
-  len = snprintf(response, total_len + 1,
-                 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-                 "<rpc-reply xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\" "
-                 "message-id=\"%s\">\n"
-                 "  <data>\n"
-                 "    <lib xmlns=\"http://frrouting.org/yang/vrf\">\n",
-                 message_id);
-
-  /* Always include default VRF (FIB 0) */
-  temp = response + len;
-  len += snprintf(temp, total_len + 1 - len,
-                 "      <vrf>\n"
-                 "        <name>default</name>\n"
-                 "        <state>\n"
-                 "          <id>0</id>\n"
-                 "          <active>true</active>\n"
-                 "        </state>\n"
-                 "      </vrf>\n");
-
-  /* Add explicitly created VRF entries */
-  TAILQ_FOREACH(vrf, &state->vrfs, entries) {
-    temp = response + len;
-    len += snprintf(temp, total_len + 1 - len,
-                   "      <vrf>\n"
-                   "        <name>%s</name>\n"
-                   "        <state>\n"
-                   "          <id>%u</id>\n"
-                   "          <active>true</active>\n"
-                 "        </state>\n"
-                   "      </vrf>\n",
-                   vrf->name, vrf->fib_number);
-  }
-
-  len += snprintf(response + len, total_len + 1 - len,
-                  "    </vrfs>\n"
-                  "  </data>\n"
-                  "</rpc-reply>");
-
-  return response;
-}
-
-/**
- * Create VRF routes XML response
- * @param state Server state
- * @param message_id Message ID for the response
- * @param vrf VRF structure
- * @return VRF routes XML response string (allocated)
- */
-char *create_vrf_routes_xml_response(netd_state_t *state, const char *message_id, vrf_t *vrf) {
-  char *routes_response;
-
-  if (!state || !message_id || !vrf) {
-    return NULL;
-  }
-
-  /* Get routes for this VRF using the existing route function */
-  routes_response = create_routes_xml_response(state, message_id, vrf->fib_number);
-  if (!routes_response) {
-    return NULL;
-  }
-
-  /* For now, just return the routes response directly */
-  /* TODO: Wrap in VRF structure if needed */
-  return routes_response;
-}
-
-/**
- * Delete a VRF
- * @param state Server state
- * @param name VRF name
- * @return 0 on success, -1 on failure
- */
-int vrf_delete(netd_state_t *state, const char *name) {
-  debug_log(DEBUG1, "vrf_delete called with state=%p, name=%s", state, name);
-  
-  /* Not implemented: VRF deletion requires careful handling of interfaces and routes */
-  /* Would need to move interfaces to default VRF and flush routes for the FIB */
-  return -1;
-}
 
 /**
  * Find VRF by name
@@ -409,3 +217,131 @@ char *vrf_get_all(netd_state_t *state) {
       vrf_count, xml ? strlen(xml) : 0, vrf_count - 1);
   return xml;
 }
+
+/**
+ * Create VRFs XML response
+ * @param state Server state
+ * @param message_id Message ID for the response
+ * @return VRFs XML response string (allocated)
+ */
+char *create_vrfs_xml_response(netd_state_t *state, const char *message_id) {
+  char *response;
+  char *temp;
+  int len, total_len;
+  vrf_t *vrf;
+
+  if (!state || !message_id) {
+    return NULL;
+  }
+
+  /* Calculate total length needed */
+  total_len = snprintf(NULL, 0,
+                       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                       "<rpc-reply xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\" "
+                       "message-id=\"%s\">\n"
+                       "  <data>\n"
+                       "    <lib xmlns=\"http://frrouting.org/yang/vrf\">\n",
+                       message_id);
+
+  /* Always include default VRF (FIB 0) */
+  len = snprintf(NULL, 0,
+                 "      <vrf>\n"
+                 "        <name>default</name>\n"
+                 "        <state>\n"
+                 "          <id>0</id>\n"
+                 "          <active>true</active>\n"
+                 "        </state>\n"
+                 "      </vrf>\n");
+  total_len += len;
+
+  /* Add explicitly created VRF entries */
+  TAILQ_FOREACH(vrf, &state->vrfs, entries) {
+    len = snprintf(NULL, 0,
+                   "      <vrf>\n"
+                   "        <name>%s</name>\n"
+                   "        <state>\n"
+                   "          <id>%u</id>\n"
+                   "          <active>true</active>\n"
+                   "        </state>\n"
+                   "      </vrf>\n",
+                   vrf->name, vrf->fib_number);
+    total_len += len;
+  }
+
+  total_len += snprintf(NULL, 0,
+                        "    </lib>\n"
+                        "  </data>\n"
+                        "</rpc-reply>");
+
+  /* Allocate and build response */
+  response = malloc(total_len + 1);
+  if (!response) {
+    debug_log(ERROR, "Failed to allocate memory for VRFs response");
+    return NULL;
+  }
+
+  len = snprintf(response, total_len + 1,
+                 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                 "<rpc-reply xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\" "
+                 "message-id=\"%s\">\n"
+                 "  <data>\n"
+                 "    <lib xmlns=\"http://frrouting.org/yang/vrf\">\n",
+                 message_id);
+
+  /* Always include default VRF (FIB 0) */
+  temp = response + len;
+  len += snprintf(temp, total_len + 1 - len,
+                 "      <vrf>\n"
+                 "        <name>default</name>\n"
+                 "        <state>\n"
+                 "          <id>0</id>\n"
+                 "          <active>true</active>\n"
+                 "        </state>\n"
+                 "      </vrf>\n");
+
+  /* Add explicitly created VRF entries */
+  TAILQ_FOREACH(vrf, &state->vrfs, entries) {
+    temp = response + len;
+    len += snprintf(temp, total_len + 1 - len,
+                   "      <vrf>\n"
+                   "        <name>%s</name>\n"
+                   "        <state>\n"
+                   "          <id>%u</id>\n"
+                   "          <active>true</active>\n"
+                 "        </state>\n"
+                   "      </vrf>\n",
+                   vrf->name, vrf->fib_number);
+  }
+
+  len += snprintf(response + len, total_len + 1 - len,
+                  "    </vrfs>\n"
+                  "  </data>\n"
+                  "</rpc-reply>");
+
+  return response;
+}
+
+/**
+ * Create VRF routes XML response
+ * @param state Server state
+ * @param message_id Message ID for the response
+ * @param vrf VRF structure
+ * @return VRF routes XML response string (allocated)
+ */
+char *create_vrf_routes_xml_response(netd_state_t *state, const char *message_id, vrf_t *vrf) {
+  char *routes_response;
+
+  if (!state || !message_id || !vrf) {
+    return NULL;
+  }
+
+  /* Get routes for this VRF using the existing route function */
+  routes_response = create_routes_xml_response(state, message_id, vrf->fib_number);
+  if (!routes_response) {
+    return NULL;
+  }
+
+  /* For now, just return the routes response directly */
+  /* TODO: Wrap in VRF structure if needed */
+  return routes_response;
+} 

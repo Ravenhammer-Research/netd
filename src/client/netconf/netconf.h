@@ -56,7 +56,7 @@ void netconf_disconnect(net_client_t *client);
 int netconf_send_request(net_client_t *client, const char *request, char **response);
 
 /* NETCONF request functions */
-int netconf_get_interfaces(net_client_t *client, char **response);
+int netconf_get_interfaces(net_client_t *client, char **response, const char *interface_type);
 int netconf_get_vrfs(net_client_t *client, char **response);
 int netconf_get_routes(net_client_t *client, uint32_t fib, int family, char **response);
 int netconf_get_interface_groups(net_client_t *client, char **response);

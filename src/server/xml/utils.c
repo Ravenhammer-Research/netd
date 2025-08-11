@@ -94,6 +94,98 @@ char *extract_message_id(const char *request) {
   return result;
 }
 
+/* Callback data structures for type extraction */
+struct type_data {
+  char *type_value;
+  bool found;
+  bool in_type_element;
+};
+
+/* Callback for extracting type value */
+static void type_start_element(void *userData, const XML_Char *name,
+                               const XML_Char **atts) {
+  struct type_data *data = (struct type_data *)userData;
+
+  debug_log(DEBUG, "Type extraction - element: %s, attributes: %p", name, (void*)atts);
+  
+  if (strcmp(name, "type") == 0) {
+    data->in_type_element = true;
+    debug_log(DEBUG, "Found type element, setting in_type_element to true");
+  }
+}
+
+/* Callback for extracting type value */
+static void type_end_element(void *userData, const XML_Char *name) {
+  struct type_data *data = (struct type_data *)userData;
+
+  if (strcmp(name, "type") == 0) {
+    data->in_type_element = false;
+    debug_log(DEBUG, "End of type element, setting in_type_element to false");
+  }
+}
+
+/* Callback for extracting type value */
+static void type_char_data(void *userData, const XML_Char *s, int len) {
+  struct type_data *data = (struct type_data *)userData;
+
+  if (data->in_type_element && !data->found) {
+    debug_log(DEBUG, "Type extraction - character data: '%.*s' (len: %d)", len, s, len);
+    
+    /* Allocate memory for the type value */
+    data->type_value = malloc(len + 1);
+    if (data->type_value) {
+      strncpy(data->type_value, s, len);
+      data->type_value[len] = '\0';
+      data->found = true;
+      debug_log(DEBUG, "Extracted type value: %s", data->type_value);
+    } else {
+      debug_log(ERROR, "Failed to allocate memory for type value");
+    }
+  }
+}
+
+/**
+ * Extract interface type from XML request using proper XML parsing
+ * @param request XML request string
+ * @return Type value string or NULL if not found
+ */
+const char *extract_type_from_xml_request(const char *request) {
+  XML_Parser parser;
+  struct type_data user_data = {NULL, false, false};
+  const char *result = NULL;
+
+  if (!request) {
+    debug_log(DEBUG, "extract_type_from_xml_request: NULL request");
+    return NULL;
+  }
+
+  debug_log(DEBUG, "extract_type_from_xml_request: parsing request: %s", request);
+
+  parser = XML_ParserCreate(NULL);
+  if (!parser) {
+    debug_log(ERROR, "Failed to create XML parser for type extraction");
+    return NULL;
+  }
+
+  XML_SetUserData(parser, &user_data);
+  XML_SetStartElementHandler(parser, type_start_element);
+  XML_SetEndElementHandler(parser, type_end_element);
+  XML_SetCharacterDataHandler(parser, type_char_data);
+
+  if (XML_Parse(parser, request, strlen(request), 1) != XML_STATUS_OK) {
+    debug_log(ERROR, "XML parsing failed for type extraction: %s",
+              XML_ErrorString(XML_GetErrorCode(parser)));
+  } else if (user_data.found) {
+    result = user_data.type_value;
+    debug_log(DEBUG, "extract_type_from_xml_request: successfully extracted type: %s", result);
+  } else {
+    debug_log(DEBUG, "extract_type_from_xml_request: no type found in request");
+  }
+
+  XML_ParserFree(parser);
+  return result;
+}
+
 /* Callback data structures for general XML parsing */
 struct xml_check_data {
   bool found_elements[MAX_XML_ELEMENTS];

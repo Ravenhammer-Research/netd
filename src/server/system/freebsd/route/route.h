@@ -32,57 +32,16 @@
 #ifndef ROUTE_H
 #define ROUTE_H
 
+#include <netd.h>
 #include <sys/types.h>
 #include <stdint.h>
 #include <stdbool.h>
 
-struct netd_state;
-
-/**
- * Add a route to the routing table
- * @param fib FIB number
- * @param destination Destination address
- * @param gateway Gateway address
- * @param interface Interface name
- * @param flags Route flags
- * @return 0 on success, -1 on failure
- */
+/* Route functions */
 int freebsd_route_add(uint32_t fib, const char *destination,
-                      const char *gateway, const char *interface, int flags);
-
-/**
- * Delete a route from the routing table
- * @param fib FIB number
- * @param destination Destination address
- * @return 0 on success, -1 on failure
- */
+    const char *gateway, const char *interface, int flags);
 int freebsd_route_delete(uint32_t fib, const char *destination);
-
-/**
- * List routes from the routing table and populate state
- * @param state Server state
- * @param fib FIB number
- * @param family Address family
- * @return 0 on success, -1 on failure
- */
 int freebsd_route_list(netd_state_t *state, uint32_t fib, int family);
+int freebsd_route_enumerate_system(netd_state_t *state, uint32_t fib);
 
-/**
- * Get the number of FIBs configured in the system
- * @return Number of FIBs, or 1 if unable to determine
- */
-uint32_t get_system_fib_count(void);
-
-/**
- * Validate FIB number
- * @param fib FIB number
- * @return true if valid, false otherwise
- */
-bool is_valid_fib_number(uint32_t fib);
-
-/**
- * Clean up interface map resources
- */
-void freebsd_route_cleanup(void);
-
-#endif /* ROUTE_H */ 
+#endif /* ROUTE_H */

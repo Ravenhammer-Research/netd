@@ -38,6 +38,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/queue.h>
+#include <netconf/netconf.h>
+#include <netconf/interface/interface.h>
+#include <netconf/route/route.h>
+#include <netconf/vrf/vrf.h>
 
 /**
  * Begin a transaction

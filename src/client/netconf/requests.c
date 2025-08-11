@@ -38,12 +38,42 @@
 /**
  * Get interfaces from the server
  */
-int netconf_get_interfaces(net_client_t *client, char **response) {
+int netconf_get_interfaces(net_client_t *client, char **response, const char *interface_type) {
     char request[1024];
+    const char *type_filter = "";
     
     if (!client || !response) {
         return -1;
     }
+    
+    debug_log(DEBUG, "netconf_get_interfaces: interface_type=%s", interface_type ? interface_type : "NULL");
+    
+    /* Determine the type filter based on interface type */
+    if (interface_type) {
+        if (strcmp(interface_type, "bridge") == 0) {
+            type_filter = "<type xmlns:ianaift=\"urn:ietf:params:xml:ns:yang:iana-if-type\">ianaift:bridge</type>";
+        } else if (strcmp(interface_type, "vlan") == 0) {
+            type_filter = "<type xmlns:ianaift=\"urn:ietf:params:xml:ns:yang:iana-if-type\">ianaift:l2vlan</type>";
+        } else if (strcmp(interface_type, "ethernet") == 0) {
+            type_filter = "<type xmlns:ianaift=\"urn:ietf:params:xml:ns:yang:iana-if-type\">ianaift:ethernetCsmacd</type>";
+        } else if (strcmp(interface_type, "tap") == 0) {
+            type_filter = "<type xmlns:netd=\"urn:ietf:params:xml:ns:yang:netd\">netd:tap</type>";
+        } else if (strcmp(interface_type, "lagg") == 0) {
+            type_filter = "<type xmlns:netd=\"urn:ietf:params:xml:ns:yang:netd\">netd:lagg</type>";
+        } else if (strcmp(interface_type, "loopback") == 0) {
+            type_filter = "<type xmlns:ianaift=\"urn:ietf:params:xml:ns:yang:iana-if-type\">ianaift:softwareLoopback</type>";
+        } else if (strcmp(interface_type, "wlan") == 0) {
+            type_filter = "<type xmlns:ianaift=\"urn:ietf:params:xml:ns:yang:iana-if-type\">ianaift:ieee80211</type>";
+        } else if (strcmp(interface_type, "epair") == 0) {
+            type_filter = "<type xmlns:netd=\"urn:ietf:params:xml:ns:yang:netd\">netd:epair</type>";
+        } else if (strcmp(interface_type, "gif") == 0) {
+            type_filter = "<type xmlns:netd=\"urn:ietf:params:xml:ns:yang:netd\">netd:gif</type>";
+        } else if (strcmp(interface_type, "vxlan") == 0) {
+            type_filter = "<type xmlns:netd=\"urn:ietf:params:xml:ns:yang:netd\">netd:vxlan</type>";
+        }
+    }
+    
+    debug_log(DEBUG, "netconf_get_interfaces: type_filter='%s'", type_filter);
     
     /* Build get-interfaces request */
     snprintf(request, sizeof(request),
@@ -53,7 +83,7 @@ int netconf_get_interfaces(net_client_t *client, char **response) {
              "<interfaces xmlns=\"urn:ietf:params:xml:ns:yang:ietf-interfaces\">"
              "<interface>"
              "<name/>"
-             "<type/>"
+             "%s"
              "<enabled/>"
              "<description/>"
              "<ipv4 xmlns=\"urn:ietf:params:xml:ns:yang:ietf-ip\">"
@@ -69,11 +99,13 @@ int netconf_get_interfaces(net_client_t *client, char **response) {
              "<prefix-length/>"
              "</address>"
              "</ipv6>"
+             "<bridge-members xmlns=\"urn:ietf:params:xml:ns:yang:netd\"/>"
              "</interface>"
              "</interfaces>"
              "</filter>"
              "</get>"
-             "</rpc>");
+             "</rpc>",
+             type_filter);
     
     return netconf_send_request(client, request, response);
 }

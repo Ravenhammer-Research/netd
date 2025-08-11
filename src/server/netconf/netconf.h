@@ -29,11 +29,10 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <netd.h>
+
 #ifndef NETCONF_H
 #define NETCONF_H
-
-#include <netd.h>
-#include <xml/xml.h>
 
 #define NETCONF_RESPONSE_BUFFER_SIZE (128 * 1024 * 1024) /* 128MB */
 
@@ -43,8 +42,6 @@ struct netd_state;
 /* Main NETCONF request handler */
 int netconf_handle_request(netd_state_t *state, const char *request,
                           char **response);
-
-
 
 /* Request type checking functions */
 bool is_get_interfaces_request(const char *request);
@@ -63,34 +60,31 @@ int handle_commit_request(netd_state_t *state, const char *request,
                           const char *message_id, char **response);
 int handle_save_request(netd_state_t *state, const char *request,
                          const char *message_id, char **response);
-int handle_get_interfaces_request(netd_state_t *state, const char *request,
-                                  const char *message_id, char **response);
-int handle_get_vrfs_request(netd_state_t *state, const char *request,
-                             const char *message_id, char **response);
-int handle_get_vrf_routes_request(netd_state_t *state, const char *request,
-                                   const char *message_id, char **response);
 
 /* Response creation functions */
 char *create_success_response(const char *message_id);
 char *create_error_response(const char *message_id, const char *error_type,
                             const char *error_message);
-char *create_interfaces_xml_response(netd_state_t *state, const char *message_id);
-char *create_vrfs_xml_response(netd_state_t *state, const char *message_id);
-char *create_routes_xml_response(netd_state_t *state, const char *message_id, uint32_t fib);
-char *create_vrf_routes_xml_response(netd_state_t *state, const char *message_id, vrf_t *vrf);
 
 /* Utility functions */
-int prepare_response(char *response, int len, const char *format, ...);
+int prepare_response(char *response, const char *format, ...);
 
-/* External function declarations for pending changes */
-extern int add_pending_vrf_create(netd_state_t *state, const char *name,
-                                  uint32_t fib);
-extern int add_pending_route_add(netd_state_t *state, uint32_t fib,
-                                 const char *destination, const char *gateway,
-                                 const char *interface, int flags);
-extern int add_pending_route_delete(netd_state_t *state, uint32_t fib,
-                                    const char *destination);
-extern int add_pending_interface_set_fib(netd_state_t *state, const char *name,
-                                         uint32_t fib);
+/* YANG/Netconf functions */
+int yang_init(netd_state_t *state);
+void yang_cleanup(netd_state_t *state);
+int yang_validate_xml(netd_state_t *state, const char *xml_data);
+int yang_validate_config(netd_state_t *state, const char *xml_config);
+int yang_validate_rpc(netd_state_t *state, const char *rpc_xml);
+int yang_validate_leafrefs(netd_state_t *state, struct lyd_node *data_tree);
+char *yang_get_validation_error(const struct ly_ctx *ctx);
+int yang_validate_netd_operation(netd_state_t *state, const char *operation,
+                                 const char *data);
+bool yang_module_loaded(netd_state_t *state, const char *module_name);
+void yang_log_callback(LY_LOG_LEVEL level, const char *msg,
+                       const char *data_path, const char *schema_path,
+                       uint64_t line);
+int netconf_handle_request(netd_state_t *state, const char *request,
+                           char **response);
+
 
 #endif /* NETCONF_H */ 

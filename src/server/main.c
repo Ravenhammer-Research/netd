@@ -30,6 +30,7 @@
  */
 
 #include <netd.h>
+#include <netconf/netconf.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <getopt.h>
@@ -295,6 +296,12 @@ int main(int argc, char *argv[]) {
   memset(&state, 0, sizeof(state));
   TAILQ_INIT(&state.vrfs);
   TAILQ_INIT(&state.interfaces);
+  TAILQ_INIT(&state.bridges);
+  TAILQ_INIT(&state.vlans);
+  TAILQ_INIT(&state.wifis);
+  TAILQ_INIT(&state.epairs);
+  TAILQ_INIT(&state.gifs);
+  TAILQ_INIT(&state.laggs);
   TAILQ_INIT(&state.routes);
   TAILQ_INIT(&state.pending_changes);
   state.debug_level = debug_level;

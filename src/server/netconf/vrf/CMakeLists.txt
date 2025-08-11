@@ -1,26 +1,13 @@
-# CMakeLists.txt for interface module
-# Copyright (c) 2025 Paige Thompson / Raven Hammer Research
-
-set(INTERFACE_SOURCES
+# VRF module for NETCONF server
+add_library(vrf STATIC
     set.c
     delete.c
     show.c
     request.c
-    bridge.c
-    vlan.c
-    epair.c
-    gif.c
-    lagg.c
-    loopback.c
-    tap.c
-    wlan.c
     response.c
 )
 
-add_library(interface ${INTERFACE_SOURCES})
-
-# Set include directories
-target_include_directories(interface PUBLIC
+target_include_directories(vrf PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/..
     ${CMAKE_CURRENT_SOURCE_DIR}/../..
@@ -30,4 +17,8 @@ target_include_directories(interface PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/../../../shared
 )
 
- 
+target_link_libraries(vrf
+    netd
+    shared_debug
+    route
+) 
