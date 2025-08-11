@@ -106,7 +106,7 @@ static void xml_check_start_element(void *userData, const XML_Char *name,
                                    const XML_Char **atts) {
   struct xml_check_data *data = (struct xml_check_data *)userData;
   
-  debug_log(DEBUG, "XML element: %s, attributes: %p", name, (void*)atts);
+  debug_log(DEBUG2, "XML element: %s, attributes: %p", name, (void*)atts);
   
   if (data->element_count < MAX_XML_ELEMENTS) {
     data->element_names[data->element_count] = strdup(name);

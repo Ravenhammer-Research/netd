@@ -80,4 +80,9 @@ uint32_t get_system_fib_count(void);
  */
 bool is_valid_fib_number(uint32_t fib);
 
+/**
+ * Clean up interface map resources
+ */
+void freebsd_route_cleanup(void);
+
 #endif /* ROUTE_H */ 
