@@ -257,7 +257,7 @@ int route_delete(netd_state_t *state, uint32_t fib, const char *destination);
 int route_list(netd_state_t *state, uint32_t fib, int family);
 int route_flush_fib(netd_state_t *state, uint32_t fib);
 int route_clear_all(netd_state_t *state);
-char *route_table_query(netd_state_t *state);
+char *route_table_query(netd_state_t *state, uint32_t fib);
 
 /* Configuration management */
 int config_load(netd_state_t *state);

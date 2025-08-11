@@ -74,6 +74,27 @@ int config_load(netd_state_t *state) {
   uint32_t fib_count = get_system_fib_count();
   debug_log(INFO, "System has %u FIBs", fib_count);
 
+  /* Automatically create VRF entries for all existing FIBs */
+  debug_log(INFO, "Creating VRF entries for all existing FIBs");
+  for (uint32_t fib = 0; fib < fib_count; fib++) {
+    if (fib == 0) {
+      /* FIB 0 is the default VRF and is handled specially */
+      debug_log(DEBUG, "FIB 0 is the default VRF");
+      continue;
+    }
+    
+    /* Create a VRF entry for this FIB with a default name */
+    char vrf_name[64];
+    snprintf(vrf_name, sizeof(vrf_name), "vrf%u", fib);
+    
+    debug_log(DEBUG, "Creating VRF entry for FIB %u with name '%s'", fib, vrf_name);
+    if (vrf_create(state, vrf_name, fib) < 0) {
+      debug_log(WARN, "Failed to create VRF entry for FIB %u", fib);
+    } else {
+      debug_log(INFO, "Successfully created VRF entry for FIB %u with name '%s'", fib, vrf_name);
+    }
+  }
+
   /* Now try to load config if it exists */
   fp = fopen(NETD_CONFIG_FILE, "r");
   if (!fp) {

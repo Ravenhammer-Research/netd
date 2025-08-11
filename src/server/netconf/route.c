@@ -214,9 +214,10 @@ int route_clear_all(netd_state_t *state) {
 /**
  * Query route table and return as XML for NETCONF response
  * @param state Server state
+ * @param fib FIB number to query
  * @return XML string (allocated) or NULL on failure
  */
-char *route_table_query(netd_state_t *state) {
+char *route_table_query(netd_state_t *state, uint32_t fib) {
   netd_route_t *route;
   char *xml = NULL;
   char *temp_xml = NULL;
@@ -235,9 +236,9 @@ char *route_table_query(netd_state_t *state) {
   /* Clear existing routes from local state (not the actual routing table) */
   route_clear_all(state);
 
-  /* Populate state with current system routes */
-  if (freebsd_route_list(state, 0, AF_UNSPEC) < 0) {
-    debug_log(ERROR, "Failed to get routes from system");
+  /* Populate state with current system routes for the specified FIB */
+  if (freebsd_route_list(state, fib, AF_UNSPEC) < 0) {
+    debug_log(ERROR, "Failed to get routes from system for FIB %u", fib);
     return NULL;
   }
 
@@ -246,8 +247,9 @@ char *route_table_query(netd_state_t *state) {
            "    <routing xmlns=\"urn:ietf:params:xml:ns:yang:ietf-routing\">\n"
            "      <ribs>\n"
            "        <rib>\n"
-           "          <name>default</name>\n"
-           "          <routes>\n");
+           "          <name>vrf%u</name>\n"
+           "          <routes>\n",
+           fib);
   if (!xml) {
     debug_log(ERROR, "Failed to allocate memory for route XML header");
     return NULL;

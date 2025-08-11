@@ -252,13 +252,18 @@ int handle_get_vrf_routes_request(netd_state_t *state, const char *request,
 
   /* Determine if it's a name or ID and find VRF accordingly */
   vrf_t *vrf = NULL;
+  uint32_t fib_number = 0;
+  
   if (isdigit(vrf_name[0])) {
     /* It's a numeric ID/FIB number */
-    uint32_t fib_number = (uint32_t)strtoul(vrf_name, NULL, 10);
+    fib_number = (uint32_t)strtoul(vrf_name, NULL, 10);
     vrf = vrf_find_by_fib(state, fib_number);
   } else {
     /* It's a name */
     vrf = vrf_find_by_name(state, vrf_name);
+    if (vrf) {
+      fib_number = vrf->fib_number;
+    }
   }
   
   if (!vrf) {
@@ -272,9 +277,9 @@ int handle_get_vrf_routes_request(netd_state_t *state, const char *request,
   free(vrf_name);
 
   /* Get all routes for this VRF */
-  char *routes_data = route_table_query(state);
+  char *routes_data = route_table_query(state, fib_number);
   if (!routes_data) {
-    debug_log(ERROR, "Failed to get VRF routes");
+    debug_log(ERROR, "Failed to get VRF routes for FIB %u", fib_number);
     *response = create_error_response(message_id, "operation-failed",
                                "Failed to get VRF routes");
     return -1;
