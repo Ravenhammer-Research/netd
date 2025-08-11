@@ -145,8 +145,8 @@ char *vrf_get_all(netd_state_t *state) {
 
   debug_log(DEBUG, "Generating XML for all VRFs");
 
-  /* Only include actual VRF entries, not every FIB in use */
-  debug_log(DEBUG, "Generating XML for actual VRF entries only");
+  /* Include all VRFs that were created at startup */
+  debug_log(DEBUG, "Generating XML for all created VRFs");
 
   /* Start XML */
   asprintf(&xml, "    <lib xmlns=\"http://frrouting.org/yang/vrf\">\n");
@@ -173,11 +173,11 @@ char *vrf_get_all(netd_state_t *state) {
   }
   vrf_count++;
 
-  /* Include explicitly created VRFs */
-  debug_log(DEBUG, "Checking for explicitly created VRFs...");
+  /* Include all created VRFs */
+  debug_log(DEBUG, "Including all created VRFs...");
   TAILQ_FOREACH(vrf, &state->vrfs, entries) {
     vrf_count++;
-    debug_log(DEBUG, "Found explicit VRF %d: %s (FIB %u)", vrf_count,
+    debug_log(DEBUG, "Found VRF %d: %s (FIB %u)", vrf_count,
               vrf->name, vrf->fib_number);
     asprintf(&temp_xml,
              "      <vrf>\n"
@@ -198,9 +198,6 @@ char *vrf_get_all(netd_state_t *state) {
     }
   }
 
-  /* Only include explicitly created VRFs, not auto-detected FIBs */
-  debug_log(DEBUG, "Only including explicitly created VRFs");
-
   /* Close XML tags */
   asprintf(&temp_xml, "    </lib>\n");
   if (temp_xml) {
@@ -213,8 +210,8 @@ char *vrf_get_all(netd_state_t *state) {
 
   debug_log(
       INFO,
-      "Generated XML for %d VRFs (%zu bytes): %d explicit",
-      vrf_count, xml ? strlen(xml) : 0, vrf_count - 1);
+      "Generated XML for %d VRFs (%zu bytes)",
+      vrf_count, xml ? strlen(xml) : 0);
   return xml;
 }
 
@@ -226,98 +223,43 @@ char *vrf_get_all(netd_state_t *state) {
  */
 char *create_vrfs_xml_response(netd_state_t *state, const char *message_id) {
   char *response;
-  char *temp;
-  int len, total_len;
-  vrf_t *vrf;
+  char *vrfs_xml;
 
   if (!state || !message_id) {
     return NULL;
   }
 
-  /* Calculate total length needed */
-  total_len = snprintf(NULL, 0,
+  /* Get VRFs XML */
+  vrfs_xml = vrf_get_all(state);
+  if (!vrfs_xml) {
+    debug_log(ERROR, "Failed to get VRFs XML");
+    return NULL;
+  }
+
+  /* Allocate buffer for response */
+  response = malloc(NETCONF_RESPONSE_BUFFER_SIZE);
+  if (!response) {
+    debug_log(ERROR, "Failed to allocate memory for VRFs response");
+    free(vrfs_xml);
+    return NULL;
+  }
+
+  if (prepare_response(response,
                        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                        "<rpc-reply xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\" "
                        "message-id=\"%s\">\n"
                        "  <data>\n"
-                       "    <lib xmlns=\"http://frrouting.org/yang/vrf\">\n",
-                       message_id);
-
-  /* Always include default VRF (FIB 0) */
-  len = snprintf(NULL, 0,
-                 "      <vrf>\n"
-                 "        <name>default</name>\n"
-                 "        <state>\n"
-                 "          <id>0</id>\n"
-                 "          <active>true</active>\n"
-                 "        </state>\n"
-                 "      </vrf>\n");
-  total_len += len;
-
-  /* Add explicitly created VRF entries */
-  TAILQ_FOREACH(vrf, &state->vrfs, entries) {
-    len = snprintf(NULL, 0,
-                   "      <vrf>\n"
-                   "        <name>%s</name>\n"
-                   "        <state>\n"
-                   "          <id>%u</id>\n"
-                   "          <active>true</active>\n"
-                   "        </state>\n"
-                   "      </vrf>\n",
-                   vrf->name, vrf->fib_number);
-    total_len += len;
-  }
-
-  total_len += snprintf(NULL, 0,
-                        "    </lib>\n"
-                        "  </data>\n"
-                        "</rpc-reply>");
-
-  /* Allocate and build response */
-  response = malloc(total_len + 1);
-  if (!response) {
-    debug_log(ERROR, "Failed to allocate memory for VRFs response");
+                       "%s"
+                       "  </data>\n"
+                       "</rpc-reply>\n",
+                       message_id, vrfs_xml) == -1) {
+    free(vrfs_xml);
+    free(response);
     return NULL;
   }
 
-  len = snprintf(response, total_len + 1,
-                 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-                 "<rpc-reply xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\" "
-                 "message-id=\"%s\">\n"
-                 "  <data>\n"
-                 "    <lib xmlns=\"http://frrouting.org/yang/vrf\">\n",
-                 message_id);
-
-  /* Always include default VRF (FIB 0) */
-  temp = response + len;
-  len += snprintf(temp, total_len + 1 - len,
-                 "      <vrf>\n"
-                 "        <name>default</name>\n"
-                 "        <state>\n"
-                 "          <id>0</id>\n"
-                 "          <active>true</active>\n"
-                 "        </state>\n"
-                 "      </vrf>\n");
-
-  /* Add explicitly created VRF entries */
-  TAILQ_FOREACH(vrf, &state->vrfs, entries) {
-    temp = response + len;
-    len += snprintf(temp, total_len + 1 - len,
-                   "      <vrf>\n"
-                   "        <name>%s</name>\n"
-                   "        <state>\n"
-                   "          <id>%u</id>\n"
-                   "          <active>true</active>\n"
-                 "        </state>\n"
-                   "      </vrf>\n",
-                   vrf->name, vrf->fib_number);
-  }
-
-  len += snprintf(response + len, total_len + 1 - len,
-                  "    </vrfs>\n"
-                  "  </data>\n"
-                  "</rpc-reply>");
-
+  free(vrfs_xml);
+  debug_log(INFO, "Created VRFs XML response");
   return response;
 }
 

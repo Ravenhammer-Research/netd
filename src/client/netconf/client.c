@@ -102,16 +102,23 @@ void netconf_disconnect(net_client_t *client) {
  */
 int netconf_send_request(net_client_t *client, const char *request, char **response) {
     ssize_t sent, received;
-    char buffer[4096];
+    char *buffer = malloc(128 * 1024 * 1024); /* 128MB - same as server NETCONF_RESPONSE_BUFFER_SIZE */
     char *full_response = NULL;
     size_t response_size = 0;
     
     if (!client || !request || !response) {
+        free(buffer);
+        return -1;
+    }
+    
+    if (!buffer) {
+        fprintf(stderr, "Failed to allocate receive buffer\n");
         return -1;
     }
     
     if (!client->connected) {
         fprintf(stderr, "Not connected to server\n");
+        free(buffer);
         return -1;
     }
     
@@ -119,11 +126,13 @@ int netconf_send_request(net_client_t *client, const char *request, char **respo
     sent = send(client->socket_fd, request, strlen(request), 0);
     if (sent < 0) {
         fprintf(stderr, "Failed to send request: %s\n", strerror(errno));
+        free(buffer);
         return -1;
     }
     
     if (sent != (ssize_t)strlen(request)) {
         fprintf(stderr, "Incomplete send: %zd of %zu bytes\n", sent, strlen(request));
+        free(buffer);
         return -1;
     }
     
@@ -132,12 +141,13 @@ int netconf_send_request(net_client_t *client, const char *request, char **respo
     /* Validate request against YANG schema */
     if (yang_validate_rpc_client(client, request) < 0) {
         debug_log(ERROR, "Request failed YANG validation");
+        free(buffer);
         return -1;
     }
     
     /* Receive response */
     while (1) {
-        received = recv(client->socket_fd, buffer, sizeof(buffer) - 1, 0);
+        received = recv(client->socket_fd, buffer, 128 * 1024 * 1024 - 1, 0);
         if (received < 0) {
             if (errno == EAGAIN || errno == EWOULDBLOCK) {
                 /* Non-blocking socket, no data available */
@@ -145,6 +155,7 @@ int netconf_send_request(net_client_t *client, const char *request, char **respo
                 continue;
             }
             fprintf(stderr, "Failed to receive response: %s\n", strerror(errno));
+            free(buffer);
             return -1;
         }
         
@@ -161,6 +172,7 @@ int netconf_send_request(net_client_t *client, const char *request, char **respo
         if (!new_response) {
             fprintf(stderr, "Failed to allocate memory for response\n");
             free(full_response);
+            free(buffer);
             return -1;
         }
         
@@ -173,6 +185,8 @@ int netconf_send_request(net_client_t *client, const char *request, char **respo
             break;
         }
     }
+    
+    free(buffer);
     
     if (!full_response) {
         fprintf(stderr, "No response received\n");

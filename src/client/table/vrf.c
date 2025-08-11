@@ -39,7 +39,7 @@
  * @param xml_response XML response string
  */
 void print_vrf_table(const char *xml_response) {
-  struct vrf_data vrfs[100]; /* Max 100 VRFs */
+  struct vrf_data vrfs[MAX_VRFS]; /* Max VRFs */
   struct table_format fmt;
   int count;
 
@@ -48,7 +48,7 @@ void print_vrf_table(const char *xml_response) {
   }
 
   /* Parse VRFs from XML using XML utilities */
-  count = parse_vrfs_from_xml(xml_response, vrfs, 100);
+  count = parse_vrfs_from_xml(xml_response, vrfs, MAX_VRFS);
   if (count < 0) {
     print_error("Failed to parse VRF XML");
     return;

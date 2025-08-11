@@ -74,9 +74,9 @@ int config_load(netd_state_t *state) {
   }
 
   /* Create VRFs for all FIBs at startup */
-  debug_log(INFO, "Creating VRFs for all FIBs (0-255)");
+  debug_log(INFO, "Creating VRFs for all FIBs (0-65535)");
   
-  for (uint32_t fib = 0; fib < 256; fib++) {
+  for (uint32_t fib = 0; fib < 65536; fib++) {
     if (fib == 0) {
       /* FIB 0 is the default VRF and is handled specially */
       debug_log(DEBUG, "FIB 0 is the default VRF");

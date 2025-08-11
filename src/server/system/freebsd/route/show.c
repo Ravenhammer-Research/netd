@@ -470,8 +470,8 @@ uint32_t get_system_fib_count(void) {
  * @return true if valid, false otherwise
  */
 bool is_valid_fib_number(uint32_t fib) {
-  uint32_t max_fibs = get_system_fib_count();
-  return (fib < max_fibs);
+  /* Accept all FIBs 0-65535 for VRF creation */
+  return (fib <= 65535);
 }
 
 /**

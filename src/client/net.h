@@ -44,6 +44,9 @@
 #define NETCONF_SOCKET_PATH "/var/run/netd.sock"
 #define MAX_COLUMNS 16
 
+/* Maximum number of VRFs - FreeBSD supports up to 65536 FIBs (0-65535) */
+#define MAX_VRFS 65536
+
 /* Command types */
 typedef enum {
   CMD_UNKNOWN = 0,

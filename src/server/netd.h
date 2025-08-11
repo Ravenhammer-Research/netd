@@ -44,19 +44,22 @@
 #define MAX_VRF_NAME_LEN 64
 
 /* Maximum interface name length - FreeBSD interface names like "em0", "lagg0", "vlan100" are typically under 32 chars */
-#define MAX_IFNAME_LEN 64
+#define MAX_IFNAME_LEN 15
 
 /* Maximum interface group name length - Group names like "lan", "wan", "dmz" are typically short */
-#define MAX_GROUP_NAME_LEN 64
+#define MAX_GROUP_NAME_LEN 15
 
 /* Maximum number of groups per interface - Most interfaces belong to 1-3 groups, rarely more than 8 */
-#define MAX_GROUPS_PER_IF 16
+#define MAX_GROUPS_PER_IF 65536
 
 /* Maximum number of bridge members per bridge interface */
-#define MAX_BRIDGE_MEMBERS 32
+#define MAX_BRIDGE_MEMBERS 65536
 
 /* Maximum number of LAGG members per LAGG interface */
-#define MAX_LAGG_MEMBERS 8
+#define MAX_LAGG_MEMBERS 65536
+
+/* Maximum number of VRFs - FreeBSD supports up to 65536 FIBs (0-65535) */
+#define MAX_VRFS 65536
 
 /* Interface address structure */
 typedef struct if_addr {
