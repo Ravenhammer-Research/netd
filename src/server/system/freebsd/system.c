@@ -80,7 +80,7 @@ int freebsd_enumerate_interfaces(netd_state_t *state) {
 
   /* Get interface addresses */
   if (getifaddrs(&ifap) != 0) {
-    debug_log(DEBUG_ERROR, "Failed to get interface addresses: %s",
+    debug_log(ERROR, "Failed to get interface addresses: %s",
               strerror(errno));
     return -1;
   }
@@ -108,10 +108,10 @@ int freebsd_enumerate_interfaces(netd_state_t *state) {
           strncmp(ifa->ifa_name, "epair", 5) == 0) {
         /* Continue processing these virtual interfaces even without addresses
          */
-        debug_log(DEBUG_DEBUG, "Including virtual interface %s without address",
+        debug_log(DEBUG, "Including virtual interface %s without address",
                   ifa->ifa_name);
       } else {
-        debug_log(DEBUG_DEBUG, "Skipping interface %s without address",
+        debug_log(DEBUG, "Skipping interface %s without address",
                   ifa->ifa_name);
         continue;
       }
@@ -172,13 +172,13 @@ int freebsd_enumerate_interfaces(netd_state_t *state) {
       type = IF_TYPE_VXLAN;
     } else if (strncmp(ifa->ifa_name, "bridge", 6) == 0) {
       type = IF_TYPE_BRIDGE;
-      debug_log(DEBUG_TRACE, "Processing bridge interface: %s", ifa->ifa_name);
+      debug_log(DEBUG2, "Processing bridge interface: %s", ifa->ifa_name);
     }
 
     /* Allocate new interface */
     iface = malloc(sizeof(*iface));
     if (!iface) {
-      debug_log(DEBUG_ERROR, "Failed to allocate memory for interface %s",
+      debug_log(ERROR, "Failed to allocate memory for interface %s",
                 ifa->ifa_name);
       continue;
     }
@@ -198,26 +198,26 @@ int freebsd_enumerate_interfaces(netd_state_t *state) {
 
     /* Get FIB */
     if (freebsd_interface_get_fib(ifa->ifa_name, &iface->fib) == 0) {
-      debug_log(DEBUG_TRACE, "Found FIB for %s: %u", ifa->ifa_name, iface->fib);
+      debug_log(DEBUG2, "Found FIB for %s: %u", ifa->ifa_name, iface->fib);
     } else {
-      debug_log(DEBUG_DEBUG, "Failed to get FIB for %s", ifa->ifa_name);
+      debug_log(DEBUG, "Failed to get FIB for %s", ifa->ifa_name);
     }
 
     /* Get MTU */
     if (freebsd_interface_get_mtu(ifa->ifa_name, &iface->mtu) == 0) {
-      debug_log(DEBUG_TRACE, "Found MTU for %s: %d", ifa->ifa_name, iface->mtu);
+      debug_log(DEBUG2, "Found MTU for %s: %d", ifa->ifa_name, iface->mtu);
     } else {
-      debug_log(DEBUG_DEBUG, "Failed to get MTU for %s", ifa->ifa_name);
+      debug_log(DEBUG, "Failed to get MTU for %s", ifa->ifa_name);
     }
 
     /* Get group information */
     if (freebsd_interface_get_groups(ifa->ifa_name, iface->groups,
                                      MAX_GROUPS_PER_IF,
                                      &iface->group_count) == 0) {
-      debug_log(DEBUG_TRACE, "Found %d groups for %s", iface->group_count,
+      debug_log(DEBUG2, "Found %d groups for %s", iface->group_count,
                 ifa->ifa_name);
     } else {
-      debug_log(DEBUG_DEBUG, "Failed to get groups for %s", ifa->ifa_name);
+      debug_log(DEBUG, "Failed to get groups for %s", ifa->ifa_name);
     }
 
     /* Get bridge member information for bridge interfaces */
@@ -231,7 +231,7 @@ int freebsd_enumerate_interfaces(netd_state_t *state) {
       freebsd_vlan_show(ifa->ifa_name, &iface->vlan_id, iface->vlan_proto,
                         sizeof(iface->vlan_proto), &iface->vlan_pcp,
                         iface->vlan_parent, sizeof(iface->vlan_parent));
-      debug_log(DEBUG_TRACE,
+      debug_log(DEBUG2,
                 "Found VLAN info for %s: id=%d, proto=%s, pcp=%d, parent=%s",
                 ifa->ifa_name, iface->vlan_id, iface->vlan_proto,
                 iface->vlan_pcp, iface->vlan_parent);
@@ -247,7 +247,7 @@ int freebsd_enumerate_interfaces(netd_state_t *state) {
           &iface->wifi_txpower, &iface->wifi_bmiss, &iface->wifi_scanvalid,
           iface->wifi_features, sizeof(iface->wifi_features),
           &iface->wifi_bintval, iface->wifi_parent, sizeof(iface->wifi_parent));
-      debug_log(DEBUG_TRACE,
+      debug_log(DEBUG2,
                 "Found WiFi info for %s: regdomain=%s, country=%s, "
                 "authmode=%s, privacy=%s, txpower=%d, bmiss=%d, scanvalid=%d, "
                 "features=%s, bintval=%d, parent=%s",
@@ -276,7 +276,7 @@ int freebsd_enumerate_interfaces(netd_state_t *state) {
                     sizeof(iface->primary_address) - 1);
             iface->primary_address[sizeof(iface->primary_address) - 1] = '\0';
             primary_ipv4_found = true;
-            debug_log(DEBUG_TRACE, "Found primary IPv4 address for %s: %s",
+            debug_log(DEBUG2, "Found primary IPv4 address for %s: %s",
                       ifa->ifa_name, iface->primary_address);
           } else if (iface->alias_count < 10) {
             /* Additional IPv4 addresses are aliases */
@@ -286,7 +286,7 @@ int freebsd_enumerate_interfaces(netd_state_t *state) {
                                   [sizeof(iface->alias_addresses[0]) - 1] =
                 '\0';
             iface->alias_count++;
-            debug_log(DEBUG_TRACE, "Found IPv4 alias for %s: %s", ifa->ifa_name,
+            debug_log(DEBUG2, "Found IPv4 alias for %s: %s", ifa->ifa_name,
                       addr_str);
           }
         } else if (ifa_addr->ifa_addr->sa_family == AF_INET6) {
@@ -300,7 +300,7 @@ int freebsd_enumerate_interfaces(netd_state_t *state) {
                     sizeof(iface->primary_address6) - 1);
             iface->primary_address6[sizeof(iface->primary_address6) - 1] = '\0';
             primary_ipv6_found = true;
-            debug_log(DEBUG_TRACE, "Found primary IPv6 address for %s: %s",
+            debug_log(DEBUG2, "Found primary IPv6 address for %s: %s",
                       ifa->ifa_name, iface->primary_address6);
           } else if (iface->alias_count6 < 10) {
             /* Additional IPv6 addresses are aliases */
@@ -310,7 +310,7 @@ int freebsd_enumerate_interfaces(netd_state_t *state) {
                                    [sizeof(iface->alias_addresses6[0]) - 1] =
                 '\0';
             iface->alias_count6++;
-            debug_log(DEBUG_TRACE, "Found IPv6 alias for %s: %s", ifa->ifa_name,
+            debug_log(DEBUG2, "Found IPv6 alias for %s: %s", ifa->ifa_name,
                       addr_str);
           }
         }
@@ -321,11 +321,11 @@ int freebsd_enumerate_interfaces(netd_state_t *state) {
     TAILQ_INSERT_TAIL(&state->interfaces, iface, entries);
 
     if (strncmp(ifa->ifa_name, "bridge", 6) == 0) {
-      debug_log(DEBUG_TRACE, "Added bridge interface to list: %s",
+      debug_log(DEBUG2, "Added bridge interface to list: %s",
                 ifa->ifa_name);
     }
 
-    debug_log(DEBUG_TRACE,
+    debug_log(DEBUG2,
               "Added system interface %s (type: %s, enabled: %s, fib: %u, mtu: "
               "%d, addr: %s, addr6: %s, groups: %d)",
               ifa->ifa_name, interface_type_to_string(type),

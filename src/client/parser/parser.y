@@ -127,6 +127,13 @@ extern int yylineno;
 %token <string> BRIDGE
 %token <string> WLAN
 
+/* Precedence declarations to resolve conflicts */
+%left SET SHOW DELETE COMMIT SAVE
+%left VRF INTERFACE ROUTE
+%left ETHERNET LOOPBACK BRIDGE VLAN GIF EPAIR LAGG TAP VXLAN WLAN
+%left INET INET6
+%left ADDRESS MTU GROUP MEMBER LAGGPROTO
+
 /* Non-terminal type declarations */
 %type <string> vrf_assignment
 %type <string> address_assignment
@@ -878,29 +885,65 @@ rollback_command
 
 /* Assignment rules */
 vrf_assignment
-    : VRF IDENTIFIER
+    : VRF IDENTIFIER { $$ = $2; }
     ;
 
 address_assignment
-    : ADDRESS address_family IPV4_ADDRESS
-    | ADDRESS address_family IPV6_ADDRESS
-    | ADDRESS address_family CIDR_ADDRESS
+    : ADDRESS address_family IPV4_ADDRESS { 
+        char temp[128];
+        snprintf(temp, sizeof(temp), "%s %s", $2, $3);
+        $$ = strdup(temp);
+    }
+    | ADDRESS address_family IPV6_ADDRESS { 
+        char temp[128];
+        snprintf(temp, sizeof(temp), "%s %s", $2, $3);
+        $$ = strdup(temp);
+    }
+    | ADDRESS address_family CIDR_ADDRESS { 
+        char temp[128];
+        snprintf(temp, sizeof(temp), "%s %s", $2, $3);
+        $$ = strdup(temp);
+    }
     ;
 
 mtu_assignment
-    : MTU NUMBER
+    : MTU NUMBER { 
+        char temp[64];
+        snprintf(temp, sizeof(temp), "%s", $2);
+        $$ = strdup(temp);
+    }
     ;
 
 group_assignment
-    : GROUP IDENTIFIER
+    : GROUP IDENTIFIER { $$ = $2; }
     ;
 
 route_action
-    : GATEWAY IPV4_ADDRESS
-    | GATEWAY IPV6_ADDRESS
-    | IFACE IDENTIFIER
-    | GATEWAY IPV4_ADDRESS IFACE IDENTIFIER
-    | GATEWAY IPV6_ADDRESS IFACE IDENTIFIER
+    : GATEWAY IPV4_ADDRESS { 
+        char temp[128];
+        snprintf(temp, sizeof(temp), "gateway %s", $2);
+        $$ = strdup(temp);
+    }
+    | GATEWAY IPV6_ADDRESS { 
+        char temp[128];
+        snprintf(temp, sizeof(temp), "gateway %s", $2);
+        $$ = strdup(temp);
+    }
+    | IFACE IDENTIFIER { 
+        char temp[128];
+        snprintf(temp, sizeof(temp), "iface %s", $2);
+        $$ = strdup(temp);
+    }
+    | GATEWAY IPV4_ADDRESS IFACE IDENTIFIER { 
+        char temp[128];
+        snprintf(temp, sizeof(temp), "gateway %s iface %s", $2, $4);
+        $$ = strdup(temp);
+    }
+    | GATEWAY IPV6_ADDRESS IFACE IDENTIFIER { 
+        char temp[128];
+        snprintf(temp, sizeof(temp), "gateway %s iface %s", $2, $4);
+        $$ = strdup(temp);
+    }
     ;
 
 /* Interface type rules */

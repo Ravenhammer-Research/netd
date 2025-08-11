@@ -53,16 +53,16 @@ int freebsd_epair_create(const char *name) {
   struct ifreq ifr;
 
   if (!name) {
-    debug_log(DEBUG_ERROR, "Invalid parameters for epair creation");
+    debug_log(ERROR, "Invalid parameters for epair creation");
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "Creating epair interface %s", name);
+  debug_log(DEBUG, "Creating epair interface %s", name);
 
   /* Create socket for ioctl */
   sock = socket(AF_LOCAL, SOCK_DGRAM, 0);
   if (sock < 0) {
-    debug_log(DEBUG_ERROR, "Failed to create socket for epair creation: %s", strerror(errno));
+    debug_log(ERROR, "Failed to create socket for epair creation: %s", strerror(errno));
     return -1;
   }
 
@@ -72,13 +72,13 @@ int freebsd_epair_create(const char *name) {
 
   /* Create epair interface using ifconfig-style approach */
   if (ioctl(sock, SIOCIFCREATE, &ifr) < 0) {
-    debug_log(DEBUG_ERROR, "Failed to create epair interface: %s", strerror(errno));
+    debug_log(ERROR, "Failed to create epair interface: %s", strerror(errno));
     close(sock);
     return -1;
   }
 
   close(sock);
-  debug_log(DEBUG_INFO, "Created epair interface %s", name);
+  debug_log(INFO, "Created epair interface %s", name);
   return 0;
 }
 
@@ -93,16 +93,16 @@ int freebsd_epair_set_peer(const char *name, const char *peer_name) {
   struct ifreq ifr;
 
   if (!name || !peer_name) {
-    debug_log(DEBUG_ERROR, "Invalid parameters for epair peer setting");
+    debug_log(ERROR, "Invalid parameters for epair peer setting");
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "Setting epair peer for %s to %s", name, peer_name);
+  debug_log(DEBUG, "Setting epair peer for %s to %s", name, peer_name);
 
   /* Create socket for ioctl */
   sock = socket(AF_LOCAL, SOCK_DGRAM, 0);
   if (sock < 0) {
-    debug_log(DEBUG_ERROR, "Failed to create socket for epair peer: %s", strerror(errno));
+    debug_log(ERROR, "Failed to create socket for epair peer: %s", strerror(errno));
     return -1;
   }
 
@@ -117,12 +117,12 @@ int freebsd_epair_set_peer(const char *name, const char *peer_name) {
   strlcpy(peer_ifr.ifr_name, peer_name, sizeof(peer_ifr.ifr_name));
 
   if (ioctl(sock, SIOCGIFFLAGS, &peer_ifr) < 0) {
-    debug_log(DEBUG_ERROR, "Peer interface %s does not exist: %s", peer_name, strerror(errno));
+    debug_log(ERROR, "Peer interface %s does not exist: %s", peer_name, strerror(errno));
     close(sock);
     return -1;
   }
 
   close(sock);
-  debug_log(DEBUG_INFO, "Set epair peer for %s to %s", name, peer_name);
+  debug_log(INFO, "Set epair peer for %s to %s", name, peer_name);
   return 0;
 } 

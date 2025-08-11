@@ -143,7 +143,7 @@ int parse_vrfs_from_xml(const char *xml, struct vrf_data *vrfs, int max_vrfs) {
 
   /* Parse XML */
   if (XML_Parse(parser, xml, strlen(xml), 1) != XML_STATUS_OK) {
-    debug_log(DEBUG_ERROR, "XML_Parse failed: %s",
+    debug_log(ERROR, "XML_Parse failed: %s",
               XML_ErrorString(XML_GetErrorCode(parser)));
     XML_ParserFree(parser);
     return -1;

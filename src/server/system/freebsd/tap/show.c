@@ -56,16 +56,16 @@ int freebsd_tap_show(const char *name, int *owner, int *group, int *status) {
   struct ifreq ifr;
 
   if (!name || !owner || !group || !status) {
-    debug_log(DEBUG_ERROR, "Invalid parameters for TAP show");
+    debug_log(ERROR, "Invalid parameters for TAP show");
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "Showing TAP interface %s", name);
+  debug_log(DEBUG, "Showing TAP interface %s", name);
 
   /* Create socket for ioctl */
   sock = socket(AF_LOCAL, SOCK_DGRAM, 0);
   if (sock < 0) {
-    debug_log(DEBUG_ERROR, "Failed to create socket for TAP show: %s", strerror(errno));
+    debug_log(ERROR, "Failed to create socket for TAP show: %s", strerror(errno));
     return -1;
   }
 
@@ -75,7 +75,7 @@ int freebsd_tap_show(const char *name, int *owner, int *group, int *status) {
 
   /* Get interface flags */
   if (ioctl(sock, SIOCGIFFLAGS, &ifr) < 0) {
-    debug_log(DEBUG_ERROR, "Failed to get TAP interface flags: %s", strerror(errno));
+    debug_log(ERROR, "Failed to get TAP interface flags: %s", strerror(errno));
     close(sock);
     return -1;
   }
@@ -88,7 +88,7 @@ int freebsd_tap_show(const char *name, int *owner, int *group, int *status) {
   *group = -1;
 
   close(sock);
-  debug_log(DEBUG_INFO, "Showed TAP interface %s (owner: %d, group: %d, status: %d)", 
+  debug_log(INFO, "Showed TAP interface %s (owner: %d, group: %d, status: %d)", 
             name, *owner, *group, *status);
   return 0;
 } 

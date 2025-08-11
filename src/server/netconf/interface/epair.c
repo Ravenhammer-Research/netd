@@ -46,31 +46,31 @@
  */
 int epair_interface_create(netd_state_t *state, const char *name) {
   if (!state || !name) {
-    debug_log(DEBUG_ERROR,
+    debug_log(ERROR,
               "Invalid parameters for epair creation: state=%p, name=%s",
               state, name ? name : "NULL");
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "Creating epair interface '%s'", name);
+  debug_log(DEBUG, "Creating epair interface '%s'", name);
 
   /* Create the epair interface using the general interface creation */
   int result = interface_create(state, name, IF_TYPE_EPAIR);
   if (result < 0) {
-    debug_log(DEBUG_ERROR, "Failed to create epair interface %s", name);
+    debug_log(ERROR, "Failed to create epair interface %s", name);
     return -1;
   }
 
   /* Create epair in FreeBSD */
   if (freebsd_epair_create(name) < 0) {
-    debug_log(DEBUG_ERROR,
+    debug_log(ERROR,
               "Failed to create epair interface %s in FreeBSD", name);
     /* Clean up the interface from state */
     interface_delete(state, name);
     return -1;
   }
 
-  debug_log(DEBUG_INFO, "Created epair interface %s", name);
+  debug_log(INFO, "Created epair interface %s", name);
   return 0;
 }
 
@@ -86,31 +86,31 @@ int epair_set_peer(netd_state_t *state, const char *name,
   interface_t *epair_iface;
 
   if (!state || !name || !peer_name) {
-    debug_log(DEBUG_ERROR,
+    debug_log(ERROR,
               "Invalid parameters for epair peer setting: state=%p, name=%s, "
               "peer=%s",
               state, name ? name : "NULL", peer_name ? peer_name : "NULL");
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "Setting peer '%s' for epair interface '%s'",
+  debug_log(DEBUG, "Setting peer '%s' for epair interface '%s'",
             peer_name, name);
 
   /* Find epair interface */
   epair_iface = interface_find(state, name);
   if (!epair_iface) {
-    debug_log(DEBUG_ERROR, "Epair interface %s not found", name);
+    debug_log(ERROR, "Epair interface %s not found", name);
     return -1;
   }
 
   if (epair_iface->type != IF_TYPE_EPAIR) {
-    debug_log(DEBUG_ERROR, "Interface %s is not an epair", name);
+    debug_log(ERROR, "Interface %s is not an epair", name);
     return -1;
   }
 
   /* Set peer in FreeBSD */
   if (freebsd_epair_set_peer(name, peer_name) < 0) {
-    debug_log(DEBUG_ERROR,
+    debug_log(ERROR,
               "Failed to set peer %s for epair %s in FreeBSD", peer_name, name);
     return -1;
   }
@@ -118,7 +118,7 @@ int epair_set_peer(netd_state_t *state, const char *name,
   /* Update interface state */
   strlcpy(epair_iface->peer_name, peer_name, sizeof(epair_iface->peer_name));
 
-  debug_log(DEBUG_INFO, "Set peer %s for epair interface %s", peer_name, name);
+  debug_log(INFO, "Set peer %s for epair interface %s", peer_name, name);
   return 0;
 }
 
@@ -135,7 +135,7 @@ int epair_get_peer(netd_state_t *state, const char *name, char *peer_name,
   interface_t *epair_iface;
 
   if (!state || !name || !peer_name || peer_len == 0) {
-    debug_log(DEBUG_ERROR,
+    debug_log(ERROR,
               "Invalid parameters for epair peer retrieval: state=%p, name=%s, "
               "peer_name=%p, peer_len=%zu",
               state, name ? name : "NULL", peer_name, peer_len);
@@ -145,19 +145,19 @@ int epair_get_peer(netd_state_t *state, const char *name, char *peer_name,
   /* Find epair interface */
   epair_iface = interface_find(state, name);
   if (!epair_iface) {
-    debug_log(DEBUG_ERROR, "Epair interface %s not found", name);
+    debug_log(ERROR, "Epair interface %s not found", name);
     return -1;
   }
 
   if (epair_iface->type != IF_TYPE_EPAIR) {
-    debug_log(DEBUG_ERROR, "Interface %s is not an epair", name);
+    debug_log(ERROR, "Interface %s is not an epair", name);
     return -1;
   }
 
   /* Return peer name */
   strlcpy(peer_name, epair_iface->peer_name, peer_len);
 
-  debug_log(DEBUG_DEBUG, "Retrieved peer %s for epair interface %s",
+  debug_log(DEBUG, "Retrieved peer %s for epair interface %s",
             epair_iface->peer_name, name);
   return 0;
 } 

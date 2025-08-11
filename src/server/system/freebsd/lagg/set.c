@@ -54,16 +54,16 @@ int freebsd_lagg_create(const char *name, const char *protocol) {
   struct ifreq ifr;
 
   if (!name || !protocol) {
-    debug_log(DEBUG_ERROR, "Invalid parameters for LAGG creation");
+    debug_log(ERROR, "Invalid parameters for LAGG creation");
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "Creating LAGG interface %s with protocol %s", name, protocol);
+  debug_log(DEBUG, "Creating LAGG interface %s with protocol %s", name, protocol);
 
   /* Create socket for ioctl */
   sock = socket(AF_LOCAL, SOCK_DGRAM, 0);
   if (sock < 0) {
-    debug_log(DEBUG_ERROR, "Failed to create socket for LAGG creation: %s", strerror(errno));
+    debug_log(ERROR, "Failed to create socket for LAGG creation: %s", strerror(errno));
     return -1;
   }
 
@@ -73,13 +73,13 @@ int freebsd_lagg_create(const char *name, const char *protocol) {
 
   /* Create LAGG interface using ifconfig-style approach */
   if (ioctl(sock, SIOCIFCREATE, &ifr) < 0) {
-    debug_log(DEBUG_ERROR, "Failed to create LAGG interface: %s", strerror(errno));
+    debug_log(ERROR, "Failed to create LAGG interface: %s", strerror(errno));
     close(sock);
     return -1;
   }
 
   close(sock);
-  debug_log(DEBUG_INFO, "Created LAGG interface %s with protocol %s", name, protocol);
+  debug_log(INFO, "Created LAGG interface %s with protocol %s", name, protocol);
   return 0;
 }
 
@@ -94,16 +94,16 @@ int freebsd_lagg_add_member(const char *lagg_name, const char *member_name) {
   struct ifreq ifr;
 
   if (!lagg_name || !member_name) {
-    debug_log(DEBUG_ERROR, "Invalid parameters for LAGG member addition");
+    debug_log(ERROR, "Invalid parameters for LAGG member addition");
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "Adding member %s to LAGG %s", member_name, lagg_name);
+  debug_log(DEBUG, "Adding member %s to LAGG %s", member_name, lagg_name);
 
   /* Create socket for ioctl */
   sock = socket(AF_LOCAL, SOCK_DGRAM, 0);
   if (sock < 0) {
-    debug_log(DEBUG_ERROR, "Failed to create socket for LAGG member: %s", strerror(errno));
+    debug_log(ERROR, "Failed to create socket for LAGG member: %s", strerror(errno));
     return -1;
   }
 
@@ -114,13 +114,13 @@ int freebsd_lagg_add_member(const char *lagg_name, const char *member_name) {
   /* For LAGG interfaces, members are typically added through ifconfig */
   /* We'll verify the LAGG interface exists */
   if (ioctl(sock, SIOCGIFFLAGS, &ifr) < 0) {
-    debug_log(DEBUG_ERROR, "LAGG interface %s does not exist: %s", lagg_name, strerror(errno));
+    debug_log(ERROR, "LAGG interface %s does not exist: %s", lagg_name, strerror(errno));
     close(sock);
     return -1;
   }
 
   close(sock);
-  debug_log(DEBUG_INFO, "Added member %s to LAGG %s", member_name, lagg_name);
+  debug_log(INFO, "Added member %s to LAGG %s", member_name, lagg_name);
   return 0;
 }
 
@@ -135,16 +135,16 @@ int freebsd_lagg_remove_member(const char *lagg_name, const char *member_name) {
   struct ifreq ifr;
 
   if (!lagg_name || !member_name) {
-    debug_log(DEBUG_ERROR, "Invalid parameters for LAGG member removal");
+    debug_log(ERROR, "Invalid parameters for LAGG member removal");
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "Removing member %s from LAGG %s", member_name, lagg_name);
+  debug_log(DEBUG, "Removing member %s from LAGG %s", member_name, lagg_name);
 
   /* Create socket for ioctl */
   sock = socket(AF_LOCAL, SOCK_DGRAM, 0);
   if (sock < 0) {
-    debug_log(DEBUG_ERROR, "Failed to create socket for LAGG member: %s", strerror(errno));
+    debug_log(ERROR, "Failed to create socket for LAGG member: %s", strerror(errno));
     return -1;
   }
 
@@ -155,13 +155,13 @@ int freebsd_lagg_remove_member(const char *lagg_name, const char *member_name) {
   /* For LAGG interfaces, members are typically removed through ifconfig */
   /* We'll verify the LAGG interface exists */
   if (ioctl(sock, SIOCGIFFLAGS, &ifr) < 0) {
-    debug_log(DEBUG_ERROR, "LAGG interface %s does not exist: %s", lagg_name, strerror(errno));
+    debug_log(ERROR, "LAGG interface %s does not exist: %s", lagg_name, strerror(errno));
     close(sock);
     return -1;
   }
 
   close(sock);
-  debug_log(DEBUG_INFO, "Removed member %s from LAGG %s", member_name, lagg_name);
+  debug_log(INFO, "Removed member %s from LAGG %s", member_name, lagg_name);
   return 0;
 }
 
@@ -176,16 +176,16 @@ int freebsd_lagg_set_protocol(const char *name, const char *protocol) {
   struct ifreq ifr;
 
   if (!name || !protocol) {
-    debug_log(DEBUG_ERROR, "Invalid parameters for LAGG protocol setting");
+    debug_log(ERROR, "Invalid parameters for LAGG protocol setting");
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "Setting protocol %s for LAGG interface %s", protocol, name);
+  debug_log(DEBUG, "Setting protocol %s for LAGG interface %s", protocol, name);
 
   /* Create socket for ioctl */
   sock = socket(AF_LOCAL, SOCK_DGRAM, 0);
   if (sock < 0) {
-    debug_log(DEBUG_ERROR, "Failed to create socket for LAGG protocol: %s", strerror(errno));
+    debug_log(ERROR, "Failed to create socket for LAGG protocol: %s", strerror(errno));
     return -1;
   }
 
@@ -196,12 +196,12 @@ int freebsd_lagg_set_protocol(const char *name, const char *protocol) {
   /* For LAGG interfaces, protocol changes are typically done through ifconfig */
   /* We'll verify the LAGG interface exists */
   if (ioctl(sock, SIOCGIFFLAGS, &ifr) < 0) {
-    debug_log(DEBUG_ERROR, "LAGG interface %s does not exist: %s", name, strerror(errno));
+    debug_log(ERROR, "LAGG interface %s does not exist: %s", name, strerror(errno));
     close(sock);
     return -1;
   }
 
   close(sock);
-  debug_log(DEBUG_INFO, "Set protocol %s for LAGG interface %s", protocol, name);
+  debug_log(INFO, "Set protocol %s for LAGG interface %s", protocol, name);
   return 0;
 } 

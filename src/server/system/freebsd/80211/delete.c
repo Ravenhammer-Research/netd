@@ -45,15 +45,15 @@ int freebsd_wireless_delete(const char *name) {
     struct ifreq ifr;
     
     if (!name) {
-        debug_log(DEBUG_ERROR, "Invalid parameters for wireless interface deletion");
+        debug_log(ERROR, "Invalid parameters for wireless interface deletion");
         return -1;
     }
     
-    debug_log(DEBUG_DEBUG, "Deleting wireless interface %s", name);
+    debug_log(DEBUG, "Deleting wireless interface %s", name);
     
     sock = socket(AF_LOCAL, SOCK_DGRAM, 0);
     if (sock < 0) {
-        debug_log(DEBUG_ERROR, "Failed to create socket for wireless interface deletion: %s", strerror(errno));
+        debug_log(ERROR, "Failed to create socket for wireless interface deletion: %s", strerror(errno));
         return -1;
     }
     
@@ -61,13 +61,13 @@ int freebsd_wireless_delete(const char *name) {
     strlcpy(ifr.ifr_name, name, sizeof(ifr.ifr_name));
     
     if (ioctl(sock, SIOCIFDESTROY, &ifr) < 0) {
-        debug_log(DEBUG_ERROR, "Failed to delete wireless interface: %s", strerror(errno));
+        debug_log(ERROR, "Failed to delete wireless interface: %s", strerror(errno));
         close(sock);
         return -1;
     }
     
     close(sock);
-    debug_log(DEBUG_INFO, "Deleted wireless interface %s", name);
+    debug_log(INFO, "Deleted wireless interface %s", name);
     return 0;
 }
 
@@ -81,15 +81,15 @@ int freebsd_wlan_delete(const char *name) {
     struct ifreq ifr;
     
     if (!name) {
-        debug_log(DEBUG_ERROR, "Invalid parameters for WLAN interface deletion");
+        debug_log(ERROR, "Invalid parameters for WLAN interface deletion");
         return -1;
     }
     
-    debug_log(DEBUG_DEBUG, "Deleting WLAN interface %s", name);
+    debug_log(DEBUG, "Deleting WLAN interface %s", name);
     
     sock = socket(AF_LOCAL, SOCK_DGRAM, 0);
     if (sock < 0) {
-        debug_log(DEBUG_ERROR, "Failed to create socket for WLAN interface deletion: %s", strerror(errno));
+        debug_log(ERROR, "Failed to create socket for WLAN interface deletion: %s", strerror(errno));
         return -1;
     }
     
@@ -97,12 +97,12 @@ int freebsd_wlan_delete(const char *name) {
     strlcpy(ifr.ifr_name, name, sizeof(ifr.ifr_name));
     
     if (ioctl(sock, SIOCIFDESTROY, &ifr) < 0) {
-        debug_log(DEBUG_ERROR, "Failed to delete WLAN interface: %s", strerror(errno));
+        debug_log(ERROR, "Failed to delete WLAN interface: %s", strerror(errno));
         close(sock);
         return -1;
     }
     
     close(sock);
-    debug_log(DEBUG_INFO, "Deleted WLAN interface %s", name);
+    debug_log(INFO, "Deleted WLAN interface %s", name);
     return 0;
 } 

@@ -49,17 +49,24 @@ int handle_edit_config(netd_state_t *state, const char *request,
                        const char *message_id, char **response) {
   int ret = 0;
 
-  debug_log(DEBUG_INFO, "Handling edit-config request");
+  debug_log(INFO, "Handling edit-config request");
 
   if (!state || !request || !message_id || !response) {
-    debug_log(DEBUG_ERROR, "Invalid parameters for edit-config handling");
+    debug_log(ERROR, "Invalid parameters for edit-config handling");
+    return -1;
+  }
+
+  /* Validate configuration data against YANG schema */
+  if (yang_validate_config(state, request) < 0) {
+    debug_log(ERROR, "Configuration validation failed");
+    *response = create_error_response(message_id, "invalid-value", "Configuration failed YANG validation");
     return -1;
   }
 
   /* Use XML utilities to parse and process the edit-config request */
   ret = process_edit_config_request(state, request);
   if (ret < 0) {
-    debug_log(DEBUG_ERROR, "Failed to process edit-config request");
+    debug_log(ERROR, "Failed to process edit-config request");
   }
 
   if (ret == 0) {

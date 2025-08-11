@@ -54,16 +54,16 @@ int freebsd_loopback_delete(const char *name) {
   struct ifreq ifr;
 
   if (!name) {
-    debug_log(DEBUG_ERROR, "Invalid parameters for loopback deletion");
+    debug_log(ERROR, "Invalid parameters for loopback deletion");
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "Deleting loopback interface %s", name);
+  debug_log(DEBUG, "Deleting loopback interface %s", name);
 
   /* Create socket for ioctl */
   sock = socket(AF_LOCAL, SOCK_DGRAM, 0);
   if (sock < 0) {
-    debug_log(DEBUG_ERROR, "Failed to create socket for loopback deletion: %s", strerror(errno));
+    debug_log(ERROR, "Failed to create socket for loopback deletion: %s", strerror(errno));
     return -1;
   }
 
@@ -73,12 +73,12 @@ int freebsd_loopback_delete(const char *name) {
 
   /* Delete loopback interface */
   if (ioctl(sock, SIOCIFDESTROY, &ifr) < 0) {
-    debug_log(DEBUG_ERROR, "Failed to delete loopback interface: %s", strerror(errno));
+    debug_log(ERROR, "Failed to delete loopback interface: %s", strerror(errno));
     close(sock);
     return -1;
   }
 
   close(sock);
-  debug_log(DEBUG_INFO, "Deleted loopback interface %s", name);
+  debug_log(INFO, "Deleted loopback interface %s", name);
   return 0;
 } 

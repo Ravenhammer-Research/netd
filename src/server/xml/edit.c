@@ -45,7 +45,7 @@ static void edit_config_start_element(void *userData, const XML_Char *name,
                                       const XML_Char **atts) {
   struct edit_config_data *data = (struct edit_config_data *)userData;
 
-  debug_log(DEBUG_DEBUG, "Edit config start element: %s with %d attributes", name, atts ? 0 : 0);
+  debug_log(DEBUG, "Edit config start element: %s with %d attributes", name, atts ? 0 : 0);
 
   if (strcmp(name, "edit-config") == 0) {
     data->is_edit_config = true;
@@ -144,7 +144,7 @@ bool is_edit_config_request(const char *request) {
 
   parser = XML_ParserCreate(NULL);
   if (!parser) {
-    debug_log(DEBUG_ERROR, "Failed to create XML parser for edit-config check");
+    debug_log(ERROR, "Failed to create XML parser for edit-config check");
     return false;
   }
 
@@ -154,7 +154,7 @@ bool is_edit_config_request(const char *request) {
   XML_SetCharacterDataHandler(parser, edit_config_char_data);
 
   if (XML_Parse(parser, request, strlen(request), 1) != XML_STATUS_OK) {
-    debug_log(DEBUG_ERROR, "XML parsing failed for edit-config check: %s",
+    debug_log(ERROR, "XML parsing failed for edit-config check: %s",
               XML_ErrorString(XML_GetErrorCode(parser)));
   }
 
@@ -185,7 +185,7 @@ static int process_edit_config_data(netd_state_t *state,
     
     ret = add_pending_vrf_create(state, data->vrf_name, fib);
     if (ret < 0) {
-      debug_log(DEBUG_ERROR, "Failed to add pending VRF creation");
+      debug_log(ERROR, "Failed to add pending VRF creation");
       return ret;
     }
   }
@@ -204,7 +204,7 @@ static int process_edit_config_data(netd_state_t *state,
     ret = add_pending_route_add(state, 0, data->route_destination,
                                 data->route_gateway, data->route_interface, flags);
     if (ret < 0) {
-      debug_log(DEBUG_ERROR, "Failed to add pending route addition");
+      debug_log(ERROR, "Failed to add pending route addition");
       return ret;
     }
   }
@@ -216,7 +216,7 @@ static int process_edit_config_data(netd_state_t *state,
         uint32_t fib = (uint32_t)strtoul(data->set_value, NULL, 10);
         ret = add_pending_interface_set_fib(state, data->set_name, fib);
         if (ret < 0) {
-          debug_log(DEBUG_ERROR, "Failed to add pending interface FIB change");
+          debug_log(ERROR, "Failed to add pending interface FIB change");
           return ret;
         }
       }
@@ -243,7 +243,7 @@ int process_edit_config_request(netd_state_t *state, const char *request) {
 
   parser = XML_ParserCreate(NULL);
   if (!parser) {
-    debug_log(DEBUG_ERROR, "Failed to create XML parser for edit-config");
+    debug_log(ERROR, "Failed to create XML parser for edit-config");
     return -1;
   }
 
@@ -253,7 +253,7 @@ int process_edit_config_request(netd_state_t *state, const char *request) {
   XML_SetCharacterDataHandler(parser, edit_config_char_data);
 
   if (XML_Parse(parser, request, strlen(request), 1) != XML_STATUS_OK) {
-    debug_log(DEBUG_ERROR, "XML parsing failed for edit-config: %s",
+    debug_log(ERROR, "XML parsing failed for edit-config: %s",
               XML_ErrorString(XML_GetErrorCode(parser)));
     ret = -1;
   } else {

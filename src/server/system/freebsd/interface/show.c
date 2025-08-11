@@ -119,7 +119,7 @@ int freebsd_interface_get_fib(const char *name, uint32_t *fib) {
   /* Create socket for ioctl */
   sock = socket(AF_INET, SOCK_DGRAM, 0);
   if (sock < 0) {
-    debug_log(DEBUG_ERROR, "Failed to create socket for FIB query: %s",
+    debug_log(ERROR, "Failed to create socket for FIB query: %s",
               strerror(errno));
     return -1;
   }
@@ -130,7 +130,7 @@ int freebsd_interface_get_fib(const char *name, uint32_t *fib) {
 
   /* Get FIB */
   if (ioctl(sock, SIOCGIFFIB, &ifr) < 0) {
-    debug_log(DEBUG_ERROR, "Failed to get FIB for interface %s: %s", name,
+    debug_log(ERROR, "Failed to get FIB for interface %s: %s", name,
               strerror(errno));
     close(sock);
     return -1;
@@ -158,7 +158,7 @@ int freebsd_interface_get_mtu(const char *name, int *mtu) {
   /* Create socket for ioctl */
   sock = socket(AF_INET, SOCK_DGRAM, 0);
   if (sock < 0) {
-    debug_log(DEBUG_ERROR, "Failed to create socket for MTU query: %s",
+    debug_log(ERROR, "Failed to create socket for MTU query: %s",
               strerror(errno));
     return -1;
   }
@@ -169,7 +169,7 @@ int freebsd_interface_get_mtu(const char *name, int *mtu) {
 
   /* Get MTU */
   if (ioctl(sock, SIOCGIFMTU, &ifr) < 0) {
-    debug_log(DEBUG_ERROR, "Failed to get MTU for interface %s: %s", name,
+    debug_log(ERROR, "Failed to get MTU for interface %s: %s", name,
               strerror(errno));
     close(sock);
     return -1;
@@ -205,7 +205,7 @@ int freebsd_interface_get_groups(const char *name,
   /* Create socket for ioctl */
   sock = socket(AF_INET, SOCK_DGRAM, 0);
   if (sock < 0) {
-    debug_log(DEBUG_ERROR, "Failed to create socket for group query: %s",
+    debug_log(ERROR, "Failed to create socket for group query: %s",
               strerror(errno));
     return -1;
   }
@@ -216,7 +216,7 @@ int freebsd_interface_get_groups(const char *name,
 
   /* First call to get the required buffer size */
   if (ioctl(sock, SIOCGIFGROUP, (caddr_t)&ifgr) < 0) {
-    debug_log(DEBUG_ERROR, "Failed to get group info for %s: %s", name,
+    debug_log(ERROR, "Failed to get group info for %s: %s", name,
               strerror(errno));
     close(sock);
     return -1;
@@ -238,7 +238,7 @@ int freebsd_interface_get_groups(const char *name,
           (*group_count)++;
         }
       } else {
-        debug_log(DEBUG_ERROR, "Failed to get groups for %s: %s", name,
+        debug_log(ERROR, "Failed to get groups for %s: %s", name,
                   strerror(errno));
       }
       free(ifgr.ifgr_groups);

@@ -54,16 +54,16 @@ int freebsd_lagg_delete(const char *name) {
   struct ifreq ifr;
 
   if (!name) {
-    debug_log(DEBUG_ERROR, "Invalid parameters for LAGG deletion");
+    debug_log(ERROR, "Invalid parameters for LAGG deletion");
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "Deleting LAGG interface %s", name);
+  debug_log(DEBUG, "Deleting LAGG interface %s", name);
 
   /* Create socket for ioctl */
   sock = socket(AF_LOCAL, SOCK_DGRAM, 0);
   if (sock < 0) {
-    debug_log(DEBUG_ERROR, "Failed to create socket for LAGG deletion: %s", strerror(errno));
+    debug_log(ERROR, "Failed to create socket for LAGG deletion: %s", strerror(errno));
     return -1;
   }
 
@@ -73,12 +73,12 @@ int freebsd_lagg_delete(const char *name) {
 
   /* Delete LAGG interface */
   if (ioctl(sock, SIOCIFDESTROY, &ifr) < 0) {
-    debug_log(DEBUG_ERROR, "Failed to delete LAGG interface: %s", strerror(errno));
+    debug_log(ERROR, "Failed to delete LAGG interface: %s", strerror(errno));
     close(sock);
     return -1;
   }
 
   close(sock);
-  debug_log(DEBUG_INFO, "Deleted LAGG interface %s", name);
+  debug_log(INFO, "Deleted LAGG interface %s", name);
   return 0;
 } 

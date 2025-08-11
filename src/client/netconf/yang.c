@@ -78,10 +78,10 @@ int yang_init_client(net_client_t *client) {
       }
       goto error;
     }
-    debug_log(DEBUG_DEBUG, "Successfully loaded module: %s", modules[i]);
+    debug_log(DEBUG, "Successfully loaded module: %s", modules[i]);
   }
 
-  debug_log(DEBUG_INFO,
+  debug_log(INFO,
             "Client YANG context initialized successfully with %d modules",
             (int)(sizeof(modules) / sizeof(modules[0])));
   return 0;
@@ -120,7 +120,7 @@ int yang_validate_xml_client(net_client_t *client, const char *xml_data) {
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG,
+  debug_log(DEBUG,
             "Client YANG validation requested for XML data (length: %zu)",
             strlen(xml_data));
 
@@ -131,15 +131,15 @@ int yang_validate_xml_client(net_client_t *client, const char *xml_data) {
   if (result != LY_SUCCESS) {
     err = ly_err_last(client->yang_ctx);
     if (err) {
-      debug_log(DEBUG_ERROR, "Client YANG validation failed: %s", err->msg);
+      debug_log(ERROR, "Client YANG validation failed: %s", err->msg);
       if (err->data_path) {
-        debug_log(DEBUG_ERROR, "Data path: %s", err->data_path);
+        debug_log(ERROR, "Data path: %s", err->data_path);
       }
       if (err->schema_path) {
-        debug_log(DEBUG_ERROR, "Schema path: %s", err->schema_path);
+        debug_log(ERROR, "Schema path: %s", err->schema_path);
       }
     } else {
-      debug_log(DEBUG_ERROR,
+      debug_log(ERROR,
                 "Client YANG validation failed with unknown error");
     }
 
@@ -156,7 +156,7 @@ int yang_validate_xml_client(net_client_t *client, const char *xml_data) {
   if (result != LY_SUCCESS) {
     err = ly_err_last(client->yang_ctx);
     if (err) {
-      debug_log(DEBUG_ERROR, "Client YANG tree validation failed: %s",
+      debug_log(ERROR, "Client YANG tree validation failed: %s",
                 err->msg);
     }
 
@@ -171,7 +171,7 @@ int yang_validate_xml_client(net_client_t *client, const char *xml_data) {
     lyd_free_all(tree);
   }
 
-  debug_log(DEBUG_DEBUG, "Client YANG validation completed successfully");
+  debug_log(DEBUG, "Client YANG validation completed successfully");
   return 0;
 }
 
@@ -190,7 +190,7 @@ int yang_validate_response_client(net_client_t *client,
   }
 
   debug_log(
-      DEBUG_DEBUG,
+      DEBUG,
       "Client YANG response validation requested for XML data (length: %zu)",
       strlen(response_xml));
 
@@ -199,7 +199,7 @@ int yang_validate_response_client(net_client_t *client,
 
   /* Try to extract and validate data content if present */
   if (strstr(response_xml, "<data>") && strstr(response_xml, "</data>")) {
-    debug_log(DEBUG_DEBUG, "Found data content in response, validating data");
+    debug_log(DEBUG, "Found data content in response, validating data");
 
     /* Extract data content between <data> tags */
     const char *data_start = strstr(response_xml, "<data>");
@@ -223,10 +223,10 @@ int yang_validate_response_client(net_client_t *client,
 
         /* Validate the data content */
         if (yang_validate_data_client(client, data_content) < 0) {
-          debug_log(DEBUG_WARN,
+          debug_log(WARN,
                     "Data content validation failed, but continuing");
         } else {
-          debug_log(DEBUG_DEBUG, "Data content validated successfully");
+          debug_log(DEBUG, "Data content validated successfully");
         }
 
         free(data_content);
@@ -234,7 +234,7 @@ int yang_validate_response_client(net_client_t *client,
     }
   }
 
-  debug_log(DEBUG_DEBUG,
+  debug_log(DEBUG,
             "Client YANG response validation completed successfully");
   return 0;
 }
@@ -256,14 +256,14 @@ int yang_validate_rpc_client(net_client_t *client, const char *rpc_xml) {
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG,
+  debug_log(DEBUG,
             "Client YANG RPC validation requested for XML data (length: %zu)",
             strlen(rpc_xml));
 
   /* Create input structure for XML data */
   result = ly_in_new_memory(rpc_xml, &in);
   if (result != LY_SUCCESS) {
-    debug_log(DEBUG_ERROR,
+    debug_log(ERROR,
               "Failed to create input structure for RPC validation");
     return -1;
   }
@@ -277,15 +277,15 @@ int yang_validate_rpc_client(net_client_t *client, const char *rpc_xml) {
   if (result != LY_SUCCESS) {
     err = ly_err_last(client->yang_ctx);
     if (err) {
-      debug_log(DEBUG_ERROR, "Client YANG RPC validation failed: %s", err->msg);
+      debug_log(ERROR, "Client YANG RPC validation failed: %s", err->msg);
       if (err->data_path) {
-        debug_log(DEBUG_ERROR, "Data path: %s", err->data_path);
+        debug_log(ERROR, "Data path: %s", err->data_path);
       }
       if (err->schema_path) {
-        debug_log(DEBUG_ERROR, "Schema path: %s", err->schema_path);
+        debug_log(ERROR, "Schema path: %s", err->schema_path);
       }
     } else {
-      debug_log(DEBUG_ERROR,
+      debug_log(ERROR,
                 "Client YANG RPC validation failed with unknown error");
     }
 
@@ -301,7 +301,7 @@ int yang_validate_rpc_client(net_client_t *client, const char *rpc_xml) {
   if (result != LY_SUCCESS) {
     err = ly_err_last(client->yang_ctx);
     if (err) {
-      debug_log(DEBUG_ERROR, "Client YANG RPC operation validation failed: %s",
+      debug_log(ERROR, "Client YANG RPC operation validation failed: %s",
                 err->msg);
     }
 
@@ -316,7 +316,7 @@ int yang_validate_rpc_client(net_client_t *client, const char *rpc_xml) {
     lyd_free_all(tree);
   }
 
-  debug_log(DEBUG_DEBUG, "Client YANG RPC validation completed successfully");
+  debug_log(DEBUG, "Client YANG RPC validation completed successfully");
   return 0;
 }
 
@@ -335,7 +335,7 @@ int yang_validate_data_client(net_client_t *client, const char *data_xml) {
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG,
+  debug_log(DEBUG,
             "Client YANG data validation requested for XML data (length: %zu)",
             strlen(data_xml));
 
@@ -346,16 +346,16 @@ int yang_validate_data_client(net_client_t *client, const char *data_xml) {
   if (result != LY_SUCCESS) {
     err = ly_err_last(client->yang_ctx);
     if (err) {
-      debug_log(DEBUG_ERROR, "Client YANG data validation failed: %s",
+      debug_log(ERROR, "Client YANG data validation failed: %s",
                 err->msg);
       if (err->data_path) {
-        debug_log(DEBUG_ERROR, "Data path: %s", err->data_path);
+        debug_log(ERROR, "Data path: %s", err->data_path);
       }
       if (err->schema_path) {
-        debug_log(DEBUG_ERROR, "Schema path: %s", err->schema_path);
+        debug_log(ERROR, "Schema path: %s", err->schema_path);
       }
     } else {
-      debug_log(DEBUG_ERROR,
+      debug_log(ERROR,
                 "Client YANG data validation failed with unknown error");
     }
 
@@ -372,7 +372,7 @@ int yang_validate_data_client(net_client_t *client, const char *data_xml) {
   if (result != LY_SUCCESS) {
     err = ly_err_last(client->yang_ctx);
     if (err) {
-      debug_log(DEBUG_ERROR, "Client YANG data tree validation failed: %s",
+      debug_log(ERROR, "Client YANG data tree validation failed: %s",
                 err->msg);
     }
 
@@ -387,6 +387,6 @@ int yang_validate_data_client(net_client_t *client, const char *data_xml) {
     lyd_free_all(tree);
   }
 
-  debug_log(DEBUG_DEBUG, "Client YANG data validation completed successfully");
+  debug_log(DEBUG, "Client YANG data validation completed successfully");
   return 0;
 }

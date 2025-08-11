@@ -59,7 +59,7 @@ char *create_success_response(const char *message_id) {
 
   response = malloc(len + 1);
   if (!response) {
-    debug_log(DEBUG_ERROR, "Failed to allocate memory for success response");
+    debug_log(ERROR, "Failed to allocate memory for success response");
     return NULL;
   }
 
@@ -105,7 +105,7 @@ char *create_error_response(const char *message_id, const char *error_type,
 
   response = malloc(len + 1);
   if (!response) {
-    debug_log(DEBUG_ERROR, "Failed to allocate memory for error response");
+    debug_log(ERROR, "Failed to allocate memory for error response");
     return NULL;
   }
 

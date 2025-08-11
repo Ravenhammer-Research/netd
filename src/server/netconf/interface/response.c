@@ -63,17 +63,62 @@ char *create_interfaces_xml_response(netd_state_t *state, const char *message_id
 
   /* Add interface entries */
   TAILQ_FOREACH(iface, &state->interfaces, entries) {
+    /* Build groups string */
+    char groups_str[256] = "";
+    if (iface->group_count > 0) {
+      for (int i = 0; i < iface->group_count; i++) {
+        if (i > 0) strcat(groups_str, ",");
+        strcat(groups_str, iface->groups[i]);
+      }
+    }
+    
+    /* Find VRF name for this FIB */
+    char vrf_name[64] = "";
+    if (iface->fib > 0) {
+      vrf_t *vrf = vrf_find_by_fib(state, iface->fib);
+      if (vrf) {
+        snprintf(vrf_name, sizeof(vrf_name), "%s", vrf->name);
+      } else {
+        snprintf(vrf_name, sizeof(vrf_name), "fib%d", iface->fib);
+      }
+    } else {
+      strcpy(vrf_name, "default");
+    }
+    
     len = snprintf(NULL, 0,
                    "      <interface>\n"
                    "        <name>%s</name>\n"
                    "        <type xmlns:ianaift=\"urn:ietf:params:xml:ns:yang:iana-if-type\">"
                    "ianaift:%s</type>\n"
                    "        <enabled>%s</enabled>\n"
-                   "        <fib>%u</fib>\n",
+                   "        <fib>%u</fib>\n"
+                   "        <vrf>%s</vrf>\n"
+                   "        <mtu>%d</mtu>\n"
+                   "        <flags>%d</flags>\n"
+                   "        <ipv4 xmlns=\"urn:ietf:params:xml:ns:yang:ietf-ip\">\n"
+                   "          <address>\n"
+                   "            <ip>%s</ip>\n"
+                   "            <prefix-length>24</prefix-length>\n"
+                   "          </address>\n"
+                   "        </ipv4>\n"
+                   "        <ipv6 xmlns=\"urn:ietf:params:xml:ns:yang:ietf-ip\">\n"
+                   "          <address>\n"
+                   "            <ip>%s</ip>\n"
+                   "            <prefix-length>64</prefix-length>\n"
+                   "          </address>\n"
+                   "        </ipv6>\n"
+                   "        <groups>%s</groups>\n"
+                   "      </interface>\n",
                    iface->name,
                    interface_type_to_string(iface->type),
                    iface->enabled ? "true" : "false",
-                   iface->fib);
+                   iface->fib,
+                   vrf_name,
+                   iface->mtu,
+                   iface->flags,
+                   iface->primary_address[0] ? iface->primary_address : "",
+                   iface->primary_address6[0] ? iface->primary_address6 : "",
+                   groups_str);
     total_len += len;
   }
 
@@ -85,7 +130,7 @@ char *create_interfaces_xml_response(netd_state_t *state, const char *message_id
   /* Allocate and build response */
   response = malloc(total_len + 1);
   if (!response) {
-    debug_log(DEBUG_ERROR, "Failed to allocate memory for interfaces response");
+    debug_log(ERROR, "Failed to allocate memory for interfaces response");
     return NULL;
   }
 
@@ -99,6 +144,28 @@ char *create_interfaces_xml_response(netd_state_t *state, const char *message_id
 
   /* Add interface entries */
   TAILQ_FOREACH(iface, &state->interfaces, entries) {
+    /* Build groups string */
+    char groups_str[256] = "";
+    if (iface->group_count > 0) {
+      for (int i = 0; i < iface->group_count; i++) {
+        if (i > 0) strcat(groups_str, ",");
+        strcat(groups_str, iface->groups[i]);
+      }
+    }
+    
+    /* Find VRF name for this FIB */
+    char vrf_name[64] = "";
+    if (iface->fib > 0) {
+      vrf_t *vrf = vrf_find_by_fib(state, iface->fib);
+      if (vrf) {
+        snprintf(vrf_name, sizeof(vrf_name), "%s", vrf->name);
+      } else {
+        snprintf(vrf_name, sizeof(vrf_name), "fib%d", iface->fib);
+      }
+    } else {
+      strcpy(vrf_name, "default");
+    }
+    
     temp = response + len;
     len += snprintf(temp, total_len + 1 - len,
                    "      <interface>\n"
@@ -106,11 +173,34 @@ char *create_interfaces_xml_response(netd_state_t *state, const char *message_id
                    "        <type xmlns:ianaift=\"urn:ietf:params:xml:ns:yang:iana-if-type\">"
                    "ianaift:%s</type>\n"
                    "        <enabled>%s</enabled>\n"
-                   "        <fib>%u</fib>\n",
+                   "        <fib>%u</fib>\n"
+                   "        <vrf>%s</vrf>\n"
+                   "        <mtu>%d</mtu>\n"
+                   "        <flags>%d</flags>\n"
+                   "        <ipv4 xmlns=\"urn:ietf:params:xml:ns:yang:ietf-ip\">\n"
+                   "          <address>\n"
+                   "            <ip>%s</ip>\n"
+                   "            <prefix-length>24</prefix-length>\n"
+                   "          </address>\n"
+                   "        </ipv4>\n"
+                   "        <ipv6 xmlns=\"urn:ietf:params:xml:ns:yang:ietf-ip\">\n"
+                   "          <address>\n"
+                   "            <ip>%s</ip>\n"
+                   "            <prefix-length>64</prefix-length>\n"
+                   "          </address>\n"
+                   "        </ipv6>\n"
+                   "        <groups>%s</groups>\n"
+                   "      </interface>\n",
                    iface->name,
                    interface_type_to_string(iface->type),
                    iface->enabled ? "true" : "false",
-                   iface->fib);
+                   iface->fib,
+                   vrf_name,
+                   iface->mtu,
+                   iface->flags,
+                   iface->primary_address[0] ? iface->primary_address : "",
+                   iface->primary_address6[0] ? iface->primary_address6 : "",
+                   groups_str);
   }
 
   len += snprintf(response + len, total_len + 1 - len,

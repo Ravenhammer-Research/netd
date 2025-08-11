@@ -44,6 +44,7 @@ target_include_directories(netconf_lib PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/..
     /usr/local/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../shared
 )
 
  

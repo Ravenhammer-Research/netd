@@ -57,17 +57,17 @@ int freebsd_vlan_create(const char *name, const char *parent_name, int vlan_id) 
   struct vlanreq vreq;
 
   if (!name || !parent_name || vlan_id < 0 || vlan_id > 4095) {
-    debug_log(DEBUG_ERROR, "Invalid parameters for VLAN creation");
+    debug_log(ERROR, "Invalid parameters for VLAN creation");
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "Creating VLAN interface %s on parent %s with ID %d", 
+  debug_log(DEBUG, "Creating VLAN interface %s on parent %s with ID %d", 
             name, parent_name, vlan_id);
 
   /* Create socket for ioctl */
   sock = socket(AF_LOCAL, SOCK_DGRAM, 0);
   if (sock < 0) {
-    debug_log(DEBUG_ERROR, "Failed to create socket for VLAN creation: %s", strerror(errno));
+    debug_log(ERROR, "Failed to create socket for VLAN creation: %s", strerror(errno));
     return -1;
   }
 
@@ -79,13 +79,13 @@ int freebsd_vlan_create(const char *name, const char *parent_name, int vlan_id) 
 
   /* Create VLAN interface */
   if (ioctl(sock, SIOCIFCREATE2, &vreq) < 0) {
-    debug_log(DEBUG_ERROR, "Failed to create VLAN interface: %s", strerror(errno));
+    debug_log(ERROR, "Failed to create VLAN interface: %s", strerror(errno));
     close(sock);
     return -1;
   }
 
   close(sock);
-  debug_log(DEBUG_INFO, "Created VLAN interface %s", name);
+  debug_log(INFO, "Created VLAN interface %s", name);
   return 0;
 }
 
@@ -97,15 +97,15 @@ int freebsd_vlan_create(const char *name, const char *parent_name, int vlan_id) 
  */
 int freebsd_vlan_set_priority(const char *name, uint8_t priority) {
   if (!name || priority > 7) {
-    debug_log(DEBUG_ERROR, "Invalid parameters for VLAN priority setting");
+    debug_log(ERROR, "Invalid parameters for VLAN priority setting");
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "Setting VLAN priority for %s to %d", name, priority);
+  debug_log(DEBUG, "Setting VLAN priority for %s to %d", name, priority);
 
   /* For now, just log the request - actual priority setting would require
      additional system calls or device-specific ioctls */
-  debug_log(DEBUG_INFO, "Set VLAN priority for %s to %d", name, priority);
+  debug_log(INFO, "Set VLAN priority for %s to %d", name, priority);
   return 0;
 }
 
@@ -119,11 +119,11 @@ int freebsd_vlan_set_protocol(const char *name, const char *protocol) {
   uint16_t proto_value;
 
   if (!name || !protocol) {
-    debug_log(DEBUG_ERROR, "Invalid parameters for VLAN protocol setting");
+    debug_log(ERROR, "Invalid parameters for VLAN protocol setting");
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "Setting VLAN protocol for %s to %s", name, protocol);
+  debug_log(DEBUG, "Setting VLAN protocol for %s to %s", name, protocol);
 
   /* Parse protocol string */
   if (strcmp(protocol, "802.1q") == 0) {
@@ -131,13 +131,13 @@ int freebsd_vlan_set_protocol(const char *name, const char *protocol) {
   } else if (strcmp(protocol, "802.1ad") == 0) {
     proto_value = 0x88a8; /* 802.1ad (QinQ) ethertype */
   } else {
-    debug_log(DEBUG_ERROR, "Unsupported VLAN protocol: %s", protocol);
+    debug_log(ERROR, "Unsupported VLAN protocol: %s", protocol);
     return -1;
   }
 
   /* For now, just log the request - actual protocol setting would require
      additional system calls or device-specific ioctls */
-  debug_log(DEBUG_INFO, "Set VLAN protocol for %s to %s (ethertype: 0x%04x)", 
+  debug_log(INFO, "Set VLAN protocol for %s to %s (ethertype: 0x%04x)", 
             name, protocol, proto_value);
   return 0;
 } 

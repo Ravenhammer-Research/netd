@@ -53,16 +53,16 @@ int freebsd_gif_create(const char *name) {
   struct ifreq ifr;
 
   if (!name) {
-    debug_log(DEBUG_ERROR, "Invalid parameters for GIF creation");
+    debug_log(ERROR, "Invalid parameters for GIF creation");
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "Creating GIF interface %s", name);
+  debug_log(DEBUG, "Creating GIF interface %s", name);
 
   /* Create socket for ioctl */
   sock = socket(AF_LOCAL, SOCK_DGRAM, 0);
   if (sock < 0) {
-    debug_log(DEBUG_ERROR, "Failed to create socket for GIF creation: %s", strerror(errno));
+    debug_log(ERROR, "Failed to create socket for GIF creation: %s", strerror(errno));
     return -1;
   }
 
@@ -72,13 +72,13 @@ int freebsd_gif_create(const char *name) {
 
   /* Create GIF interface using ifconfig-style approach */
   if (ioctl(sock, SIOCIFCREATE, &ifr) < 0) {
-    debug_log(DEBUG_ERROR, "Failed to create GIF interface: %s", strerror(errno));
+    debug_log(ERROR, "Failed to create GIF interface: %s", strerror(errno));
     close(sock);
     return -1;
   }
 
   close(sock);
-  debug_log(DEBUG_INFO, "Created GIF interface %s", name);
+  debug_log(INFO, "Created GIF interface %s", name);
   return 0;
 }
 
@@ -94,17 +94,17 @@ int freebsd_gif_set_tunnel(const char *name, const char *local_addr, const char 
   struct ifreq ifr;
 
   if (!name || !local_addr || !remote_addr) {
-    debug_log(DEBUG_ERROR, "Invalid parameters for GIF tunnel setting");
+    debug_log(ERROR, "Invalid parameters for GIF tunnel setting");
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "Setting GIF tunnel for %s: local=%s, remote=%s", 
+  debug_log(DEBUG, "Setting GIF tunnel for %s: local=%s, remote=%s", 
             name, local_addr, remote_addr);
 
   /* Create socket for ioctl */
   sock = socket(AF_LOCAL, SOCK_DGRAM, 0);
   if (sock < 0) {
-    debug_log(DEBUG_ERROR, "Failed to create socket for GIF tunnel: %s", strerror(errno));
+    debug_log(ERROR, "Failed to create socket for GIF tunnel: %s", strerror(errno));
     return -1;
   }
 
@@ -115,13 +115,13 @@ int freebsd_gif_set_tunnel(const char *name, const char *local_addr, const char 
   /* For GIF interfaces, tunnel endpoints are typically set through ifconfig */
   /* We'll verify the interface exists and is a GIF type */
   if (ioctl(sock, SIOCGIFFLAGS, &ifr) < 0) {
-    debug_log(DEBUG_ERROR, "GIF interface %s does not exist: %s", name, strerror(errno));
+    debug_log(ERROR, "GIF interface %s does not exist: %s", name, strerror(errno));
     close(sock);
     return -1;
   }
 
   close(sock);
-  debug_log(DEBUG_INFO, "Set GIF tunnel for %s: local=%s, remote=%s", 
+  debug_log(INFO, "Set GIF tunnel for %s: local=%s, remote=%s", 
             name, local_addr, remote_addr);
   return 0;
 } 

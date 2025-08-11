@@ -75,7 +75,7 @@ int netconf_connect(net_client_t *client) {
     fcntl(client->socket_fd, F_SETFL, flags | O_NONBLOCK);
     
     client->connected = true;
-    debug_log(DEBUG_INFO, "Connected to NETCONF server");
+    debug_log(INFO, "Connected to NETCONF server");
     
     return 0;
 }
@@ -94,7 +94,7 @@ void netconf_disconnect(net_client_t *client) {
     }
     
     client->connected = false;
-    debug_log(DEBUG_INFO, "Disconnected from NETCONF server");
+    debug_log(INFO, "Disconnected from NETCONF server");
 }
 
 /**
@@ -127,7 +127,13 @@ int netconf_send_request(net_client_t *client, const char *request, char **respo
         return -1;
     }
     
-    debug_log(DEBUG_DEBUG, "Sent request (%zd bytes): %s", sent, request);
+    debug_log(DEBUG, "Sent request (%zd bytes): %s", sent, request);
+    
+    /* Validate request against YANG schema */
+    if (yang_validate_rpc_client(client, request) < 0) {
+        debug_log(ERROR, "Request failed YANG validation");
+        return -1;
+    }
     
     /* Receive response */
     while (1) {
@@ -174,7 +180,12 @@ int netconf_send_request(net_client_t *client, const char *request, char **respo
     }
     
     *response = full_response;
-    debug_log(DEBUG_DEBUG, "Received response (%zu bytes)", response_size);
+    debug_log(DEBUG, "Received response (%zu bytes)", response_size);
+    
+    /* Validate response against YANG schema */
+    if (yang_validate_response_client(client, full_response) < 0) {
+        debug_log(WARN, "Response validation failed, but continuing");
+    }
     
     return 0;
 } 

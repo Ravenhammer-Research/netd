@@ -53,16 +53,16 @@ int freebsd_loopback_create(const char *name) {
   struct ifreq ifr;
 
   if (!name) {
-    debug_log(DEBUG_ERROR, "Invalid parameters for loopback creation");
+    debug_log(ERROR, "Invalid parameters for loopback creation");
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "Creating loopback interface %s", name);
+  debug_log(DEBUG, "Creating loopback interface %s", name);
 
   /* Create socket for ioctl */
   sock = socket(AF_LOCAL, SOCK_DGRAM, 0);
   if (sock < 0) {
-    debug_log(DEBUG_ERROR, "Failed to create socket for loopback creation: %s", strerror(errno));
+    debug_log(ERROR, "Failed to create socket for loopback creation: %s", strerror(errno));
     return -1;
   }
 
@@ -72,12 +72,12 @@ int freebsd_loopback_create(const char *name) {
 
   /* Create loopback interface using ifconfig-style approach */
   if (ioctl(sock, SIOCIFCREATE, &ifr) < 0) {
-    debug_log(DEBUG_ERROR, "Failed to create loopback interface: %s", strerror(errno));
+    debug_log(ERROR, "Failed to create loopback interface: %s", strerror(errno));
     close(sock);
     return -1;
   }
 
   close(sock);
-  debug_log(DEBUG_INFO, "Created loopback interface %s", name);
+  debug_log(INFO, "Created loopback interface %s", name);
   return 0;
 } 

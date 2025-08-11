@@ -30,7 +30,6 @@
 set(CLIENT_SRCS
     main.c
     client.c
-    debug.c
     error.c
 )
 
@@ -45,6 +44,7 @@ add_executable(net ${CLIENT_SRCS})
 
 # Link with subdirectory libraries
 target_link_libraries(net
+    shared_debug
     parser_lib
     xml_lib
     table_lib
@@ -58,6 +58,7 @@ target_link_libraries(net
 # Set include directories for this target
 target_include_directories(net PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/../shared
     ${CMAKE_CURRENT_SOURCE_DIR}/parser
     ${CMAKE_CURRENT_SOURCE_DIR}/xml
     ${CMAKE_CURRENT_SOURCE_DIR}/table

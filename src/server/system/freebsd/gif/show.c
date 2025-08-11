@@ -58,16 +58,16 @@ int freebsd_gif_show(const char *name, char *local_addr, size_t local_addr_size,
   struct ifreq ifr;
 
   if (!name || !local_addr || !remote_addr) {
-    debug_log(DEBUG_ERROR, "Invalid parameters for GIF show");
+    debug_log(ERROR, "Invalid parameters for GIF show");
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "Showing GIF interface %s", name);
+  debug_log(DEBUG, "Showing GIF interface %s", name);
 
   /* Create socket for ioctl */
   sock = socket(AF_LOCAL, SOCK_DGRAM, 0);
   if (sock < 0) {
-    debug_log(DEBUG_ERROR, "Failed to create socket for GIF show: %s", strerror(errno));
+    debug_log(ERROR, "Failed to create socket for GIF show: %s", strerror(errno));
     return -1;
   }
 
@@ -77,7 +77,7 @@ int freebsd_gif_show(const char *name, char *local_addr, size_t local_addr_size,
 
   /* Get interface flags to check if it exists */
   if (ioctl(sock, SIOCGIFFLAGS, &ifr) < 0) {
-    debug_log(DEBUG_ERROR, "GIF interface %s does not exist: %s", name, strerror(errno));
+    debug_log(ERROR, "GIF interface %s does not exist: %s", name, strerror(errno));
     close(sock);
     return -1;
   }
@@ -88,6 +88,6 @@ int freebsd_gif_show(const char *name, char *local_addr, size_t local_addr_size,
   strlcpy(remote_addr, "unknown", remote_addr_size);
 
   close(sock);
-  debug_log(DEBUG_INFO, "Showed GIF interface %s", name);
+  debug_log(INFO, "Showed GIF interface %s", name);
   return 0;
 } 

@@ -71,8 +71,17 @@ void print_vrf_table(const char *xml_response);
 void print_routes_table(const char *xml_response);
 int print_interface_groups_summary(const char *xml_response);
 
-/* WLAN specific functions */
-int parse_wlan_interfaces_from_xml(const char *xml, struct wlan_interface_data *interfaces, int max_interfaces);
-int print_wlan_interface_groups_summary(const char *xml_response);
+/* Bridge specific functions */
+int parse_bridge_interfaces_from_xml(const char *xml, struct bridge_interface_data *interfaces, int max_interfaces);
+
+/* LAGG specific functions */
+int parse_lagg_interfaces_from_xml(const char *xml, struct lagg_interface_data *interfaces, int max_interfaces);
+
+/* VXLAN specific functions */
+int parse_vxlan_interfaces_from_xml(const char *xml, struct vxlan_interface_data *interfaces, int max_interfaces);
+
+/* WiFi specific functions */
+int parse_wifi_interfaces_from_xml(const char *xml, struct wifi_interface_data *interfaces, int max_interfaces);
+int print_wifi_interface_groups_summary(const char *xml_response);
 
 #endif /* TABLE_H */ 

@@ -55,16 +55,16 @@ int freebsd_epair_show(const char *name, char *peer_name, size_t peer_name_size)
   struct ifreq ifr;
 
   if (!name || !peer_name) {
-    debug_log(DEBUG_ERROR, "Invalid parameters for epair show");
+    debug_log(ERROR, "Invalid parameters for epair show");
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "Showing epair interface %s", name);
+  debug_log(DEBUG, "Showing epair interface %s", name);
 
   /* Create socket for ioctl */
   sock = socket(AF_LOCAL, SOCK_DGRAM, 0);
   if (sock < 0) {
-    debug_log(DEBUG_ERROR, "Failed to create socket for epair show: %s", strerror(errno));
+    debug_log(ERROR, "Failed to create socket for epair show: %s", strerror(errno));
     return -1;
   }
 
@@ -74,7 +74,7 @@ int freebsd_epair_show(const char *name, char *peer_name, size_t peer_name_size)
 
   /* Get interface flags to check if it exists */
   if (ioctl(sock, SIOCGIFFLAGS, &ifr) < 0) {
-    debug_log(DEBUG_ERROR, "Epair interface %s does not exist: %s", name, strerror(errno));
+    debug_log(ERROR, "Epair interface %s does not exist: %s", name, strerror(errno));
     close(sock);
     return -1;
   }
@@ -84,6 +84,6 @@ int freebsd_epair_show(const char *name, char *peer_name, size_t peer_name_size)
   strlcpy(peer_name, "unknown", peer_name_size);
 
   close(sock);
-  debug_log(DEBUG_INFO, "Showed epair interface %s", name);
+  debug_log(INFO, "Showed epair interface %s", name);
   return 0;
 } 

@@ -49,6 +49,7 @@ target_include_directories(freebsd_system PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/route
     ${CMAKE_CURRENT_SOURCE_DIR}/tap
     ${CMAKE_CURRENT_SOURCE_DIR}/vlan
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../../shared
 )
 
 # Link dependencies

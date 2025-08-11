@@ -29,56 +29,65 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <vlan.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <net/if.h>
-#include <stddef.h>
+#include <debug.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/ioctl.h>
-#include <sys/socket.h>
-#include <sys/sockio.h>
-#include <unistd.h>
+#include <stdarg.h>
+#include <time.h>
 
-#include <netd.h>
+static debug_level_t current_debug_level = NONE;
 
 /**
- * Delete a VLAN interface
- * @param name VLAN interface name
- * @return 0 on success, -1 on failure
+ * Initialize debug logging with specified level
  */
-int freebsd_vlan_delete(const char *name) {
-  int sock;
-  struct ifreq ifr;
+void debug_init(debug_level_t level) {
+    current_debug_level = level;
+}
 
-  if (!name) {
-    debug_log(ERROR, "Invalid parameters for VLAN deletion");
-    return -1;
-  }
+/**
+ * Log debug message if level is enabled
+ */
+void debug_log(debug_level_t level, const char *format, ...) {
+    if (level > current_debug_level) {
+        return;
+    }
 
-  debug_log(DEBUG, "Deleting VLAN interface %s", name);
+    time_t now;
+    struct tm *tm_info;
+    char time_str[26];
 
-  /* Create socket for ioctl */
-  sock = socket(AF_LOCAL, SOCK_DGRAM, 0);
-  if (sock < 0) {
-    debug_log(ERROR, "Failed to create socket for VLAN deletion: %s", strerror(errno));
-    return -1;
-  }
+    time(&now);
+    tm_info = localtime(&now);
+    strftime(time_str, 26, "%Y-%m-%d %H:%M:%S", tm_info);
 
-  /* Set up interface request */
-  memset(&ifr, 0, sizeof(ifr));
-  strlcpy(ifr.ifr_name, name, sizeof(ifr.ifr_name));
+    printf("[%s] ", time_str);
+    
+    switch (level) {
+        case ERROR:
+            printf("ERROR: ");
+            break;
+        case WARN:
+            printf("WARN:  ");
+            break;
+        case INFO:
+            printf("INFO:  ");
+            break;
+        case DEBUG:
+            printf("DEBUG: ");
+            break;
+        case DEBUG1:
+            printf("DEBUG1: ");
+            break;
+        case DEBUG2:
+            printf("DEBUG2: ");
+            break;
+        default:
+            printf("UNKNOWN: ");
+            break;
+    }
 
-  /* Delete VLAN interface */
-  if (ioctl(sock, SIOCIFDESTROY, &ifr) < 0) {
-    debug_log(ERROR, "Failed to delete VLAN interface: %s", strerror(errno));
-    close(sock);
-    return -1;
-  }
-
-  close(sock);
-  debug_log(INFO, "Deleted VLAN interface %s", name);
-  return 0;
+    va_list args;
+    va_start(args, format);
+    vprintf(format, args);
+    va_end(args);
+    printf("\n");
 } 

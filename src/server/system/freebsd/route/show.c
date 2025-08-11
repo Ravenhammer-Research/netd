@@ -146,7 +146,7 @@ static int parse_route_message(netd_state_t *state, struct rt_msghdr *rtm,
   /* Allocate new route */
   route = malloc(sizeof(*route));
   if (!route) {
-    debug_log(DEBUG_ERROR, "Failed to allocate memory for route");
+    debug_log(ERROR, "Failed to allocate memory for route");
     return -1;
   }
 
@@ -203,7 +203,7 @@ static int parse_route_message(netd_state_t *state, struct rt_msghdr *rtm,
     }
   }
   
-  debug_log(DEBUG_DEBUG, "Added route: %s via %s on %s (FIB %u)", dest_str,
+  debug_log(DEBUG2, "Added route: %s via %s on %s (FIB %u)", dest_str,
             gw_str, ifname, fib);
 
   return 0;
@@ -235,7 +235,7 @@ int freebsd_route_list(uint32_t fib, int family) {
 retry:
   /* First, get the size needed */
   if (sysctl(mib, nitems(mib), NULL, &needed, NULL, 0) < 0) {
-    debug_log(DEBUG_ERROR, "Failed to get route table size: %s",
+    debug_log(ERROR, "Failed to get route table size: %s",
               strerror(errno));
     return -1;
   }
@@ -243,20 +243,20 @@ retry:
   /* Allocate buffer */
   buf = malloc(needed);
   if (!buf) {
-    debug_log(DEBUG_ERROR, "Failed to allocate route table buffer");
+    debug_log(ERROR, "Failed to allocate route table buffer");
     return -1;
   }
 
   /* Get the actual route data */
   if (sysctl(mib, nitems(mib), buf, &needed, NULL, 0) < 0) {
     if (errno == ENOMEM && retry_count++ < max_retries) {
-      debug_log(DEBUG_DEBUG, "Route table grew, retrying (attempt %d)",
+      debug_log(DEBUG, "Route table grew, retrying (attempt %d)",
                 retry_count);
       free(buf);
       sleep(1);
       goto retry;
     }
-    debug_log(DEBUG_ERROR, "Failed to get route table: %s", strerror(errno));
+    debug_log(ERROR, "Failed to get route table: %s", strerror(errno));
     free(buf);
     return -1;
   }
@@ -269,7 +269,7 @@ retry:
     if (rtm->rtm_type == RTM_ADD || rtm->rtm_type == RTM_CHANGE ||
         rtm->rtm_type == RTM_GET) {
       /* Process route entry */
-      debug_log(DEBUG_DEBUG, "Received route entry (type: %d)", rtm->rtm_type);
+      debug_log(DEBUG, "Received route entry (type: %d)", rtm->rtm_type);
 
       /* Parse route information */
       char *cp = (char *)(rtm + 1);
@@ -325,12 +325,12 @@ retry:
         strlcpy(gw_str, "direct", sizeof(gw_str));
       }
 
-      debug_log(DEBUG_DEBUG, "Route: %s via %s on %s", dest_str, gw_str,
+      debug_log(DEBUG, "Route: %s via %s on %s", dest_str, gw_str,
                 ifname);
     }
   }
 
-  debug_log(DEBUG_INFO, "Listed routes for FIB %u", fib);
+  debug_log(INFO, "Listed routes for FIB %u", fib);
   free(buf);
   return 0;
 }
@@ -365,7 +365,7 @@ int freebsd_route_enumerate_system(netd_state_t *state, uint32_t fib) {
 retry:
   /* First, get the size needed */
   if (sysctl(mib, nitems(mib), NULL, &needed, NULL, 0) < 0) {
-    debug_log(DEBUG_ERROR, "Failed to get route table size: %s",
+    debug_log(ERROR, "Failed to get route table size: %s",
               strerror(errno));
     return -1;
   }
@@ -373,20 +373,20 @@ retry:
   /* Allocate buffer */
   buf = malloc(needed);
   if (!buf) {
-    debug_log(DEBUG_ERROR, "Failed to allocate route table buffer");
+    debug_log(ERROR, "Failed to allocate route table buffer");
     return -1;
   }
 
   /* Get the actual route data */
   if (sysctl(mib, nitems(mib), buf, &needed, NULL, 0) < 0) {
     if (errno == ENOMEM && retry_count++ < max_retries) {
-      debug_log(DEBUG_DEBUG, "Route table grew, retrying (attempt %d)",
+      debug_log(DEBUG, "Route table grew, retrying (attempt %d)",
                 retry_count);
       free(buf);
       sleep(1);
       goto retry;
     }
-    debug_log(DEBUG_ERROR, "Failed to get route table: %s", strerror(errno));
+    debug_log(ERROR, "Failed to get route table: %s", strerror(errno));
     free(buf);
     return -1;
   }
@@ -403,7 +403,7 @@ retry:
     }
   }
 
-  debug_log(DEBUG_INFO, "Enumerated routes for FIB %u", fib);
+  debug_log(DEBUG1, "Enumerated routes for FIB %u", fib);
   free(buf);
   return 0;
 } 

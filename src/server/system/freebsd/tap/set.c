@@ -53,16 +53,16 @@ int freebsd_tap_create(const char *name) {
   struct ifreq ifr;
 
   if (!name) {
-    debug_log(DEBUG_ERROR, "Invalid parameters for TAP creation");
+    debug_log(ERROR, "Invalid parameters for TAP creation");
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "Creating TAP interface %s", name);
+  debug_log(DEBUG, "Creating TAP interface %s", name);
 
   /* Create socket for ioctl */
   sock = socket(AF_LOCAL, SOCK_DGRAM, 0);
   if (sock < 0) {
-    debug_log(DEBUG_ERROR, "Failed to create socket for TAP creation: %s", strerror(errno));
+    debug_log(ERROR, "Failed to create socket for TAP creation: %s", strerror(errno));
     return -1;
   }
 
@@ -72,13 +72,13 @@ int freebsd_tap_create(const char *name) {
 
   /* Create TAP interface using ifconfig-style approach */
   if (ioctl(sock, SIOCIFCREATE, &ifr) < 0) {
-    debug_log(DEBUG_ERROR, "Failed to create TAP interface: %s", strerror(errno));
+    debug_log(ERROR, "Failed to create TAP interface: %s", strerror(errno));
     close(sock);
     return -1;
   }
 
   close(sock);
-  debug_log(DEBUG_INFO, "Created TAP interface %s", name);
+  debug_log(INFO, "Created TAP interface %s", name);
   return 0;
 }
 
@@ -91,15 +91,15 @@ int freebsd_tap_create(const char *name) {
  */
 int freebsd_tap_set_permissions(const char *name, int owner, int group) {
   if (!name) {
-    debug_log(DEBUG_ERROR, "Invalid parameters for TAP permissions");
+    debug_log(ERROR, "Invalid parameters for TAP permissions");
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "Setting permissions for TAP interface %s: owner=%d, group=%d", name, owner, group);
+  debug_log(DEBUG, "Setting permissions for TAP interface %s: owner=%d, group=%d", name, owner, group);
 
   /* For now, just log the request - actual permission setting would require
      additional system calls or device node manipulation */
-  debug_log(DEBUG_INFO, "Set permissions for TAP interface %s: owner=%d, group=%d", name, owner, group);
+  debug_log(INFO, "Set permissions for TAP interface %s: owner=%d, group=%d", name, owner, group);
   return 0;
 }
 
@@ -113,16 +113,16 @@ int freebsd_tap_up(const char *name) {
   struct ifreq ifr;
 
   if (!name) {
-    debug_log(DEBUG_ERROR, "Invalid parameters for TAP up");
+    debug_log(ERROR, "Invalid parameters for TAP up");
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "Bringing TAP interface %s up", name);
+  debug_log(DEBUG, "Bringing TAP interface %s up", name);
 
   /* Create socket for ioctl */
   sock = socket(AF_LOCAL, SOCK_DGRAM, 0);
   if (sock < 0) {
-    debug_log(DEBUG_ERROR, "Failed to create socket for TAP up: %s", strerror(errno));
+    debug_log(ERROR, "Failed to create socket for TAP up: %s", strerror(errno));
     return -1;
   }
 
@@ -132,7 +132,7 @@ int freebsd_tap_up(const char *name) {
 
   /* Get current flags */
   if (ioctl(sock, SIOCGIFFLAGS, &ifr) < 0) {
-    debug_log(DEBUG_ERROR, "Failed to get flags for TAP interface %s: %s", name, strerror(errno));
+    debug_log(ERROR, "Failed to get flags for TAP interface %s: %s", name, strerror(errno));
     close(sock);
     return -1;
   }
@@ -142,13 +142,13 @@ int freebsd_tap_up(const char *name) {
 
   /* Set flags */
   if (ioctl(sock, SIOCSIFFLAGS, &ifr) < 0) {
-    debug_log(DEBUG_ERROR, "Failed to set flags for TAP interface %s: %s", name, strerror(errno));
+    debug_log(ERROR, "Failed to set flags for TAP interface %s: %s", name, strerror(errno));
     close(sock);
     return -1;
   }
 
   close(sock);
-  debug_log(DEBUG_INFO, "Brought TAP interface %s up", name);
+  debug_log(INFO, "Brought TAP interface %s up", name);
   return 0;
 }
 
@@ -162,16 +162,16 @@ int freebsd_tap_down(const char *name) {
   struct ifreq ifr;
 
   if (!name) {
-    debug_log(DEBUG_ERROR, "Invalid parameters for TAP down");
+    debug_log(ERROR, "Invalid parameters for TAP down");
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "Bringing TAP interface %s down", name);
+  debug_log(DEBUG, "Bringing TAP interface %s down", name);
 
   /* Create socket for ioctl */
   sock = socket(AF_LOCAL, SOCK_DGRAM, 0);
   if (sock < 0) {
-    debug_log(DEBUG_ERROR, "Failed to create socket for TAP down: %s", strerror(errno));
+    debug_log(ERROR, "Failed to create socket for TAP down: %s", strerror(errno));
     return -1;
   }
 
@@ -181,7 +181,7 @@ int freebsd_tap_down(const char *name) {
 
   /* Get current flags */
   if (ioctl(sock, SIOCGIFFLAGS, &ifr) < 0) {
-    debug_log(DEBUG_ERROR, "Failed to get flags for TAP interface %s: %s", name, strerror(errno));
+    debug_log(ERROR, "Failed to get flags for TAP interface %s: %s", name, strerror(errno));
     close(sock);
     return -1;
   }
@@ -191,12 +191,12 @@ int freebsd_tap_down(const char *name) {
 
   /* Set flags */
   if (ioctl(sock, SIOCSIFFLAGS, &ifr) < 0) {
-    debug_log(DEBUG_ERROR, "Failed to set flags for TAP interface %s: %s", name, strerror(errno));
+    debug_log(ERROR, "Failed to set flags for TAP interface %s: %s", name, strerror(errno));
     close(sock);
     return -1;
   }
 
   close(sock);
-  debug_log(DEBUG_INFO, "Brought TAP interface %s down", name);
+  debug_log(INFO, "Brought TAP interface %s down", name);
   return 0;
 } 

@@ -50,25 +50,25 @@ int wireless_interface_create(netd_state_t *state, const char *name,
   interface_t *wireless_iface;
 
   if (!state || !name) {
-    debug_log(DEBUG_ERROR,
+    debug_log(ERROR,
               "Invalid parameters for wireless creation: state=%p, name=%s",
               state, name ? name : "NULL");
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "Creating wireless interface '%s'", name);
+  debug_log(DEBUG, "Creating wireless interface '%s'", name);
 
   /* Create the wireless interface using the general interface creation */
   int result = interface_create(state, name, IF_TYPE_WIRELESS);
   if (result < 0) {
-    debug_log(DEBUG_ERROR, "Failed to create wireless interface %s", name);
+    debug_log(ERROR, "Failed to create wireless interface %s", name);
     return -1;
   }
 
   /* Find the created interface and set wireless-specific properties */
   wireless_iface = interface_find(state, name);
   if (!wireless_iface) {
-    debug_log(DEBUG_ERROR, "Failed to find created wireless interface %s", name);
+    debug_log(ERROR, "Failed to find created wireless interface %s", name);
     return -1;
   }
 
@@ -96,14 +96,14 @@ int wireless_interface_create(netd_state_t *state, const char *name,
 
   /* Create wireless interface in FreeBSD */
   if (freebsd_wireless_create(name, parent_name) < 0) {
-    debug_log(DEBUG_ERROR,
+    debug_log(ERROR,
               "Failed to create wireless interface %s in FreeBSD", name);
     /* Clean up the interface from state */
     interface_delete(state, name);
     return -1;
   }
 
-  debug_log(DEBUG_INFO, "Created wireless interface %s", name);
+  debug_log(INFO, "Created wireless interface %s", name);
   return 0;
 }
 
@@ -119,31 +119,31 @@ int wireless_set_regdomain(netd_state_t *state, const char *name,
   interface_t *wireless_iface;
 
   if (!state || !name || !regdomain) {
-    debug_log(DEBUG_ERROR,
+    debug_log(ERROR,
               "Invalid parameters for wireless regdomain setting: state=%p, "
               "name=%s, regdomain=%s",
               state, name ? name : "NULL", regdomain ? regdomain : "NULL");
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "Setting regdomain '%s' for wireless interface '%s'",
+  debug_log(DEBUG, "Setting regdomain '%s' for wireless interface '%s'",
             regdomain, name);
 
   /* Find wireless interface */
   wireless_iface = interface_find(state, name);
   if (!wireless_iface) {
-    debug_log(DEBUG_ERROR, "Wireless interface %s not found", name);
+    debug_log(ERROR, "Wireless interface %s not found", name);
     return -1;
   }
 
   if (wireless_iface->type != IF_TYPE_WIRELESS) {
-    debug_log(DEBUG_ERROR, "Interface %s is not wireless", name);
+    debug_log(ERROR, "Interface %s is not wireless", name);
     return -1;
   }
 
   /* Set regdomain in FreeBSD */
   if (freebsd_wireless_set_regdomain(name, regdomain) < 0) {
-    debug_log(DEBUG_ERROR,
+    debug_log(ERROR,
               "Failed to set regdomain %s for wireless %s in FreeBSD",
               regdomain, name);
     return -1;
@@ -153,7 +153,7 @@ int wireless_set_regdomain(netd_state_t *state, const char *name,
   strlcpy(wireless_iface->wifi_regdomain, regdomain,
           sizeof(wireless_iface->wifi_regdomain));
 
-  debug_log(DEBUG_INFO, "Set regdomain %s for wireless interface %s",
+  debug_log(INFO, "Set regdomain %s for wireless interface %s",
             regdomain, name);
   return 0;
 }
@@ -170,31 +170,31 @@ int wireless_set_country(netd_state_t *state, const char *name,
   interface_t *wireless_iface;
 
   if (!state || !name || !country) {
-    debug_log(DEBUG_ERROR,
+    debug_log(ERROR,
               "Invalid parameters for wireless country setting: state=%p, "
               "name=%s, country=%s",
               state, name ? name : "NULL", country ? country : "NULL");
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "Setting country '%s' for wireless interface '%s'",
+  debug_log(DEBUG, "Setting country '%s' for wireless interface '%s'",
             country, name);
 
   /* Find wireless interface */
   wireless_iface = interface_find(state, name);
   if (!wireless_iface) {
-    debug_log(DEBUG_ERROR, "Wireless interface %s not found", name);
+    debug_log(ERROR, "Wireless interface %s not found", name);
     return -1;
   }
 
   if (wireless_iface->type != IF_TYPE_WIRELESS) {
-    debug_log(DEBUG_ERROR, "Interface %s is not wireless", name);
+    debug_log(ERROR, "Interface %s is not wireless", name);
     return -1;
   }
 
   /* Set country in FreeBSD */
   if (freebsd_wireless_set_country(name, country) < 0) {
-    debug_log(DEBUG_ERROR,
+    debug_log(ERROR,
               "Failed to set country %s for wireless %s in FreeBSD", country,
               name);
     return -1;
@@ -204,7 +204,7 @@ int wireless_set_country(netd_state_t *state, const char *name,
   strlcpy(wireless_iface->wifi_country, country,
           sizeof(wireless_iface->wifi_country));
 
-  debug_log(DEBUG_INFO, "Set country %s for wireless interface %s", country,
+  debug_log(INFO, "Set country %s for wireless interface %s", country,
             name);
   return 0;
 }
@@ -221,31 +221,31 @@ int wireless_set_authmode(netd_state_t *state, const char *name,
   interface_t *wireless_iface;
 
   if (!state || !name || !authmode) {
-    debug_log(DEBUG_ERROR,
+    debug_log(ERROR,
               "Invalid parameters for wireless authmode setting: state=%p, "
               "name=%s, authmode=%s",
               state, name ? name : "NULL", authmode ? authmode : "NULL");
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "Setting authmode '%s' for wireless interface '%s'",
+  debug_log(DEBUG, "Setting authmode '%s' for wireless interface '%s'",
             authmode, name);
 
   /* Find wireless interface */
   wireless_iface = interface_find(state, name);
   if (!wireless_iface) {
-    debug_log(DEBUG_ERROR, "Wireless interface %s not found", name);
+    debug_log(ERROR, "Wireless interface %s not found", name);
     return -1;
   }
 
   if (wireless_iface->type != IF_TYPE_WIRELESS) {
-    debug_log(DEBUG_ERROR, "Interface %s is not wireless", name);
+    debug_log(ERROR, "Interface %s is not wireless", name);
     return -1;
   }
 
   /* Set authmode in FreeBSD */
   if (freebsd_wireless_set_authmode(name, authmode) < 0) {
-    debug_log(DEBUG_ERROR,
+    debug_log(ERROR,
               "Failed to set authmode %s for wireless %s in FreeBSD", authmode,
               name);
     return -1;
@@ -255,7 +255,7 @@ int wireless_set_authmode(netd_state_t *state, const char *name,
   strlcpy(wireless_iface->wifi_authmode, authmode,
           sizeof(wireless_iface->wifi_authmode));
 
-  debug_log(DEBUG_INFO, "Set authmode %s for wireless interface %s", authmode,
+  debug_log(INFO, "Set authmode %s for wireless interface %s", authmode,
             name);
   return 0;
 }
@@ -272,31 +272,31 @@ int wireless_set_privacy(netd_state_t *state, const char *name,
   interface_t *wireless_iface;
 
   if (!state || !name || !privacy) {
-    debug_log(DEBUG_ERROR,
+    debug_log(ERROR,
               "Invalid parameters for wireless privacy setting: state=%p, "
               "name=%s, privacy=%s",
               state, name ? name : "NULL", privacy ? privacy : "NULL");
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "Setting privacy '%s' for wireless interface '%s'",
+  debug_log(DEBUG, "Setting privacy '%s' for wireless interface '%s'",
             privacy, name);
 
   /* Find wireless interface */
   wireless_iface = interface_find(state, name);
   if (!wireless_iface) {
-    debug_log(DEBUG_ERROR, "Wireless interface %s not found", name);
+    debug_log(ERROR, "Wireless interface %s not found", name);
     return -1;
   }
 
   if (wireless_iface->type != IF_TYPE_WIRELESS) {
-    debug_log(DEBUG_ERROR, "Interface %s is not wireless", name);
+    debug_log(ERROR, "Interface %s is not wireless", name);
     return -1;
   }
 
   /* Set privacy in FreeBSD */
   if (freebsd_wireless_set_privacy(name, privacy) < 0) {
-    debug_log(DEBUG_ERROR,
+    debug_log(ERROR,
               "Failed to set privacy %s for wireless %s in FreeBSD", privacy,
               name);
     return -1;
@@ -306,7 +306,7 @@ int wireless_set_privacy(netd_state_t *state, const char *name,
   strlcpy(wireless_iface->wifi_privacy, privacy,
           sizeof(wireless_iface->wifi_privacy));
 
-  debug_log(DEBUG_INFO, "Set privacy %s for wireless interface %s", privacy,
+  debug_log(INFO, "Set privacy %s for wireless interface %s", privacy,
             name);
   return 0;
 }
@@ -322,7 +322,7 @@ int wireless_set_txpower(netd_state_t *state, const char *name, int txpower) {
   interface_t *wireless_iface;
 
   if (!state || !name) {
-    debug_log(DEBUG_ERROR,
+    debug_log(ERROR,
               "Invalid parameters for wireless txpower setting: state=%p, "
               "name=%s",
               state, name ? name : "NULL");
@@ -330,28 +330,28 @@ int wireless_set_txpower(netd_state_t *state, const char *name, int txpower) {
   }
 
   if (txpower < 0 || txpower > 30) {
-    debug_log(DEBUG_ERROR, "Invalid txpower %d (must be 0-30 dBm)", txpower);
+    debug_log(ERROR, "Invalid txpower %d (must be 0-30 dBm)", txpower);
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "Setting txpower %d for wireless interface '%s'",
+  debug_log(DEBUG, "Setting txpower %d for wireless interface '%s'",
             txpower, name);
 
   /* Find wireless interface */
   wireless_iface = interface_find(state, name);
   if (!wireless_iface) {
-    debug_log(DEBUG_ERROR, "Wireless interface %s not found", name);
+    debug_log(ERROR, "Wireless interface %s not found", name);
     return -1;
   }
 
   if (wireless_iface->type != IF_TYPE_WIRELESS) {
-    debug_log(DEBUG_ERROR, "Interface %s is not wireless", name);
+    debug_log(ERROR, "Interface %s is not wireless", name);
     return -1;
   }
 
   /* Set txpower in FreeBSD */
   if (freebsd_wireless_set_txpower(name, txpower) < 0) {
-    debug_log(DEBUG_ERROR,
+    debug_log(ERROR,
               "Failed to set txpower %d for wireless %s in FreeBSD", txpower,
               name);
     return -1;
@@ -360,7 +360,7 @@ int wireless_set_txpower(netd_state_t *state, const char *name, int txpower) {
   /* Update interface state */
   wireless_iface->wifi_txpower = txpower;
 
-  debug_log(DEBUG_INFO, "Set txpower %d for wireless interface %s", txpower,
+  debug_log(INFO, "Set txpower %d for wireless interface %s", txpower,
             name);
   return 0;
 } 

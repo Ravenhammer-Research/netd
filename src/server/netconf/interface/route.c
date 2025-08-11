@@ -90,7 +90,7 @@ char *create_routes_xml_response(netd_state_t *state, const char *message_id, ui
   /* Allocate and build response */
   response = malloc(total_len + 1);
   if (!response) {
-    debug_log(DEBUG_ERROR, "Failed to allocate memory for routes response");
+    debug_log(ERROR, "Failed to allocate memory for routes response");
     return NULL;
   }
 

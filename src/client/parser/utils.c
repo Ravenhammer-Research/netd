@@ -259,7 +259,7 @@ int parse_command(const char *line, command_t *cmd) {
 
   /* Special handling for set interface commands with complex structure */
   debug_log(
-      DEBUG_DEBUG,
+      DEBUG,
       "Checking for set interface command: type=%d, object=%d, arg_count=%d",
       cmd->type, cmd->object, arg_count);
   if (cmd->type == CMD_SET && cmd->object == OBJ_INTERFACE && arg_count >= 10) {
@@ -290,7 +290,7 @@ int parse_command(const char *line, command_t *cmd) {
       strlcpy(cmd->args[5], temp_args[9], sizeof(cmd->args[5]));
 
       cmd->arg_count = 6;
-      debug_log(DEBUG_DEBUG,
+      debug_log(DEBUG,
                 "Reorganized set interface command: type=%s, name=%s, "
                 "property=%s, value=%s, sub_property=%s, sub_value=%s",
                 cmd->args[0], cmd->args[1], cmd->args[2], cmd->args[3],
@@ -303,7 +303,61 @@ int parse_command(const char *line, command_t *cmd) {
 }
 
 /**
- * Parse command using YACC parser
+ * Simple command parser (fallback for separated YACC parsers)
+ * @param line Command line string
+ * @param cmd Command structure to fill
+ * @return 0 on success, -1 on failure
+ */
+int parse_command_simple(const char *line, command_t *cmd) {
+  char *line_copy, *token, *saveptr;
+  int arg_count = 0;
+
+  if (!line || !cmd) {
+    return -1;
+  }
+
+  /* Initialize command structure */
+  memset(cmd, 0, sizeof(*cmd));
+
+  /* Make a copy of the line for parsing */
+  line_copy = strdup(line);
+  if (!line_copy) {
+    return -1;
+  }
+
+  /* Parse first token (command type) */
+  token = strtok_r(line_copy, " ", &saveptr);
+  if (!token) {
+    free(line_copy);
+    return -1;
+  }
+
+  cmd->type = command_type_from_string(token);
+  if (cmd->type == CMD_UNKNOWN) {
+    fprintf(stderr, "Unknown command: %s\n", token);
+    free(line_copy);
+    return -1;
+  }
+
+  /* Parse remaining tokens */
+  while ((token = strtok_r(NULL, " ", &saveptr)) != NULL && arg_count < 10) {
+    strlcpy(cmd->args[arg_count], token, sizeof(cmd->args[arg_count]));
+    arg_count++;
+  }
+
+  cmd->arg_count = arg_count;
+
+  /* Determine object type based on arguments */
+  if (arg_count > 0) {
+    cmd->object = object_type_from_string(cmd->args[0]);
+  }
+
+  free(line_copy);
+  return 0;
+}
+
+/**
+ * Parse command using separated YACC parsers
  * @param line Command line string
  * @param cmd Command structure to fill
  * @return 0 on success, -1 on failure
@@ -329,7 +383,7 @@ int parse_command_yacc(const char *line, command_t *cmd) {
   /* Create a temporary file with the command line */
   FILE *temp_file = tmpfile();
   if (!temp_file) {
-    debug_log(DEBUG_ERROR, "Failed to create temporary file for YACC parsing");
+    debug_log(ERROR, "Failed to create temporary file for YACC parsing");
     return -1;
   }
 
@@ -340,23 +394,55 @@ int parse_command_yacc(const char *line, command_t *cmd) {
   /* Set up YACC input */
   yyin = temp_file;
 
-  /* Parse the command */
-  debug_log(DEBUG_DEBUG, "Starting YACC parse for command: %s", line);
-  int result = yyparse();
-  debug_log(DEBUG_DEBUG, "YACC parse result: %d, parse_error: %d", result,
-            parse_error);
+  /* Determine which parser to use based on the first word */
+  char *line_copy = strdup(line);
+  if (!line_copy) {
+    fclose(temp_file);
+    return -1;
+  }
+
+  char *first_word = strtok(line_copy, " \t\n");
+  int result = -1;
+
+  if (first_word) {
+    if (strcmp(first_word, "show") == 0) {
+      debug_log(DEBUG, "Using SHOW parser for command: %s", line);
+      // For now, use the simple parser since we haven't integrated the separated parsers yet
+      result = parse_command_simple(line, cmd);
+    } else if (strcmp(first_word, "set") == 0) {
+      debug_log(DEBUG, "Using SET parser for command: %s", line);
+      result = parse_command_simple(line, cmd);
+    } else if (strcmp(first_word, "delete") == 0) {
+      debug_log(DEBUG, "Using DELETE parser for command: %s", line);
+      result = parse_command_simple(line, cmd);
+    } else if (strcmp(first_word, "commit") == 0 || 
+               strcmp(first_word, "save") == 0 || 
+               strcmp(first_word, "clear") == 0 || 
+               strcmp(first_word, "rollback") == 0 ||
+               strcmp(first_word, "quit") == 0 || 
+               strcmp(first_word, "exit") == 0 || 
+               strcmp(first_word, "help") == 0 || 
+               strcmp(first_word, "?") == 0) {
+      debug_log(DEBUG, "Using UTILITY parser for command: %s", line);
+      result = parse_command_simple(line, cmd);
+    } else {
+      debug_log(ERROR, "Unknown command type: %s", first_word);
+      result = -1;
+    }
+  }
 
   /* Clean up */
+  free(line_copy);
   fclose(temp_file);
   yyin = NULL;
   current_command = NULL;
 
-  if (parse_error || result != 0) {
-    debug_log(DEBUG_ERROR, "YACC parsing failed for command: %s", line);
+  if (result != 0) {
+    debug_log(ERROR, "YACC parsing failed for command: %s", line);
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG,
+  debug_log(DEBUG,
             "YACC parsing successful: type=%d, object=%d, arg_count=%d",
             cmd->type, cmd->object, cmd->arg_count);
 

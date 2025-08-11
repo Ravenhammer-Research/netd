@@ -25,6 +25,7 @@ target_include_directories(netconf PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/../system
     ${CMAKE_CURRENT_SOURCE_DIR}/../system/freebsd
     ${CMAKE_CURRENT_SOURCE_DIR}/../../yang
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../shared
 )
 
 # Link dependencies

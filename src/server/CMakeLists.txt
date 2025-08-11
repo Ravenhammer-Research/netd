@@ -12,7 +12,6 @@ set(SERVER_SOURCES
     utils.c
     config.c
     transaction.c
-    debug.c
 )
 
 # Create server executable
@@ -21,6 +20,7 @@ add_executable(netd ${SERVER_SOURCES})
 # Set include directories
 target_include_directories(netd PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/../shared
     ${CMAKE_CURRENT_SOURCE_DIR}/netconf
     ${CMAKE_CURRENT_SOURCE_DIR}/xml
     ${CMAKE_CURRENT_SOURCE_DIR}/system
@@ -29,6 +29,7 @@ target_include_directories(netd PRIVATE
 
 # Link dependencies
 target_link_libraries(netd
+    shared_debug
     netconf
     xml
     freebsd_system

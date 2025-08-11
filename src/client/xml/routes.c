@@ -56,9 +56,9 @@ static void route_start_element(void *userData, const char *name,
 
   /* Debug log the attributes if they exist */
   if (atts && atts[0]) {
-    debug_log(DEBUG_DEBUG, "Route start element: %s with attributes", name);
+    debug_log(DEBUG, "Route start element: %s with attributes", name);
     for (int i = 0; atts[i] && atts[i+1]; i += 2) {
-      debug_log(DEBUG_DEBUG, "  %s = %s", atts[i], atts[i+1]);
+      debug_log(DEBUG, "  %s = %s", atts[i], atts[i+1]);
     }
   }
 
@@ -199,7 +199,7 @@ int parse_routes_from_xml(const char *xml, struct route_data *routes,
 
   /* Parse the XML */
   if (XML_Parse(parser, xml, strlen(xml), 1) != XML_STATUS_OK) {
-    debug_log(DEBUG_ERROR, "XML_Parse failed");
+    debug_log(ERROR, "XML_Parse failed");
     XML_ParserFree(parser);
     return -1;
   }

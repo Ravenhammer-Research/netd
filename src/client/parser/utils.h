@@ -14,5 +14,6 @@ interface_type_t interface_type_from_string(const char *str);
 /* Command parsing functions */
 int parse_command(const char *line, command_t *cmd);
 int parse_command_yacc(const char *line, command_t *cmd);
+int parse_command_simple(const char *line, command_t *cmd);
 
 #endif /* PARSER_UTILS_H */ 

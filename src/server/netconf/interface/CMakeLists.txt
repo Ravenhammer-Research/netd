@@ -26,6 +26,7 @@ target_include_directories(interface PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/../../..
     ${CMAKE_CURRENT_SOURCE_DIR}/../../system
     ${CMAKE_CURRENT_SOURCE_DIR}/../../system/freebsd
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../../shared
 )
 
  

@@ -53,7 +53,7 @@ static LY_ERR mount_point_callback(const struct lysc_ext_instance *ext,
   (void)ext_data;
   (void)ext_data_free;
 
-  debug_log(DEBUG_DEBUG, "Mount point callback not implemented");
+  debug_log(DEBUG, "Mount point callback not implemented");
 
   /* Return NULL to disable schema mount validation */
   *ext_data = NULL;
@@ -88,31 +88,31 @@ int yang_init(netd_state_t *state) {
   int i;
 
   if (!state) {
-    debug_log(DEBUG_ERROR, "Invalid state parameter for YANG initialization");
+    debug_log(ERROR, "Invalid state parameter for YANG initialization");
     return -1;
   }
 
-  debug_log(DEBUG_INFO, "Initializing YANG context with %d modules",
+  debug_log(INFO, "Initializing YANG context with %d modules",
             (int)(sizeof(modules) / sizeof(modules[0])));
 
   /* Create YANG context with search paths */
-  debug_log(DEBUG_DEBUG, "Creating YANG context with search path './yang'");
+  debug_log(DEBUG, "Creating YANG context with search path './yang'");
   if (ly_ctx_new("./yang", 0, &state->yang_ctx) != LY_SUCCESS) {
-    debug_log(DEBUG_ERROR, "Failed to create YANG context");
+    debug_log(ERROR, "Failed to create YANG context");
     return -1;
   }
 
   if (!state->yang_ctx) {
-    debug_log(DEBUG_ERROR, "YANG context creation returned NULL");
+    debug_log(ERROR, "YANG context creation returned NULL");
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "YANG context created successfully");
+  debug_log(DEBUG, "YANG context created successfully");
 
   /* Load required modules */
   int loaded_count = 0;
   for (i = 0; i < (int)(sizeof(modules) / sizeof(modules[0])); i++) {
-    debug_log(DEBUG_DEBUG, "Loading module %d/%d: %s", i + 1,
+    debug_log(DEBUG, "Loading module %d/%d: %s", i + 1,
               (int)(sizeof(modules) / sizeof(modules[0])), modules[i]);
 
     /* Enable writable-running feature for ietf-netconf module */
@@ -125,36 +125,36 @@ int yang_init(netd_state_t *state) {
     if (!mod) {
       const struct ly_err_item *err = ly_err_last(state->yang_ctx);
       if (err) {
-        debug_log(DEBUG_ERROR, "Failed to load module %s: %s", modules[i],
+        debug_log(ERROR, "Failed to load module %s: %s", modules[i],
                   err->msg);
         if (err->data_path) {
-          debug_log(DEBUG_ERROR, "Data path: %s", err->data_path);
+          debug_log(ERROR, "Data path: %s", err->data_path);
         }
         if (err->schema_path) {
-          debug_log(DEBUG_ERROR, "Schema path: %s", err->schema_path);
+          debug_log(ERROR, "Schema path: %s", err->schema_path);
         }
       } else {
-        debug_log(DEBUG_ERROR,
+        debug_log(ERROR,
                   "Failed to load module %s (no error details available)",
                   modules[i]);
       }
       goto error;
     }
     loaded_count++;
-    debug_log(DEBUG_DEBUG, "Successfully loaded module: %s (revision: %s)",
+    debug_log(DEBUG, "Successfully loaded module: %s (revision: %s)",
               modules[i], mod->revision ? mod->revision : "none");
   }
 
   /* Set up extension data callback for mount points */
-  debug_log(DEBUG_DEBUG, "Setting up extension data callback for mount points");
+  debug_log(DEBUG, "Setting up extension data callback for mount points");
   ly_ctx_set_ext_data_clb(state->yang_ctx, mount_point_callback, state);
 
-  debug_log(DEBUG_INFO, "YANG context initialized successfully with %d modules",
+  debug_log(INFO, "YANG context initialized successfully with %d modules",
             loaded_count);
   return 0;
 
 error:
-  debug_log(DEBUG_ERROR, "YANG context initialization failed, cleaning up");
+  debug_log(ERROR, "YANG context initialization failed, cleaning up");
   yang_cleanup(state);
   return -1;
 }
@@ -165,7 +165,7 @@ error:
  */
 void yang_cleanup(netd_state_t *state) {
   if (state && state->yang_ctx) {
-    debug_log(DEBUG_DEBUG, "Cleaning up YANG context");
+    debug_log(DEBUG, "Cleaning up YANG context");
 
     /* Clear any error messages that might be holding references */
     ly_err_clean(state->yang_ctx, NULL);
@@ -173,9 +173,9 @@ void yang_cleanup(netd_state_t *state) {
     /* Destroy the YANG context */
     ly_ctx_destroy(state->yang_ctx);
     state->yang_ctx = NULL;
-    debug_log(DEBUG_INFO, "YANG context cleaned up successfully");
+    debug_log(INFO, "YANG context cleaned up successfully");
   } else {
-    debug_log(DEBUG_DEBUG, "No YANG context to clean up");
+    debug_log(DEBUG, "No YANG context to clean up");
   }
 }
 
@@ -191,65 +191,65 @@ int yang_validate_xml(netd_state_t *state, const char *xml_data) {
   char *error_msg = NULL;
 
   if (!state || !state->yang_ctx || !xml_data) {
-    debug_log(DEBUG_ERROR,
+    debug_log(ERROR,
               "Invalid parameters for XML validation: state=%p, ctx=%p, xml=%p",
               state, state ? state->yang_ctx : NULL, xml_data);
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "YANG validation requested for XML data (length: %zu)",
+  debug_log(DEBUG, "YANG validation requested for XML data (length: %zu)",
             strlen(xml_data));
 
   /* Parse and validate XML data using libyang */
-  debug_log(DEBUG_DEBUG, "Parsing XML data with libyang");
+  debug_log(DEBUG, "Parsing XML data with libyang");
   result = lyd_parse_data_mem(state->yang_ctx, xml_data, LYD_XML,
                               LYD_PARSE_STRICT, LYD_VALIDATE_PRESENT, &tree);
 
   if (result != LY_SUCCESS) {
     error_msg = yang_get_validation_error(state->yang_ctx);
     if (error_msg) {
-      debug_log(DEBUG_ERROR, "YANG validation failed: %s", error_msg);
+      debug_log(ERROR, "YANG validation failed: %s", error_msg);
       free(error_msg);
     } else {
-      debug_log(DEBUG_ERROR, "YANG validation failed with unknown error");
+      debug_log(ERROR, "YANG validation failed with unknown error");
     }
 
     /* Clean up any partial tree */
     if (tree) {
-      debug_log(DEBUG_DEBUG,
+      debug_log(DEBUG,
                 "Cleaning up partial tree after validation failure");
       lyd_free_all(tree);
     }
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "XML parsing completed successfully, validating tree");
+  debug_log(DEBUG, "XML parsing completed successfully, validating tree");
 
   /* Additional validation for the parsed tree */
   result = lyd_validate_all(&tree, state->yang_ctx, LYD_VALIDATE_PRESENT, NULL);
   if (result != LY_SUCCESS) {
     error_msg = yang_get_validation_error(state->yang_ctx);
     if (error_msg) {
-      debug_log(DEBUG_ERROR, "YANG tree validation failed: %s", error_msg);
+      debug_log(ERROR, "YANG tree validation failed: %s", error_msg);
       free(error_msg);
     }
 
     if (tree) {
-      debug_log(DEBUG_DEBUG, "Cleaning up tree after validation failure");
+      debug_log(DEBUG, "Cleaning up tree after validation failure");
       lyd_free_all(tree);
     }
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "Tree validation completed successfully");
+  debug_log(DEBUG, "Tree validation completed successfully");
 
   /* Clean up the validated tree */
   if (tree) {
-    debug_log(DEBUG_DEBUG, "Cleaning up validated tree");
+    debug_log(DEBUG, "Cleaning up validated tree");
     lyd_free_all(tree);
   }
 
-  debug_log(DEBUG_DEBUG, "YANG validation completed successfully");
+  debug_log(DEBUG, "YANG validation completed successfully");
   return 0;
 }
 
@@ -261,23 +261,23 @@ int yang_validate_xml(netd_state_t *state, const char *xml_data) {
  */
 int yang_validate_config(netd_state_t *state, const char *xml_config) {
   if (!state || !state->yang_ctx || !xml_config) {
-    debug_log(DEBUG_ERROR,
+    debug_log(ERROR,
               "Invalid parameters for configuration validation: state=%p, "
               "ctx=%p, config=%p",
               state, state ? state->yang_ctx : NULL, xml_config);
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "Validating configuration XML (length: %zu)",
+  debug_log(DEBUG, "Validating configuration XML (length: %zu)",
             strlen(xml_config));
 
   /* Validate the XML against YANG schema */
   if (yang_validate_xml(state, xml_config) < 0) {
-    debug_log(DEBUG_ERROR, "Configuration XML validation failed");
+    debug_log(ERROR, "Configuration XML validation failed");
     return -1;
   }
 
-  debug_log(DEBUG_INFO, "Configuration XML validation completed successfully");
+  debug_log(INFO, "Configuration XML validation completed successfully");
   return 0;
 }
 
@@ -295,44 +295,44 @@ int yang_validate_rpc(netd_state_t *state, const char *rpc_xml) {
   char *error_msg = NULL;
 
   if (!state || !state->yang_ctx || !rpc_xml) {
-    debug_log(DEBUG_ERROR,
+    debug_log(ERROR,
               "Invalid parameters for RPC validation: state=%p, ctx=%p, rpc=%p",
               state, state ? state->yang_ctx : NULL, rpc_xml);
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "Validating NETCONF RPC (length: %zu)",
+  debug_log(DEBUG, "Validating NETCONF RPC (length: %zu)",
             strlen(rpc_xml));
 
   /* Create input handle for the XML data */
-  debug_log(DEBUG_DEBUG, "Creating input handle for RPC XML");
+  debug_log(DEBUG, "Creating input handle for RPC XML");
   result = ly_in_new_memory(rpc_xml, &in);
   if (result != LY_SUCCESS) {
-    debug_log(DEBUG_ERROR, "Failed to create input handle for RPC XML");
+    debug_log(ERROR, "Failed to create input handle for RPC XML");
     return -1;
   }
 
   /* Parse and validate NETCONF RPC using libyang */
-  debug_log(DEBUG_DEBUG, "Parsing NETCONF RPC with libyang");
+  debug_log(DEBUG, "Parsing NETCONF RPC with libyang");
   result = lyd_parse_op(state->yang_ctx, NULL, in, LYD_XML,
                         LYD_TYPE_RPC_NETCONF, &tree, &op);
   ly_in_free(in, 0);
   if (result != LY_SUCCESS) {
     error_msg = yang_get_validation_error(state->yang_ctx);
     if (error_msg) {
-      debug_log(DEBUG_ERROR, "YANG RPC validation failed: %s", error_msg);
+      debug_log(ERROR, "YANG RPC validation failed: %s", error_msg);
       free(error_msg);
     } else {
-      debug_log(DEBUG_ERROR, "YANG RPC validation failed with unknown error");
+      debug_log(ERROR, "YANG RPC validation failed with unknown error");
     }
     if (tree) {
-      debug_log(DEBUG_DEBUG, "Cleaning up tree after RPC parsing failure");
+      debug_log(DEBUG, "Cleaning up tree after RPC parsing failure");
       lyd_free_all(tree);
     }
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG,
+  debug_log(DEBUG,
             "RPC parsing completed successfully, validating operation");
 
   /* Validate the RPC operation */
@@ -340,12 +340,12 @@ int yang_validate_rpc(netd_state_t *state, const char *rpc_xml) {
   if (result != LY_SUCCESS) {
     error_msg = yang_get_validation_error(state->yang_ctx);
     if (error_msg) {
-      debug_log(DEBUG_ERROR, "YANG RPC operation validation failed: %s",
+      debug_log(ERROR, "YANG RPC operation validation failed: %s",
                 error_msg);
       free(error_msg);
     }
     if (tree) {
-      debug_log(DEBUG_DEBUG,
+      debug_log(DEBUG,
                 "Cleaning up tree after RPC operation validation failure");
       lyd_free_all(tree);
     }
@@ -354,11 +354,11 @@ int yang_validate_rpc(netd_state_t *state, const char *rpc_xml) {
 
   /* Clean up the validated tree */
   if (tree) {
-    debug_log(DEBUG_DEBUG, "Cleaning up validated RPC tree");
+    debug_log(DEBUG, "Cleaning up validated RPC tree");
     lyd_free_all(tree);
   }
 
-  debug_log(DEBUG_DEBUG, "NETCONF RPC validation completed successfully");
+  debug_log(DEBUG, "NETCONF RPC validation completed successfully");
   return 0;
 }
 
@@ -373,17 +373,17 @@ char *yang_get_validation_error(const struct ly_ctx *ctx) {
   size_t msg_len = 0;
 
   if (!ctx) {
-    debug_log(DEBUG_DEBUG, "NULL context provided to get validation error");
+    debug_log(DEBUG, "NULL context provided to get validation error");
     return NULL;
   }
 
   err = ly_err_last(ctx);
   if (!err) {
-    debug_log(DEBUG_DEBUG, "No error found in YANG context");
+    debug_log(DEBUG, "No error found in YANG context");
     return NULL;
   }
 
-  debug_log(DEBUG_DEBUG, "Retrieving validation error: %s", err->msg);
+  debug_log(DEBUG, "Retrieving validation error: %s", err->msg);
 
   /* Calculate required buffer size */
   msg_len = strlen(err->msg) + 1;
@@ -397,7 +397,7 @@ char *yang_get_validation_error(const struct ly_ctx *ctx) {
   /* Allocate and format error message */
   error_msg = malloc(msg_len);
   if (!error_msg) {
-    debug_log(DEBUG_ERROR, "Failed to allocate memory for error message");
+    debug_log(ERROR, "Failed to allocate memory for error message");
     return NULL;
   }
 
@@ -411,7 +411,7 @@ char *yang_get_validation_error(const struct ly_ctx *ctx) {
     strcat(error_msg, err->schema_path);
   }
 
-  debug_log(DEBUG_DEBUG, "Formatted error message: %s", error_msg);
+  debug_log(DEBUG, "Formatted error message: %s", error_msg);
   return error_msg;
 }
 
@@ -430,7 +430,7 @@ int yang_validate_netd_operation(netd_state_t *state, const char *operation,
   char xml_data[4096];
 
   if (!state || !state->yang_ctx || !operation || !data) {
-    debug_log(DEBUG_ERROR,
+    debug_log(ERROR,
               "Invalid parameters for netd operation validation: state=%p, "
               "ctx=%p, op=%s, data=%s",
               state, state ? state->yang_ctx : NULL,
@@ -438,7 +438,7 @@ int yang_validate_netd_operation(netd_state_t *state, const char *operation,
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "Validating netd operation: %s", operation);
+  debug_log(DEBUG, "Validating netd operation: %s", operation);
 
   /* Create XML for the operation */
   snprintf(xml_data, sizeof(xml_data),
@@ -451,7 +451,7 @@ int yang_validate_netd_operation(netd_state_t *state, const char *operation,
            "</rpc>",
            operation, data, operation);
 
-  debug_log(DEBUG_DEBUG, "Generated XML for operation validation (length: %zu)",
+  debug_log(DEBUG, "Generated XML for operation validation (length: %zu)",
             strlen(xml_data));
 
   /* Parse and validate the operation */
@@ -461,15 +461,15 @@ int yang_validate_netd_operation(netd_state_t *state, const char *operation,
   if (result != LY_SUCCESS) {
     error_msg = yang_get_validation_error(state->yang_ctx);
     if (error_msg) {
-      debug_log(DEBUG_ERROR, "Netd operation validation failed: %s", error_msg);
+      debug_log(ERROR, "Netd operation validation failed: %s", error_msg);
       free(error_msg);
     } else {
-      debug_log(DEBUG_ERROR,
+      debug_log(ERROR,
                 "Netd operation validation failed with unknown error");
     }
 
     if (tree) {
-      debug_log(DEBUG_DEBUG,
+      debug_log(DEBUG,
                 "Cleaning up tree after netd operation validation failure");
       lyd_free_all(tree);
     }
@@ -478,11 +478,11 @@ int yang_validate_netd_operation(netd_state_t *state, const char *operation,
 
   /* Clean up the validated tree */
   if (tree) {
-    debug_log(DEBUG_DEBUG, "Cleaning up validated netd operation tree");
+    debug_log(DEBUG, "Cleaning up validated netd operation tree");
     lyd_free_all(tree);
   }
 
-  debug_log(DEBUG_DEBUG, "Netd operation validation completed successfully");
+  debug_log(DEBUG, "Netd operation validation completed successfully");
   return 0;
 }
 
@@ -496,7 +496,7 @@ bool yang_module_loaded(netd_state_t *state, const char *module_name) {
   struct lys_module *mod;
 
   if (!state || !state->yang_ctx || !module_name) {
-    debug_log(DEBUG_DEBUG,
+    debug_log(DEBUG,
               "Invalid parameters for module check: state=%p, ctx=%p, name=%s",
               state, state ? state->yang_ctx : NULL,
               module_name ? module_name : "NULL");
@@ -505,7 +505,7 @@ bool yang_module_loaded(netd_state_t *state, const char *module_name) {
 
   mod = ly_ctx_get_module(state->yang_ctx, module_name, NULL);
   bool loaded = (mod != NULL);
-  debug_log(DEBUG_DEBUG, "Module %s is %s", module_name,
+  debug_log(DEBUG, "Module %s is %s", module_name,
             loaded ? "loaded" : "not loaded");
   return loaded;
 }

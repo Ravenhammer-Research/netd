@@ -71,23 +71,23 @@ int interface_list(netd_state_t *state, interface_type_t type) {
   int count = 0;
 
   if (!state) {
-    debug_log(DEBUG_ERROR, "Invalid state parameter for interface listing");
+    debug_log(ERROR, "Invalid state parameter for interface listing");
     return -1;
   }
 
-  debug_log(DEBUG_INFO, "Listing interfaces%s",
+  debug_log(INFO, "Listing interfaces%s",
             type == IF_TYPE_UNKNOWN ? "" : " of specific type");
 
   TAILQ_FOREACH(iface, &state->interfaces, entries) {
     if (type == IF_TYPE_UNKNOWN || iface->type == type) {
-      debug_log(DEBUG_INFO, "  %s (%s) fib=%u enabled=%s", iface->name,
+      debug_log(INFO, "  %s (%s) fib=%u enabled=%s", iface->name,
                 interface_type_to_string(iface->type), iface->fib,
                 iface->enabled ? "yes" : "no");
 
       if (iface->group_count > 0) {
-        debug_log(DEBUG_INFO, "    Groups:");
+        debug_log(INFO, "    Groups:");
         for (int i = 0; i < iface->group_count; i++) {
-          debug_log(DEBUG_INFO, "      %s", iface->groups[i]);
+          debug_log(INFO, "      %s", iface->groups[i]);
         }
       }
       count++;
@@ -95,9 +95,9 @@ int interface_list(netd_state_t *state, interface_type_t type) {
   }
 
   if (count == 0) {
-    debug_log(DEBUG_INFO, "  No interfaces found");
+    debug_log(INFO, "  No interfaces found");
   } else {
-    debug_log(DEBUG_INFO, "Total interfaces: %d", count);
+    debug_log(INFO, "Total interfaces: %d", count);
   }
 
   return 0;
@@ -110,20 +110,20 @@ int interface_list(netd_state_t *state, interface_type_t type) {
  */
 int interface_enumerate_system(netd_state_t *state) {
   if (!state) {
-    debug_log(DEBUG_ERROR,
+    debug_log(ERROR,
               "Invalid state parameter for system interface enumeration");
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "Starting system interface enumeration");
+  debug_log(DEBUG, "Starting system interface enumeration");
 
   /* Call the system-specific enumeration function */
   int result = freebsd_enumerate_interfaces(state);
   if (result == 0) {
-    debug_log(DEBUG_DEBUG,
+    debug_log(DEBUG,
               "System interface enumeration completed successfully");
   } else {
-    debug_log(DEBUG_ERROR, "System interface enumeration failed");
+    debug_log(ERROR, "System interface enumeration failed");
   }
 
   return result;
@@ -146,15 +146,15 @@ char *interface_get_all(netd_state_t *state) {
   int interface_count = 0;
   
   if (!state) {
-    debug_log(DEBUG_ERROR, "Invalid parameters for interface get all");
+    debug_log(ERROR, "Invalid parameters for interface get all");
     return NULL;
   }
 
-  debug_log(DEBUG_DEBUG, "Getting all interfaces for XML response");
+  debug_log(DEBUG, "Getting all interfaces for XML response");
 
   /* Start XML response */
   if (asprintf(&response, "<interfaces>") < 0) {
-    debug_log(DEBUG_ERROR, "Failed to allocate memory for XML response");
+    debug_log(ERROR, "Failed to allocate memory for XML response");
     goto cleanup;
   }
 
@@ -169,26 +169,26 @@ char *interface_get_all(netd_state_t *state) {
                  interface_type_to_string(iface->type),
                  iface->fib,
                  iface->enabled ? "true" : "false") < 0) {
-      debug_log(DEBUG_ERROR, "Failed to generate interface XML for %s", iface->name);
+      debug_log(ERROR, "Failed to generate interface XML for %s", iface->name);
       goto cleanup;
     }
 
     /* Add groups if any */
     if (iface->group_count > 0) {
       if (asprintf(&groups_xml, "<groups>") < 0) {
-        debug_log(DEBUG_ERROR, "Failed to allocate memory for groups XML");
+        debug_log(ERROR, "Failed to allocate memory for groups XML");
         goto cleanup;
       }
       
       for (int i = 0; i < iface->group_count; i++) {
         if (asprintf(&group_xml, "<group>%s</group>", iface->groups[i]) < 0) {
-          debug_log(DEBUG_ERROR, "Failed to generate group XML");
+          debug_log(ERROR, "Failed to generate group XML");
           goto cleanup;
         }
         
         char *new_groups_xml = NULL;
         if (asprintf(&new_groups_xml, "%s%s", groups_xml, group_xml) < 0) {
-          debug_log(DEBUG_ERROR, "Failed to append group XML");
+          debug_log(ERROR, "Failed to append group XML");
           free(new_groups_xml);
           goto cleanup;
         }
@@ -201,7 +201,7 @@ char *interface_get_all(netd_state_t *state) {
       char *groups_end = "</groups>";
       char *new_groups_xml = NULL;
       if (asprintf(&new_groups_xml, "%s%s", groups_xml, groups_end) < 0) {
-        debug_log(DEBUG_ERROR, "Failed to close groups XML");
+        debug_log(ERROR, "Failed to close groups XML");
         free(new_groups_xml);
         goto cleanup;
       }
@@ -212,7 +212,7 @@ char *interface_get_all(netd_state_t *state) {
       /* Append groups to interface XML */
       char *new_iface_xml = NULL;
       if (asprintf(&new_iface_xml, "%s%s", iface_xml, groups_xml) < 0) {
-        debug_log(DEBUG_ERROR, "Failed to append groups to interface XML");
+        debug_log(ERROR, "Failed to append groups to interface XML");
         free(new_iface_xml);
         goto cleanup;
       }
@@ -225,7 +225,7 @@ char *interface_get_all(netd_state_t *state) {
     char *iface_end = "</interface>";
     char *new_iface_xml = NULL;
     if (asprintf(&new_iface_xml, "%s%s", iface_xml, iface_end) < 0) {
-      debug_log(DEBUG_ERROR, "Failed to close interface XML");
+      debug_log(ERROR, "Failed to close interface XML");
       free(new_iface_xml);
       goto cleanup;
     }
@@ -235,7 +235,7 @@ char *interface_get_all(netd_state_t *state) {
 
     /* Append interface to response */
     if (asprintf(&temp_response, "%s%s", response, iface_xml) < 0) {
-      debug_log(DEBUG_ERROR, "Failed to append interface to response");
+      debug_log(ERROR, "Failed to append interface to response");
       free(temp_response);
       goto cleanup;
     }
@@ -249,11 +249,11 @@ char *interface_get_all(netd_state_t *state) {
   /* Close interfaces tag */
   char *end_tag = "</interfaces>";
   if (asprintf(&final_response, "%s%s", response, end_tag) < 0) {
-    debug_log(DEBUG_ERROR, "Failed to close interfaces XML");
+    debug_log(ERROR, "Failed to close interfaces XML");
     goto cleanup;
   }
   
-  debug_log(DEBUG_DEBUG, "Generated XML response for %d interfaces", interface_count);
+  debug_log(DEBUG, "Generated XML response for %d interfaces", interface_count);
   return final_response;
 
 cleanup:

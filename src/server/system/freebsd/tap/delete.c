@@ -54,16 +54,16 @@ int freebsd_tap_delete(const char *name) {
   struct ifreq ifr;
 
   if (!name) {
-    debug_log(DEBUG_ERROR, "Invalid parameters for TAP deletion");
+    debug_log(ERROR, "Invalid parameters for TAP deletion");
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "Deleting TAP interface %s", name);
+  debug_log(DEBUG, "Deleting TAP interface %s", name);
 
   /* Create socket for ioctl */
   sock = socket(AF_LOCAL, SOCK_DGRAM, 0);
   if (sock < 0) {
-    debug_log(DEBUG_ERROR, "Failed to create socket for TAP deletion: %s", strerror(errno));
+    debug_log(ERROR, "Failed to create socket for TAP deletion: %s", strerror(errno));
     return -1;
   }
 
@@ -73,12 +73,12 @@ int freebsd_tap_delete(const char *name) {
 
   /* Delete TAP interface */
   if (ioctl(sock, SIOCIFDESTROY, &ifr) < 0) {
-    debug_log(DEBUG_ERROR, "Failed to delete TAP interface: %s", strerror(errno));
+    debug_log(ERROR, "Failed to delete TAP interface: %s", strerror(errno));
     close(sock);
     return -1;
   }
 
   close(sock);
-  debug_log(DEBUG_INFO, "Deleted TAP interface %s", name);
+  debug_log(INFO, "Deleted TAP interface %s", name);
   return 0;
 } 

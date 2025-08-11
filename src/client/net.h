@@ -36,11 +36,12 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <sys/socket.h>
+#include <debug.h>
 
 
 /* Constants */
 #define NETD_SOCKET_PATH "/var/run/netd.sock"
-#define NETCONF_SOCKET_PATH "/var/run/netconf.sock"
+#define NETCONF_SOCKET_PATH "/var/run/netd.sock"
 #define MAX_COLUMNS 16
 
 /* Command types */
@@ -85,15 +86,7 @@ typedef enum {
   IF_TYPE_BRIDGE
 } interface_type_t;
 
-/* Debug levels */
-typedef enum {
-  DEBUG_NONE = 0,
-  DEBUG_ERROR = 1,
-  DEBUG_WARN = 2,
-  DEBUG_INFO = 3,
-  DEBUG_DEBUG = 4,
-  DEBUG_TRACE = 5
-} debug_level_t;
+
 
 /* VRF data structure */
 struct vrf_data {
@@ -114,6 +107,7 @@ struct route_data {
 };
 
 /* Interface data structure */
+/* Base interface data structure */
 struct interface_data {
   char name[64];
   char type[16];  /* Interface type: ethernet, vlan, vxlan, etc. */
@@ -128,19 +122,55 @@ struct interface_data {
   int addr_count;          /* Number of IPv4 addresses */
   int addr6_count;         /* Number of IPv6 addresses */
   char groups[256];
-  char bridge_members[256];
-  char lagg_members[256];
+};
 
-  /* VLAN-specific fields */
+/* Bridge interface data - extends base interface */
+struct bridge_interface_data {
+  struct interface_data base;
+  char bridge_members[256];
+  int bridge_maxaddr;
+  int bridge_timeout;
+  char bridge_protocol[16];
+};
+
+/* LAGG interface data - extends base interface */
+struct lagg_interface_data {
+  struct interface_data base;
+  char lagg_members[256];
+  char lagg_protocol[16];
+  int lagg_count;
+  char lagg_ports[8][64];  /* Up to 8 LAGG ports */
+};
+
+/* VLAN interface data - extends base interface */
+struct vlan_interface_data {
+  struct interface_data base;
   int vlan_id;
   char vlan_proto[16];
   int vlan_pcp;
   char vlan_parent[64];
+  char vlan_description[256];
+};
 
-  /* VXLAN-specific fields */
+/* VXLAN interface data - extends base interface */
+struct vxlan_interface_data {
+  struct interface_data base;
   int vni;  /* VXLAN Network Identifier */
+  char vxlan_local[64];
+  char vxlan_remote[64];
+  char vxlan_dev[64];
+  int vxlan_ttl;
+  char vxlan_group[64];
+};
 
-  /* WiFi-specific fields */
+/* WiFi interface data - extends base interface */
+struct wifi_interface_data {
+  struct interface_data base;
+  char ssid[64];
+  char channel[8];
+  char frequency[16];
+  char txpower[8];
+  char mode[16]; /* station, ap, monitor, etc. */
   char wifi_regdomain[16];
   char wifi_country[8];
   char wifi_authmode[16];
@@ -153,19 +183,7 @@ struct interface_data {
   char wifi_parent[64];
 };
 
-/* Extended interface data structure for wireless interfaces */
-struct wlan_interface_data {
-  struct interface_data base;
-  char ssid[64];
-  char channel[8];
-  char frequency[16];
-  char txpower[8];
-  char mode[16]; /* station, ap, monitor, etc. */
-  char security[32];
-  char signal_strength[8];
-  char noise[8];
-  char rate[16];
-};
+
 
 /* Interface table column widths structure */
 struct if_table_widths {
@@ -242,8 +260,7 @@ int interactive_mode(net_client_t *client);
 
 
 /* Debug functions */
-void debug_init(debug_level_t level);
-void debug_log(debug_level_t level, const char *format, ...);
+
 
 /* XML utilities */
 /* XML parsing functions are now in xml/xml.h */

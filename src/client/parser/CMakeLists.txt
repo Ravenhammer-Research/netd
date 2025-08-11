@@ -44,24 +44,53 @@ set(PARSER_SRCS
 )
 
 # Generate parser and lexer files using custom commands
+# Show commands parser
 add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/parser.tab.c
-    COMMAND ${YACC_EXECUTABLE} -d -b ${CMAKE_CURRENT_BINARY_DIR}/parser ${CMAKE_CURRENT_SOURCE_DIR}/parser.y
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/parser.y
-    COMMENT "Generating parser.tab.c from parser.y"
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/show.tab.c
+    COMMAND ${YACC_EXECUTABLE} -d -b ${CMAKE_CURRENT_BINARY_DIR}/show ${CMAKE_CURRENT_SOURCE_DIR}/show.y
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/show.y
+    COMMENT "Generating show.tab.c from show.y"
 )
 
+# Set commands parser
+add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/set.tab.c
+    COMMAND ${YACC_EXECUTABLE} -d -b ${CMAKE_CURRENT_BINARY_DIR}/set ${CMAKE_CURRENT_SOURCE_DIR}/set.y
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/set.y
+    COMMENT "Generating set.tab.c from set.y"
+)
+
+# Delete commands parser
+add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/delete.tab.c
+    COMMAND ${YACC_EXECUTABLE} -d -b ${CMAKE_CURRENT_BINARY_DIR}/delete ${CMAKE_CURRENT_SOURCE_DIR}/delete.y
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/delete.y
+    COMMENT "Generating delete.tab.c from delete.y"
+)
+
+# Utility commands parser
+add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/commands.tab.c
+    COMMAND ${YACC_EXECUTABLE} -d -b ${CMAKE_CURRENT_BINARY_DIR}/commands ${CMAKE_CURRENT_SOURCE_DIR}/commands.y
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/commands.y
+    COMMENT "Generating commands.tab.c from commands.y"
+)
+
+# Lexer (shared by all parsers)
 add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/lexer.c
     COMMAND ${FLEX_EXECUTABLE} -o ${CMAKE_CURRENT_BINARY_DIR}/lexer.c ${CMAKE_CURRENT_SOURCE_DIR}/lexer.l
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/lexer.l ${CMAKE_CURRENT_BINARY_DIR}/parser.tab.h
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/lexer.l
     COMMENT "Generating lexer.c from lexer.l"
 )
 
 # Create parser library
 add_library(parser_lib STATIC
     ${PARSER_SRCS}
-    ${CMAKE_CURRENT_BINARY_DIR}/parser.tab.c
+    ${CMAKE_CURRENT_BINARY_DIR}/show.tab.c
+    ${CMAKE_CURRENT_BINARY_DIR}/set.tab.c
+    ${CMAKE_CURRENT_BINARY_DIR}/delete.tab.c
+    ${CMAKE_CURRENT_BINARY_DIR}/commands.tab.c
     ${CMAKE_CURRENT_BINARY_DIR}/lexer.c
 )
 
@@ -71,6 +100,7 @@ target_include_directories(parser_lib PUBLIC
     ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/..
     ${CMAKE_CURRENT_SOURCE_DIR}/../netconf
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../shared
 )
 
  

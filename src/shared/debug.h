@@ -29,59 +29,22 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <net.h>
-#include <stdio.h>
-#include <stdarg.h>
-#include <time.h>
+#ifndef DEBUG_H
+#define DEBUG_H
 
-static debug_level_t current_debug_level = DEBUG_NONE;
+/* Debug levels */
+typedef enum {
+  NONE = 0,
+  ERROR = 1,
+  WARN = 2,
+  INFO = 3,
+  DEBUG = 4,
+  DEBUG1 = 5,
+  DEBUG2 = 6
+} debug_level_t;
 
-/**
- * Initialize debug logging with specified level
- */
-void debug_init(debug_level_t level) {
-    current_debug_level = level;
-}
+/* Debug function declarations */
+void debug_init(debug_level_t level);
+void debug_log(debug_level_t level, const char *format, ...);
 
-/**
- * Log debug message if level is enabled
- */
-void debug_log(debug_level_t level, const char *format, ...) {
-    if (level > current_debug_level) {
-        return;
-    }
-
-    time_t now;
-    struct tm *tm_info;
-    char time_str[26];
-
-    time(&now);
-    tm_info = localtime(&now);
-    strftime(time_str, 26, "%Y-%m-%d %H:%M:%S", tm_info);
-
-    printf("[%s] ", time_str);
-    
-    switch (level) {
-        case DEBUG_ERROR:
-            printf("ERROR: ");
-            break;
-        case DEBUG_WARN:
-            printf("WARN:  ");
-            break;
-        case DEBUG_INFO:
-            printf("INFO:  ");
-            break;
-        case DEBUG_DEBUG:
-            printf("DEBUG: ");
-            break;
-        default:
-            printf("UNKNOWN: ");
-            break;
-    }
-
-    va_list args;
-    va_start(args, format);
-    vprintf(format, args);
-    va_end(args);
-    printf("\n");
-} 
+#endif /* DEBUG_H */ 

@@ -87,20 +87,20 @@ int freebsd_route_add(uint32_t fib, const char *destination,
 
   /* Parse addresses */
   if (parse_address(destination, &dest_addr) < 0) {
-    debug_log(DEBUG_ERROR, "Failed to parse destination address %s",
+    debug_log(ERROR, "Failed to parse destination address %s",
               destination);
     return -1;
   }
 
   if (gateway && parse_address(gateway, &gw_addr) < 0) {
-    debug_log(DEBUG_ERROR, "Failed to parse gateway address %s", gateway);
+    debug_log(ERROR, "Failed to parse gateway address %s", gateway);
     return -1;
   }
 
   /* Create PF_ROUTE socket */
   sock = socket(PF_ROUTE, SOCK_RAW, 0);
   if (sock < 0) {
-    debug_log(DEBUG_ERROR, "Failed to create PF_ROUTE socket: %s",
+    debug_log(ERROR, "Failed to create PF_ROUTE socket: %s",
               strerror(errno));
     return -1;
   }
@@ -108,12 +108,12 @@ int freebsd_route_add(uint32_t fib, const char *destination,
   /* Set FIB for the socket - only for non-default FIB */
   if (fib > 0) {
     if (setsockopt(sock, SOL_SOCKET, SO_SETFIB, &fib, sizeof(fib)) < 0) {
-      debug_log(DEBUG_ERROR, "Failed to set FIB %u for socket: %s", fib,
+      debug_log(ERROR, "Failed to set FIB %u for socket: %s", fib,
                 strerror(errno));
       close(sock);
       return -1;
     }
-    debug_log(DEBUG_DEBUG, "Set FIB %u for route socket", fib);
+    debug_log(DEBUG, "Set FIB %u for route socket", fib);
   }
 
   /* Calculate message length */
@@ -128,7 +128,7 @@ int freebsd_route_add(uint32_t fib, const char *destination,
   /* Allocate message buffer */
   rtm = malloc(len);
   if (!rtm) {
-    debug_log(DEBUG_ERROR, "Failed to allocate route message buffer");
+    debug_log(ERROR, "Failed to allocate route message buffer");
     close(sock);
     return -1;
   }
@@ -170,18 +170,18 @@ int freebsd_route_add(uint32_t fib, const char *destination,
   }
 
   /* Send route message */
-  debug_log(DEBUG_DEBUG,
+  debug_log(DEBUG,
             "Sending route message: type=%d, flags=0x%x, addrs=0x%x, len=%d",
             rtm->rtm_type, rtm->rtm_flags, rtm->rtm_addrs, len);
   if (write(sock, rtm, len) < 0) {
-    debug_log(DEBUG_ERROR, "Failed to add route: %s (errno=%d)",
+    debug_log(ERROR, "Failed to add route: %s (errno=%d)",
               strerror(errno), errno);
     free(rtm);
     close(sock);
     return -1;
   }
 
-  debug_log(DEBUG_INFO, "Added route to %s via %s (FIB %u)", destination,
+  debug_log(INFO, "Added route to %s via %s (FIB %u)", destination,
             gateway ? gateway : "direct", fib);
   free(rtm);
   close(sock);

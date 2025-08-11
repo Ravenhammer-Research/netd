@@ -66,7 +66,7 @@ int main(int argc, char *argv[]) {
   net_client_t client;
   bool interactive = false;
   int ret = 0;
-  debug_level_t debug_level = DEBUG_NONE;
+  debug_level_t debug_level = NONE;
   int opt;
 
   /* Parse command line options */
@@ -74,7 +74,7 @@ int main(int argc, char *argv[]) {
     switch (opt) {
     case 'd':
       debug_level = atoi(optarg);
-      if (debug_level < DEBUG_NONE || debug_level > DEBUG_DEBUG) {
+      if (debug_level < NONE || debug_level > DEBUG2) {
         fprintf(stderr, "Invalid debug level: %s\n", optarg);
         return 1;
       }
@@ -90,18 +90,18 @@ int main(int argc, char *argv[]) {
 
   /* Initialize debug logging */
   debug_init(debug_level);
-  debug_log(DEBUG_INFO, "Starting net client (debug level: %d)", debug_level);
+  debug_log(INFO, "Starting net client (debug level: %d)", debug_level);
 
   /* Check if interactive mode */
   if (optind >= argc) {
     interactive = true;
-    debug_log(DEBUG_INFO, "Running in interactive mode");
+    debug_log(INFO, "Running in interactive mode");
   } else {
-    debug_log(DEBUG_INFO, "Running in command mode");
+    debug_log(INFO, "Running in command mode");
   }
 
   /* Initialize client */
-  debug_log(DEBUG_DEBUG, "Initializing client");
+  debug_log(INFO, "Initializing client");
   if (client_init(&client, interactive) < 0) {
     print_error("Failed to initialize client");
     return 1;
@@ -109,11 +109,11 @@ int main(int argc, char *argv[]) {
 
   if (interactive) {
     /* Interactive mode */
-    debug_log(DEBUG_DEBUG, "Starting interactive mode");
+    debug_log(INFO, "Starting interactive mode");
     ret = interactive_mode(&client);
   } else {
     /* Command line mode */
-    debug_log(DEBUG_DEBUG, "Processing command line arguments");
+    debug_log(DEBUG, "Processing command line arguments");
     char *cmd_line = NULL;
 
     /* Calculate total length needed */
@@ -142,7 +142,7 @@ int main(int argc, char *argv[]) {
     command_t cmd;
     if (parse_command_yacc(cmd_line, &cmd) < 0) {
       /* Fall back to simple parser if YACC fails */
-      debug_log(DEBUG_DEBUG, "YACC parsing failed, trying simple parser");
+      debug_log(DEBUG, "YACC parsing failed, trying simple parser");
       if (parse_command(cmd_line, &cmd) < 0) {
         print_error("Failed to parse command: %s", cmd_line);
         ret = 1;
@@ -158,8 +158,8 @@ int main(int argc, char *argv[]) {
   }
 
   /* Cleanup */
-  debug_log(DEBUG_DEBUG, "Cleaning up client");
+  debug_log(INFO, "Cleaning up client");
   client_cleanup(&client);
-  debug_log(DEBUG_INFO, "Client shutdown complete");
+  debug_log(INFO, "Client shutdown complete");
   return ret;
 }

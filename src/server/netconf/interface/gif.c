@@ -46,31 +46,31 @@
  */
 int gif_interface_create(netd_state_t *state, const char *name) {
   if (!state || !name) {
-    debug_log(DEBUG_ERROR,
+    debug_log(ERROR,
               "Invalid parameters for GIF creation: state=%p, name=%s",
               state, name ? name : "NULL");
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "Creating GIF interface '%s'", name);
+  debug_log(DEBUG, "Creating GIF interface '%s'", name);
 
   /* Create the GIF interface using the general interface creation */
   int result = interface_create(state, name, IF_TYPE_GIF);
   if (result < 0) {
-    debug_log(DEBUG_ERROR, "Failed to create GIF interface %s", name);
+    debug_log(ERROR, "Failed to create GIF interface %s", name);
     return -1;
   }
 
   /* Create GIF in FreeBSD */
   if (freebsd_gif_create(name) < 0) {
-    debug_log(DEBUG_ERROR,
+    debug_log(ERROR,
               "Failed to create GIF interface %s in FreeBSD", name);
     /* Clean up the interface from state */
     interface_delete(state, name);
     return -1;
   }
 
-  debug_log(DEBUG_INFO, "Created GIF interface %s", name);
+  debug_log(INFO, "Created GIF interface %s", name);
   return 0;
 }
 
@@ -87,7 +87,7 @@ int gif_set_tunnel(netd_state_t *state, const char *name,
   interface_t *gif_iface;
 
   if (!state || !name || !local_addr || !remote_addr) {
-    debug_log(DEBUG_ERROR,
+    debug_log(ERROR,
               "Invalid parameters for GIF tunnel setting: state=%p, name=%s, "
               "local=%s, remote=%s",
               state, name ? name : "NULL", local_addr ? local_addr : "NULL",
@@ -95,25 +95,25 @@ int gif_set_tunnel(netd_state_t *state, const char *name,
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG,
+  debug_log(DEBUG,
             "Setting tunnel endpoints for GIF interface '%s': local=%s, remote=%s",
             name, local_addr, remote_addr);
 
   /* Find GIF interface */
   gif_iface = interface_find(state, name);
   if (!gif_iface) {
-    debug_log(DEBUG_ERROR, "GIF interface %s not found", name);
+    debug_log(ERROR, "GIF interface %s not found", name);
     return -1;
   }
 
   if (gif_iface->type != IF_TYPE_GIF) {
-    debug_log(DEBUG_ERROR, "Interface %s is not a GIF", name);
+    debug_log(ERROR, "Interface %s is not a GIF", name);
     return -1;
   }
 
   /* Set tunnel endpoints in FreeBSD */
   if (freebsd_gif_set_tunnel(name, local_addr, remote_addr) < 0) {
-    debug_log(DEBUG_ERROR,
+    debug_log(ERROR,
               "Failed to set tunnel endpoints for GIF %s in FreeBSD", name);
     return -1;
   }
@@ -122,7 +122,7 @@ int gif_set_tunnel(netd_state_t *state, const char *name,
   strlcpy(gif_iface->tunnel_local, local_addr, sizeof(gif_iface->tunnel_local));
   strlcpy(gif_iface->tunnel_remote, remote_addr, sizeof(gif_iface->tunnel_remote));
 
-  debug_log(DEBUG_INFO,
+  debug_log(INFO,
             "Set tunnel endpoints for GIF interface %s: local=%s, remote=%s",
             name, local_addr, remote_addr);
   return 0;
@@ -143,7 +143,7 @@ int gif_get_tunnel(netd_state_t *state, const char *name, char *local_addr,
   interface_t *gif_iface;
 
   if (!state || !name) {
-    debug_log(DEBUG_ERROR,
+    debug_log(ERROR,
               "Invalid parameters for GIF tunnel retrieval: state=%p, name=%s",
               state, name ? name : "NULL");
     return -1;
@@ -152,12 +152,12 @@ int gif_get_tunnel(netd_state_t *state, const char *name, char *local_addr,
   /* Find GIF interface */
   gif_iface = interface_find(state, name);
   if (!gif_iface) {
-    debug_log(DEBUG_ERROR, "GIF interface %s not found", name);
+    debug_log(ERROR, "GIF interface %s not found", name);
     return -1;
   }
 
   if (gif_iface->type != IF_TYPE_GIF) {
-    debug_log(DEBUG_ERROR, "Interface %s is not a GIF", name);
+    debug_log(ERROR, "Interface %s is not a GIF", name);
     return -1;
   }
 
@@ -169,7 +169,7 @@ int gif_get_tunnel(netd_state_t *state, const char *name, char *local_addr,
     strlcpy(remote_addr, gif_iface->tunnel_remote, remote_len);
   }
 
-  debug_log(DEBUG_DEBUG,
+  debug_log(DEBUG,
             "Retrieved tunnel endpoints for GIF interface %s: local=%s, remote=%s",
             name, gif_iface->tunnel_local, gif_iface->tunnel_remote);
   return 0;

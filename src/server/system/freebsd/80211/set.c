@@ -65,15 +65,15 @@ int freebsd_wireless_create(const char *name, const char *parent_name) {
     struct ifreq ifr;
     
     if (!name || !parent_name) {
-        debug_log(DEBUG_ERROR, "Invalid parameters for wireless interface creation");
+        debug_log(ERROR, "Invalid parameters for wireless interface creation");
         return -1;
     }
     
-    debug_log(DEBUG_DEBUG, "Creating wireless interface %s on parent %s", name, parent_name);
+    debug_log(DEBUG, "Creating wireless interface %s on parent %s", name, parent_name);
     
     sock = socket(AF_LOCAL, SOCK_DGRAM, 0);
     if (sock < 0) {
-        debug_log(DEBUG_ERROR, "Failed to create socket for wireless interface creation: %s", strerror(errno));
+        debug_log(ERROR, "Failed to create socket for wireless interface creation: %s", strerror(errno));
         return -1;
     }
     
@@ -81,13 +81,13 @@ int freebsd_wireless_create(const char *name, const char *parent_name) {
     strlcpy(ifr.ifr_name, name, sizeof(ifr.ifr_name));
     
     if (ioctl(sock, SIOCIFCREATE, &ifr) < 0) {
-        debug_log(DEBUG_ERROR, "Failed to create wireless interface: %s", strerror(errno));
+        debug_log(ERROR, "Failed to create wireless interface: %s", strerror(errno));
         close(sock);
         return -1;
     }
     
     close(sock);
-    debug_log(DEBUG_INFO, "Created wireless interface %s", name);
+    debug_log(INFO, "Created wireless interface %s", name);
     return 0;
 }
 
@@ -102,28 +102,28 @@ int freebsd_wireless_set_regdomain(const char *name, const char *regdomain) {
     int val;
     
     if (!name || !regdomain) {
-        debug_log(DEBUG_ERROR, "Invalid parameters for setting wireless regulatory domain");
+        debug_log(ERROR, "Invalid parameters for setting wireless regulatory domain");
         return -1;
     }
     
-    debug_log(DEBUG_DEBUG, "Setting wireless regulatory domain to %s for interface %s", regdomain, name);
+    debug_log(DEBUG, "Setting wireless regulatory domain to %s for interface %s", regdomain, name);
     
     sock = socket(AF_LOCAL, SOCK_DGRAM, 0);
     if (sock < 0) {
-        debug_log(DEBUG_ERROR, "Failed to create socket for setting wireless regulatory domain: %s", strerror(errno));
+        debug_log(ERROR, "Failed to create socket for setting wireless regulatory domain: %s", strerror(errno));
         return -1;
     }
     
     val = atoi(regdomain);
     
     if (lib80211_set80211(sock, name, IEEE80211_IOC_REGDOMAIN, val, 0, NULL) < 0) {
-        debug_log(DEBUG_ERROR, "Failed to set wireless regulatory domain: %s", strerror(errno));
+        debug_log(ERROR, "Failed to set wireless regulatory domain: %s", strerror(errno));
         close(sock);
         return -1;
     }
     
     close(sock);
-    debug_log(DEBUG_INFO, "Set wireless regulatory domain to %s for interface %s", regdomain, name);
+    debug_log(INFO, "Set wireless regulatory domain to %s for interface %s", regdomain, name);
     return 0;
 }
 
@@ -137,15 +137,15 @@ int freebsd_wireless_set_country(const char *name, const char *country) {
     int sock;
     
     if (!name || !country) {
-        debug_log(DEBUG_ERROR, "Invalid parameters for setting wireless country code");
+        debug_log(ERROR, "Invalid parameters for setting wireless country code");
         return -1;
     }
     
-    debug_log(DEBUG_DEBUG, "Setting wireless country code to %s for interface %s", country, name);
+    debug_log(DEBUG, "Setting wireless country code to %s for interface %s", country, name);
     
     sock = socket(AF_LOCAL, SOCK_DGRAM, 0);
     if (sock < 0) {
-        debug_log(DEBUG_ERROR, "Failed to create socket for setting wireless country code: %s", strerror(errno));
+        debug_log(ERROR, "Failed to create socket for setting wireless country code: %s", strerror(errno));
         return -1;
     }
     
@@ -163,17 +163,17 @@ int freebsd_wireless_set_country(const char *name, const char *country) {
     } else {
         /* Default to FCC */
         regdomain = 1;
-        debug_log(DEBUG_WARN, "Unknown country code %s, defaulting to FCC", country);
+        debug_log(WARN, "Unknown country code %s, defaulting to FCC", country);
     }
     
     if (lib80211_set80211(sock, name, IEEE80211_IOC_REGDOMAIN, regdomain, 0, NULL) < 0) {
-        debug_log(DEBUG_ERROR, "Failed to set wireless country code: %s", strerror(errno));
+        debug_log(ERROR, "Failed to set wireless country code: %s", strerror(errno));
         close(sock);
         return -1;
     }
     
     close(sock);
-    debug_log(DEBUG_INFO, "Set wireless country code to %s for interface %s", country, name);
+    debug_log(INFO, "Set wireless country code to %s for interface %s", country, name);
     return 0;
 }
 
@@ -188,11 +188,11 @@ int freebsd_wireless_set_authmode(const char *name, const char *authmode) {
     int mode = 0;
     
     if (!name || !authmode) {
-        debug_log(DEBUG_ERROR, "Invalid parameters for setting wireless authentication mode");
+        debug_log(ERROR, "Invalid parameters for setting wireless authentication mode");
         return -1;
     }
     
-    debug_log(DEBUG_DEBUG, "Setting wireless authentication mode to %s for interface %s", authmode, name);
+    debug_log(DEBUG, "Setting wireless authentication mode to %s for interface %s", authmode, name);
     
     /* Map authmode string to IEEE80211_AUTH_* constants */
     if (strcmp(authmode, "open") == 0) {
@@ -202,24 +202,24 @@ int freebsd_wireless_set_authmode(const char *name, const char *authmode) {
     } else if (strcmp(authmode, "wpa") == 0) {
         mode = IEEE80211_AUTH_WPA;
     } else {
-        debug_log(DEBUG_ERROR, "Unsupported authentication mode: %s", authmode);
+        debug_log(ERROR, "Unsupported authentication mode: %s", authmode);
         return -1;
     }
     
     sock = socket(AF_LOCAL, SOCK_DGRAM, 0);
     if (sock < 0) {
-        debug_log(DEBUG_ERROR, "Failed to create socket for setting wireless authentication mode: %s", strerror(errno));
+        debug_log(ERROR, "Failed to create socket for setting wireless authentication mode: %s", strerror(errno));
         return -1;
     }
     
     if (lib80211_set80211(sock, name, IEEE80211_IOC_AUTHMODE, mode, 0, NULL) < 0) {
-        debug_log(DEBUG_ERROR, "Failed to set wireless authentication mode: %s", strerror(errno));
+        debug_log(ERROR, "Failed to set wireless authentication mode: %s", strerror(errno));
         close(sock);
         return -1;
     }
     
     close(sock);
-    debug_log(DEBUG_INFO, "Set wireless authentication mode to %s for interface %s", authmode, name);
+    debug_log(INFO, "Set wireless authentication mode to %s for interface %s", authmode, name);
     return 0;
 }
 
@@ -234,11 +234,11 @@ int freebsd_wireless_set_privacy(const char *name, const char *privacy) {
     int mode = 0;
     
     if (!name || !privacy) {
-        debug_log(DEBUG_ERROR, "Invalid parameters for setting wireless privacy mode");
+        debug_log(ERROR, "Invalid parameters for setting wireless privacy mode");
         return -1;
     }
     
-    debug_log(DEBUG_DEBUG, "Setting wireless privacy mode to %s for interface %s", privacy, name);
+    debug_log(DEBUG, "Setting wireless privacy mode to %s for interface %s", privacy, name);
     
     /* Map privacy string to IEEE80211_PRIVACY_* constants */
     if (strcmp(privacy, "off") == 0) {
@@ -246,24 +246,24 @@ int freebsd_wireless_set_privacy(const char *name, const char *privacy) {
     } else if (strcmp(privacy, "on") == 0) {
         mode = 1;
     } else {
-        debug_log(DEBUG_ERROR, "Unsupported privacy mode: %s", privacy);
+        debug_log(ERROR, "Unsupported privacy mode: %s", privacy);
         return -1;
     }
     
     sock = socket(AF_LOCAL, SOCK_DGRAM, 0);
     if (sock < 0) {
-        debug_log(DEBUG_ERROR, "Failed to create socket for setting wireless privacy mode: %s", strerror(errno));
+        debug_log(ERROR, "Failed to create socket for setting wireless privacy mode: %s", strerror(errno));
         return -1;
     }
     
     if (lib80211_set80211(sock, name, IEEE80211_IOC_PRIVACY, mode, 0, NULL) < 0) {
-        debug_log(DEBUG_ERROR, "Failed to set wireless privacy mode: %s", strerror(errno));
+        debug_log(ERROR, "Failed to set wireless privacy mode: %s", strerror(errno));
         close(sock);
         return -1;
     }
     
     close(sock);
-    debug_log(DEBUG_INFO, "Set wireless privacy mode to %s for interface %s", privacy, name);
+    debug_log(INFO, "Set wireless privacy mode to %s for interface %s", privacy, name);
     return 0;
 }
 
@@ -277,26 +277,26 @@ int freebsd_wireless_set_txpower(const char *name, int txpower) {
     int sock;
     
     if (!name) {
-        debug_log(DEBUG_ERROR, "Invalid parameters for setting wireless transmit power");
+        debug_log(ERROR, "Invalid parameters for setting wireless transmit power");
         return -1;
     }
     
-    debug_log(DEBUG_DEBUG, "Setting wireless transmit power to %d dBm for interface %s", txpower, name);
+    debug_log(DEBUG, "Setting wireless transmit power to %d dBm for interface %s", txpower, name);
     
     sock = socket(AF_LOCAL, SOCK_DGRAM, 0);
     if (sock < 0) {
-        debug_log(DEBUG_ERROR, "Failed to create socket for setting wireless transmit power: %s", strerror(errno));
+        debug_log(ERROR, "Failed to create socket for setting wireless transmit power: %s", strerror(errno));
         return -1;
     }
     
     if (lib80211_set80211(sock, name, IEEE80211_IOC_TXPOWER, txpower, 0, NULL) < 0) {
-        debug_log(DEBUG_ERROR, "Failed to set wireless transmit power: %s", strerror(errno));
+        debug_log(ERROR, "Failed to set wireless transmit power: %s", strerror(errno));
         close(sock);
         return -1;
     }
     
     close(sock);
-    debug_log(DEBUG_INFO, "Set wireless transmit power to %d dBm for interface %s", txpower, name);
+    debug_log(INFO, "Set wireless transmit power to %d dBm for interface %s", txpower, name);
     return 0;
 }
 
@@ -310,15 +310,15 @@ int freebsd_wireless_delete(const char *name) {
     struct ifreq ifr;
     
     if (!name) {
-        debug_log(DEBUG_ERROR, "Invalid parameters for wireless interface deletion");
+        debug_log(ERROR, "Invalid parameters for wireless interface deletion");
         return -1;
     }
     
-    debug_log(DEBUG_DEBUG, "Deleting wireless interface %s", name);
+    debug_log(DEBUG, "Deleting wireless interface %s", name);
     
     sock = socket(AF_LOCAL, SOCK_DGRAM, 0);
     if (sock < 0) {
-        debug_log(DEBUG_ERROR, "Failed to create socket for wireless interface deletion: %s", strerror(errno));
+        debug_log(ERROR, "Failed to create socket for wireless interface deletion: %s", strerror(errno));
         return -1;
     }
     
@@ -326,13 +326,13 @@ int freebsd_wireless_delete(const char *name) {
     strlcpy(ifr.ifr_name, name, sizeof(ifr.ifr_name));
     
     if (ioctl(sock, SIOCIFDESTROY, &ifr) < 0) {
-        debug_log(DEBUG_ERROR, "Failed to delete wireless interface: %s", strerror(errno));
+        debug_log(ERROR, "Failed to delete wireless interface: %s", strerror(errno));
         close(sock);
         return -1;
     }
     
     close(sock);
-    debug_log(DEBUG_INFO, "Deleted wireless interface %s", name);
+    debug_log(INFO, "Deleted wireless interface %s", name);
     return 0;
 }
 
@@ -347,15 +347,15 @@ int freebsd_wlan_create(const char *name, const char *parent) {
     struct ifreq ifr;
     
     if (!name || !parent) {
-        debug_log(DEBUG_ERROR, "Invalid parameters for WLAN interface creation");
+        debug_log(ERROR, "Invalid parameters for WLAN interface creation");
         return -1;
     }
     
-    debug_log(DEBUG_DEBUG, "Creating WLAN interface %s on parent %s", name, parent);
+    debug_log(DEBUG, "Creating WLAN interface %s on parent %s", name, parent);
     
     sock = socket(AF_LOCAL, SOCK_DGRAM, 0);
     if (sock < 0) {
-        debug_log(DEBUG_ERROR, "Failed to create socket for WLAN interface creation: %s", strerror(errno));
+        debug_log(ERROR, "Failed to create socket for WLAN interface creation: %s", strerror(errno));
         return -1;
     }
     
@@ -363,13 +363,13 @@ int freebsd_wlan_create(const char *name, const char *parent) {
     strlcpy(ifr.ifr_name, name, sizeof(ifr.ifr_name));
     
     if (ioctl(sock, SIOCIFCREATE, &ifr) < 0) {
-        debug_log(DEBUG_ERROR, "Failed to create WLAN interface: %s", strerror(errno));
+        debug_log(ERROR, "Failed to create WLAN interface: %s", strerror(errno));
         close(sock);
         return -1;
     }
     
     close(sock);
-    debug_log(DEBUG_INFO, "Created WLAN interface %s", name);
+    debug_log(INFO, "Created WLAN interface %s", name);
     return 0;
 }
 
@@ -383,26 +383,26 @@ int freebsd_wlan_set_ssid(const char *name, const char *ssid) {
     int sock;
     
     if (!name || !ssid) {
-        debug_log(DEBUG_ERROR, "Invalid parameters for setting WLAN SSID");
+        debug_log(ERROR, "Invalid parameters for setting WLAN SSID");
         return -1;
     }
     
-    debug_log(DEBUG_DEBUG, "Setting WLAN SSID to %s for interface %s", ssid, name);
+    debug_log(DEBUG, "Setting WLAN SSID to %s for interface %s", ssid, name);
     
     sock = socket(AF_LOCAL, SOCK_DGRAM, 0);
     if (sock < 0) {
-        debug_log(DEBUG_ERROR, "Failed to create socket for setting WLAN SSID: %s", strerror(errno));
+        debug_log(ERROR, "Failed to create socket for setting WLAN SSID: %s", strerror(errno));
         return -1;
     }
     
     if (lib80211_set80211(sock, name, IEEE80211_IOC_SSID, 0, strlen(ssid), (void *)ssid) < 0) {
-        debug_log(DEBUG_ERROR, "Failed to set WLAN SSID: %s", strerror(errno));
+        debug_log(ERROR, "Failed to set WLAN SSID: %s", strerror(errno));
         close(sock);
         return -1;
     }
     
     close(sock);
-    debug_log(DEBUG_INFO, "Set WLAN SSID to %s for interface %s", ssid, name);
+    debug_log(INFO, "Set WLAN SSID to %s for interface %s", ssid, name);
     return 0;
 }
 
@@ -417,32 +417,32 @@ int freebsd_wlan_set_bssid(const char *name, const char *bssid) {
     struct ether_addr mac;
     
     if (!name || !bssid) {
-        debug_log(DEBUG_ERROR, "Invalid parameters for setting WLAN BSSID");
+        debug_log(ERROR, "Invalid parameters for setting WLAN BSSID");
         return -1;
     }
     
-    debug_log(DEBUG_DEBUG, "Setting WLAN BSSID to %s for interface %s", bssid, name);
+    debug_log(DEBUG, "Setting WLAN BSSID to %s for interface %s", bssid, name);
     
     /* Parse MAC address */
     if (ether_aton_r(bssid, &mac) == NULL) {
-        debug_log(DEBUG_ERROR, "Invalid BSSID format: %s", bssid);
+        debug_log(ERROR, "Invalid BSSID format: %s", bssid);
         return -1;
     }
     
     sock = socket(AF_LOCAL, SOCK_DGRAM, 0);
     if (sock < 0) {
-        debug_log(DEBUG_ERROR, "Failed to create socket for setting WLAN BSSID: %s", strerror(errno));
+        debug_log(ERROR, "Failed to create socket for setting WLAN BSSID: %s", strerror(errno));
         return -1;
     }
     
     if (lib80211_set80211(sock, name, IEEE80211_IOC_BSSID, 0, sizeof(mac), &mac) < 0) {
-        debug_log(DEBUG_ERROR, "Failed to set WLAN BSSID: %s", strerror(errno));
+        debug_log(ERROR, "Failed to set WLAN BSSID: %s", strerror(errno));
         close(sock);
         return -1;
     }
     
     close(sock);
-    debug_log(DEBUG_INFO, "Set WLAN BSSID to %s for interface %s", bssid, name);
+    debug_log(INFO, "Set WLAN BSSID to %s for interface %s", bssid, name);
     return 0;
 }
 
@@ -456,26 +456,26 @@ int freebsd_wlan_set_channel(const char *name, int channel) {
     int sock;
     
     if (!name) {
-        debug_log(DEBUG_ERROR, "Invalid parameters for setting WLAN channel");
+        debug_log(ERROR, "Invalid parameters for setting WLAN channel");
         return -1;
     }
     
-    debug_log(DEBUG_DEBUG, "Setting WLAN channel to %d for interface %s", channel, name);
+    debug_log(DEBUG, "Setting WLAN channel to %d for interface %s", channel, name);
     
     sock = socket(AF_LOCAL, SOCK_DGRAM, 0);
     if (sock < 0) {
-        debug_log(DEBUG_ERROR, "Failed to create socket for setting WLAN channel: %s", strerror(errno));
+        debug_log(ERROR, "Failed to create socket for setting WLAN channel: %s", strerror(errno));
         return -1;
     }
     
     if (lib80211_set80211(sock, name, IEEE80211_IOC_CHANNEL, channel, 0, NULL) < 0) {
-        debug_log(DEBUG_ERROR, "Failed to set WLAN channel: %s", strerror(errno));
+        debug_log(ERROR, "Failed to set WLAN channel: %s", strerror(errno));
         close(sock);
         return -1;
     }
     
     close(sock);
-    debug_log(DEBUG_INFO, "Set WLAN channel to %d for interface %s", channel, name);
+    debug_log(INFO, "Set WLAN channel to %d for interface %s", channel, name);
     return 0;
 }
 
@@ -487,7 +487,7 @@ int freebsd_wlan_set_channel(const char *name, int channel) {
  */
 int freebsd_wlan_set_security(const char *name, const char *security) {
     /* Security mode setting not implemented - requires kernel-specific structures */
-    debug_log(DEBUG_WARN, "WLAN security mode setting not implemented for interface %s (security: %s)", name, security);
+    debug_log(WARN, "WLAN security mode setting not implemented for interface %s (security: %s)", name, security);
     return -1;
 }
 
@@ -499,7 +499,7 @@ int freebsd_wlan_set_security(const char *name, const char *security) {
  */
 int freebsd_wlan_set_key(const char *name, const char *key) {
     /* WLAN key setting not implemented - requires kernel-specific structures */
-    debug_log(DEBUG_WARN, "WLAN key setting not implemented for interface %s (key: %s)", name, key);
+    debug_log(WARN, "WLAN key setting not implemented for interface %s (key: %s)", name, key);
     return -1;
 }
 
@@ -513,15 +513,15 @@ int freebsd_wlan_delete(const char *name) {
     struct ifreq ifr;
     
     if (!name) {
-        debug_log(DEBUG_ERROR, "Invalid parameters for WLAN interface deletion");
+        debug_log(ERROR, "Invalid parameters for WLAN interface deletion");
         return -1;
     }
     
-    debug_log(DEBUG_DEBUG, "Deleting WLAN interface %s", name);
+    debug_log(DEBUG, "Deleting WLAN interface %s", name);
     
     sock = socket(AF_LOCAL, SOCK_DGRAM, 0);
     if (sock < 0) {
-        debug_log(DEBUG_ERROR, "Failed to create socket for WLAN interface deletion: %s", strerror(errno));
+        debug_log(ERROR, "Failed to create socket for WLAN interface deletion: %s", strerror(errno));
         return -1;
     }
     
@@ -529,12 +529,12 @@ int freebsd_wlan_delete(const char *name) {
     strlcpy(ifr.ifr_name, name, sizeof(ifr.ifr_name));
     
     if (ioctl(sock, SIOCIFDESTROY, &ifr) < 0) {
-        debug_log(DEBUG_ERROR, "Failed to delete WLAN interface: %s", strerror(errno));
+        debug_log(ERROR, "Failed to delete WLAN interface: %s", strerror(errno));
         close(sock);
         return -1;
     }
     
     close(sock);
-    debug_log(DEBUG_INFO, "Deleted WLAN interface %s", name);
+    debug_log(INFO, "Deleted WLAN interface %s", name);
     return 0;
 } 

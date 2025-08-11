@@ -76,7 +76,7 @@ char *extract_message_id(const char *request) {
 
   parser = XML_ParserCreate(NULL);
   if (!parser) {
-    debug_log(DEBUG_ERROR, "Failed to create XML parser for message-id extraction");
+    debug_log(ERROR, "Failed to create XML parser for message-id extraction");
     return NULL;
   }
 
@@ -84,7 +84,7 @@ char *extract_message_id(const char *request) {
   XML_SetStartElementHandler(parser, message_id_start_element);
 
   if (XML_Parse(parser, request, strlen(request), 1) != XML_STATUS_OK) {
-    debug_log(DEBUG_ERROR, "XML parsing failed for message-id extraction: %s",
+    debug_log(ERROR, "XML parsing failed for message-id extraction: %s",
               XML_ErrorString(XML_GetErrorCode(parser)));
   } else if (user_data.found) {
     result = user_data.message_id;
@@ -106,7 +106,7 @@ static void xml_check_start_element(void *userData, const XML_Char *name,
                                    const XML_Char **atts) {
   struct xml_check_data *data = (struct xml_check_data *)userData;
   
-  debug_log(DEBUG_DEBUG, "XML element: %s, attributes: %p", name, (void*)atts);
+  debug_log(DEBUG, "XML element: %s, attributes: %p", name, (void*)atts);
   
   if (data->element_count < MAX_XML_ELEMENTS) {
     data->element_names[data->element_count] = strdup(name);
@@ -133,7 +133,7 @@ bool xml_contains_elements(const char *request, const char **elements, int eleme
 
   parser = XML_ParserCreate(NULL);
   if (!parser) {
-    debug_log(DEBUG_ERROR, "Failed to create XML parser for element checking");
+    debug_log(ERROR, "Failed to create XML parser for element checking");
     return false;
   }
 
@@ -141,7 +141,7 @@ bool xml_contains_elements(const char *request, const char **elements, int eleme
   XML_SetStartElementHandler(parser, xml_check_start_element);
 
   if (XML_Parse(parser, request, strlen(request), 1) != XML_STATUS_OK) {
-    debug_log(DEBUG_ERROR, "XML parsing failed for element checking: %s",
+    debug_log(ERROR, "XML parsing failed for element checking: %s",
               XML_ErrorString(XML_GetErrorCode(parser)));
   } else {
     /* Check if all required elements are found */

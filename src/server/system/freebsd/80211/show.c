@@ -131,15 +131,15 @@ int freebsd_wireless_show(const char *name, char *regdomain, size_t regdomain_si
     
     if (!name || !regdomain || !country || !authmode || !privacy || !txpower ||
         !bmiss || !scanvalid || !features || !bintval || !parent) {
-        debug_log(DEBUG_ERROR, "Invalid parameters for wireless interface show");
+        debug_log(ERROR, "Invalid parameters for wireless interface show");
         return -1;
     }
     
-    debug_log(DEBUG_DEBUG, "Showing wireless interface %s", name);
+    debug_log(DEBUG, "Showing wireless interface %s", name);
     
     sock = socket(AF_LOCAL, SOCK_DGRAM, 0);
     if (sock < 0) {
-        debug_log(DEBUG_ERROR, "Failed to create socket for wireless interface show: %s", strerror(errno));
+        debug_log(ERROR, "Failed to create socket for wireless interface show: %s", strerror(errno));
         return -1;
     }
     
@@ -258,7 +258,7 @@ int freebsd_wireless_show(const char *name, char *regdomain, size_t regdomain_si
     strlcpy(parent, "unknown", parent_size);
     
     close(sock);
-    debug_log(DEBUG_INFO, "Showed wireless interface %s", name);
+    debug_log(INFO, "Showed wireless interface %s", name);
     return 0;
 }
 
@@ -281,15 +281,15 @@ int freebsd_wlan_show(const char *name, char *ssid, size_t ssid_size,
     struct ieee80211req ireq;
     
     if (!name || !ssid || !bssid || !channel || !security) {
-        debug_log(DEBUG_ERROR, "Invalid parameters for WLAN interface show");
+        debug_log(ERROR, "Invalid parameters for WLAN interface show");
         return -1;
     }
     
-    debug_log(DEBUG_DEBUG, "Showing WLAN interface %s", name);
+    debug_log(DEBUG, "Showing WLAN interface %s", name);
     
     sock = socket(AF_LOCAL, SOCK_DGRAM, 0);
     if (sock < 0) {
-        debug_log(DEBUG_ERROR, "Failed to create socket for WLAN interface show: %s", strerror(errno));
+        debug_log(ERROR, "Failed to create socket for WLAN interface show: %s", strerror(errno));
         return -1;
     }
     
@@ -353,7 +353,7 @@ int freebsd_wlan_show(const char *name, char *ssid, size_t ssid_size,
     }
     
     close(sock);
-    debug_log(DEBUG_INFO, "Showed WLAN interface %s", name);
+    debug_log(INFO, "Showed WLAN interface %s", name);
     return 0;
 }
 
@@ -369,15 +369,15 @@ int freebsd_wlan_get_ssid(const char *name, char *ssid, size_t ssid_size) {
     struct ieee80211req ireq;
     
     if (!name || !ssid) {
-        debug_log(DEBUG_ERROR, "Invalid parameters for getting WLAN SSID");
+        debug_log(ERROR, "Invalid parameters for getting WLAN SSID");
         return -1;
     }
     
-    debug_log(DEBUG_DEBUG, "Getting WLAN SSID for interface %s", name);
+    debug_log(DEBUG, "Getting WLAN SSID for interface %s", name);
     
     sock = socket(AF_LOCAL, SOCK_DGRAM, 0);
     if (sock < 0) {
-        debug_log(DEBUG_ERROR, "Failed to create socket for getting WLAN SSID: %s", strerror(errno));
+        debug_log(ERROR, "Failed to create socket for getting WLAN SSID: %s", strerror(errno));
         return -1;
     }
     
@@ -386,7 +386,7 @@ int freebsd_wlan_get_ssid(const char *name, char *ssid, size_t ssid_size) {
     ireq.i_type = IEEE80211_IOC_SSID;
     
     if (ioctl(sock, SIOCG80211, &ireq) < 0) {
-        debug_log(DEBUG_ERROR, "Failed to get WLAN SSID: %s", strerror(errno));
+        debug_log(ERROR, "Failed to get WLAN SSID: %s", strerror(errno));
         close(sock);
         return -1;
     }
@@ -394,7 +394,7 @@ int freebsd_wlan_get_ssid(const char *name, char *ssid, size_t ssid_size) {
     strlcpy(ssid, (char *)&ireq.i_data, ssid_size);
     close(sock);
     
-    debug_log(DEBUG_INFO, "Got WLAN SSID for interface %s: %s", name, ssid);
+    debug_log(INFO, "Got WLAN SSID for interface %s: %s", name, ssid);
     return 0;
 }
 
@@ -410,15 +410,15 @@ int freebsd_wlan_get_bssid(const char *name, char *bssid, size_t bssid_size) {
     struct ieee80211req ireq;
     
     if (!name || !bssid) {
-        debug_log(DEBUG_ERROR, "Invalid parameters for getting WLAN BSSID");
+        debug_log(ERROR, "Invalid parameters for getting WLAN BSSID");
         return -1;
     }
     
-    debug_log(DEBUG_DEBUG, "Getting WLAN BSSID for interface %s", name);
+    debug_log(DEBUG, "Getting WLAN BSSID for interface %s", name);
     
     sock = socket(AF_LOCAL, SOCK_DGRAM, 0);
     if (sock < 0) {
-        debug_log(DEBUG_ERROR, "Failed to create socket for getting WLAN BSSID: %s", strerror(errno));
+        debug_log(ERROR, "Failed to create socket for getting WLAN BSSID: %s", strerror(errno));
         return -1;
     }
     
@@ -427,7 +427,7 @@ int freebsd_wlan_get_bssid(const char *name, char *bssid, size_t bssid_size) {
     ireq.i_type = IEEE80211_IOC_BSSID;
     
     if (ioctl(sock, SIOCG80211, &ireq) < 0) {
-        debug_log(DEBUG_ERROR, "Failed to get WLAN BSSID: %s", strerror(errno));
+        debug_log(ERROR, "Failed to get WLAN BSSID: %s", strerror(errno));
         close(sock);
         return -1;
     }
@@ -439,7 +439,7 @@ int freebsd_wlan_get_bssid(const char *name, char *bssid, size_t bssid_size) {
     
     close(sock);
     
-    debug_log(DEBUG_INFO, "Got WLAN BSSID for interface %s: %s", name, bssid);
+    debug_log(INFO, "Got WLAN BSSID for interface %s: %s", name, bssid);
     return 0;
 }
 
@@ -454,15 +454,15 @@ int freebsd_wlan_get_channel(const char *name, int *channel) {
     struct ieee80211req ireq;
     
     if (!name || !channel) {
-        debug_log(DEBUG_ERROR, "Invalid parameters for getting WLAN channel");
+        debug_log(ERROR, "Invalid parameters for getting WLAN channel");
         return -1;
     }
     
-    debug_log(DEBUG_DEBUG, "Getting WLAN channel for interface %s", name);
+    debug_log(DEBUG, "Getting WLAN channel for interface %s", name);
     
     sock = socket(AF_LOCAL, SOCK_DGRAM, 0);
     if (sock < 0) {
-        debug_log(DEBUG_ERROR, "Failed to create socket for getting WLAN channel: %s", strerror(errno));
+        debug_log(ERROR, "Failed to create socket for getting WLAN channel: %s", strerror(errno));
         return -1;
     }
     
@@ -471,7 +471,7 @@ int freebsd_wlan_get_channel(const char *name, int *channel) {
     ireq.i_type = IEEE80211_IOC_CHANNEL;
     
     if (ioctl(sock, SIOCG80211, &ireq) < 0) {
-        debug_log(DEBUG_ERROR, "Failed to get WLAN channel: %s", strerror(errno));
+        debug_log(ERROR, "Failed to get WLAN channel: %s", strerror(errno));
         close(sock);
         return -1;
     }
@@ -479,7 +479,7 @@ int freebsd_wlan_get_channel(const char *name, int *channel) {
     *channel = ireq.i_val;
     close(sock);
     
-    debug_log(DEBUG_INFO, "Got WLAN channel for interface %s: %d", name, *channel);
+    debug_log(INFO, "Got WLAN channel for interface %s: %d", name, *channel);
     return 0;
 }
 
@@ -495,15 +495,15 @@ int freebsd_wlan_get_security(const char *name, char *security, size_t security_
     struct ieee80211req ireq;
     
     if (!name || !security) {
-        debug_log(DEBUG_ERROR, "Invalid parameters for getting WLAN security");
+        debug_log(ERROR, "Invalid parameters for getting WLAN security");
         return -1;
     }
     
-    debug_log(DEBUG_DEBUG, "Getting WLAN security for interface %s", name);
+    debug_log(DEBUG, "Getting WLAN security for interface %s", name);
     
     sock = socket(AF_LOCAL, SOCK_DGRAM, 0);
     if (sock < 0) {
-        debug_log(DEBUG_ERROR, "Failed to create socket for getting WLAN security: %s", strerror(errno));
+        debug_log(ERROR, "Failed to create socket for getting WLAN security: %s", strerror(errno));
         return -1;
     }
     
@@ -512,7 +512,7 @@ int freebsd_wlan_get_security(const char *name, char *security, size_t security_
     ireq.i_type = IEEE80211_IOC_SECURITY;
     
     if (ioctl(sock, SIOCG80211, &ireq) < 0) {
-        debug_log(DEBUG_ERROR, "Failed to get WLAN security: %s", strerror(errno));
+        debug_log(ERROR, "Failed to get WLAN security: %s", strerror(errno));
         close(sock);
         return -1;
     }
@@ -540,7 +540,7 @@ int freebsd_wlan_get_security(const char *name, char *security, size_t security_
     
     close(sock);
     
-    debug_log(DEBUG_INFO, "Got WLAN security for interface %s: %s", name, security);
+    debug_log(INFO, "Got WLAN security for interface %s: %s", name, security);
     return 0;
 }
 
@@ -554,15 +554,15 @@ int freebsd_wlan_scan(const char *name) {
     struct ieee80211req ireq;
     
     if (!name) {
-        debug_log(DEBUG_ERROR, "Invalid parameters for WLAN scan");
+        debug_log(ERROR, "Invalid parameters for WLAN scan");
         return -1;
     }
     
-    debug_log(DEBUG_DEBUG, "Scanning for networks on WLAN interface %s", name);
+    debug_log(DEBUG, "Scanning for networks on WLAN interface %s", name);
     
     sock = socket(AF_LOCAL, SOCK_DGRAM, 0);
     if (sock < 0) {
-        debug_log(DEBUG_ERROR, "Failed to create socket for WLAN scan: %s", strerror(errno));
+        debug_log(ERROR, "Failed to create socket for WLAN scan: %s", strerror(errno));
         return -1;
     }
     
@@ -571,14 +571,14 @@ int freebsd_wlan_scan(const char *name) {
     ireq.i_type = IEEE80211_IOC_SCAN_REQ;
     
     if (ioctl(sock, SIOCS80211, &ireq) < 0) {
-        debug_log(DEBUG_ERROR, "Failed to initiate WLAN scan: %s", strerror(errno));
+        debug_log(ERROR, "Failed to initiate WLAN scan: %s", strerror(errno));
         close(sock);
         return -1;
     }
     
     close(sock);
     
-    debug_log(DEBUG_INFO, "Initiated WLAN scan on interface %s", name);
+    debug_log(INFO, "Initiated WLAN scan on interface %s", name);
     return 0;
 }
 
@@ -595,15 +595,15 @@ int freebsd_wlan_connect(const char *name, const char *ssid, const char *securit
     struct ieee80211req ireq;
     
     if (!name || !ssid) {
-        debug_log(DEBUG_ERROR, "Invalid parameters for WLAN connect");
+        debug_log(ERROR, "Invalid parameters for WLAN connect");
         return -1;
     }
     
-    debug_log(DEBUG_DEBUG, "Connecting WLAN interface %s to network %s", name, ssid);
+    debug_log(DEBUG, "Connecting WLAN interface %s to network %s", name, ssid);
     
     sock = socket(AF_LOCAL, SOCK_DGRAM, 0);
     if (sock < 0) {
-        debug_log(DEBUG_ERROR, "Failed to create socket for WLAN connect: %s", strerror(errno));
+        debug_log(ERROR, "Failed to create socket for WLAN connect: %s", strerror(errno));
         return -1;
     }
     
@@ -614,7 +614,7 @@ int freebsd_wlan_connect(const char *name, const char *ssid, const char *securit
     strlcpy((char *)&ireq.i_data, ssid, sizeof(ireq.i_data));
     
     if (ioctl(sock, SIOCS80211, &ireq) < 0) {
-        debug_log(DEBUG_ERROR, "Failed to set SSID for WLAN connect: %s", strerror(errno));
+        debug_log(ERROR, "Failed to set SSID for WLAN connect: %s", strerror(errno));
         close(sock);
         return -1;
     }
@@ -631,25 +631,25 @@ int freebsd_wlan_connect(const char *name, const char *ssid, const char *securit
         } else if (strcmp(security, "wpa3") == 0) {
             ireq.i_val = IEEE80211_SECURITY_WPA3;
         } else {
-            debug_log(DEBUG_ERROR, "Unsupported security type: %s", security);
+            debug_log(ERROR, "Unsupported security type: %s", security);
             close(sock);
             return -1;
         }
         
         if (ioctl(sock, SIOCS80211, &ireq) < 0) {
-            debug_log(DEBUG_ERROR, "Failed to set security for WLAN connect: %s", strerror(errno));
+            debug_log(ERROR, "Failed to set security for WLAN connect: %s", strerror(errno));
             close(sock);
             return -1;
         }
         
         // Set key if provided - not available in userland ioctl interface
         if (key) {
-            debug_log(DEBUG_WARN, "Key setting not available in userland for WLAN connect: %s", name);
+            debug_log(WARN, "Key setting not available in userland for WLAN connect: %s", name);
         }
     }
     
     close(sock);
     
-    debug_log(DEBUG_INFO, "Connected WLAN interface %s to network %s", name, ssid);
+    debug_log(INFO, "Connected WLAN interface %s to network %s", name, ssid);
     return 0;
 } 

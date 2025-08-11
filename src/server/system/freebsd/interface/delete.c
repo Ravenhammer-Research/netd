@@ -79,7 +79,7 @@ int freebsd_interface_delete(const char *name) {
   /* Create socket for ioctl */
   sock = socket(AF_INET, SOCK_DGRAM, 0);
   if (sock < 0) {
-    debug_log(DEBUG_ERROR, "Failed to create socket for interface deletion: %s",
+    debug_log(ERROR, "Failed to create socket for interface deletion: %s",
               strerror(errno));
     return -1;
   }
@@ -90,13 +90,13 @@ int freebsd_interface_delete(const char *name) {
 
   /* Delete interface */
   if (ioctl(sock, SIOCIFDESTROY, &ifr) < 0) {
-    debug_log(DEBUG_ERROR, "Failed to delete interface %s: %s", name,
+    debug_log(ERROR, "Failed to delete interface %s: %s", name,
               strerror(errno));
     close(sock);
     return -1;
   }
 
-  debug_log(DEBUG_INFO, "Deleted interface %s", name);
+  debug_log(INFO, "Deleted interface %s", name);
   close(sock);
   return 0;
 }
@@ -119,7 +119,7 @@ int freebsd_interface_delete_address(const char *name, int family) {
   /* Create socket for ioctl */
   sock = socket(family, SOCK_DGRAM, 0);
   if (sock < 0) {
-    debug_log(DEBUG_ERROR, "Failed to create socket for address deletion: %s",
+    debug_log(ERROR, "Failed to create socket for address deletion: %s",
               strerror(errno));
     return -1;
   }
@@ -133,13 +133,13 @@ int freebsd_interface_delete_address(const char *name, int family) {
 
   /* Delete address */
   if (ioctl(sock, SIOCDIFADDR, &ifr) < 0) {
-    debug_log(DEBUG_ERROR, "Failed to delete address from interface %s: %s",
+    debug_log(ERROR, "Failed to delete address from interface %s: %s",
               name, strerror(errno));
     close(sock);
     return -1;
   }
 
-  debug_log(DEBUG_INFO, "Deleted address from interface %s", name);
+  debug_log(INFO, "Deleted address from interface %s", name);
   close(sock);
   return 0;
 } 

@@ -37,6 +37,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <sys/queue.h>
+#include <debug.h>
 
 /* Constants */
 /* Maximum VRF name length - VRF names are typically short identifiers like "vrf1", "mgmt", etc. */
@@ -69,15 +70,7 @@ typedef enum {
   IF_TYPE_BRIDGE
 } interface_type_t;
 
-/* Debug levels */
-typedef enum {
-  DEBUG_NONE = 0,
-  DEBUG_ERROR = 1,
-  DEBUG_WARN = 2,
-  DEBUG_INFO = 3,
-  DEBUG_DEBUG = 4,
-  DEBUG_TRACE = 5
-} debug_level_t;
+
 
 /* Route flags - simplified versions for our application */
 typedef enum {
@@ -226,8 +219,7 @@ typedef struct netd_state {
 /* Function declarations */
 
 /* Debug logging */
-void debug_log(debug_level_t level, const char *format, ...);
-void debug_init(debug_level_t level);
+
 
 /* VRF management */
 int vrf_create(netd_state_t *state, const char *name, uint32_t fib_number);

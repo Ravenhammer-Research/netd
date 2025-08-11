@@ -89,7 +89,7 @@ int freebsd_get_bridge_members(const char *ifname, char *members,
   /* Create socket for ioctl */
   sock = socket(AF_LOCAL, SOCK_DGRAM, 0);
   if (sock < 0) {
-    debug_log(DEBUG_ERROR, "Failed to create socket for bridge members: %s", strerror(errno));
+    debug_log(ERROR, "Failed to create socket for bridge members: %s", strerror(errno));
     strlcpy(members, "none", members_size);
     return -1;
   }
@@ -107,14 +107,14 @@ int freebsd_get_bridge_members(const char *ifname, char *members,
   bifc.ifbic_req = NULL;
 
   if (ioctl(sock, SIOCGDRVSPEC, &ifd) < 0) {
-    debug_log(DEBUG_ERROR, "Failed to get bridge members size for %s: %s", ifname, strerror(errno));
+    debug_log(ERROR, "Failed to get bridge members size for %s: %s", ifname, strerror(errno));
     close(sock);
     strlcpy(members, "none", members_size);
     return -1;
   }
 
   if (bifc.ifbic_len == 0) {
-    debug_log(DEBUG_INFO, "No bridge members found for %s", ifname);
+    debug_log(INFO, "No bridge members found for %s", ifname);
     close(sock);
     strlcpy(members, "none", members_size);
     return 0;
@@ -124,7 +124,7 @@ int freebsd_get_bridge_members(const char *ifname, char *members,
   buflen = bifc.ifbic_len;
   buf = malloc(buflen);
   if (!buf) {
-    debug_log(DEBUG_ERROR, "Failed to allocate memory for bridge members");
+    debug_log(ERROR, "Failed to allocate memory for bridge members");
     close(sock);
     strlcpy(members, "none", members_size);
     return -1;
@@ -133,7 +133,7 @@ int freebsd_get_bridge_members(const char *ifname, char *members,
   /* Second call to get the actual bridge member data */
   bifc.ifbic_req = (struct ifbreq *)buf;
   if (ioctl(sock, SIOCGDRVSPEC, &ifd) < 0) {
-    debug_log(DEBUG_ERROR, "Failed to get bridge members for %s: %s", ifname, strerror(errno));
+    debug_log(ERROR, "Failed to get bridge members for %s: %s", ifname, strerror(errno));
     free(buf);
     close(sock);
     strlcpy(members, "none", members_size);
@@ -154,7 +154,7 @@ int freebsd_get_bridge_members(const char *ifname, char *members,
       }
       strlcat(members_list, breq[i].ifbr_ifsname, sizeof(members_list));
       member_count++;
-      debug_log(DEBUG_TRACE, "Found bridge member: %s", breq[i].ifbr_ifsname);
+      debug_log(DEBUG2, "Found bridge member: %s", breq[i].ifbr_ifsname);
     }
   }
 
@@ -163,10 +163,10 @@ int freebsd_get_bridge_members(const char *ifname, char *members,
 
   if (strlen(members_list) > 0) {
     strlcpy(members, members_list, members_size);
-    debug_log(DEBUG_TRACE, "Found bridge members for %s: '%s'", ifname, members);
+    debug_log(DEBUG2, "Found bridge members for %s: '%s'", ifname, members);
   } else {
     strlcpy(members, "none", members_size);
-    debug_log(DEBUG_INFO, "No bridge members found for %s", ifname);
+    debug_log(INFO, "No bridge members found for %s", ifname);
   }
 
   return 0;

@@ -53,7 +53,7 @@ int vlan_interface_create(netd_state_t *state, const char *name,
   interface_t *vlan_iface;
 
   if (!state || !name || !parent_name) {
-    debug_log(DEBUG_ERROR,
+    debug_log(ERROR,
               "Invalid parameters for VLAN creation: state=%p, name=%s, "
               "parent=%s",
               state, name ? name : "NULL", parent_name ? parent_name : "NULL");
@@ -61,24 +61,24 @@ int vlan_interface_create(netd_state_t *state, const char *name,
   }
 
   if (vlan_id < 1 || vlan_id > 4094) {
-    debug_log(DEBUG_ERROR, "Invalid VLAN ID %d (must be 1-4094)", vlan_id);
+    debug_log(ERROR, "Invalid VLAN ID %d (must be 1-4094)", vlan_id);
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "Creating VLAN interface '%s' on parent '%s' with ID %d",
+  debug_log(DEBUG, "Creating VLAN interface '%s' on parent '%s' with ID %d",
             name, parent_name, vlan_id);
 
   /* Create the VLAN interface using the general interface creation */
   int result = interface_create(state, name, IF_TYPE_VLAN);
   if (result < 0) {
-    debug_log(DEBUG_ERROR, "Failed to create VLAN interface %s", name);
+    debug_log(ERROR, "Failed to create VLAN interface %s", name);
     return -1;
   }
 
   /* Find the created interface and set VLAN-specific properties */
   vlan_iface = interface_find(state, name);
   if (!vlan_iface) {
-    debug_log(DEBUG_ERROR, "Failed to find created VLAN interface %s", name);
+    debug_log(ERROR, "Failed to find created VLAN interface %s", name);
     return -1;
   }
 
@@ -94,7 +94,7 @@ int vlan_interface_create(netd_state_t *state, const char *name,
 
   /* Create VLAN in FreeBSD */
   if (freebsd_vlan_create(name, parent_name, vlan_id) < 0) {
-    debug_log(DEBUG_ERROR,
+    debug_log(ERROR,
               "Failed to create VLAN %s on parent %s in FreeBSD", name,
               parent_name);
     /* Clean up the interface from state */
@@ -102,7 +102,7 @@ int vlan_interface_create(netd_state_t *state, const char *name,
     return -1;
   }
 
-  debug_log(DEBUG_INFO, "Created VLAN interface %s on parent %s with ID %d",
+  debug_log(INFO, "Created VLAN interface %s on parent %s with ID %d",
             name, parent_name, vlan_id);
   return 0;
 }
@@ -118,35 +118,35 @@ int vlan_set_priority(netd_state_t *state, const char *name, uint8_t priority) {
   interface_t *vlan_iface;
 
   if (!state || !name) {
-    debug_log(DEBUG_ERROR,
+    debug_log(ERROR,
               "Invalid parameters for VLAN priority setting: state=%p, name=%s",
               state, name ? name : "NULL");
     return -1;
   }
 
   if (priority > 7) {
-    debug_log(DEBUG_ERROR, "Invalid VLAN priority %d (must be 0-7)", priority);
+    debug_log(ERROR, "Invalid VLAN priority %d (must be 0-7)", priority);
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "Setting priority %d for VLAN interface '%s'", priority,
+  debug_log(DEBUG, "Setting priority %d for VLAN interface '%s'", priority,
             name);
 
   /* Find VLAN interface */
   vlan_iface = interface_find(state, name);
   if (!vlan_iface) {
-    debug_log(DEBUG_ERROR, "VLAN interface %s not found", name);
+    debug_log(ERROR, "VLAN interface %s not found", name);
     return -1;
   }
 
   if (vlan_iface->type != IF_TYPE_VLAN) {
-    debug_log(DEBUG_ERROR, "Interface %s is not a VLAN", name);
+    debug_log(ERROR, "Interface %s is not a VLAN", name);
     return -1;
   }
 
   /* Set priority in FreeBSD */
   if (freebsd_vlan_set_priority(name, priority) < 0) {
-    debug_log(DEBUG_ERROR,
+    debug_log(ERROR,
               "Failed to set priority %d for VLAN %s in FreeBSD", priority,
               name);
     return -1;
@@ -155,7 +155,7 @@ int vlan_set_priority(netd_state_t *state, const char *name, uint8_t priority) {
   /* Update interface state */
   vlan_iface->vlan_pcp = priority;
 
-  debug_log(DEBUG_INFO, "Set priority %d for VLAN interface %s", priority,
+  debug_log(INFO, "Set priority %d for VLAN interface %s", priority,
             name);
   return 0;
 }
@@ -172,31 +172,31 @@ int vlan_set_protocol(netd_state_t *state, const char *name,
   interface_t *vlan_iface;
 
   if (!state || !name || !protocol) {
-    debug_log(DEBUG_ERROR,
+    debug_log(ERROR,
               "Invalid parameters for VLAN protocol setting: state=%p, "
               "name=%s, protocol=%s",
               state, name ? name : "NULL", protocol ? protocol : "NULL");
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "Setting protocol '%s' for VLAN interface '%s'",
+  debug_log(DEBUG, "Setting protocol '%s' for VLAN interface '%s'",
             protocol, name);
 
   /* Find VLAN interface */
   vlan_iface = interface_find(state, name);
   if (!vlan_iface) {
-    debug_log(DEBUG_ERROR, "VLAN interface %s not found", name);
+    debug_log(ERROR, "VLAN interface %s not found", name);
     return -1;
   }
 
   if (vlan_iface->type != IF_TYPE_VLAN) {
-    debug_log(DEBUG_ERROR, "Interface %s is not a VLAN", name);
+    debug_log(ERROR, "Interface %s is not a VLAN", name);
     return -1;
   }
 
   /* Set protocol in FreeBSD */
   if (freebsd_vlan_set_protocol(name, protocol) < 0) {
-    debug_log(DEBUG_ERROR,
+    debug_log(ERROR,
               "Failed to set protocol %s for VLAN %s in FreeBSD", protocol,
               name);
     return -1;
@@ -205,7 +205,7 @@ int vlan_set_protocol(netd_state_t *state, const char *name,
   /* Update interface state */
   strlcpy(vlan_iface->vlan_proto, protocol, sizeof(vlan_iface->vlan_proto));
 
-  debug_log(DEBUG_INFO, "Set protocol %s for VLAN interface %s", protocol,
+  debug_log(INFO, "Set protocol %s for VLAN interface %s", protocol,
             name);
   return 0;
 }
@@ -226,7 +226,7 @@ int vlan_get_info(netd_state_t *state, const char *name, uint16_t *vlan_id,
   interface_t *vlan_iface;
 
   if (!state || !name) {
-    debug_log(DEBUG_ERROR,
+    debug_log(ERROR,
               "Invalid parameters for VLAN info retrieval: state=%p, name=%s",
               state, name ? name : "NULL");
     return -1;
@@ -235,12 +235,12 @@ int vlan_get_info(netd_state_t *state, const char *name, uint16_t *vlan_id,
   /* Find VLAN interface */
   vlan_iface = interface_find(state, name);
   if (!vlan_iface) {
-    debug_log(DEBUG_ERROR, "VLAN interface %s not found", name);
+    debug_log(ERROR, "VLAN interface %s not found", name);
     return -1;
   }
 
   if (vlan_iface->type != IF_TYPE_VLAN) {
-    debug_log(DEBUG_ERROR, "Interface %s is not a VLAN", name);
+    debug_log(ERROR, "Interface %s is not a VLAN", name);
     return -1;
   }
 
@@ -258,7 +258,7 @@ int vlan_get_info(netd_state_t *state, const char *name, uint16_t *vlan_id,
     *priority = vlan_iface->vlan_pcp;
   }
 
-  debug_log(DEBUG_DEBUG, "Retrieved VLAN info for %s: id=%d, parent=%s, "
+  debug_log(DEBUG, "Retrieved VLAN info for %s: id=%d, parent=%s, "
             "protocol=%s, priority=%d",
             name, vlan_iface->vlan_id, vlan_iface->vlan_parent,
             vlan_iface->vlan_proto, vlan_iface->vlan_pcp);

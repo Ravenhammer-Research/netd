@@ -49,22 +49,22 @@ int vrf_create(netd_state_t *state, const char *name, uint32_t fib_number) {
 
   if (!state || !name || !is_valid_vrf_name(name) ||
       !is_valid_fib_number(fib_number)) {
-    debug_log(DEBUG_ERROR,
+    debug_log(ERROR,
               "Invalid parameters for VRF creation: state=%p, name=%s, fib=%u",
               state, name ? name : "NULL", fib_number);
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "Creating VRF '%s' with FIB %u", name, fib_number);
+  debug_log(DEBUG, "Creating VRF '%s' with FIB %u", name, fib_number);
 
   /* Check if VRF already exists */
   if (vrf_find_by_name(state, name)) {
-    debug_log(DEBUG_ERROR, "VRF %s already exists in state", name);
+    debug_log(ERROR, "VRF %s already exists in state", name);
     return -1;
   }
 
   if (vrf_find_by_fib(state, fib_number)) {
-    debug_log(DEBUG_ERROR, "FIB %u already assigned to another VRF",
+    debug_log(ERROR, "FIB %u already assigned to another VRF",
               fib_number);
     return -1;
   }
@@ -72,7 +72,7 @@ int vrf_create(netd_state_t *state, const char *name, uint32_t fib_number) {
   /* Allocate new VRF */
   vrf = malloc(sizeof(*vrf));
   if (!vrf) {
-    debug_log(DEBUG_ERROR, "Failed to allocate memory for VRF %s", name);
+    debug_log(ERROR, "Failed to allocate memory for VRF %s", name);
     return -1;
   }
 
@@ -83,9 +83,9 @@ int vrf_create(netd_state_t *state, const char *name, uint32_t fib_number) {
 
   /* Add to VRF list */
   TAILQ_INSERT_TAIL(&state->vrfs, vrf, entries);
-  debug_log(DEBUG_DEBUG, "Added VRF %s to state list", name);
+  debug_log(DEBUG, "Added VRF %s to state list", name);
 
-  debug_log(DEBUG_INFO, "Created VRF %s with FIB %u", name, fib_number);
+  debug_log(INFO, "Created VRF %s with FIB %u", name, fib_number);
   return 0;
 }
 
@@ -134,7 +134,7 @@ char *create_vrfs_xml_response(netd_state_t *state, const char *message_id) {
   /* Allocate and build response */
   response = malloc(total_len + 1);
   if (!response) {
-    debug_log(DEBUG_ERROR, "Failed to allocate memory for VRFs response");
+    debug_log(ERROR, "Failed to allocate memory for VRFs response");
     return NULL;
   }
 
@@ -225,7 +225,7 @@ char *create_vrf_routes_xml_response(netd_state_t *state, const char *message_id
   /* Allocate and build response */
   response = malloc(total_len + 1);
   if (!response) {
-    debug_log(DEBUG_ERROR, "Failed to allocate memory for VRF routes response");
+    debug_log(ERROR, "Failed to allocate memory for VRF routes response");
     return NULL;
   }
 
@@ -280,28 +280,28 @@ int vrf_delete(netd_state_t *state, const char *name) {
   interface_t *iface;
 
   if (!state || !name) {
-    debug_log(DEBUG_ERROR,
+    debug_log(ERROR,
               "Invalid parameters for VRF deletion: state=%p, name=%s", state,
               name ? name : "NULL");
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "Deleting VRF '%s'", name);
+  debug_log(DEBUG, "Deleting VRF '%s'", name);
 
   /* Cannot delete default VRF */
   if (strcmp(name, "default") == 0) {
-    debug_log(DEBUG_ERROR, "Cannot delete default VRF");
+    debug_log(ERROR, "Cannot delete default VRF");
     return -1;
   }
 
   /* Find VRF */
   vrf = vrf_find_by_name(state, name);
   if (!vrf) {
-    debug_log(DEBUG_ERROR, "VRF %s not found in state", name);
+    debug_log(ERROR, "VRF %s not found in state", name);
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "Found VRF %s in state, processing interfaces", name);
+  debug_log(DEBUG, "Found VRF %s in state, processing interfaces", name);
 
   /* Remove all interfaces from this VRF */
   int moved_interfaces = 0;
@@ -309,22 +309,22 @@ int vrf_delete(netd_state_t *state, const char *name) {
     if (iface->fib == vrf->fib_number) {
       iface->fib = 0; /* Move to default VRF */
       moved_interfaces++;
-      debug_log(DEBUG_DEBUG, "Moved interface %s to default VRF", iface->name);
+      debug_log(DEBUG, "Moved interface %s to default VRF", iface->name);
     }
   }
-  debug_log(DEBUG_DEBUG, "Moved %d interfaces from VRF %s to default VRF",
+  debug_log(DEBUG, "Moved %d interfaces from VRF %s to default VRF",
             moved_interfaces, name);
 
   /* Flush all routes for this FIB */
-  debug_log(DEBUG_DEBUG, "Flushing routes for FIB %u", vrf->fib_number);
+  debug_log(DEBUG, "Flushing routes for FIB %u", vrf->fib_number);
   route_flush_fib(state, vrf->fib_number);
 
   /* Remove from VRF list */
   TAILQ_REMOVE(&state->vrfs, vrf, entries);
   free(vrf);
-  debug_log(DEBUG_DEBUG, "Removed VRF %s from state list", name);
+  debug_log(DEBUG, "Removed VRF %s from state list", name);
 
-  debug_log(DEBUG_INFO, "Deleted VRF %s (moved %d interfaces to default VRF)",
+  debug_log(INFO, "Deleted VRF %s (moved %d interfaces to default VRF)",
             name, moved_interfaces);
   return 0;
 }
@@ -383,25 +383,25 @@ int vrf_list(netd_state_t *state) {
   int count = 0;
 
   if (!state) {
-    debug_log(DEBUG_ERROR, "Invalid state parameter for VRF listing");
+    debug_log(ERROR, "Invalid state parameter for VRF listing");
     return -1;
   }
 
-  debug_log(DEBUG_INFO, "Listing all VRFs");
+  debug_log(INFO, "Listing all VRFs");
 
   /* Always show default VRF */
-  debug_log(DEBUG_INFO, "  default (FIB 0)");
+  debug_log(INFO, "  default (FIB 0)");
   count++;
 
   TAILQ_FOREACH(vrf, &state->vrfs, entries) {
-    debug_log(DEBUG_INFO, "  %s (FIB %u)", vrf->name, vrf->fib_number);
+    debug_log(INFO, "  %s (FIB %u)", vrf->name, vrf->fib_number);
     if (vrf->description[0] != '\0') {
-      debug_log(DEBUG_INFO, "    Description: %s", vrf->description);
+      debug_log(INFO, "    Description: %s", vrf->description);
     }
     count++;
   }
 
-  debug_log(DEBUG_INFO, "Total VRFs: %d", count);
+  debug_log(INFO, "Total VRFs: %d", count);
   return 0;
 }
 
@@ -412,42 +412,29 @@ int vrf_list(netd_state_t *state) {
  */
 char *vrf_get_all(netd_state_t *state) {
   vrf_t *vrf;
-  interface_t *iface;
   char *xml = NULL;
   char *temp_xml = NULL;
-  bool fib_used[256] = {false}; // Track which FIBs are in use
   int vrf_count = 0;
 
   if (!state) {
-    debug_log(DEBUG_ERROR, "Invalid state parameter for VRF XML generation");
+    debug_log(ERROR, "Invalid state parameter for VRF XML generation");
     return NULL;
   }
 
-  debug_log(DEBUG_DEBUG, "Generating XML for all VRFs");
+  debug_log(DEBUG, "Generating XML for all VRFs");
 
-  /* Scan all interfaces to find FIBs in use */
-  debug_log(DEBUG_DEBUG, "Scanning interfaces for FIBs...");
-  int interface_count = 0;
-  TAILQ_FOREACH(iface, &state->interfaces, entries) {
-    interface_count++;
-    debug_log(DEBUG_TRACE, "Interface %d: %s has FIB %u", interface_count,
-              iface->name, iface->fib);
-    if (iface->fib < 256) {
-      fib_used[iface->fib] = true;
-    }
-  }
-  debug_log(DEBUG_DEBUG, "Scanned %d interfaces for FIB usage",
-            interface_count);
+  /* Only include actual VRF entries, not every FIB in use */
+  debug_log(DEBUG, "Generating XML for actual VRF entries only");
 
   /* Start XML */
   asprintf(&xml, "    <lib xmlns=\"http://frrouting.org/yang/vrf\">\n");
   if (!xml) {
-    debug_log(DEBUG_ERROR, "Failed to allocate memory for VRF XML header");
+    debug_log(ERROR, "Failed to allocate memory for VRF XML header");
     return NULL;
   }
 
   /* Always include default VRF (FIB 0) */
-  debug_log(DEBUG_DEBUG, "Adding default VRF (FIB 0)");
+  debug_log(DEBUG, "Adding default VRF (FIB 0)");
   asprintf(&temp_xml, "      <vrf>\n"
                       "        <name>default</name>\n"
                       "        <state>\n"
@@ -465,10 +452,10 @@ char *vrf_get_all(netd_state_t *state) {
   vrf_count++;
 
   /* Include explicitly created VRFs */
-  debug_log(DEBUG_DEBUG, "Checking for explicitly created VRFs...");
+  debug_log(DEBUG, "Checking for explicitly created VRFs...");
   TAILQ_FOREACH(vrf, &state->vrfs, entries) {
     vrf_count++;
-    debug_log(DEBUG_DEBUG, "Found explicit VRF %d: %s (FIB %u)", vrf_count,
+    debug_log(DEBUG, "Found explicit VRF %d: %s (FIB %u)", vrf_count,
               vrf->name, vrf->fib_number);
     asprintf(&temp_xml,
              "      <vrf>\n"
@@ -489,35 +476,8 @@ char *vrf_get_all(netd_state_t *state) {
     }
   }
 
-  /* Include FIBs that are in use but don't have explicit VRF names */
-  debug_log(DEBUG_DEBUG, "Checking for auto-detected FIBs...");
-  int auto_vrf_count = 0;
-  for (int i = 1; i < 256; i++) { // Skip FIB 0 (default)
-    if (fib_used[i] && !vrf_find_by_fib(state, i)) {
-      auto_vrf_count++;
-      vrf_count++;
-      debug_log(DEBUG_TRACE, "Adding auto-detected VRF %d: %d (FIB %d)",
-                auto_vrf_count, i, i);
-      asprintf(&temp_xml,
-               "      <vrf>\n"
-               "        <name>%d</name>\n"
-               "        <state>\n"
-               "          <id>%d</id>\n"
-               "          <active>true</active>\n"
-               "        </state>\n"
-               "      </vrf>\n",
-               i, i);
-
-      if (temp_xml) {
-        char *new_xml;
-        asprintf(&new_xml, "%s%s", xml, temp_xml);
-        free(xml);
-        free(temp_xml);
-        xml = new_xml;
-      }
-    }
-  }
-  debug_log(DEBUG_DEBUG, "Added %d auto-detected VRFs", auto_vrf_count);
+  /* Only include explicitly created VRFs, not auto-detected FIBs */
+  debug_log(DEBUG, "Only including explicitly created VRFs");
 
   /* Close XML tags */
   asprintf(&temp_xml, "    </lib>\n");
@@ -530,9 +490,8 @@ char *vrf_get_all(netd_state_t *state) {
   }
 
   debug_log(
-      DEBUG_INFO,
-      "Generated XML for %d VRFs (%zu bytes): %d explicit, %d auto-detected",
-      vrf_count, xml ? strlen(xml) : 0, vrf_count - auto_vrf_count - 1,
-      auto_vrf_count);
+      INFO,
+      "Generated XML for %d VRFs (%zu bytes): %d explicit",
+      vrf_count, xml ? strlen(xml) : 0, vrf_count - 1);
   return xml;
 }

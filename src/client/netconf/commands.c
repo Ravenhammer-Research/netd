@@ -50,12 +50,12 @@ int execute_command(net_client_t *client, const command_t *cmd) {
 
   /* Ensure we're connected to the server */
   if (!client->connected) {
-    debug_log(DEBUG_INFO, "Connecting to server...");
+    debug_log(INFO, "Connecting to server...");
     if (netconf_connect(client) < 0) {
       fprintf(stderr, "Failed to connect to server\n");
       return -1;
     }
-    debug_log(DEBUG_INFO, "Connected to server");
+    debug_log(INFO, "Connected to server");
   }
 
   /* Execute based on command type */
@@ -93,10 +93,10 @@ int execute_set_command(net_client_t *client, const command_t *cmd) {
   }
 
   /* Debug logging to see command structure */
-  debug_log(DEBUG_DEBUG, "SET command object: %d, arg_count: %d", cmd->object,
+  debug_log(DEBUG, "SET command object: %d, arg_count: %d", cmd->object,
             cmd->arg_count);
   for (int i = 0; i < cmd->arg_count && i < 10; i++) {
-    debug_log(DEBUG_DEBUG, "args[%d]: '%s'", i, cmd->args[i]);
+    debug_log(DEBUG, "args[%d]: '%s'", i, cmd->args[i]);
   }
 
   /* Handle route setting commands */
@@ -141,7 +141,7 @@ int execute_set_command(net_client_t *client, const command_t *cmd) {
           /* Check for optional interface constraint after gateway */
           if (cmd->arg_count >= 12 && strcmp(cmd->args[10], "iface") == 0) {
             const char *interface = cmd->args[11];
-            debug_log(DEBUG_INFO,
+            debug_log(INFO,
                       "Route with gateway %s and interface constraint %s",
                       next_hop, interface);
           }
@@ -197,17 +197,17 @@ int execute_set_command(net_client_t *client, const command_t *cmd) {
                    next_hop, destination, 64); /* Default /64 for IPv6 */
         }
 
-        debug_log(DEBUG_INFO, "Sending route SET request: %s", request);
+        debug_log(INFO, "Sending route SET request: %s", request);
         if (netconf_send_request(client, request, &response) < 0) {
           fprintf(stderr, "Failed to send route SET request\n");
           return -1;
         }
 
         /* Log the route details for debugging */
-        debug_log(DEBUG_INFO, "Route SET: type=%s, dest=%s, family=%s, fib=%u", 
+        debug_log(INFO, "Route SET: type=%s, dest=%s, family=%s, fib=%u", 
                  route_type, destination, family, fib);
         if (next_hop_type && next_hop) {
-          debug_log(DEBUG_INFO, "Route SET: next_hop_type=%s, next_hop=%s", 
+          debug_log(INFO, "Route SET: next_hop_type=%s, next_hop=%s", 
                    next_hop_type, next_hop);
         }
       }
@@ -281,7 +281,7 @@ int execute_set_command(net_client_t *client, const command_t *cmd) {
       return -1;
     }
 
-    debug_log(DEBUG_INFO, "Sending interface SET request: %s", request);
+    debug_log(INFO, "Sending interface SET request: %s", request);
     if (netconf_send_request(client, request, &response) < 0) {
       fprintf(stderr, "Failed to send interface SET request\n");
       return -1;
@@ -320,7 +320,7 @@ int execute_set_command(net_client_t *client, const command_t *cmd) {
         return -1;
       }
 
-      debug_log(DEBUG_INFO, "Sending VRF SET request: %s", request);
+      debug_log(INFO, "Sending VRF SET request: %s", request);
       if (netconf_send_request(client, request, &response) < 0) {
         fprintf(stderr, "Failed to send VRF SET request\n");
         return -1;
@@ -354,7 +354,7 @@ int execute_show_command(net_client_t *client, const command_t *cmd) {
 
   const char *object = cmd->args[0];
 
-  if (strcmp(object, "interfaces") == 0) {
+  if (strcmp(object, "interfaces") == 0 || strcmp(object, "interface") == 0) {
     if (netconf_get_interfaces(client, &response) < 0) {
       fprintf(stderr, "Failed to get interfaces\n");
       return -1;
@@ -367,7 +367,7 @@ int execute_show_command(net_client_t *client, const command_t *cmd) {
     }
 
     free(response);
-  } else if (strcmp(object, "routes") == 0) {
+  } else if (strcmp(object, "routes") == 0 || strcmp(object, "route") == 0) {
     uint32_t fib = 0; /* Default VRF */
     int family = AF_INET; /* Default to IPv4 */
 
@@ -394,7 +394,7 @@ int execute_show_command(net_client_t *client, const command_t *cmd) {
 
     print_routes_table(response);
     free(response);
-  } else if (strcmp(object, "vrfs") == 0) {
+  } else if (strcmp(object, "vrfs") == 0 || strcmp(object, "vrf") == 0) {
     if (netconf_get_vrfs(client, &response) < 0) {
       fprintf(stderr, "Failed to get VRFs\n");
       return -1;
@@ -406,7 +406,7 @@ int execute_show_command(net_client_t *client, const command_t *cmd) {
     const char *ifname = cmd->args[1];
     const char *type = (cmd->arg_count >= 3) ? cmd->args[2] : NULL;
 
-    debug_log(DEBUG_INFO, "SHOW interface: name=%s, type=%s", 
+    debug_log(INFO, "SHOW interface: name=%s, type=%s", 
              ifname, type ? type : "all");
 
     if (netconf_get_interfaces(client, &response) < 0) {
@@ -514,7 +514,7 @@ int execute_delete_command(net_client_t *client, const command_t *cmd) {
       return -1;
     }
 
-    debug_log(DEBUG_INFO, "Sending interface DELETE request: %s", request);
+    debug_log(INFO, "Sending interface DELETE request: %s", request);
     if (netconf_send_request(client, request, &response) < 0) {
       fprintf(stderr, "Failed to send interface DELETE request\n");
       return -1;
@@ -549,7 +549,7 @@ int execute_delete_command(net_client_t *client, const command_t *cmd) {
         return -1;
       }
 
-      debug_log(DEBUG_INFO, "Sending VRF DELETE request: %s", request);
+      debug_log(INFO, "Sending VRF DELETE request: %s", request);
       if (netconf_send_request(client, request, &response) < 0) {
         fprintf(stderr, "Failed to send VRF DELETE request\n");
         return -1;
@@ -585,7 +585,7 @@ int execute_save_command(net_client_t *client, const command_t *cmd) {
            "</copy-config>"
            "</rpc>");
 
-  debug_log(DEBUG_INFO, "Sending save request: %s", request);
+  debug_log(INFO, "Sending save request: %s", request);
   if (netconf_send_request(client, request, &response) < 0) {
     fprintf(stderr, "Failed to save configuration\n");
     return -1;

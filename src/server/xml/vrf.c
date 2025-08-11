@@ -53,7 +53,7 @@ static void fib_start_element(void *userData, const XML_Char *name,
                               const XML_Char **atts) {
   struct fib_data *data = (struct fib_data *)userData;
 
-  debug_log(DEBUG_DEBUG, "FIB start element: %s with %d attributes", name, atts ? 0 : 0);
+  debug_log(DEBUG, "FIB start element: %s with %d attributes", name, atts ? 0 : 0);
   
   if (strcmp(name, "fib") == 0) {
     data->found = true;
@@ -95,7 +95,7 @@ uint32_t extract_fib_from_request(const char *request) {
 
   parser = XML_ParserCreate(NULL);
   if (!parser) {
-    debug_log(DEBUG_ERROR, "Failed to create XML parser for FIB extraction");
+    debug_log(ERROR, "Failed to create XML parser for FIB extraction");
     return 0;
   }
 
@@ -105,7 +105,7 @@ uint32_t extract_fib_from_request(const char *request) {
   XML_SetCharacterDataHandler(parser, fib_character_data);
 
   if (XML_Parse(parser, request, strlen(request), 1) != XML_STATUS_OK) {
-    debug_log(DEBUG_ERROR, "XML parsing failed for FIB extraction: %s",
+    debug_log(ERROR, "XML parsing failed for FIB extraction: %s",
               XML_ErrorString(XML_GetErrorCode(parser)));
   } else if (user_data.found) {
     result = user_data.fib;
@@ -120,7 +120,7 @@ static void vrf_name_start_element(void *userData, const XML_Char *name,
                                    const XML_Char **atts) {
   struct vrf_name_data *data = (struct vrf_name_data *)userData;
 
-  debug_log(DEBUG_DEBUG, "VRF name start element: %s with %d attributes", name, atts ? 0 : 0);
+  debug_log(DEBUG, "VRF name start element: %s with %d attributes", name, atts ? 0 : 0);
   
   if (strcmp(name, "vrf") == 0) {
     data->found = true;
@@ -160,7 +160,7 @@ char *extract_vrf_name_from_request(const char *request) {
 
   parser = XML_ParserCreate(NULL);
   if (!parser) {
-    debug_log(DEBUG_ERROR, "Failed to create XML parser for VRF name extraction");
+    debug_log(ERROR, "Failed to create XML parser for VRF name extraction");
     return NULL;
   }
 
@@ -170,7 +170,7 @@ char *extract_vrf_name_from_request(const char *request) {
   XML_SetCharacterDataHandler(parser, vrf_name_character_data);
 
   if (XML_Parse(parser, request, strlen(request), 1) != XML_STATUS_OK) {
-    debug_log(DEBUG_ERROR, "XML parsing failed for VRF name extraction: %s",
+    debug_log(ERROR, "XML parsing failed for VRF name extraction: %s",
               XML_ErrorString(XML_GetErrorCode(parser)));
   } else if (user_data.found && strlen(user_data.vrf_name) > 0) {
     result = strdup(user_data.vrf_name);

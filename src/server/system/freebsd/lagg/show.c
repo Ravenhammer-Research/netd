@@ -58,16 +58,16 @@ int freebsd_lagg_show(const char *name, char *protocol, size_t protocol_size,
   struct ifreq ifr;
 
   if (!name || !protocol || !members) {
-    debug_log(DEBUG_ERROR, "Invalid parameters for LAGG show");
+    debug_log(ERROR, "Invalid parameters for LAGG show");
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "Showing LAGG interface %s", name);
+  debug_log(DEBUG, "Showing LAGG interface %s", name);
 
   /* Create socket for ioctl */
   sock = socket(AF_LOCAL, SOCK_DGRAM, 0);
   if (sock < 0) {
-    debug_log(DEBUG_ERROR, "Failed to create socket for LAGG show: %s", strerror(errno));
+    debug_log(ERROR, "Failed to create socket for LAGG show: %s", strerror(errno));
     return -1;
   }
 
@@ -77,7 +77,7 @@ int freebsd_lagg_show(const char *name, char *protocol, size_t protocol_size,
 
   /* Get interface flags to check if it exists */
   if (ioctl(sock, SIOCGIFFLAGS, &ifr) < 0) {
-    debug_log(DEBUG_ERROR, "LAGG interface %s does not exist: %s", name, strerror(errno));
+    debug_log(ERROR, "LAGG interface %s does not exist: %s", name, strerror(errno));
     close(sock);
     return -1;
   }
@@ -88,6 +88,6 @@ int freebsd_lagg_show(const char *name, char *protocol, size_t protocol_size,
   strlcpy(members, "unknown", members_size);
 
   close(sock);
-  debug_log(DEBUG_INFO, "Showed LAGG interface %s", name);
+  debug_log(INFO, "Showed LAGG interface %s", name);
   return 0;
 } 

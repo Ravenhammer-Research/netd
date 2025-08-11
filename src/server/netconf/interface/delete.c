@@ -48,27 +48,27 @@ int interface_delete(netd_state_t *state, const char *name) {
   interface_t *iface;
 
   if (!state || !name) {
-    debug_log(DEBUG_ERROR,
+    debug_log(ERROR,
               "Invalid parameters for interface deletion: state=%p, name=%s",
               state, name ? name : "NULL");
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "Deleting interface '%s'", name);
+  debug_log(DEBUG, "Deleting interface '%s'", name);
 
   /* Find interface */
   iface = interface_find(state, name);
   if (!iface) {
-    debug_log(DEBUG_ERROR, "Interface %s not found in state", name);
+    debug_log(ERROR, "Interface %s not found in state", name);
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "Found interface %s in state, deleting from FreeBSD",
+  debug_log(DEBUG, "Found interface %s in state, deleting from FreeBSD",
             name);
 
   /* Delete interface in FreeBSD */
   if (freebsd_interface_delete(name) < 0) {
-    debug_log(DEBUG_ERROR, "Failed to delete interface %s in FreeBSD", name);
+    debug_log(ERROR, "Failed to delete interface %s in FreeBSD", name);
     return -1;
   }
 
@@ -76,7 +76,7 @@ int interface_delete(netd_state_t *state, const char *name) {
   TAILQ_REMOVE(&state->interfaces, iface, entries);
   free(iface);
 
-  debug_log(DEBUG_INFO, "Deleted interface %s", name);
+  debug_log(INFO, "Deleted interface %s", name);
   return 0;
 }
 
@@ -93,40 +93,40 @@ int interface_remove_group(netd_state_t *state, const char *name,
   int i, j;
 
   if (!state || !name || !group) {
-    debug_log(DEBUG_ERROR,
+    debug_log(ERROR,
               "Invalid parameters for interface group removal: state=%p, "
               "name=%s, group=%s",
               state, name ? name : "NULL", group ? group : "NULL");
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "Removing interface '%s' from group '%s'", name,
+  debug_log(DEBUG, "Removing interface '%s' from group '%s'", name,
             group);
 
   /* Find interface */
   iface = interface_find(state, name);
   if (!iface) {
-    debug_log(DEBUG_ERROR, "Interface %s not found in state", name);
+    debug_log(ERROR, "Interface %s not found in state", name);
     return -1;
   }
 
   /* Find and remove group */
   for (i = 0; i < iface->group_count; i++) {
     if (strcmp(iface->groups[i], group) == 0) {
-      debug_log(DEBUG_DEBUG, "Found group %s at index %d, removing", group, i);
+      debug_log(DEBUG, "Found group %s at index %d, removing", group, i);
       /* Shift remaining groups */
       for (j = i; j < iface->group_count - 1; j++) {
         strlcpy(iface->groups[j], iface->groups[j + 1], MAX_GROUP_NAME_LEN);
       }
       iface->group_count--;
-      debug_log(DEBUG_INFO,
+      debug_log(INFO,
                 "Removed interface %s from group %s (remaining groups: %d)",
                 name, group, iface->group_count);
       return 0;
     }
   }
 
-  debug_log(DEBUG_ERROR, "Interface %s not in group %s", name, group);
+  debug_log(ERROR, "Interface %s not in group %s", name, group);
   return -1; /* Group not found */
 }
 
@@ -143,13 +143,13 @@ int interface_delete_address(netd_state_t *state, const char *name,
 
   if (!state || !name) {
     debug_log(
-        DEBUG_ERROR,
+        ERROR,
         "Invalid parameters for interface address deletion: state=%p, name=%s",
         state, name ? name : "NULL");
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "Deleting %s address from interface '%s'",
+  debug_log(DEBUG, "Deleting %s address from interface '%s'",
             family == AF_INET    ? "IPv4"
             : family == AF_INET6 ? "IPv6"
                                  : "unknown",
@@ -158,17 +158,17 @@ int interface_delete_address(netd_state_t *state, const char *name,
   /* Find interface */
   iface = interface_find(state, name);
   if (!iface) {
-    debug_log(DEBUG_ERROR, "Interface %s not found in state", name);
+    debug_log(ERROR, "Interface %s not found in state", name);
     return -1;
   }
 
   /* Delete address in FreeBSD */
   if (freebsd_interface_delete_address(name, family) < 0) {
-    debug_log(DEBUG_ERROR,
+    debug_log(ERROR,
               "Failed to delete address from interface %s in FreeBSD", name);
     return -1;
   }
 
-  debug_log(DEBUG_INFO, "Deleted address from interface %s", name);
+  debug_log(INFO, "Deleted address from interface %s", name);
   return 0;
 } 

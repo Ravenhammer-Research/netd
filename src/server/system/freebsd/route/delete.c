@@ -83,7 +83,7 @@ int freebsd_route_delete(uint32_t fib, const char *destination) {
 
   /* Parse destination address */
   if (parse_address(destination, &dest_addr) < 0) {
-    debug_log(DEBUG_ERROR, "Failed to parse destination address %s",
+    debug_log(ERROR, "Failed to parse destination address %s",
               destination);
     return -1;
   }
@@ -91,7 +91,7 @@ int freebsd_route_delete(uint32_t fib, const char *destination) {
   /* Create PF_ROUTE socket */
   sock = socket(PF_ROUTE, SOCK_RAW, 0);
   if (sock < 0) {
-    debug_log(DEBUG_ERROR, "Failed to create PF_ROUTE socket: %s",
+    debug_log(ERROR, "Failed to create PF_ROUTE socket: %s",
               strerror(errno));
     return -1;
   }
@@ -102,7 +102,7 @@ int freebsd_route_delete(uint32_t fib, const char *destination) {
   /* Allocate message buffer */
   rtm = malloc(len);
   if (!rtm) {
-    debug_log(DEBUG_ERROR, "Failed to allocate route message buffer");
+    debug_log(ERROR, "Failed to allocate route message buffer");
     close(sock);
     return -1;
   }
@@ -124,13 +124,13 @@ int freebsd_route_delete(uint32_t fib, const char *destination) {
 
   /* Send route message */
   if (write(sock, rtm, len) < 0) {
-    debug_log(DEBUG_ERROR, "Failed to delete route: %s", strerror(errno));
+    debug_log(ERROR, "Failed to delete route: %s", strerror(errno));
     free(rtm);
     close(sock);
     return -1;
   }
 
-  debug_log(DEBUG_INFO, "Deleted route to %s (FIB %u)", destination, fib);
+  debug_log(INFO, "Deleted route to %s (FIB %u)", destination, fib);
   free(rtm);
   close(sock);
   return 0;

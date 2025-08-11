@@ -160,7 +160,7 @@ interface_type_t interface_type_from_string(const char *str) {
  */
 bool is_valid_interface_name(const char *name) {
   if (!name || strlen(name) == 0 || strlen(name) >= MAX_IFNAME_LEN) {
-    debug_log(DEBUG_DEBUG,
+    debug_log(DEBUG,
               "Interface name validation failed: %s (length: %zu, max: %d)",
               name ? name : "NULL", name ? strlen(name) : 0, MAX_IFNAME_LEN);
     return false;
@@ -170,14 +170,14 @@ bool is_valid_interface_name(const char *name) {
   for (const char *p = name; *p; p++) {
     if (!isalnum(*p) && *p != '_' && *p != '-' && *p != '.') {
       debug_log(
-          DEBUG_DEBUG,
+          DEBUG,
           "Interface name validation failed: invalid character '%c' in '%s'",
           *p, name);
       return false;
     }
   }
 
-  debug_log(DEBUG_DEBUG, "Interface name validation passed: '%s'", name);
+  debug_log(DEBUG, "Interface name validation passed: '%s'", name);
   return true;
 }
 
@@ -188,7 +188,7 @@ bool is_valid_interface_name(const char *name) {
  */
 bool is_valid_vrf_name(const char *name) {
   if (!name || strlen(name) == 0 || strlen(name) >= MAX_VRF_NAME_LEN) {
-    debug_log(DEBUG_DEBUG,
+    debug_log(DEBUG,
               "VRF name validation failed: %s (length: %zu, max: %d)",
               name ? name : "NULL", name ? strlen(name) : 0, MAX_VRF_NAME_LEN);
     return false;
@@ -197,14 +197,14 @@ bool is_valid_vrf_name(const char *name) {
   /* Check for valid characters */
   for (const char *p = name; *p; p++) {
     if (!isalnum(*p) && *p != '_' && *p != '-') {
-      debug_log(DEBUG_DEBUG,
+      debug_log(DEBUG,
                 "VRF name validation failed: invalid character '%c' in '%s'",
                 *p, name);
       return false;
     }
   }
 
-  debug_log(DEBUG_DEBUG, "VRF name validation passed: '%s'", name);
+  debug_log(DEBUG, "VRF name validation passed: '%s'", name);
   return true;
 }
 
@@ -255,14 +255,14 @@ uint32_t get_system_fib_count(void) {
     }
   }
   
-  debug_log(DEBUG_DEBUG, "System has %u FIBs configured", fib_count);
+  debug_log(DEBUG, "System has %u FIBs configured", fib_count);
   return fib_count;
 }
 
 bool is_valid_fib_number(uint32_t fib) {
   uint32_t max_fibs = get_system_fib_count();
   bool valid = (fib < max_fibs);
-  debug_log(DEBUG_DEBUG, "FIB number validation: %u is %s (max: %u)", fib,
+  debug_log(DEBUG, "FIB number validation: %u is %s (max: %u)", fib,
             valid ? "valid" : "invalid", max_fibs);
   return valid;
 }
@@ -280,13 +280,13 @@ int parse_address(const char *addr_str, struct sockaddr_storage *addr) {
   int ret;
 
   if (!addr_str || !addr) {
-    debug_log(DEBUG_ERROR,
+    debug_log(ERROR,
               "Invalid parameters for address parsing: addr_str=%p, addr=%p",
               addr_str, addr);
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "Parsing address: '%s'", addr_str);
+  debug_log(DEBUG, "Parsing address: '%s'", addr_str);
 
   strlcpy(addr_copy, addr_str, sizeof(addr_copy));
 
@@ -295,7 +295,7 @@ int parse_address(const char *addr_str, struct sockaddr_storage *addr) {
     addr->ss_family = AF_INET;
     addr->ss_len = sizeof(struct sockaddr_in);
     ((struct sockaddr_in *)addr)->sin_port = 0;
-    debug_log(DEBUG_DEBUG, "Successfully parsed as IPv4 address: %s", addr_str);
+    debug_log(DEBUG, "Successfully parsed as IPv4 address: %s", addr_str);
     return 0;
   }
   
@@ -303,7 +303,7 @@ int parse_address(const char *addr_str, struct sockaddr_storage *addr) {
     addr->ss_family = AF_INET6;
     addr->ss_len = sizeof(struct sockaddr_in6);
     ((struct sockaddr_in6 *)addr)->sin6_port = 0;
-    debug_log(DEBUG_DEBUG, "Successfully parsed as IPv6 address: %s", addr_str);
+    debug_log(DEBUG, "Successfully parsed as IPv6 address: %s", addr_str);
     return 0;
   }
 
@@ -318,7 +318,7 @@ int parse_address(const char *addr_str, struct sockaddr_storage *addr) {
       sdl->sdl_index = link_index;
       addr->ss_family = AF_LINK;
       addr->ss_len = sizeof(*sdl);
-      debug_log(DEBUG_DEBUG, "Successfully parsed as link address: %s (index %d)", addr_str, link_index);
+      debug_log(DEBUG, "Successfully parsed as link address: %s (index %d)", addr_str, link_index);
       return 0;
     }
   }
@@ -328,9 +328,9 @@ int parse_address(const char *addr_str, struct sockaddr_storage *addr) {
   if (port_part) {
     *port_part = '\0';
     port_part++;
-    debug_log(DEBUG_DEBUG, "Address has port: host='%s', port='%s'", addr_copy, port_part);
+    debug_log(DEBUG, "Address has port: host='%s', port='%s'", addr_copy, port_part);
   } else {
-    debug_log(DEBUG_DEBUG, "Address has no port: host='%s'", addr_copy);
+    debug_log(DEBUG, "Address has no port: host='%s'", addr_copy);
   }
 
   host_part = addr_copy;
@@ -340,7 +340,7 @@ int parse_address(const char *addr_str, struct sockaddr_storage *addr) {
 
 
   /* Try to resolve as hostname */
-  debug_log(DEBUG_DEBUG, "Attempting to resolve as hostname: '%s'", host_part);
+  debug_log(DEBUG, "Attempting to resolve as hostname: '%s'", host_part);
   memset(&hints, 0, sizeof(hints));
   hints.ai_family = AF_UNSPEC;
   hints.ai_socktype = SOCK_STREAM;
@@ -355,14 +355,14 @@ int parse_address(const char *addr_str, struct sockaddr_storage *addr) {
       addr->ss_len = sizeof(struct sockaddr_in6);
     }
     freeaddrinfo(res);
-    debug_log(DEBUG_DEBUG, "Successfully resolved hostname: %s", addr_str);
+    debug_log(DEBUG, "Successfully resolved hostname: %s", addr_str);
     return 0;
   } else {
-    debug_log(DEBUG_ERROR, "Failed to resolve hostname '%s': %s", host_part,
+    debug_log(ERROR, "Failed to resolve hostname '%s': %s", host_part,
               gai_strerror(ret));
   }
 
-  debug_log(DEBUG_ERROR, "Failed to parse address: %s", addr_str);
+  debug_log(ERROR, "Failed to parse address: %s", addr_str);
   return -1;
 }
 
@@ -376,41 +376,41 @@ int parse_address(const char *addr_str, struct sockaddr_storage *addr) {
 int format_address(const struct sockaddr_storage *addr, char *str, size_t len) {
   if (!addr || !str || len == 0) {
     debug_log(
-        DEBUG_ERROR,
+        ERROR,
         "Invalid parameters for address formatting: addr=%p, str=%p, len=%zu",
         addr, str, len);
     return -1;
   }
 
-  debug_log(DEBUG_TRACE, "Formatting address (family: %d)", addr->ss_family);
+  debug_log(DEBUG2, "Formatting address (family: %d)", addr->ss_family);
 
   switch (addr->ss_family) {
   case AF_INET: {
     struct sockaddr_in *sin = (struct sockaddr_in *)addr;
     if (inet_ntop(AF_INET, &sin->sin_addr, str, len) == NULL) {
-      debug_log(DEBUG_ERROR, "Failed to format IPv4 address");
+      debug_log(ERROR, "Failed to format IPv4 address");
       return -1;
     }
-    debug_log(DEBUG_TRACE, "Formatted IPv4 address: %s", str);
+    debug_log(DEBUG2, "Formatted IPv4 address: %s", str);
     break;
   }
   case AF_INET6: {
     struct sockaddr_in6 *sin6 = (struct sockaddr_in6 *)addr;
     if (inet_ntop(AF_INET6, &sin6->sin6_addr, str, len) == NULL) {
-      debug_log(DEBUG_ERROR, "Failed to format IPv6 address");
+      debug_log(ERROR, "Failed to format IPv6 address");
       return -1;
     }
-    debug_log(DEBUG_TRACE, "Formatted IPv6 address: %s", str);
+    debug_log(DEBUG2, "Formatted IPv6 address: %s", str);
     break;
   }
   case AF_LINK: {
     struct sockaddr_dl *sdl = (struct sockaddr_dl *)addr;
     snprintf(str, len, "link#%d", sdl->sdl_index);
-    debug_log(DEBUG_TRACE, "Formatted link address: %s", str);
+    debug_log(DEBUG2, "Formatted link address: %s", str);
     break;
   }
   default:
-    debug_log(DEBUG_ERROR, "Unsupported address family: %d", addr->ss_family);
+    debug_log(ERROR, "Unsupported address family: %d", addr->ss_family);
     return -1;
   }
 
@@ -424,11 +424,11 @@ int format_address(const struct sockaddr_storage *addr, char *str, size_t len) {
  */
 int get_address_family(const struct sockaddr_storage *addr) {
   if (!addr) {
-    debug_log(DEBUG_DEBUG, "NULL address provided to get_address_family");
+    debug_log(DEBUG, "NULL address provided to get_address_family");
     return AF_UNSPEC;
   }
 
-  debug_log(DEBUG_DEBUG, "Getting address family: %d", addr->ss_family);
+  debug_log(DEBUG, "Getting address family: %d", addr->ss_family);
   return addr->ss_family;
 }
 
@@ -443,11 +443,11 @@ int get_prefix_length(const struct sockaddr_storage *addr) {
   int byte_count;
 
   if (!addr) {
-    debug_log(DEBUG_ERROR, "NULL address provided to get_prefix_length");
+    debug_log(ERROR, "NULL address provided to get_prefix_length");
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "Calculating prefix length for address family: %d",
+  debug_log(DEBUG, "Calculating prefix length for address family: %d",
             addr->ss_family);
 
   switch (addr->ss_family) {
@@ -460,7 +460,7 @@ int get_prefix_length(const struct sockaddr_storage *addr) {
     byte_count = 16;
     break;
   default:
-    debug_log(DEBUG_ERROR,
+    debug_log(ERROR,
               "Unsupported address family for prefix calculation: %d",
               addr->ss_family);
     return -1;
@@ -481,6 +481,6 @@ int get_prefix_length(const struct sockaddr_storage *addr) {
     }
   }
 
-  debug_log(DEBUG_DEBUG, "Calculated prefix length: %d", prefix_len);
+  debug_log(DEBUG, "Calculated prefix length: %d", prefix_len);
   return prefix_len;
 }

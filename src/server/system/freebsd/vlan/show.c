@@ -76,7 +76,7 @@ int freebsd_vlan_show(const char *name, int *vlan_id, char *vlan_proto,
   /* Create socket for ioctl */
   sock = socket(AF_LOCAL, SOCK_DGRAM, 0);
   if (sock < 0) {
-    debug_log(DEBUG_ERROR, "Failed to create socket for vlan info: %s", strerror(errno));
+    debug_log(ERROR, "Failed to create socket for vlan info: %s", strerror(errno));
     return -1;
   }
 
@@ -86,7 +86,7 @@ int freebsd_vlan_show(const char *name, int *vlan_id, char *vlan_proto,
 
   /* Check if interface exists */
   if (ioctl(sock, SIOCGIFFLAGS, &ifr) < 0) {
-    debug_log(DEBUG_ERROR, "Interface %s does not exist", name);
+    debug_log(ERROR, "Interface %s does not exist", name);
     close(sock);
     return -1;
   }

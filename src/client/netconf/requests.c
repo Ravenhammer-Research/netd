@@ -47,7 +47,7 @@ int netconf_get_interfaces(net_client_t *client, char **response) {
     
     /* Build get-interfaces request */
     snprintf(request, sizeof(request),
-             "<rpc message-id=\"1\">"
+             "<rpc message-id=\"1\" xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">"
              "<get>"
              "<filter type=\"subtree\">"
              "<interfaces xmlns=\"urn:ietf:params:xml:ns:yang:ietf-interfaces\">"
@@ -90,7 +90,7 @@ int netconf_get_vrfs(net_client_t *client, char **response) {
     
     /* Build get-vrfs request */
     snprintf(request, sizeof(request),
-             "<rpc message-id=\"1\">"
+             "<rpc message-id=\"1\" xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">"
              "<get>"
              "<filter type=\"subtree\">"
              "<vrf xmlns=\"urn:ietf:params:xml:ns:yang:ietf-routing\">"
@@ -137,7 +137,7 @@ int netconf_get_routes(net_client_t *client, uint32_t fib, int family, char **re
     
     /* Build get-routes request */
     snprintf(request, sizeof(request),
-             "<rpc message-id=\"1\">"
+             "<rpc message-id=\"1\" xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">"
              "<get>"
              "<filter type=\"subtree\">"
              "<routing xmlns=\"%s\">"
@@ -181,7 +181,7 @@ int netconf_get_interface_groups(net_client_t *client, char **response) {
     
     /* Build get-interface-groups request */
     snprintf(request, sizeof(request),
-             "<rpc message-id=\"1\">"
+             "<rpc message-id=\"1\" xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">"
              "<get>"
              "<filter type=\"subtree\">"
              "<interfaces xmlns=\"urn:ietf:params:xml:ns:yang:ietf-interfaces\">"

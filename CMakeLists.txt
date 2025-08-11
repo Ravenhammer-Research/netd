@@ -64,6 +64,7 @@ include_directories(${YANG_INCLUDE_DIRS})
 include_directories(${NETCONF_INCLUDE_DIRS})
 
 # Add subdirectories
+add_subdirectory(src/shared)
 add_subdirectory(src/client)
 add_subdirectory(src/server)
 

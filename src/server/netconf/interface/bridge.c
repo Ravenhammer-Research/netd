@@ -46,23 +46,23 @@
  */
 int bridge_interface_create(netd_state_t *state, const char *name) {
   if (!state || !name) {
-    debug_log(DEBUG_ERROR,
+    debug_log(ERROR,
               "Invalid parameters for bridge creation: state=%p, name=%s",
               state, name ? name : "NULL");
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "Creating bridge interface '%s'", name);
+  debug_log(DEBUG, "Creating bridge interface '%s'", name);
 
   /* Create the bridge interface using the general interface creation */
   int result = interface_create(state, name, IF_TYPE_BRIDGE);
   if (result < 0) {
-    debug_log(DEBUG_ERROR, "Failed to create bridge interface %s", name);
+    debug_log(ERROR, "Failed to create bridge interface %s", name);
     return -1;
   }
 
   /* Additional bridge-specific setup can go here */
-  debug_log(DEBUG_INFO, "Created bridge interface %s", name);
+  debug_log(INFO, "Created bridge interface %s", name);
   return 0;
 }
 
@@ -78,7 +78,7 @@ int bridge_add_member(netd_state_t *state, const char *bridge_name,
   interface_t *bridge_iface;
 
   if (!state || !bridge_name || !member_name) {
-    debug_log(DEBUG_ERROR,
+    debug_log(ERROR,
               "Invalid parameters for bridge member addition: state=%p, "
               "bridge=%s, member=%s",
               state, bridge_name ? bridge_name : "NULL",
@@ -86,24 +86,24 @@ int bridge_add_member(netd_state_t *state, const char *bridge_name,
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "Adding member %s to bridge %s", member_name,
+  debug_log(DEBUG, "Adding member %s to bridge %s", member_name,
             bridge_name);
 
   /* Find bridge interface */
   bridge_iface = interface_find(state, bridge_name);
   if (!bridge_iface) {
-    debug_log(DEBUG_ERROR, "Bridge interface %s not found", bridge_name);
+    debug_log(ERROR, "Bridge interface %s not found", bridge_name);
     return -1;
   }
 
   if (bridge_iface->type != IF_TYPE_BRIDGE) {
-    debug_log(DEBUG_ERROR, "Interface %s is not a bridge", bridge_name);
+    debug_log(ERROR, "Interface %s is not a bridge", bridge_name);
     return -1;
   }
 
   /* Add member to bridge in FreeBSD */
   if (freebsd_bridge_add_member(bridge_name, member_name) < 0) {
-    debug_log(DEBUG_ERROR,
+    debug_log(ERROR,
               "Failed to add member %s to bridge %s in FreeBSD", member_name,
               bridge_name);
     return -1;
@@ -123,7 +123,7 @@ int bridge_add_member(netd_state_t *state, const char *bridge_name,
             sizeof(bridge_iface->bridge_members));
   }
 
-  debug_log(DEBUG_INFO, "Added member %s to bridge %s", member_name,
+  debug_log(INFO, "Added member %s to bridge %s", member_name,
             bridge_name);
   return 0;
 }
@@ -140,7 +140,7 @@ int bridge_remove_member(netd_state_t *state, const char *bridge_name,
   interface_t *bridge_iface;
 
   if (!state || !bridge_name || !member_name) {
-    debug_log(DEBUG_ERROR,
+    debug_log(ERROR,
               "Invalid parameters for bridge member removal: state=%p, "
               "bridge=%s, member=%s",
               state, bridge_name ? bridge_name : "NULL",
@@ -148,24 +148,24 @@ int bridge_remove_member(netd_state_t *state, const char *bridge_name,
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "Removing member %s from bridge %s", member_name,
+  debug_log(DEBUG, "Removing member %s from bridge %s", member_name,
             bridge_name);
 
   /* Find bridge interface */
   bridge_iface = interface_find(state, bridge_name);
   if (!bridge_iface) {
-    debug_log(DEBUG_ERROR, "Bridge interface %s not found", bridge_name);
+    debug_log(ERROR, "Bridge interface %s not found", bridge_name);
     return -1;
   }
 
   if (bridge_iface->type != IF_TYPE_BRIDGE) {
-    debug_log(DEBUG_ERROR, "Interface %s is not a bridge", bridge_name);
+    debug_log(ERROR, "Interface %s is not a bridge", bridge_name);
     return -1;
   }
 
   /* Remove member from bridge in FreeBSD */
   if (freebsd_bridge_remove_member(bridge_name, member_name) < 0) {
-    debug_log(DEBUG_ERROR,
+    debug_log(ERROR,
               "Failed to remove member %s from bridge %s in FreeBSD",
               member_name, bridge_name);
     return -1;
@@ -192,7 +192,7 @@ int bridge_remove_member(netd_state_t *state, const char *bridge_name,
     }
   }
 
-  debug_log(DEBUG_INFO, "Removed member %s from bridge %s", member_name,
+  debug_log(INFO, "Removed member %s from bridge %s", member_name,
             bridge_name);
   return 0;
 }
@@ -208,36 +208,36 @@ int bridge_set_stp(netd_state_t *state, const char *bridge_name, int stp_mode) {
   interface_t *bridge_iface;
 
   if (!state || !bridge_name) {
-    debug_log(DEBUG_ERROR,
+    debug_log(ERROR,
               "Invalid parameters for bridge STP setting: state=%p, bridge=%s",
               state, bridge_name ? bridge_name : "NULL");
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "Setting STP mode %d for bridge %s", stp_mode,
+  debug_log(DEBUG, "Setting STP mode %d for bridge %s", stp_mode,
             bridge_name);
 
   /* Find bridge interface */
   bridge_iface = interface_find(state, bridge_name);
   if (!bridge_iface) {
-    debug_log(DEBUG_ERROR, "Bridge interface %s not found", bridge_name);
+    debug_log(ERROR, "Bridge interface %s not found", bridge_name);
     return -1;
   }
 
   if (bridge_iface->type != IF_TYPE_BRIDGE) {
-    debug_log(DEBUG_ERROR, "Interface %s is not a bridge", bridge_name);
+    debug_log(ERROR, "Interface %s is not a bridge", bridge_name);
     return -1;
   }
 
   /* Set STP mode in FreeBSD */
   if (freebsd_bridge_set_stp(bridge_name, stp_mode) < 0) {
-    debug_log(DEBUG_ERROR,
+    debug_log(ERROR,
               "Failed to set STP mode %d for bridge %s in FreeBSD", stp_mode,
               bridge_name);
     return -1;
   }
 
-  debug_log(DEBUG_INFO, "Set STP mode %d for bridge %s", stp_mode,
+  debug_log(INFO, "Set STP mode %d for bridge %s", stp_mode,
             bridge_name);
   return 0;
 } 

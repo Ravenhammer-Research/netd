@@ -36,6 +36,9 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 
+/* Readline prompt */
+static const char *prompt = "net> ";
+
 /**
  * Initialize client
  * @param client Client structure
@@ -47,7 +50,7 @@ int client_init(net_client_t *client, bool interactive) {
     return -1;
   }
 
-  debug_log(DEBUG_INFO, "Initializing client (interactive: %s)",
+  debug_log(INFO, "Initializing client (interactive: %s)",
             interactive ? "yes" : "no");
 
   /* Initialize client structure */
@@ -58,14 +61,14 @@ int client_init(net_client_t *client, bool interactive) {
   client->transaction.command_count = 0;
 
   /* Initialize YANG context */
-  debug_log(DEBUG_DEBUG, "Initializing YANG context");
+  debug_log(INFO, "Initializing YANG context");
   if (yang_init_client(client) < 0) {
     fprintf(stderr, "Failed to initialize YANG context\n");
     return -1;
   }
 
   /* Connect to server */
-  debug_log(DEBUG_DEBUG, "Connecting to netd server");
+  debug_log(INFO, "Connecting to netd server");
   if (netconf_connect(client) < 0) {
     print_error("Failed to connect to netd server");
     yang_cleanup_client(client);
@@ -74,11 +77,11 @@ int client_init(net_client_t *client, bool interactive) {
 
   /* Initialize readline if interactive */
   if (interactive) {
-    debug_log(DEBUG_DEBUG, "Initializing readline for interactive mode");
+    debug_log(DEBUG, "Initializing readline for interactive mode");
     initialize_readline();
   }
 
-  debug_log(DEBUG_INFO, "Client initialization completed successfully");
+  debug_log(INFO, "Client initialization completed successfully");
   return 0;
 }
 
@@ -88,21 +91,21 @@ int client_init(net_client_t *client, bool interactive) {
  */
 void client_cleanup(net_client_t *client) {
   if (client) {
-    debug_log(DEBUG_DEBUG, "Cleaning up client");
+    debug_log(INFO, "Cleaning up client");
 
     /* Rollback any active transaction */
     if (client->transaction.active) {
-      debug_log(DEBUG_DEBUG, "Rolling back active transaction");
+      debug_log(INFO, "Rolling back active transaction");
       transaction_rollback();
     }
 
-    debug_log(DEBUG_DEBUG, "Disconnecting from server");
+    debug_log(INFO, "Disconnecting from server");
     netconf_disconnect(client);
 
-    debug_log(DEBUG_DEBUG, "Cleaning up YANG context");
+    debug_log(INFO, "Cleaning up YANG context");
     yang_cleanup_client(client);
 
-    debug_log(DEBUG_INFO, "Client cleanup completed");
+    debug_log(INFO, "Client cleanup completed");
   }
 }
 
@@ -115,9 +118,6 @@ void initialize_readline(void) {
     
     /* Set readline generator function */
     rl_attempted_completion_function = command_generator;
-    
-    /* Set readline prompt */
-    rl_prompt = "net> ";
 }
 
 /**
@@ -181,7 +181,7 @@ int interactive_mode(net_client_t *client) {
     initialize_readline();
     
     while (1) {
-        line = readline(rl_prompt);
+        line = readline(prompt);
         if (!line) {
             break;
         }

@@ -81,20 +81,20 @@ int freebsd_interface_create(const char *name, interface_type_t type) {
   /* Get interface type string */
   type_str = interface_type_to_string(type);
   if (!type_str) {
-    debug_log(DEBUG_ERROR, "NULL type string for interface %s", name);
+    debug_log(ERROR, "NULL type string for interface %s", name);
     return -1;
   }
   if (strcmp(type_str, "unknown") == 0) {
-    debug_log(DEBUG_ERROR, "Unknown interface type for %s", name);
+    debug_log(ERROR, "Unknown interface type for %s", name);
     return -1;
   }
 
-  debug_log(DEBUG_DEBUG, "Creating interface %s of type %s", name, type_str);
+  debug_log(DEBUG, "Creating interface %s of type %s", name, type_str);
 
   /* Create socket for ioctl */
   sock = socket(AF_INET, SOCK_DGRAM, 0);
   if (sock < 0) {
-    debug_log(DEBUG_ERROR, "Failed to create socket for interface creation: %s",
+    debug_log(ERROR, "Failed to create socket for interface creation: %s",
               strerror(errno));
     return -1;
   }
@@ -110,34 +110,34 @@ int freebsd_interface_create(const char *name, interface_type_t type) {
     /* First, try to load the epair module if it's not already loaded */
     int kld_id = kldload("if_epair");
     if (kld_id < 0 && errno != EEXIST) {
-      debug_log(DEBUG_WARN,
+      debug_log(WARN,
                 "Failed to load if_epair module: %s (continuing anyway)",
                 strerror(errno));
     } else if (kld_id >= 0) {
-      debug_log(DEBUG_INFO, "Loaded if_epair module (kld_id: %d)", kld_id);
+      debug_log(INFO, "Loaded if_epair module (kld_id: %d)", kld_id);
     } else {
-      debug_log(DEBUG_DEBUG, "if_epair module already loaded");
+      debug_log(DEBUG, "if_epair module already loaded");
     }
 
     /* Check if the epair module is loaded */
     if (ioctl(sock, SIOCIFCREATE2, &ifr) < 0) {
-      debug_log(DEBUG_ERROR, "Failed to create epair interface %s: %s", name,
+      debug_log(ERROR, "Failed to create epair interface %s: %s", name,
                 strerror(errno));
       close(sock);
       return -1;
     }
-    debug_log(DEBUG_INFO,
+    debug_log(INFO,
               "Created epair interface %s (which creates %sa and %sb)", name,
               name, name);
   } else {
     /* Create interface for other types */
     if (ioctl(sock, SIOCIFCREATE2, &ifr) < 0) {
-      debug_log(DEBUG_ERROR, "Failed to create interface %s: %s", name,
+      debug_log(ERROR, "Failed to create interface %s: %s", name,
                 strerror(errno));
       close(sock);
       return -1;
     }
-    debug_log(DEBUG_INFO, "Created interface %s of type %s", name, type_str);
+    debug_log(INFO, "Created interface %s of type %s", name, type_str);
   }
 
   close(sock);
@@ -161,7 +161,7 @@ int freebsd_interface_set_fib(const char *name, uint32_t fib) {
   /* Create socket for ioctl */
   sock = socket(AF_INET, SOCK_DGRAM, 0);
   if (sock < 0) {
-    debug_log(DEBUG_ERROR, "Failed to create socket for FIB assignment: %s",
+    debug_log(ERROR, "Failed to create socket for FIB assignment: %s",
               strerror(errno));
     return -1;
   }
@@ -173,13 +173,13 @@ int freebsd_interface_set_fib(const char *name, uint32_t fib) {
 
   /* Set FIB */
   if (ioctl(sock, SIOCSIFFIB, &ifr) < 0) {
-    debug_log(DEBUG_ERROR, "Failed to set FIB %u for interface %s: %s", fib,
+    debug_log(ERROR, "Failed to set FIB %u for interface %s: %s", fib,
               name, strerror(errno));
     close(sock);
     return -1;
   }
 
-  debug_log(DEBUG_INFO, "Set FIB %u for interface %s", fib, name);
+  debug_log(INFO, "Set FIB %u for interface %s", fib, name);
   close(sock);
   return 0;
 }
@@ -203,14 +203,14 @@ int freebsd_interface_set_address(const char *name, const char *address,
 
   /* Parse address */
   if (parse_address(address, &addr) < 0) {
-    debug_log(DEBUG_ERROR, "Failed to parse address %s", address);
+    debug_log(ERROR, "Failed to parse address %s", address);
     return -1;
   }
 
   /* Create socket for ioctl */
   sock = socket(family, SOCK_DGRAM, 0);
   if (sock < 0) {
-    debug_log(DEBUG_ERROR, "Failed to create socket for address assignment: %s",
+    debug_log(ERROR, "Failed to create socket for address assignment: %s",
               strerror(errno));
     return -1;
   }
@@ -222,13 +222,13 @@ int freebsd_interface_set_address(const char *name, const char *address,
 
   /* Set address */
   if (ioctl(sock, SIOCSIFADDR, &ifr) < 0) {
-    debug_log(DEBUG_ERROR, "Failed to set address %s for interface %s: %s",
+    debug_log(ERROR, "Failed to set address %s for interface %s: %s",
               address, name, strerror(errno));
     close(sock);
     return -1;
   }
 
-  debug_log(DEBUG_INFO, "Set address %s for interface %s", address, name);
+  debug_log(INFO, "Set address %s for interface %s", address, name);
   close(sock);
   return 0;
 }
@@ -250,7 +250,7 @@ int freebsd_interface_set_mtu(const char *name, int mtu) {
   /* Create socket for ioctl */
   sock = socket(AF_INET, SOCK_DGRAM, 0);
   if (sock < 0) {
-    debug_log(DEBUG_ERROR, "Failed to create socket for MTU setting: %s",
+    debug_log(ERROR, "Failed to create socket for MTU setting: %s",
               strerror(errno));
     return -1;
   }
@@ -262,13 +262,13 @@ int freebsd_interface_set_mtu(const char *name, int mtu) {
 
   /* Set MTU */
   if (ioctl(sock, SIOCSIFMTU, &ifr) < 0) {
-    debug_log(DEBUG_ERROR, "Failed to set MTU %d for interface %s: %s", mtu,
+    debug_log(ERROR, "Failed to set MTU %d for interface %s: %s", mtu,
               name, strerror(errno));
     close(sock);
     return -1;
   }
 
-  debug_log(DEBUG_INFO, "Set MTU %d for interface %s", mtu, name);
+  debug_log(INFO, "Set MTU %d for interface %s", mtu, name);
   close(sock);
   return 0;
 } 

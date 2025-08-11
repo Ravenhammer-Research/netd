@@ -44,7 +44,7 @@ void print_ethernet_table(const char *xml_response) {
   int max_interfaces = 100;
   int interface_count = 0;
 
-  debug_log(DEBUG_INFO, "Printing ethernet interface table");
+  debug_log(INFO, "Printing ethernet interface table");
 
   if (!xml_response) {
     print_error("XML response is NULL");
@@ -59,7 +59,7 @@ void print_ethernet_table(const char *xml_response) {
   }
 
   /* Parse all interfaces from XML */
-  debug_log(DEBUG_DEBUG, "Parsing interfaces from XML for ethernet table");
+  debug_log(DEBUG, "Parsing interfaces from XML for ethernet table");
   interface_count =
       parse_interfaces_from_xml(xml_response, interfaces, max_interfaces);
   if (interface_count < 0) {
@@ -67,10 +67,10 @@ void print_ethernet_table(const char *xml_response) {
     print_error("Failed to parse XML response");
     return;
   }
-  debug_log(DEBUG_INFO, "Parsed %d interfaces from XML", interface_count);
+  debug_log(INFO, "Parsed %d interfaces from XML", interface_count);
 
   /* Filter interfaces by ethernet type */
-  debug_log(DEBUG_DEBUG, "Filtering interfaces by ethernet type");
+  debug_log(DEBUG, "Filtering interfaces by ethernet type");
   int filtered_count = 0;
   for (int i = 0; i < interface_count; i++) {
     struct interface_data *data = &interfaces[i];

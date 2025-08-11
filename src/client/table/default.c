@@ -96,7 +96,7 @@ void print_interface_table(const char *xml_response) {
   int max_interfaces = 100;
   int max_vrfs = 100;
 
-  debug_log(DEBUG_INFO, "Printing interface table");
+  debug_log(INFO, "Printing interface table");
 
   if (!xml_response) {
     print_error("XML response is NULL");
@@ -129,14 +129,14 @@ void print_interface_table(const char *xml_response) {
   }
 
   /* Parse interfaces and VRFs from XML */
-  debug_log(DEBUG_DEBUG, "Parsing interfaces from XML");
+  debug_log(DEBUG, "Parsing interfaces from XML");
   interface_count =
       parse_interfaces_from_xml(xml_response, interfaces, max_interfaces);
-  debug_log(DEBUG_INFO, "Parsed %d interfaces from XML", interface_count);
+  debug_log(INFO, "Parsed %d interfaces from XML", interface_count);
 
-  debug_log(DEBUG_DEBUG, "Parsing VRFs from XML");
+  debug_log(DEBUG, "Parsing VRFs from XML");
   vrf_count = parse_vrfs_from_xml(xml_response, vrfs, max_vrfs);
-  debug_log(DEBUG_INFO, "Parsed %d VRFs from XML", vrf_count);
+  debug_log(INFO, "Parsed %d VRFs from XML", vrf_count);
 
   /* Calculate column widths from extracted data */
   for (int i = 0; i < interface_count; i++) {

@@ -30,7 +30,6 @@
 
 %{
 #include "net.h"
-#include "tokens.h"
 #include "grammar.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -63,89 +62,91 @@ extern int yylineno;
 /* Token declarations */
 %token PROTOCOL
 
-%token <cmd_type> SET
-%token <cmd_type> SHOW
-%token <cmd_type> DELETE
 %token <cmd_type> COMMIT
 %token <cmd_type> SAVE
+%token <cmd_type> CLEAR
+%token <cmd_type> ROLLBACK
 
-%token <string> VRF
-%token <obj_type> INTERFACE
-%token <obj_type> ROUTE
+%token <string> EXIT
+%token <string> QUIT
+%token <string> HELP
+%token <string> QUESTION_MARK
 
-%token <if_type> ETHERNET
-%token <if_type> WIRELESS80211
-%token <if_type> EPAIR
-%token <if_type> GIF
-%token <if_type> GRE
-%token <if_type> LAGG
-%token <if_type> LO
-%token <if_type> OVPN
-%token <if_type> TUN
-%token <if_type> TAP
-%token <if_type> VLAN
-%token <if_type> VXLAN
-
-%token <family> INET
-%token <family> INET6
-
-%token <string> TABLE
-%token <string> STATIC
-%token <string> ADDRESS
-%token <string> MTU
-%token <string> GROUP
-%token <string> REJECT_TOKEN
-%token <string> BLACKHOLE
-%token <string> ID_TOKEN
-%token <string> TYPE
-%token <string> NAME
-%token <string> MEMBER
-%token <string> LAGGPROTO
-%token <string> LAGGPORT
-%token <string> PEER
-%token <string> VLANDEV
-%token <string> VLANPROTO
-%token <string> TUNNEL
-%token <string> LOCAL
-%token <string> REMOTE
-%token <string> TUNNELVRF
-%token <string> LAYER2
-%token <string> HOST
-%token <string> GATEWAY
-%token <string> IFACE
-%token <string> VXLANID
-%token <string> VXLANLOCAL
-%token <string> VXLANREMOTE
-%token <string> VXLANDEV
+/* Precedence declarations */
+%left COMMIT SAVE CLEAR ROLLBACK
+%left EXIT QUIT HELP QUESTION_MARK
 
 %%
 
+/* Top level rule */
 command
-    : set_command
-    | show_command
-    | delete_command
-    | commit_command
-    | save_command
+    : utility_command
+    | /* empty */
     ;
 
-commit_command
+/* Utility commands */
+utility_command
     : COMMIT {
         if (current_command) {
             current_command->type = CMD_COMMIT;
-            current_command->object = OBJ_UNKNOWN;
+            current_command->object = OBJ_NONE;
             current_command->arg_count = 0;
         }
     }
-    ;
-
-save_command
-    : SAVE {
+    | SAVE {
         if (current_command) {
             current_command->type = CMD_SAVE;
-            current_command->object = OBJ_UNKNOWN;
+            current_command->object = OBJ_NONE;
+            current_command->arg_count = 0;
+        }
+    }
+    | CLEAR {
+        if (current_command) {
+            current_command->type = CMD_CLEAR;
+            current_command->object = OBJ_NONE;
+            current_command->arg_count = 0;
+        }
+    }
+    | ROLLBACK {
+        if (current_command) {
+            current_command->type = CMD_ROLLBACK;
+            current_command->object = OBJ_NONE;
+            current_command->arg_count = 0;
+        }
+    }
+    | EXIT {
+        if (current_command) {
+            current_command->type = CMD_EXIT;
+            current_command->object = OBJ_NONE;
+            current_command->arg_count = 0;
+        }
+    }
+    | QUIT {
+        if (current_command) {
+            current_command->type = CMD_QUIT;
+            current_command->object = OBJ_NONE;
+            current_command->arg_count = 0;
+        }
+    }
+    | HELP {
+        if (current_command) {
+            current_command->type = CMD_HELP;
+            current_command->object = OBJ_NONE;
+            current_command->arg_count = 0;
+        }
+    }
+    | QUESTION_MARK {
+        if (current_command) {
+            current_command->type = CMD_HELP;
+            current_command->object = OBJ_NONE;
             current_command->arg_count = 0;
         }
     }
     ;
 
-%% 
+%%
+
+void yyerror(const char *s) {
+    fprintf(stderr, "Parse error at line %d: %s\n", yylineno, s);
+    parse_error = 1;
+} 

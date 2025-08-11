@@ -15,6 +15,7 @@ target_include_directories(xml PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/..
     ${CMAKE_CURRENT_SOURCE_DIR}/../../yang
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../shared
 )
 
 # Link dependencies
