@@ -89,7 +89,7 @@ bool is_get_vrf_routes_request(const char *request) {
     return false;
   }
 
-  const char *elements[] = {"get", "routes", "vrf"};
+  const char *elements[] = {"get", "routing", "routing-instance"};
   return xml_contains_elements(request, elements, 3);
 }
 

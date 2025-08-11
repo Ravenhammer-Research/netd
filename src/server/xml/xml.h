@@ -72,8 +72,7 @@ struct edit_config_data {
 char *extract_message_id(const char *request);
 bool xml_contains_elements(const char *request, const char **elements, int element_count);
 
-/* VRF/FIB specific XML parsing utilities */
-uint32_t extract_fib_from_request(const char *request);
+/* VRF/FIB specific XML parsing utility */
 char *extract_vrf_name_from_request(const char *request);
 
 /* Edit-config XML parsing utilities */

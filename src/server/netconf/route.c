@@ -176,106 +176,17 @@ int route_delete(netd_state_t *state, uint32_t fib, const char *destination) {
 }
 
 /**
- * List routes from the routing table
- * @param state Server state
- * @param fib FIB number
- * @param family Address family (AF_INET, AF_INET6, or AF_UNSPEC for all)
- * @return 0 on success, -1 on failure
- */
-int route_list(netd_state_t *state, uint32_t fib, int family) {
-  netd_route_t *route;
-  char dest_str[INET6_ADDRSTRLEN];
-  char gw_str[INET6_ADDRSTRLEN];
-  int count = 0;
-
-  if (!state || !is_valid_fib_number(fib)) {
-    debug_log(ERROR,
-              "Invalid parameters for route listing: state=%p, fib=%u", state,
-              fib);
-    return -1;
-  }
-
-  debug_log(INFO, "Listing routes for FIB %u%s", fib,
-            family == AF_UNSPEC ? ""
-            : family == AF_INET ? " (IPv4 only)"
-                                : " (IPv6 only)");
-
-  TAILQ_FOREACH(route, &state->routes, entries) {
-    if (route->fib == fib &&
-        (family == AF_UNSPEC ||
-         get_address_family(&route->destination) == family)) {
-
-      /* Format destination address */
-      if (format_address(&route->destination, dest_str, sizeof(dest_str)) < 0) {
-        strlcpy(dest_str, "invalid", sizeof(dest_str));
-        debug_log(WARN, "Failed to format destination address");
-      }
-
-      /* Format gateway address */
-      if (route->gateway.ss_family != AF_UNSPEC) {
-        if (format_address(&route->gateway, gw_str, sizeof(gw_str)) < 0) {
-          strlcpy(gw_str, "invalid", sizeof(gw_str));
-          debug_log(WARN, "Failed to format gateway address");
-        }
-      } else {
-        strlcpy(gw_str, "-", sizeof(gw_str));
-      }
-
-      debug_log(INFO, "  %s via %s", dest_str, gw_str);
-      if (route->interface[0] != '\0') {
-        debug_log(INFO, "    Interface: %s", route->interface);
-      }
-      debug_log(INFO, "    Flags: 0x%x", route->flags);
-      count++;
-    }
-  }
-
-  if (count == 0) {
-    debug_log(INFO, "  No routes found");
-  } else {
-    debug_log(INFO, "Total routes: %d", count);
-  }
-
-  return 0;
-}
-
-/**
  * Flush all routes for a FIB
  * @param state Server state
  * @param fib FIB number
  * @return 0 on success, -1 on failure
  */
 int route_flush_fib(netd_state_t *state, uint32_t fib) {
-  netd_route_t *route, *temp;
-
-  if (!state || !is_valid_fib_number(fib)) {
-    debug_log(ERROR,
-              "Invalid parameters for route flush: state=%p, fib=%u", state,
-              fib);
-    return -1;
-  }
-
-  debug_log(INFO, "Flushing all routes for FIB %u", fib);
-
-  /* Remove all routes for this FIB from the list */
-  int removed_count = 0;
-  TAILQ_FOREACH_SAFE(route, &state->routes, entries, temp) {
-    if (route->fib == fib) {
-      TAILQ_REMOVE(&state->routes, route, entries);
-      free(route);
-      removed_count++;
-    }
-  }
-  debug_log(DEBUG, "Removed %d routes from internal state for FIB %u",
-            removed_count, fib);
-
-  /* Note: FreeBSD doesn't have a direct "flush all routes for FIB" operation */
+  debug_log(DEBUG1, "route_flush_fib called with state=%p, fib=%u", state, fib);
+  
+  /* Not implemented: FreeBSD doesn't have a direct "flush all routes for FIB" operation */
   /* We would need to iterate through all routes and delete them individually */
-  /* For now, we'll just clear our internal state */
-  debug_log(INFO,
-            "Flushed routes for FIB %u (%d routes removed from state)", fib,
-            removed_count);
-  return 0;
+  return -1;
 }
 
 /**
@@ -288,11 +199,8 @@ int route_clear_all(netd_state_t *state) {
   int cleared_count = 0;
 
   if (!state) {
-    debug_log(ERROR, "Invalid state parameter for route clearing");
     return -1;
   }
-
-  debug_log(DEBUG, "Clearing all routes from state");
 
   TAILQ_FOREACH_SAFE(route, &state->routes, entries, next) {
     TAILQ_REMOVE(&state->routes, route, entries);
@@ -300,51 +208,15 @@ int route_clear_all(netd_state_t *state) {
     cleared_count++;
   }
 
-  debug_log(DEBUG, "Cleared %d routes from state", cleared_count);
-  return 0;
+  return cleared_count;
 }
 
 /**
- * Helper function to parse route message and add to state
- * @param state Server state
- * @param rtm Route message header
- * @return 0 on success, -1 on failure
- */
-
-/**
- * Enumerate system routes and add them to state
- * @param state Server state
- * @param fib FIB number
- * @return 0 on success, -1 on failure
- */
-int route_enumerate_system(netd_state_t *state, uint32_t fib) {
-  if (!state) {
-    debug_log(ERROR,
-              "Invalid state parameter for system route enumeration");
-    return -1;
-  }
-
-  debug_log(DEBUG, "Starting system route enumeration for FIB %u", fib);
-
-  /* Call the system-specific route enumeration function */
-  int result = freebsd_route_enumerate_system(state, fib);
-  if (result == 0) {
-      debug_log(DEBUG1,
-            "System route enumeration completed successfully for FIB %u",
-              fib);
-  } else {
-    debug_log(ERROR, "System route enumeration failed for FIB %u", fib);
-  }
-
-  return result;
-}
-
-/**
- * Get all routes as XML for NETCONF response
+ * Query route table and return as XML for NETCONF response
  * @param state Server state
  * @return XML string (allocated) or NULL on failure
  */
-char *route_get_all(netd_state_t *state) {
+char *route_table_query(netd_state_t *state) {
   netd_route_t *route;
   char *xml = NULL;
   char *temp_xml = NULL;
@@ -359,6 +231,15 @@ char *route_get_all(netd_state_t *state) {
   }
 
   debug_log(DEBUG, "Generating XML for all routes");
+
+  /* Clear existing routes from local state (not the actual routing table) */
+  route_clear_all(state);
+
+  /* Populate state with current system routes */
+  if (freebsd_route_list(state, 0, AF_UNSPEC) < 0) {
+    debug_log(ERROR, "Failed to get routes from system");
+    return NULL;
+  }
 
   /* Start XML */
   asprintf(&xml,

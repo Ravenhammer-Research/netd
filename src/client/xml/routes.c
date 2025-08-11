@@ -102,17 +102,17 @@ static void route_end_element(void *userData, const char *name) {
     *(end + 1) = '\0';
 
     /* Process the content when we hit the end of a tag */
-    if (strcmp(name, "destination") == 0) {
+    if (strcmp(name, "destination-prefix") == 0) {
       strncpy(ctx->current_route->destination, content,
               sizeof(ctx->current_route->destination) - 1);
       ctx->current_route
           ->destination[sizeof(ctx->current_route->destination) - 1] = '\0';
-    } else if (strcmp(name, "gateway") == 0) {
+    } else if (strcmp(name, "next-hop-address") == 0) {
       strncpy(ctx->current_route->gateway, content,
               sizeof(ctx->current_route->gateway) - 1);
       ctx->current_route
           ->gateway[sizeof(ctx->current_route->gateway) - 1] = '\0';
-    } else if (strcmp(name, "interface") == 0) {
+    } else if (strcmp(name, "outgoing-interface") == 0) {
       strncpy(ctx->current_route->interface, content,
               sizeof(ctx->current_route->interface) - 1);
       ctx->current_route
@@ -120,13 +120,13 @@ static void route_end_element(void *userData, const char *name) {
     } else if (strcmp(name, "flags") == 0) {
       /* Parse flags as integer */
       ctx->current_route->flags = atoi(content);
-    } else if (strcmp(name, "prefix_length") == 0) {
+    } else if (strcmp(name, "prefix-length") == 0) {
       /* Parse prefix_length as integer */
       ctx->current_route->prefix_length = atoi(content);
     } else if (strcmp(name, "expire") == 0) {
       /* Parse expire as integer */
       ctx->current_route->expire = atoi(content);
-    } else if (strcmp(name, "scope_interface") == 0) {
+    } else if (strcmp(name, "scope-interface") == 0) {
       strncpy(ctx->current_route->scope_interface, content,
               sizeof(ctx->current_route->scope_interface) - 1);
       ctx->current_route

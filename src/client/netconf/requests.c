@@ -93,18 +93,13 @@ int netconf_get_vrfs(net_client_t *client, char **response) {
              "<rpc message-id=\"1\" xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">"
              "<get>"
              "<filter type=\"subtree\">"
-             "<vrf xmlns=\"urn:ietf:params:xml:ns:yang:ietf-routing\">"
-             "<routing-instance>"
+             "<vrfs xmlns=\"urn:ietf:params:xml:ns:yang:frr-vrf\">"
+             "<vrf>"
              "<name/>"
+             "<fib/>"
              "<description/>"
-             "<routing-protocols>"
-             "<routing-protocol>"
-             "<type/>"
-             "<name/>"
-             "</routing-protocol>"
-             "</routing-protocols>"
-             "</routing-instance>"
              "</vrf>"
+             "</vrfs>"
              "</filter>"
              "</get>"
              "</rpc>");
@@ -130,6 +125,10 @@ int netconf_get_routes(net_client_t *client, uint32_t fib, int family, char **re
     } else if (family == AF_INET6) {
         family_ns = "urn:ietf:params:xml:ns:yang:ietf-ipv6-unicast-routing";
         family_tag = "ipv6";
+    } else if (family == AF_UNSPEC) {
+        /* For AF_UNSPEC, use a generic routing namespace that includes both IPv4 and IPv6 */
+        family_ns = "urn:ietf:params:xml:ns:yang:ietf-routing";
+        family_tag = "default";
     } else {
         fprintf(stderr, "Unsupported address family: %d\n", family);
         return -1;

@@ -32,6 +32,7 @@
 #include <netconf.h>
 #include <interface/interface.h>
 #include <libnetconf2/netconf.h>
+#include <ctype.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -82,8 +83,6 @@ int netconf_handle_request(netd_state_t *state, const char *request,
     ret = handle_get_interfaces_request(state, request, message_id, response);
   } else if (is_get_vrfs_request(request)) {
     ret = handle_get_vrfs_request(state, request, message_id, response);
-  } else if (is_get_routes_request(request)) {
-    ret = handle_get_routes_request(state, request, message_id, response);
   } else if (is_get_vrf_routes_request(request)) {
     ret = handle_get_vrf_routes_request(state, request, message_id, response);
   } else {
@@ -227,44 +226,6 @@ int handle_get_vrfs_request(netd_state_t *state, const char *request,
 }
 
 /**
- * Handle get-routes request
- * @param state Server state
- * @param request XML request string
- * @param message_id Message ID
- * @param response Response string
- * @return 0 on success, -1 on failure
- */
-int handle_get_routes_request(netd_state_t *state, const char *request,
-                                     const char *message_id, char **response) {
-  char *xml_response;
-  int ret;
-  uint32_t fib = 0;
-
-  debug_log(INFO, "Handling get-routes request");
-
-  /* Extract FIB from request if specified */
-  fib = extract_fib_from_request(request);
-
-  ret = route_list(state, fib, AF_UNSPEC);
-  if (ret < 0) {
-    debug_log(ERROR, "Failed to list routes");
-    *response = create_error_response(message_id, "operation-failed",
-                               "Failed to list routes");
-    return -1;
-  }
-
-  /* Create XML response with route data */
-  xml_response = create_routes_xml_response(state, message_id, fib);
-  if (!xml_response) {
-    debug_log(ERROR, "Failed to create routes XML response");
-    return -1;
-  }
-
-  *response = xml_response;
-  return 0;
-}
-
-/**
  * Handle get-vrf-routes request
  * @param state Server state
  * @param request XML request string
@@ -276,21 +237,30 @@ int handle_get_vrf_routes_request(netd_state_t *state, const char *request,
                                          const char *message_id, char **response) {
   char *xml_response;
   char *vrf_name;
-  int ret;
 
   debug_log(INFO, "Handling get-vrf-routes request");
 
-  /* Extract VRF name from request */
+  /* Extract VRF identifier from request */
   vrf_name = extract_vrf_name_from_request(request);
+  
   if (!vrf_name) {
-    debug_log(ERROR, "Failed to extract VRF name from request");
+    debug_log(ERROR, "Failed to extract VRF identifier from request");
     *response = create_error_response(message_id, "operation-failed",
-                               "Failed to extract VRF name");
+                               "Failed to extract VRF identifier");
     return -1;
   }
 
-  /* Find VRF and get its FIB */
-  vrf_t *vrf = vrf_find_by_name(state, vrf_name);
+  /* Determine if it's a name or ID and find VRF accordingly */
+  vrf_t *vrf = NULL;
+  if (isdigit(vrf_name[0])) {
+    /* It's a numeric ID/FIB number */
+    uint32_t fib_number = (uint32_t)strtoul(vrf_name, NULL, 10);
+    vrf = vrf_find_by_fib(state, fib_number);
+  } else {
+    /* It's a name */
+    vrf = vrf_find_by_name(state, vrf_name);
+  }
+  
   if (!vrf) {
     debug_log(ERROR, "VRF %s not found", vrf_name);
     free(vrf_name);
@@ -299,18 +269,29 @@ int handle_get_vrf_routes_request(netd_state_t *state, const char *request,
     return -1;
   }
 
-  ret = route_list(state, vrf->fib_number, AF_UNSPEC);
   free(vrf_name);
 
-  if (ret < 0) {
-    debug_log(ERROR, "Failed to list VRF routes");
+  /* Get all routes for this VRF */
+  char *routes_data = route_table_query(state);
+  if (!routes_data) {
+    debug_log(ERROR, "Failed to get VRF routes");
     *response = create_error_response(message_id, "operation-failed",
-                               "Failed to list VRF routes");
+                               "Failed to get VRF routes");
     return -1;
   }
 
-  /* Create XML response with VRF route data */
-  xml_response = create_vrf_routes_xml_response(state, message_id, vrf);
+  /* Wrap the routes data in a complete NETCONF response */
+  asprintf(&xml_response,
+           "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+           "<rpc-reply xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\" "
+           "message-id=\"%s\">\n"
+           "  <data>\n"
+           "%s"
+           "  </data>\n"
+           "</rpc-reply>",
+           message_id, routes_data);
+  
+  free(routes_data);
   if (!xml_response) {
     debug_log(ERROR, "Failed to create VRF routes XML response");
     return -1;

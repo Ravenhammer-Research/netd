@@ -65,7 +65,7 @@ char *create_routes_xml_response(netd_state_t *state, const char *message_id, ui
 
   /* Add route entries */
   TAILQ_FOREACH(route, &state->routes, entries) {
-    if (fib == 0 || route->fib == fib) {
+    if (route->fib == fib) {
       format_address(&route->destination, dest_str, sizeof(dest_str));
       format_address(&route->gateway, gw_str, sizeof(gw_str));
       
@@ -74,10 +74,14 @@ char *create_routes_xml_response(netd_state_t *state, const char *message_id, ui
                      "        <destination>%s</destination>\n"
                      "        <gateway>%s</gateway>\n"
                      "        <interface>%s</interface>\n"
+                     "        <prefix_length>%d</prefix_length>\n"
+                     "        <scope_interface>%s</scope_interface>\n"
                      "        <fib>%u</fib>\n"
                      "        <flags>0x%x</flags>\n"
+                     "        <expire>%d</expire>\n"
                      "      </route>\n",
-                     dest_str, gw_str, route->interface, route->fib, route->flags);
+                     dest_str, gw_str, route->interface, route->prefix_length, 
+                     route->scope_interface, route->fib, route->flags, route->expire);
       total_len += len;
     }
   }
@@ -104,7 +108,7 @@ char *create_routes_xml_response(netd_state_t *state, const char *message_id, ui
 
   /* Add route entries */
   TAILQ_FOREACH(route, &state->routes, entries) {
-    if (fib == 0 || route->fib == fib) {
+    if (route->fib == fib) {
       format_address(&route->destination, dest_str, sizeof(dest_str));
       format_address(&route->gateway, gw_str, sizeof(gw_str));
       
@@ -114,10 +118,14 @@ char *create_routes_xml_response(netd_state_t *state, const char *message_id, ui
                      "        <destination>%s</destination>\n"
                      "        <gateway>%s</gateway>\n"
                      "        <interface>%s</interface>\n"
+                     "        <prefix_length>%d</prefix_length>\n"
+                     "        <scope_interface>%s</scope_interface>\n"
                      "        <fib>%u</fib>\n"
                      "        <flags>0x%x</flags>\n"
+                     "        <expire>%d</expire>\n"
                      "      </route>\n",
-                     dest_str, gw_str, route->interface, route->fib, route->flags);
+                     dest_str, gw_str, route->interface, route->prefix_length, 
+                     route->scope_interface, route->fib, route->flags, route->expire);
     }
   }
 

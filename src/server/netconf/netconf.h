@@ -47,7 +47,6 @@ int netconf_handle_request(netd_state_t *state, const char *request,
 /* Request type checking functions */
 bool is_get_interfaces_request(const char *request);
 bool is_get_vrfs_request(const char *request);
-bool is_get_routes_request(const char *request);
 bool is_get_vrf_routes_request(const char *request);
 bool is_save_request(const char *request);
 bool is_commit_request(const char *request);
@@ -66,8 +65,6 @@ int handle_get_interfaces_request(netd_state_t *state, const char *request,
                                   const char *message_id, char **response);
 int handle_get_vrfs_request(netd_state_t *state, const char *request,
                              const char *message_id, char **response);
-int handle_get_routes_request(netd_state_t *state, const char *request,
-                               const char *message_id, char **response);
 int handle_get_vrf_routes_request(netd_state_t *state, const char *request,
                                    const char *message_id, char **response);
 

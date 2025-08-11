@@ -395,6 +395,33 @@ int execute_show_command(net_client_t *client, const command_t *cmd) {
     print_routes_table(response);
     free(response);
   } else if (strcmp(object, "vrfs") == 0 || strcmp(object, "vrf") == 0) {
+    /* Handle VRF protocol static routes */
+    if (cmd->arg_count >= 4 && strcmp(cmd->args[1], "id") == 0 && 
+        strcmp(cmd->args[3], "protocol") == 0 && strcmp(cmd->args[4], "static") == 0) {
+      
+      uint32_t fib = atoi(cmd->args[2]); /* VRF ID/FIB */
+      int family = AF_UNSPEC; /* Default to unspecified (both IPv4 and IPv6) */
+      
+      /* Check for address family specification */
+      if (cmd->arg_count >= 6) {
+        if (strcmp(cmd->args[5], "inet") == 0) {
+          family = AF_INET;
+        } else if (strcmp(cmd->args[5], "inet6") == 0) {
+          family = AF_INET6;
+        }
+      }
+      
+      debug_log(INFO, "SHOW VRF protocol static: fib=%u, family=%d", fib, family);
+      
+      if (netconf_get_routes(client, fib, family, &response) < 0) {
+        fprintf(stderr, "Failed to get VRF routes\n");
+        return -1;
+      }
+      
+      print_routes_table(response);
+      free(response);
+    } else {
+      /* Handle basic VRF listing */
     if (netconf_get_vrfs(client, &response) < 0) {
       fprintf(stderr, "Failed to get VRFs\n");
       return -1;
@@ -402,6 +429,7 @@ int execute_show_command(net_client_t *client, const command_t *cmd) {
 
     print_vrf_table(response);
     free(response);
+    }
   } else if (strcmp(object, "interface") == 0 && cmd->arg_count >= 2) {
     const char *ifname = cmd->args[1];
     const char *type = (cmd->arg_count >= 3) ? cmd->args[2] : NULL;

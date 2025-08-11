@@ -256,9 +256,8 @@ int route_add(netd_state_t *state, uint32_t fib, const char *destination,
 int route_delete(netd_state_t *state, uint32_t fib, const char *destination);
 int route_list(netd_state_t *state, uint32_t fib, int family);
 int route_flush_fib(netd_state_t *state, uint32_t fib);
-int route_enumerate_system(netd_state_t *state, uint32_t fib);
 int route_clear_all(netd_state_t *state);
-char *route_get_all(netd_state_t *state);
+char *route_table_query(netd_state_t *state);
 
 /* Configuration management */
 int config_load(netd_state_t *state);
@@ -331,7 +330,7 @@ const char *freebsd_get_interface_oper_status(int flags);
 int freebsd_route_add(uint32_t fib, const char *destination,
                       const char *gateway, const char *interface, int flags);
 int freebsd_route_delete(uint32_t fib, const char *destination);
-int freebsd_route_list(uint32_t fib, int family);
+int freebsd_route_list(netd_state_t *state, uint32_t fib, int family);
 int freebsd_route_enumerate_system(netd_state_t *state, uint32_t fib);
 
 /* Utility functions */

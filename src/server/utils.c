@@ -209,65 +209,6 @@ bool is_valid_vrf_name(const char *name) {
 }
 
 /**
- * Validate FIB number
- * @param fib FIB number
- * @return true if valid, false otherwise
- */
-/**
- * Get the number of FIBs configured in the system
- * @return Number of FIBs, or 1 if unable to determine
- */
-uint32_t get_system_fib_count(void) {
-  /* Try to determine the number of FIBs by attempting to enumerate routes
-   * for different FIB numbers. Start with 1 and increment until we fail. */
-  uint32_t fib_count = 1;
-  int mib[6];
-  size_t needed;
-  
-  /* Use the same sysctl approach as the working route enumeration code */
-  mib[0] = CTL_NET;
-  mib[1] = PF_ROUTE;
-  mib[2] = 0;           /* protocol */
-  mib[3] = 0;           /* address family (0 = all) */
-  mib[4] = NET_RT_DUMP; /* get all routes */
-  
-  /* Try FIB numbers starting from 0 */
-  for (uint32_t test_fib = 0; test_fib < 256; test_fib++) { /* Reasonable upper limit */
-    mib[5] = test_fib;  /* FIB number */
-    
-    /* Try to get the size needed for this FIB */
-    if (sysctl(mib, 6, NULL, &needed, NULL, 0) < 0) {
-      if (errno == EINVAL || errno == ENOTSUP) {
-        /* This FIB doesn't exist, we've found the limit */
-        fib_count = test_fib;
-        break;
-      } else if (errno == ENOENT) {
-        /* This FIB exists but has no routes, continue */
-        fib_count = test_fib + 1; /* Count it even if empty */
-      } else {
-        /* Some other error, assume this is the limit */
-        fib_count = test_fib;
-        break;
-      }
-    } else {
-      /* This FIB exists and has routes */
-      fib_count = test_fib + 1;
-    }
-  }
-  
-  debug_log(DEBUG, "System has %u FIBs configured", fib_count);
-  return fib_count;
-}
-
-bool is_valid_fib_number(uint32_t fib) {
-  uint32_t max_fibs = get_system_fib_count();
-  bool valid = (fib < max_fibs);
-  debug_log(DEBUG, "FIB number validation: %u is %s (max: %u)", fib,
-            valid ? "valid" : "invalid", max_fibs);
-  return valid;
-}
-
-/**
  * Parse address string to sockaddr_storage
  * @param addr_str Address string (IPv4, IPv6, or hostname)
  * @param addr Output sockaddr_storage structure
@@ -409,6 +350,10 @@ int format_address(const struct sockaddr_storage *addr, char *str, size_t len) {
     debug_log(DEBUG2, "Formatted link address: %s", str);
     break;
   }
+  case AF_UNSPEC:
+    strlcpy(str, "-", len);
+    debug_log(DEBUG2, "Formatted unspecified address: %s", str);
+    break;
   default:
     debug_log(ERROR, "Unsupported address family: %d", addr->ss_family);
     return -1;
@@ -459,6 +404,9 @@ int get_prefix_length(const struct sockaddr_storage *addr) {
     bytes = (unsigned char *)&((struct sockaddr_in6 *)addr)->sin6_addr;
     byte_count = 16;
     break;
+  case AF_UNSPEC:
+    debug_log(DEBUG, "No netmask for AF_UNSPEC, prefix length is 0");
+    return 0;
   default:
     debug_log(ERROR,
               "Unsupported address family for prefix calculation: %d",

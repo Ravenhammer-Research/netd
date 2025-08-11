@@ -34,6 +34,7 @@
 
 #include <sys/types.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 struct netd_state;
 
@@ -58,19 +59,25 @@ int freebsd_route_add(uint32_t fib, const char *destination,
 int freebsd_route_delete(uint32_t fib, const char *destination);
 
 /**
- * List routes from the routing table
+ * List routes from the routing table and populate state
+ * @param state Server state
  * @param fib FIB number
  * @param family Address family
  * @return 0 on success, -1 on failure
  */
-int freebsd_route_list(uint32_t fib, int family);
+int freebsd_route_list(netd_state_t *state, uint32_t fib, int family);
 
 /**
- * Enumerate system routes and populate route list
- * @param state Netd state
- * @param fib FIB number
- * @return 0 on success, -1 on failure
+ * Get the number of FIBs configured in the system
+ * @return Number of FIBs, or 1 if unable to determine
  */
-int freebsd_route_enumerate_system(struct netd_state *state, uint32_t fib);
+uint32_t get_system_fib_count(void);
+
+/**
+ * Validate FIB number
+ * @param fib FIB number
+ * @return true if valid, false otherwise
+ */
+bool is_valid_fib_number(uint32_t fib);
 
 #endif /* ROUTE_H */ 
