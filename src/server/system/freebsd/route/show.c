@@ -423,9 +423,9 @@ int freebsd_route_list(netd_state_t *state, uint32_t fib, int family) {
  * @return Number of FIBs, or 1 if unable to determine
  */
 uint32_t get_system_fib_count(void) {
-  /* Try to determine the number of FIBs by attempting to enumerate routes
-   * for different FIB numbers. Start with 1 and increment until we fail. */
-  uint32_t fib_count = 1;
+  /* Only count FIBs that are actually in use (have routes or interfaces).
+   * Start with 1 (default VRF) and check for active FIBs. */
+  uint32_t fib_count = 1; /* Always count FIB 0 (default VRF) */
   int mib[6];
   size_t needed;
   
@@ -436,30 +436,31 @@ uint32_t get_system_fib_count(void) {
   mib[3] = AF_INET;     /* address family (use IPv4 for FIB counting) */
   mib[4] = NET_RT_DUMP; /* get all routes */
   
-  /* Try FIB numbers starting from 0 */
-  for (uint32_t test_fib = 0; test_fib < 256; test_fib++) { /* Reasonable upper limit */
+  /* Check FIBs 1-255 for actual usage */
+  for (uint32_t test_fib = 1; test_fib < 256; test_fib++) {
     mib[5] = test_fib;  /* FIB number */
     
     /* Try to get the size needed for this FIB */
-    if (sysctl(mib, 6, NULL, &needed, NULL, 0) < 0) {
-      if (errno == EINVAL || errno == ENOTSUP) {
-        /* This FIB doesn't exist, we've found the limit */
-        fib_count = test_fib;
-        break;
-      } else if (errno == ENOENT) {
-        /* This FIB exists but has no routes, continue */
-        fib_count = test_fib + 1; /* Count it even if empty */
-      } else {
-        /* Some other error, assume this is the limit */
-        fib_count = test_fib;
-        break;
-      }
-    } else {
-      /* This FIB exists and has routes */
+    if (sysctl(mib, 6, NULL, &needed, NULL, 0) == 0 && needed > 0) {
+      /* This FIB exists and has routes, count it */
       fib_count = test_fib + 1;
+      debug_log(DEBUG2, "Found active FIB %u with %zu bytes of route data", test_fib, needed);
+    } else if (errno == EINVAL || errno == ENOTSUP) {
+      /* This FIB doesn't exist, stop checking */
+      debug_log(ERROR, "FIB %u doesn't exist, stopping FIB enumeration", test_fib);
+      break;
+    } else if (errno == ENOENT) {
+      /* This FIB exists but has no routes, don't count it */
+      debug_log(DEBUG, "FIB %u exists but has no routes, skipping", test_fib);
+      continue;
+    } else {
+      /* Some other error, assume this is the limit */
+      debug_log(ERROR, "Error checking FIB %u: %s, stopping enumeration", test_fib, strerror(errno));
+      break;
     }
   }
   
+  debug_log(INFO, "System has %u active FIBs (0-%u)", fib_count, fib_count - 1);
   return fib_count;
 }
 

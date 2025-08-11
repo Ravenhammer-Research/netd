@@ -73,23 +73,19 @@ int config_load(netd_state_t *state) {
     return -1;
   }
 
-  /* Enumerate system routes for all available FIBs */
-  debug_log(INFO, "Enumerating existing system routes");
-  uint32_t fib_count = get_system_fib_count();
-  debug_log(INFO, "System has %u FIBs", fib_count);
-
-  /* Automatically create VRF entries for all existing FIBs */
-  debug_log(INFO, "Creating VRF entries for all existing FIBs");
-  for (uint32_t fib = 0; fib < fib_count; fib++) {
+  /* Create VRFs for all FIBs at startup */
+  debug_log(INFO, "Creating VRFs for all FIBs (0-255)");
+  
+  for (uint32_t fib = 0; fib < 256; fib++) {
     if (fib == 0) {
       /* FIB 0 is the default VRF and is handled specially */
       debug_log(DEBUG, "FIB 0 is the default VRF");
       continue;
     }
     
-    /* Create a VRF entry for this FIB with a default name */
+    /* Create a VRF entry for this FIB with numeric name */
     char vrf_name[64];
-    snprintf(vrf_name, sizeof(vrf_name), "vrf%u", fib);
+    snprintf(vrf_name, sizeof(vrf_name), "%u", fib);
     
     debug_log(DEBUG, "Creating VRF entry for FIB %u with name '%s'", fib, vrf_name);
     if (vrf_create(state, vrf_name, fib) < 0) {

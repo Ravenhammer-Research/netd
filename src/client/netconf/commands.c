@@ -355,14 +355,13 @@ int execute_show_command(net_client_t *client, const command_t *cmd) {
 
   const char *object = cmd->args[0];
 
-  if (strcmp(object, "interfaces") == 0 || (strcmp(object, "interface") == 0 && cmd->arg_count == 1)) {
+  if (strcmp(object, "interfaces") == 0) {
     if (netconf_get_interfaces(client, &response, NULL) < 0) {
       fprintf(stderr, "Failed to get interfaces\n");
       return -1;
     }
 
-      print_interface_table(response);
-
+    print_interface_table(response);
     free(response);
   } else if (strcmp(object, "routes") == 0 || strcmp(object, "route") == 0) {
     uint32_t fib = 0; /* Default VRF */
@@ -427,7 +426,7 @@ int execute_show_command(net_client_t *client, const command_t *cmd) {
     print_vrf_table(response);
     free(response);
     }
-  } else if (strcmp(object, "interface") == 0 && cmd->arg_count >= 2) {
+  } else if (strcmp(object, "interface") == 0) {
     const char *type = NULL;
 
     debug_log(DEBUG, "SHOW interface command: arg_count=%d", cmd->arg_count);
