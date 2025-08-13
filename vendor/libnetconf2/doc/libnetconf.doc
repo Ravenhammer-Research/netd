@@ -1,0 +1,737 @@
+/**
+ * @mainpage About
+ *
+ * libnetconf2 is a NETCONF library in C handling NETCONF authentication and all NETCONF
+ * RPC communication both server and client-side. Note that NETCONF datastore implementation
+ * is not a part of this library. The library supports both NETCONF 1.0
+ * ([RFC 4741](https://tools.ietf.org/html/rfc4741)) as well as NETCONF 1.1
+ * ([RFC 6241](https://tools.ietf.org/html/rfc6241)).
+ *
+ * @section about-features Main Features
+ *
+ * - Creating SSH ([RFC 4742](https://tools.ietf.org/html/rfc4742), [RFC 6242](https://tools.ietf.org/html/rfc6242)),
+ *   using [libssh](https://www.libssh.org/), or TLS ([RFC 7589](https://tools.ietf.org/html/rfc7589)),
+ *   using [OpenSSL](https://www.openssl.org/), authenticated NETCONF sessions.
+ * - Creating NETCONF sessions with a pre-established transport protocol
+ *   (using this mechanism the communication can be tunneled through sshd(8), for instance).
+ * - Creating NETCONF Call Home sessions ([RFC 8071](https://tools.ietf.org/html/rfc8071)).
+ * - Creating, sending, receiving, and replying to RPCs ([RFC 4741](https://tools.ietf.org/html/rfc4741),
+ *   [RFC 6241](https://tools.ietf.org/html/rfc6241)).
+ * - Creating, sending and receiving NETCONF Event Notifications ([RFC 5277](https://tools.ietf.org/html/rfc5277)).
+ * - Configuring the NETCONF server based on the [ietf-netconf-server](https://datatracker.ietf.org/doc/html/draft-ietf-netconf-netconf-client-server-29) YANG module
+ *
+ * @section about-license License
+ *
+ * Copyright (c) 2015-2021 CESNET, z.s.p.o.
+ *
+ * (The BSD 3-Clause License)
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ * 3. Neither the name of the Company nor the names of its contributors
+ *    may be used to endorse or promote products derived from this
+ *    software without specific prior written permission.
+ */
+
+/**
+ * @page howto How To ...
+ *
+ * - @subpage howtoinit
+ * - @subpage howtoclient
+ * - @subpage howtoserver
+ * - @subpage howtoclientcomm
+ * - @subpage howtoservercomm
+ * - @subpage howtotimeouts
+ */
+
+/**
+ * @page howtoinit Init and Thread-safety Information
+ *
+ * Before working with the library, it must be initialized using ::nc_client_init()
+ * and/or ::nc_server_init(). To prevent any reachable memory at the end of your
+ * application, there are complementary destroy functions
+ * (::nc_server_destroy() and ::nc_client_destroy() available). If your
+ * application is multi-threaded, call the destroy functions in the main thread,
+ * after all the other threads have ended.
+ *
+ * If _libnetconf2_ is used in accordance with this information, there should
+ * not be memory leaks of any kind at program exit. For thread-safety details
+ * of _libssh_, _libssl_, and _libcrypto_, please refer to the corresponding project
+ * documentation. _libnetconf2_ thread-safety information is below.
+ *
+ * Client
+ * ------
+ *
+ * Optionally, a client can specify two alternative ways to get schemas needed when connecting
+ * with a server. The primary way is to read local files in searchpath (and its subdirectories)
+ * specified via ::nc_client_set_schema_searchpath(). Alternatively, _libnetconf2_ can use callback
+ * provided via ::nc_client_set_schema_callback(). If these ways do not succeed and the server
+ * implements NETCONF \<get-schema\> operation, the schema is retrieved from the server and stored
+ * locally into the searchpath (if specified) for a future use. If none of these methods succeed to
+ * load particular schema, the data from this schema are ignored during the communication with the
+ * server.
+ *
+ * Besides the mentioned setters, there are many other @ref howtoclientssh "SSH", @ref howtoclienttls "TLS"
+ * and @ref howtoclientch "Call Home" getter/setter functions to manipulate with various settings. All these
+ * settings are internally placed in a thread-specific context so they are independent and
+ * initialized to the default values within each new thread. However, the context can be shared among
+ * the threads using ::nc_client_get_thread_context() and ::nc_client_set_thread_context() functions. In such
+ * a case, be careful and avoid concurrent execution of the mentioned setters/getters and functions
+ * creating connection (no matter if it is a standard NETCONF connection or Call Home).
+ *
+ * In the client, it is always thread-safe to work with a NETCONF session in a single thread since the client
+ * settings are thread-specific as described above. Generally, one can access a session in several threads
+ * as well but there is little incentive to do so.
+ *
+ * Server
+ * ------
+ *
+ * Server is __FULLY__ thread-safe meaning you can set all the (thread-shared in contrast to
+ * client) options simultaneously while listening for or accepting new sessions or
+ * polling the existing ones. It is even safe to poll one session in several
+ * pollsession structures or one pollsession structure in several threads. Generally,
+ * servers can use more threads without any problems as long as they keep their workflow sane
+ * (behavior such as freeing sessions only after no thread uses them or similar).
+ *
+ * Functions List
+ * --------------
+ *
+ * Available in __nc_client.h__.
+ *
+ * - ::nc_client_init()
+ * - ::nc_client_destroy()
+ *
+ * - ::nc_client_set_schema_searchpath()
+ * - ::nc_client_get_schema_searchpath()
+ * - ::nc_client_set_schema_callback()
+ * - ::nc_client_get_schema_callback()
+ *
+ * - ::nc_client_set_thread_context()
+ * - ::nc_client_get_thread_context()
+ *
+ * Available in __nc_server.h__.
+ *
+ * - ::nc_server_init()
+ * - ::nc_server_destroy()
+ */
+
+/**
+ * @page howtoclient Client sessions
+ *
+ * To connect to a NETCONF server, a NETCONF session must be established,
+ * which requires a working transport session. It is possible to create
+ * NETCONF sessions with SSH (using _libssh_) or TLS (using _libssl/libcrypto_)
+ * as the underlying transport protocol. It is also possible to establish
+ * the transport protocol outside _libnetconf2_ and then provide these file
+ * descriptors (FD) for full NETCONF session creation.
+ *
+ * There are a lot of options for both an SSH and a TLS client. All of them
+ * have setters and getters so that there is no need to duplicate them in
+ * a client.
+ *
+ * @anchor howtoclientssh
+ * SSH
+ * ===
+ *
+ * Connecting to a server using SSH does not strictly require to set any
+ * options, there are sensible default values for all the basic ones.
+ * Except all the SSH options, optionally some authetication callbacks can be set,
+ * which are particulary useful in automated clients (passwords cannot be
+ * asked a user) or simply if any additional information is retrieved some
+ * other way than from standard terminal input.
+ *
+ * Having the default options or changing any unsuitable ones, there are 2 functions
+ * to use for a new server connection. ::nc_connect_ssh() is the standard function
+ * that creates sessions using the set options. If there are some options, which
+ * cannot be changed with the provided API, there is ::nc_connect_libssh() available.
+ * It requires a _libssh_ session, in which all the SSH options can be modified
+ * and even the connection established. This allows for full customization and
+ * should fit any specific situation.
+ *
+ * New NETCONF sessions can also be created on existing authenticated SSH sessions.
+ * There is a new SSH channel needed, on which the NETCONF session is then created.
+ * Use ::nc_connect_ssh_channel() for this purpose.
+ *
+ * Functions List
+ * --------------
+ *
+ * Available in __nc_client.h__.
+ *
+ * - ::nc_client_ssh_set_auth_password_clb()
+ * - ::nc_client_ssh_get_auth_password_clb()
+ * - ::nc_client_ssh_set_auth_interactive_clb()
+ * - ::nc_client_ssh_get_auth_interactive_clb()
+ * - ::nc_client_ssh_set_auth_privkey_passphrase_clb()
+ * - ::nc_client_ssh_get_auth_privkey_passphrase_clb()
+ * - ::nc_client_ssh_add_keypair()
+ * - ::nc_client_ssh_del_keypair()
+ * - ::nc_client_ssh_get_keypair_count()
+ * - ::nc_client_ssh_get_keypair()
+ * - ::nc_client_ssh_set_auth_pref()
+ * - ::nc_client_ssh_get_auth_pref()
+ * - ::nc_client_ssh_set_username()
+ * - ::nc_client_ssh_get_username()
+ *
+ * - ::nc_connect_ssh()
+ * - ::nc_connect_libssh()
+ * - ::nc_connect_ssh_channel()
+ *
+ * @anchor howtoclienttls
+ * TLS
+ * ===
+ *
+ * To connect to a server using TLS, there must be some client identification
+ * options set. Client must specify its certificate with a private key using
+ * ::nc_client_tls_set_cert_key_paths(). Also, the Certificate Authority of
+ * a server certificate must be considered trusted. Paths to all the trusted
+ * CA certificates can be set by ::nc_client_tls_set_trusted_ca_paths().
+ *
+ * Then there are again 2 functions for connecting, ::nc_connect_tls() being
+ * the standard way of connecting. ::nc_connect_libssl() again enables
+ * to customize the TLS session in every way _libssl_ allows.
+ *
+ * Functions List
+ * --------------
+ *
+ * Available in __nc_client.h__.
+ *
+ * - ::nc_client_tls_set_cert_key_paths()
+ * - ::nc_client_tls_get_cert_key_paths()
+ * - ::nc_client_tls_set_trusted_ca_paths()
+ * - ::nc_client_tls_get_trusted_ca_paths()
+ *
+ * - ::nc_connect_tls()
+ * - ::nc_connect_libssl()
+ *
+ *
+ * FD and UNIX socket
+ * ==================
+ *
+ * If you authenticated the connection using some tunneling software, you
+ * can pass its file descriptors to _libnetconf2_ using ::nc_connect_inout(),
+ * which will continue to establish a full NETCONF session. To connect locally
+ * on a UNIX socket avoiding  all cryptography use ::nc_connect_unix().
+ *
+ * Funtions List
+ * -------------
+ *
+ * Available in __nc_client.h__.
+ *
+ * - ::nc_connect_inout()
+ * - ::nc_connect_unix()
+ *
+ *
+ * @anchor howtoclientch
+ * Call Home
+ * =========
+ *
+ * Call Home needs the same options set as standard SSH or TLS and the functions
+ * reflect it exactly. However, to accept a connection, the client must first
+ * specify addresses and ports, which to listen on by ::nc_client_ssh_ch_add_bind_listen()
+ * and ::nc_client_tls_ch_add_bind_listen(). Then connections can be
+ * accepted using ::nc_accept_callhome().
+ *
+ * Functions List
+ * --------------
+ *
+ * Available in __nc_client.h__.
+ *
+ * - ::nc_client_ssh_ch_set_auth_password_clb()
+ * - ::nc_client_ssh_ch_set_auth_interactive_clb()
+ * - ::nc_client_ssh_ch_set_auth_privkey_passphrase_clb()
+ * - ::nc_client_ssh_ch_add_bind_listen()
+ * - ::nc_client_ssh_ch_del_bind()
+ * - ::nc_client_ssh_ch_add_keypair()
+ * - ::nc_client_ssh_ch_del_keypair()
+ * - ::nc_client_ssh_ch_get_keypair_count()
+ * - ::nc_client_ssh_ch_get_keypair()
+ * - ::nc_client_ssh_ch_set_auth_pref()
+ * - ::nc_client_ssh_ch_get_auth_pref()
+ * - ::nc_client_ssh_ch_set_username()
+ * - ::nc_client_ssh_ch_get_username()
+ *
+ * - ::nc_client_tls_ch_add_bind_listen()
+ * - ::nc_client_tls_ch_del_bind()
+ * - ::nc_client_tls_ch_set_cert_key_paths()
+ * - ::nc_client_tls_ch_get_cert_key_paths()
+ * - ::nc_client_tls_ch_set_trusted_ca_paths()
+ * - ::nc_client_tls_ch_get_trusted_ca_paths()
+ *
+ * - ::nc_accept_callhome()
+ *
+ *
+ * Cleanup
+ * =======
+ *
+ * These options and the schema searchpath are stored in dynamically
+ * allocated memory. They are freed as a part of [destroying the client](@ref howtoinit).
+ */
+
+/**
+ * @page howtoserver Server sessions
+ *
+ * Init
+ * ====
+ *
+ * Server must start with [initialization](@ref howtoinit). Its capabilities are
+ * determined by the context used when accepting new NETCONF sessions. Few capabilities that
+ * cannot be learnt from the context are set with separate functions
+ * ::nc_server_set_capab_withdefaults() and generally ::nc_server_set_capability().
+ *
+ * Context does not only determine server modules, but its overall
+ * functionality as well. For every RPC the server should support,
+ * an nc_rpc_clb callback should be set on that node in the context using ::nc_set_rpc_callback().
+ * Server then calls these as appropriate [during poll](@ref howtoservercomm).
+ *
+ * Just like in the [client](@ref howtoclient), you can let _libnetconf2_
+ * establish SSH or TLS transport or do it yourself and only provide the file
+ * descriptors of the connection.
+ *
+ * To be able to accept any connections, the server must first be configured.
+ *
+ * Functions List
+ * --------------
+ *
+ * Available in __nc_server.h__.
+ *
+ * - ::nc_server_set_capab_withdefaults()
+ * - ::nc_server_set_capability()
+ * - ::nc_server_endpt_count()
+ * - ::nc_server_add_endpt_unix_socket_listen()
+ * - ::nc_server_del_endpt_unix_socket()
+ *
+ * Server Configuration
+ * ===
+ *
+ * To successfully accept connections on a server, you first need to configure it.
+ * The *libnetconf2* server natively supports the *ietf-netconf-server YANG* module.
+ * This allows for a bigger scaling and flexibility of the *NETCONF* server.
+ * By using *ietf-netconf-server YANG* data you can express network configurations
+ * in a standardized and hierarchical format, enabling you to define complex network
+ * structures with greater ease.
+ *
+ * The process of configuring a server is comprised of two steps. The first step is creating the
+ * configuration data and the second is applying it. The server supports two forms of the configuration
+ * data - *YANG data* and *YANG diff*.
+ *
+ * YANG data
+ * ---
+ * Configuring the server using YANG data simplifies the management of network services.
+ * With YANG data, you build a structured configuration tree and apply it as a whole.
+ * This approach is user-friendly, allowing you to modify the configuration by adding or deleting nodes,
+ * and then deploying the updated configuration tree in its entirety, providing a way to manage your server's settings.
+ * The *libnetconf2* library exports API functions that can help you with creation or deletion of the *YANG* data.
+ *
+ * YANG diff
+ * ---
+ * YANG diff, enriched with operation attributes, offers advanced configuration control.
+ * It empowers the user to make precise changes within the configuration tree,
+ * enabling operations like specific node deletions, additions, and modifications.
+ * On the other hand, unlike YANG data, YANG diff represents only a subtree of the
+ * changes expecting the whole configuration to be managed externally.
+ * For example this is done by the tool [sysrepo](https://www.sysrepo.org/).
+ *
+ * Usage
+ * ---
+ * To be able to configure the server, the required models first need to be implemented.
+ * To do this, see ::nc_server_config_load_modules().
+ * Not all of the *ietf-netconf-server* (and all of its associated modules) features are enabled.
+ * If you wish to see which features are enabled, extract them from the context after calling the mentioned function.
+ *
+ * If you wish not to create the __YANG data__ yourself, you may use the library's functions to do this for you.
+ * For example ::nc_server_config_add_address_port() creates __YANG data__ corresponding to an SSH/TLS endpoint.
+ * You can then apply this data by calling ::nc_server_config_setup_data() (or ::nc_server_config_setup_diff() for diff).
+ * See *examples/server.c* for a simple example.
+ *
+ * You may also create entries in the keystore or truststore. For example the asymmetric key and certificate entries
+ * in the keystore can be then referenced as the SSH hostkeys or TLS server certificates, respectively.
+ * As for the truststore, you may create public key and certificate entries, which can then be used
+ * as SSH user's public keys or TLS server's end-entity/trust-anchor certificates, respectively.
+ *
+ * Functions List
+ * --------------
+ *
+ * Available in __nc_server.h__.
+ *
+ * - ::nc_server_config_load_modules()
+ * - ::nc_server_config_setup_diff()
+ * - ::nc_server_config_setup_data()
+ * - ::nc_server_config_setup_path()
+ *
+ * - ::nc_server_config_add_address_port()
+ * - ::nc_server_config_del_endpt()
+ * - ::nc_server_config_add_keystore_asym_key()
+ * - ::nc_server_config_del_keystore_asym_key()
+ * - ::nc_server_config_add_keystore_cert()
+ * - ::nc_server_config_del_keystore_cert()
+ * - ::nc_server_config_add_truststore_pubkey()
+ * - ::nc_server_config_del_truststore_pubkey()
+ * - ::nc_server_config_add_truststore_cert()
+ * - ::nc_server_config_del_truststore_cert()
+ *
+ * SSH
+ * ===
+ *
+ * To successfully accept an SSH session you must configure at least one host key.
+ * You may create this data yourself or by using ::nc_server_config_add_ssh_hostkey().
+ *
+ * It is important to decide whether the users that can connect to the SSH server should be obtained from the configuration or from the system.
+ * If the YANG feature *local-users-supported* is enabled (the default), then the authorized users are derived from the configuration. 
+ * When a client connects to the server, he must be found in the configuration and he must authenticate to **all** of his configured authentication methods.
+ * If the feature is disabled, then the system will be used to try to authenticate the client via one of the three
+ * methods - publickey, keyboard-interactive or password (only one of them has to succeed).
+ *
+ * If the local users are supported then each SSH endpoint can define it's own authorized clients and their authentication methods.
+ * For example if you wish to create an SSH user that can authenticate using a password, use ::nc_server_config_add_ssh_user_password().
+ * Another option for authorized clients is to reference another endpoint's clients, however be careful not to create a cyclic reference
+ * (see ::nc_server_config_add_ssh_endpoint_client_ref()).
+ *
+ * \anchor ln2doc_pubkey
+ * The Public Key authentication method is supported. If you wish to use this method, you need to specify the given user's
+ * public keys, which will be compared with the key(s) presented by the SSH client when authenticating. One option is to configure
+ * the public keys directly in the ietf-netconf-server YANG data (inline-definition). Other option is to configure the keys' data
+ * in the ietf-trustore module's YANG data and then reference them (truststore-reference). The final option is to set the global
+ * path to file with public keys. This path may contain special tokens, see ::nc_server_ssh_set_authkey_path_format().
+ * If the path is set and the use-system-keys container is present in the data for the client wishing to authenticate,
+ * then the keys from the file will be used for authentication. If the YANG feature *local-users-supported* is disabled,
+ * then it's neccessary to set the path format using ::nc_server_ssh_set_authkey_path_format().
+ *
+ * \anchor ln2doc_kbdint
+ * The Keyboard Interactive authentication method is also supported. It can be done in three ways.
+ * If libpam is found, Linux PAM is used to handle the authentication. You need to specify the service name using ::nc_server_ssh_set_pam_conf_filename().
+ * Else if the standard functions for accessing local users are found on the system, they are used. The only Keyboard Interactive challenge will be the given
+ * user's password (that is if he's found on the system).
+ * Either way, you can always define your own callback to perform the authentication, see ::nc_server_ssh_set_interactive_auth_clb().
+ * The callback has a higher priority than the other two methods.
+ *
+ * There are also some other optional settings.
+ *
+ * Functions List
+ * --------------
+ *
+ * Available in __nc_server.h__.
+ *
+ * - ::nc_server_config_add_ssh_hostkey()
+ * - ::nc_server_config_del_ssh_hostkey()
+ * - ::nc_server_config_add_ssh_keystore_ref()
+ * - ::nc_server_config_del_ssh_keystore_ref()
+ *
+ * - ::nc_server_config_add_ssh_user_pubkey()
+ * - ::nc_server_config_del_ssh_user_pubkey()
+ * - ::nc_server_config_add_ssh_user_password()
+ * - ::nc_server_config_del_ssh_user_password()
+ * - ::nc_server_config_add_ssh_user_interactive()
+ * - ::nc_server_config_del_ssh_user_interactive()
+ * - ::nc_server_config_del_ssh_user()
+ * - ::nc_server_config_add_ssh_truststore_ref()
+ * - ::nc_server_config_del_ssh_truststore_ref()
+ * - ::nc_server_config_add_ssh_endpoint_client_ref()
+ * - ::nc_server_config_del_ssh_endpoint_client_ref()
+ *
+ * - ::nc_server_ssh_set_authkey_path_format()
+ * - ::nc_server_ssh_set_pam_conf_filename()
+ * - ::nc_server_ssh_set_interactive_auth_clb()
+ *
+ * TLS
+ * ===
+ *
+ * TLS works with endpoints too, but its options differ
+ * significantly from the SSH ones, especially in the _cert-to-name_
+ * options that TLS uses to derive usernames from client certificates.
+ *
+ * If you wish to listen on a TLS endpoint, you need to configure the endpoint's
+ * server certificate (see ::nc_server_config_add_tls_server_cert()).
+ *
+ * To accept client certificates, they must first be considered trusted.
+ * For each TLS endpoint you may configure two types of client certificates.
+ * The first type are end-entity (client) certificates. These are certificates that belong
+ * to given clients. These certificates need to be trusted.
+ * The second type are trust-anchor (certificate authority) certificates,
+ * which carry over the trust (a chain of trust).
+ * Another option is to reference another TLS endpoint's end-entity certificates, however be careful not to create a cyclic reference
+ * (see ::nc_server_config_add_tls_endpoint_client_ref()).
+ *
+ * Then, from each trusted client certificate a username must be derived
+ * for the NETCONF session. This is accomplished by finding a matching
+ * _cert-to-name_ entry.
+ *
+ * There are some further options. For example you can configure the TLS
+ * version and ciphers to be used.
+ *
+ * You may also choose to use a Certificate Revocation List. These lists
+ * are downloaded from the URIs specified in the x509 CRLDistributionPoints extensions.
+ * Be mindful that if any CRL is successfully downloaded and set, then at least one of them has to belong
+ * to the peer (e.g. the client) certificate (in other words it has to be issued by peer's CA).
+ *
+ * Functions List
+ * --------------
+ *
+ * Available in __nc_server.h__.
+ *
+ * - ::nc_server_config_add_tls_server_cert()
+ * - ::nc_server_config_del_tls_server_cert()
+ * - ::nc_server_config_add_tls_keystore_ref()
+ * - ::nc_server_config_del_tls_keystore_ref()
+ *
+ * - ::nc_server_config_add_tls_client_cert()
+ * - ::nc_server_config_del_tls_client_cert()
+ * - ::nc_server_config_add_tls_client_cert_truststore_ref()
+ * - ::nc_server_config_del_tls_client_cert_truststore_ref()
+ * - ::nc_server_config_add_tls_ca_cert()
+ * - ::nc_server_config_del_tls_ca_cert()
+ * - ::nc_server_config_add_tls_ca_cert_truststore_ref()
+ * - ::nc_server_config_del_tls_ca_cert_truststore_ref()
+ * - ::nc_server_config_add_tls_endpoint_client_ref()
+ * - ::nc_server_config_del_tls_endpoint_client_ref()
+ * - ::nc_server_config_add_tls_ctn()
+ * - ::nc_server_config_del_tls_ctn()
+ *
+ * FD
+ * ==
+ *
+ * If you used a tunneling software, which does its own authentication,
+ * you can accept a NETCONF session on its file descriptors with
+ * ::nc_accept_inout().
+ *
+ * Functions List
+ * --------------
+ *
+ * Available in __nc_server.h__.
+ *
+ * - ::nc_accept_inout()
+ *
+ *
+ * Call Home
+ * =========
+ *
+ * _Call Home_ works with endpoints just like standard sessions, but
+ * the options are organized a bit differently and endpoints are added
+ * for CH clients.
+ * You may choose one of two approaches for creating a new Call Home
+ * session (or in other words making a server connect to a client).
+ * The first is to set all the required callbacks
+ * by calling ::nc_server_ch_set_dispatch_data(). By setting the callbacks,
+ * the server will automatically start connecting to a client, whenever
+ * a new Call Home client is created.
+ * The second approach is to create the Call Home thread manually.
+ * To do this, you need to call ::nc_connect_ch_client_dispatch(),
+ * which then creates a new thread and the server will start to connect.
+ * Unix socket _Call Home_ sessions are not supported.
+ *
+ * Functions List
+ * --------------
+ *
+ * Available in __nc_server.h__.
+ *
+ * - ::nc_server_config_add_ch_address_port()
+ * - ::nc_server_config_del_ch_client()
+ * - ::nc_server_config_del_ch_endpt()
+ * - ::nc_server_config_add_ch_persistent()
+ * - ::nc_server_config_add_ch_period()
+ * - ::nc_server_config_del_ch_period()
+ * - ::nc_server_config_add_ch_anchor_time()
+ * - ::nc_server_config_del_ch_anchor_time()
+ * - ::nc_server_config_add_ch_idle_timeout()
+ * - ::nc_server_config_del_ch_idle_timeout()
+ * - ::nc_server_config_add_ch_reconnect_strategy()
+ * - ::nc_server_config_del_ch_reconnect_strategy()
+ *
+ * - ::nc_server_config_add_ch_ssh_hostkey()
+ * - ::nc_server_config_del_ch_ssh_hostkey()
+ * - ::nc_server_config_add_ch_ssh_keystore_ref()
+ * - ::nc_server_config_del_ch_ssh_keystore_ref()
+ * - ::nc_server_config_add_ch_ssh_user_pubkey()
+ * - ::nc_server_config_del_ch_ssh_user_pubkey()
+ * - ::nc_server_config_add_ch_ssh_user_password()
+ * - ::nc_server_config_del_ch_ssh_user_password()
+ * - ::nc_server_config_add_ch_ssh_user_interactive()
+ * - ::nc_server_config_del_ch_ssh_user_interactive()
+ * - ::nc_server_config_del_ch_ssh_user()
+ * - ::nc_server_config_add_ch_ssh_truststore_ref()
+ * - ::nc_server_config_del_ch_ssh_truststore_ref()
+ *
+ * - ::nc_server_config_add_ch_tls_server_cert()
+ * - ::nc_server_config_del_ch_tls_server_cert()
+ * - ::nc_server_config_add_ch_tls_keystore_ref()
+ * - ::nc_server_config_del_ch_tls_keystore_ref()
+ * - ::nc_server_config_add_ch_tls_client_cert()
+ * - ::nc_server_config_del_ch_tls_client_cert()
+ * - ::nc_server_config_add_ch_tls_client_cert_truststore_ref()
+ * - ::nc_server_config_del_ch_tls_client_cert_truststore_ref()
+ * - ::nc_server_config_add_ch_tls_ca_cert()
+ * - ::nc_server_config_del_ch_tls_ca_cert()
+ * - ::nc_server_config_add_ch_tls_ca_cert_truststore_ref()
+ * - ::nc_server_config_del_ch_tls_ca_cert_truststore_ref()
+ * - ::nc_server_config_add_ch_tls_ctn()
+ * - ::nc_server_config_del_ch_tls_ctn()
+ *
+ * Connecting And Cleanup
+ * ======================
+ *
+ * When accepting connections with ::nc_accept(), all the endpoints are examined
+ * and the first with a pending connection is used. To remove all CH clients,
+ * endpoints, and free any used dynamic memory, [destroy](@ref howtoinit) the server.
+ *
+ * Functions List
+ * --------------
+ *
+ * Available in __nc_server.h__.
+ *
+ * - ::nc_accept()
+ */
+
+/**
+ * @page howtoclientcomm Client communication
+ *
+ * To send RPCs on a session, you simply create an RPC, send it using ::nc_send_rpc(),
+ * and then wait for a reply using ::nc_recv_reply(). If you are subscribed, there are 2 ways
+ * of receiving notifications. Either you wait for them the same way
+ * as for standard replies with ::nc_recv_notif() or you create a dispatcher
+ * with ::nc_recv_notif_dispatch() that asynchronously (in a separate thread)
+ * reads notifications and passes them to your callback.
+ *
+ * Functions List
+ * --------------
+ *
+ * Available in __nc_client.h__.
+ *
+ * - ::nc_rpc_act_generic()
+ * - ::nc_rpc_act_generic_xml()
+ * - ::nc_rpc_getconfig()
+ * - ::nc_rpc_edit()
+ * - ::nc_rpc_copy()
+ * - ::nc_rpc_delete()
+ * - ::nc_rpc_lock()
+ * - ::nc_rpc_unlock()
+ * - ::nc_rpc_get()
+ * - ::nc_rpc_kill()
+ * - ::nc_rpc_commit()
+ * - ::nc_rpc_discard()
+ * - ::nc_rpc_cancel()
+ * - ::nc_rpc_validate()
+ * - ::nc_rpc_getschema()
+ * - ::nc_rpc_subscribe()
+ * - ::nc_rpc_getdata()
+ * - ::nc_rpc_editdata()
+ * - ::nc_rpc_establishsub()
+ * - ::nc_rpc_modifysub()
+ * - ::nc_rpc_deletesub()
+ * - ::nc_rpc_killsub()
+ * - ::nc_rpc_establishpush_periodic()
+ * - ::nc_rpc_establishpush_onchange()
+ * - ::nc_rpc_modifypush_periodic()
+ * - ::nc_rpc_modifypush_onchange()
+ * - ::nc_rpc_resyncsub()
+ *
+ * - ::nc_send_rpc()
+ * - ::nc_recv_reply()
+ * - ::nc_recv_notif()
+ * - ::nc_recv_notif_dispatch()
+ */
+
+/**
+ * @page howtoservercomm Server communication
+ *
+ * Once at least one session is established, an nc_pollsession structure
+ * should be created with ::nc_ps_new(), filled with the session using
+ * ::nc_ps_add_session() and finally polled with ::nc_ps_poll(). Based on
+ * the return value from the poll, further actions can be taken. More
+ * sessions can be polled at the same time and any requests received on
+ * the sessions are [handled internally](@ref howtoserver).
+ *
+ * If an SSH NETCONF session asks for a new channel, you can accept
+ * this request with ::nc_ps_accept_ssh_channel() or ::nc_session_accept_ssh_channel()
+ * depending on the structure you want to use as the argument.
+ *
+ * The server-side notifications are also supported. You can create a new notification
+ * with ::nc_server_notif_new() and send it via ::nc_server_notif_send() to subscribed clients.
+ * Keep in mind that the session you wish to send a notification on has to have at least one
+ * subscriber, see ::nc_session_inc_notif_status().
+ * Currently, only notifications about certificate expiration are implemented,
+ * see ::nc_server_notif_cert_expiration_thread_start().
+ *
+ * Functions List
+ * --------------
+ *
+ * Available in __nc_server.h__.
+ *
+ * - ::nc_ps_new()
+ * - ::nc_ps_add_session()
+ * - ::nc_ps_del_session()
+ * - ::nc_ps_session_count()
+ * - ::nc_ps_free()
+ *
+ * - ::nc_ps_poll()
+ * - ::nc_ps_clear()
+ * - ::nc_ps_accept_ssh_channel()
+ * - ::nc_session_accept_ssh_channel()
+ *
+ * - ::nc_server_notif_new()
+ * - ::nc_server_notif_send()
+ * - ::nc_server_notif_free()
+ * - ::nc_server_notif_get_time()
+
+ * - ::nc_session_inc_notif_status()
+ * - ::nc_session_dec_notif_status()
+ * - ::nc_session_get_notif_status()
+
+ * - ::nc_server_notif_cert_expiration_thread_start()
+ * - ::nc_server_notif_cert_expiration_thread_stop()
+ */
+
+/**
+ * @page howtotimeouts Timeouts
+ *
+ * There are several timeouts which are used throughout _libnetconf2_ to
+ * assure that it will never indefinitely hang on any operation. Normally,
+ * you should not need to worry about them much because they are set by
+ * default to reasonable values for common systems. However, if your
+ * platform is not common (embedded, ...), adjusting these timeouts may
+ * save a lot of debugging and time.
+ *
+ * Compile Options
+ * ---------------
+ *
+ * You can adjust active and inactive read timeout using `cmake` variables.
+ * For details look into `README.md`.
+ *
+ * Configurable timeouts
+ * ---------------------
+ *
+ * Once a new connection is established including transport protocol negotiations,
+ * _hello_ message is exchanged. You can set how long will the server wait for
+ * receiving this message from a client before dropping it.
+ *
+ * Having a NETCONF session working, it may not communicate for a longer time.
+ * To free up some resources, it is possible to adjust the maximum idle period
+ * of a session before it is disconnected. In _Call Home_, for both a persistent
+ * and periodic connection can this idle timeout be specified separately for each
+ * client. Lastly, SSH user authentication timeout can be also modified. It is the time
+ * a client has to successfully authenticate after connecting before it is disconnected.
+ *
+ * These timeouts can be toggled by applying corresponding configuration data.
+ */
+
+/**
+ * @defgroup misc Miscellaneous
+ * @brief Miscellaneous macros, types, structure and functions for a generic use by both server and client applications.
+ */
+
+/**
+ * @defgroup client Client
+ * @brief NETCONF client functionality.
+ */
+
+/**
+ * @defgroup server Server
+ * @brief NETCONF server functionality.
+ * @{
+ * @} Server
+ */
