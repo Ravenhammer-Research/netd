@@ -48,28 +48,41 @@ find_package(PkgConfig REQUIRED)
 
 # Set libyang paths directly since pkg-config is unreliable
 set(YANG_INCLUDE_DIRS "/usr/local/include")
-set(YANG_LIBRARIES "/usr/local/lib/libyang.so")
-
 # Set netconf library
 set(NETCONF_INCLUDE_DIRS "/usr/local/include")
-set(NETCONF_LIBRARIES "/usr/local/lib/libnetconf.so")
 
 # Add library search paths
 link_directories(/usr/local/lib /usr/lib)
 
-
 # Include directories
-include_directories(${CMAKE_SOURCE_DIR}/src/common)
+include_directories(${CMAKE_SOURCE_DIR}/src/shared)
 include_directories(${YANG_INCLUDE_DIRS})
 include_directories(${NETCONF_INCLUDE_DIRS})
 
+# Define constants that can be used by targets
+set(NETD_DEFINES
+    MAX_VRF_NAME_LEN=64
+    MAX_IFNAME_LEN=15
+    MAX_GROUP_NAME_LEN=15
+    MAX_GROUPS_PER_IF=65536
+    MAX_BRIDGE_MEMBERS=65536
+    MAX_LAGG_MEMBERS=65536
+    MAX_VRFS=65536
+    MAX_IPV4_ADDRESSES_PER_IF=256
+    MAX_IPV6_ADDRESSES_PER_IF=256
+    MAX_NETCONF_SESSIONS=64
+    NETD_SOCKET_PATH="/var/run/netd.sock"
+    YANG_GLOBAL_PATH="/usr/local/share/yang/modules/libyang/"
+    YANG_LOCAL_PATH="./yang"
+)
+
 # Add subdirectories
 add_subdirectory(src/shared)
-add_subdirectory(src/client)
+#add_subdirectory(src/client)
 add_subdirectory(src/server)
 
 # Install targets
-install(TARGETS net netd
+install(TARGETS netd
     RUNTIME DESTINATION bin
 )
 

@@ -46,5 +46,6 @@ typedef enum {
 /* Debug function declarations */
 void debug_init(debug_level_t level);
 void debug_log(debug_level_t level, const char *format, ...);
+void debug_init_libraries(debug_level_t level);
 
 #endif /* DEBUG_H */ 

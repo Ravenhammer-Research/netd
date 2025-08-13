@@ -89,7 +89,7 @@ int main(int argc, char *argv[]) {
   }
 
   /* Initialize debug logging */
-  debug_init(debug_level);
+  debug_init_libraries(debug_level);
   debug_log(INFO, "Starting net client (debug level: %d)", debug_level);
 
   /* Check if interactive mode */

@@ -34,6 +34,54 @@
 
 #include <net.h>
 #include <utils.h>
+#include <libnetconf2/netconf.h>
+#include <libnetconf2/session_client.h>
+#include <libnetconf2/messages_client.h>
+
+/* Forward declarations for libnetconf2 types */
+struct nc_msg;
+struct nc_rpc;
+struct lyd_node;
+
+/* NETCONF client configuration */
+#define NETCONF_CLIENT_PORT 830
+#define NETCONF_CLIENT_PATH "/var/run/netd.sock"
+
+/* NETCONF client session management */
+int netconf_client_init(net_client_t *client);
+void netconf_client_cleanup(net_client_t *client);
+int netconf_connect(net_client_t *client);
+void netconf_disconnect(net_client_t *client);
+
+/* NETCONF message handling */
+int netconf_send_rpc(net_client_t *client, struct nc_rpc *rpc, struct nc_msg **reply);
+int netconf_send_get_config(net_client_t *client, NC_DATASTORE source, 
+                           struct lyd_node *filter, struct nc_msg **reply);
+int netconf_send_edit_config(net_client_t *client, NC_DATASTORE target,
+                            struct lyd_node *config, struct nc_msg **reply);
+int netconf_send_get(net_client_t *client, struct lyd_node *filter, 
+                    struct nc_msg **reply);
+int netconf_send_commit(net_client_t *client, struct nc_msg **reply);
+int netconf_send_validate(net_client_t *client, NC_DATASTORE source, 
+                         struct nc_msg **reply);
+int netconf_send_lock(net_client_t *client, NC_DATASTORE target, 
+                     struct nc_msg **reply);
+int netconf_send_unlock(net_client_t *client, NC_DATASTORE target, 
+                       struct nc_msg **reply);
+int netconf_send_kill_session(net_client_t *client, uint32_t session_id, 
+                             struct nc_msg **reply);
+int netconf_send_discard_changes(net_client_t *client, struct nc_msg **reply);
+
+/* NETCONF data operations */
+int netconf_get_interfaces_data(net_client_t *client, struct lyd_node **data, 
+                               const char *interface_type);
+int netconf_get_vrfs_data(net_client_t *client, struct lyd_node **data);
+int netconf_get_routes_data(net_client_t *client, struct lyd_node **data, 
+                           uint32_t fib, int family);
+int netconf_apply_config_changes(net_client_t *client, struct lyd_node *config);
+
+/* NETCONF error handling */
+int netconf_handle_error_reply(struct nc_msg *reply, char **error_message);
 
 /* Command execution functions */
 int execute_command(net_client_t *client, const command_t *cmd);
@@ -50,16 +98,7 @@ int transaction_rollback(void);
 bool is_transaction_active(void);
 int get_transaction_command_count(void);
 
-/* NETCONF client functions */
-int netconf_connect(net_client_t *client);
-void netconf_disconnect(net_client_t *client);
-int netconf_send_request(net_client_t *client, const char *request, char **response);
 
-/* NETCONF request functions */
-int netconf_get_interfaces(net_client_t *client, char **response, const char *interface_type);
-int netconf_get_vrfs(net_client_t *client, char **response);
-int netconf_get_routes(net_client_t *client, uint32_t fib, int family, char **response);
-int netconf_get_interface_groups(net_client_t *client, char **response);
 
 /* YANG context management */
 int yang_init_client(net_client_t *client);
@@ -68,5 +107,11 @@ int yang_validate_xml_client(net_client_t *client, const char *xml_data);
 int yang_validate_rpc_client(net_client_t *client, const char *rpc_xml);
 int yang_validate_response_client(net_client_t *client, const char *response_xml);
 int yang_validate_data_client(net_client_t *client, const char *data_xml);
+
+/* YANG data conversion functions */
+char *yang_data_to_xml(struct lyd_node *data);
+char *yang_get_interfaces_xml(net_client_t *client, const char *interface_type);
+char *yang_get_vrfs_xml(net_client_t *client);
+char *yang_get_routes_xml(net_client_t *client, uint32_t fib, int family);
 
 #endif /* NETCONF_H */ 

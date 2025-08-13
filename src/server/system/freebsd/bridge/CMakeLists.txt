@@ -1,17 +1,15 @@
-set(BRIDGE_SOURCES
+# CMakeLists.txt for bridge interface type
+# Copyright (c) 2025 Paige Thompson / Raven Hammer Research
+
+add_library(freebsd_bridge_type STATIC
     show.c
 )
 
-add_library(freebsd_bridge STATIC ${BRIDGE_SOURCES})
-
-target_include_directories(freebsd_bridge PRIVATE
+# Set include directories
+target_include_directories(freebsd_bridge_type PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/..
     ${CMAKE_CURRENT_SOURCE_DIR}/../..
     ${CMAKE_CURRENT_SOURCE_DIR}/../../..
     ${CMAKE_CURRENT_SOURCE_DIR}/../../../../shared
-)
-
-target_link_libraries(freebsd_bridge
-    netd
 ) 

@@ -1,33 +1,26 @@
-# CMakeLists.txt for interface module
+# CMakeLists.txt for interface handlers
 # Copyright (c) 2025 Paige Thompson / Raven Hammer Research
 
-set(INTERFACE_SOURCES
-    set.c
-    delete.c
-    show.c
-    request.c
-    bridge.c
-    vlan.c
-    epair.c
-    gif.c
-    lagg.c
-    loopback.c
-    tap.c
-    wlan.c
-    response.c
+# Add subdirectories
+add_subdirectory(request)
+add_subdirectory(response)
+add_subdirectory(type)
+
+# Create interface library
+add_library(interface INTERFACE)
+
+# Link libraries
+target_link_libraries(interface INTERFACE
+    interface_request
+    interface_response
+    interface_type
 )
 
-add_library(interface ${INTERFACE_SOURCES})
-
 # Set include directories
-target_include_directories(interface PUBLIC
+target_include_directories(interface INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/..
     ${CMAKE_CURRENT_SOURCE_DIR}/../..
     ${CMAKE_CURRENT_SOURCE_DIR}/../../..
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../system
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../system/freebsd
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../../shared
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../../../shared
 )
-
- 

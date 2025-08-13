@@ -6,9 +6,7 @@ module netd {
   import ietf-interfaces {
     prefix if;
   }
-  import frr-vrf {
-    prefix frr-vrf;
-  }
+
   import ietf-inet-types {
     prefix inet;
   }
@@ -82,17 +80,25 @@ module netd {
       "FreeBSD vxlan interface - Virtual Extensible LAN interface";
   }
 
-  /* VRF configuration - augment frr-vrf */
-  augment "/frr-vrf:lib/frr-vrf:vrf" {
-    description "VRF (Virtual Routing and Forwarding) configuration extensions";
-    
-    leaf fib {
-      type uint32 {
-        range "0..255";
-      }
-      description "Forwarding Information Base number";
-    }
+  identity gre {
+    base freebsd-interface-type;
+    description
+      "FreeBSD gre interface - Generic Routing Encapsulation tunnel interface";
   }
+
+  identity tun {
+    base freebsd-interface-type;
+    description
+      "FreeBSD tun interface - Point-to-point tunnel interface";
+  }
+
+  identity ovpn {
+    base freebsd-interface-type;
+    description
+      "FreeBSD ovpn interface - OpenVPN tunnel interface";
+  }
+
+
 
   /* Interface configuration extensions */
   augment "/if:interfaces/if:interface" {
@@ -204,60 +210,7 @@ module netd {
 
   }
 
-  /* Route configuration - augment frr-vrf */
-  augment "/frr-vrf:lib/frr-vrf:vrf" {
-    description "Route configuration extensions";
-    
-    /* Route request marker - used to indicate route enumeration requests */
-    leaf route-request {
-      type empty;
-      description "Marker element to request route enumeration for this VRF";
-    }
-    
-    list route {
-      key "destination";
-      description "Route entry";
-      
-      leaf destination {
-        type inet:ip-prefix;
-        description "Route destination";
-      }
-      
-      leaf gateway {
-        type inet:ip-address;
-        description "Route gateway";
-      }
-      
-      leaf interface {
-        type leafref {
-          path "/if:interfaces/if:interface/if:name";
-        }
-        description "Route interface";
-      }
-      
-      leaf type {
-        type enumeration {
-          enum static {
-            description "Static route";
-          }
-          enum reject {
-            description "Reject route";
-          }
-          enum blackhole {
-            description "Blackhole route";
-          }
-        }
-        default static;
-        description "Route type";
-      }
-      
-      leaf enabled {
-        type boolean;
-        default true;
-        description "Enable/disable route";
-      }
-    }
-  }
+
 
   /* RPC operations */
   rpc commit {

@@ -82,7 +82,8 @@ int freebsd_route_delete(uint32_t fib, const char *destination) {
   }
 
   /* Parse destination address */
-  if (parse_address(destination, &dest_addr) < 0) {
+  uint8_t *addr_num = parse_address_freebsd(destination, &dest_addr);
+  if (!addr_num) {
     debug_log(ERROR, "Failed to parse destination address %s",
               destination);
     return -1;
@@ -132,6 +133,7 @@ int freebsd_route_delete(uint32_t fib, const char *destination) {
 
   debug_log(INFO, "Deleted route to %s (FIB %u)", destination, fib);
   free(rtm);
+  free(addr_num);
   close(sock);
   return 0;
 } 

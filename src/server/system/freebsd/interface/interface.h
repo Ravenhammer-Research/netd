@@ -38,7 +38,7 @@
 #include <netd.h>
 
 /* System interface functions */
-int freebsd_interface_create(const char *name, interface_type_t type);
+int freebsd_interface_create(const char *name, netd_interface_type_t type);
 bool freebsd_interface_exists(const char *name);
 int freebsd_interface_delete(const char *name);
 int freebsd_interface_set_fib(const char *name, uint32_t fib);
@@ -52,7 +52,7 @@ int freebsd_interface_get_groups(const char *name,
                                  char (*groups)[MAX_GROUP_NAME_LEN],
                                  int max_groups, int *group_count);
 int freebsd_enumerate_interfaces(netd_state_t *state);
-bool freebsd_is_hardware_interface(interface_type_t type);
+bool freebsd_is_hardware_interface(netd_interface_type_t type);
 const char *freebsd_get_interface_oper_status(int flags);
 
 

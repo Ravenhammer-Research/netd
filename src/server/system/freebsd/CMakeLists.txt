@@ -1,7 +1,7 @@
 # CMakeLists.txt for FreeBSD system module
 # Copyright (c) 2025 Paige Thompson / Raven Hammer Research
 
-# Add subdirectories
+# Add subdirectories for each interface type
 add_subdirectory(80211)
 add_subdirectory(bridge)
 add_subdirectory(epair)
@@ -13,52 +13,32 @@ add_subdirectory(route)
 add_subdirectory(tap)
 add_subdirectory(vlan)
 
-# Collect all FreeBSD system source files
-file(GLOB_RECURSE FREEBSD_SOURCES
-    "*.c"
-    "80211/*.c"
-    "bridge/*.c"
-    "epair/*.c"
-    "gif/*.c"
-    "interface/*.c"
-    "lagg/*.c"
-    "loopback/*.c"
-    "route/*.c"
-    "tap/*.c"
-    "vlan/*.c"
-)
-
-# Create freebsd system library
-add_library(freebsd_system STATIC ${FREEBSD_SOURCES})
+# Create the main freebsd library
+add_library(freebsd STATIC util.c)
 
 # Set include directories
-target_include_directories(freebsd_system PUBLIC
+target_include_directories(freebsd PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/..
     ${CMAKE_CURRENT_SOURCE_DIR}/../..
     ${CMAKE_CURRENT_SOURCE_DIR}/../../..
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../../..
-    ${CMAKE_SOURCE_DIR}/example/usr/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/80211
-    ${CMAKE_CURRENT_SOURCE_DIR}/bridge
-    ${CMAKE_CURRENT_SOURCE_DIR}/epair
-    ${CMAKE_CURRENT_SOURCE_DIR}/gif
-    ${CMAKE_CURRENT_SOURCE_DIR}/interface
-    ${CMAKE_CURRENT_SOURCE_DIR}/lagg
-    ${CMAKE_CURRENT_SOURCE_DIR}/loopback
-    ${CMAKE_CURRENT_SOURCE_DIR}/route
-    ${CMAKE_CURRENT_SOURCE_DIR}/tap
-    ${CMAKE_CURRENT_SOURCE_DIR}/vlan
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../../shared
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../../../shared
 )
+
+# Add compile definitions
+target_compile_definitions(freebsd PUBLIC ${NETD_DEFINES})
 
 # Link dependencies
-target_link_libraries(freebsd_system
-    netd
-)
+target_link_libraries(freebsd
+    system
+    freebsd_80211_type
+    freebsd_bridge_type
+    freebsd_epair_type
+    freebsd_gif_type
+    freebsd_interface_type
+    freebsd_lagg_type
+    freebsd_loopback_type
+    freebsd_route_type
+    freebsd_tap_type
+    freebsd_vlan_type)
 
-# Install library
-install(TARGETS freebsd_system
-    ARCHIVE DESTINATION lib
-    LIBRARY DESTINATION lib
-) 

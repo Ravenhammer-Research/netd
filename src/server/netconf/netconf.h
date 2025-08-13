@@ -29,62 +29,58 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <netd.h>
-
 #ifndef NETCONF_H
 #define NETCONF_H
 
-#define NETCONF_RESPONSE_BUFFER_SIZE (128 * 1024 * 1024) /* 128MB */
+#include <libnetconf2/messages_server.h>
+#include <libnetconf2/session_server.h>
+#include <libyang/tree_data.h>
 
 /* Forward declarations */
-struct netd_state;
+struct ly_ctx;
 
-/* Main NETCONF request handler */
-int netconf_handle_request(netd_state_t *state, const char *request,
-                          char **response);
+/**
+ * Initialize the NETCONF server
+ * @return 0 on success, -1 on failure
+ */
+int netconf_server_init(void);
 
-/* Request type checking functions */
-bool is_get_interfaces_request(const char *request);
-bool is_get_vrfs_request(const char *request);
-bool is_get_vrf_routes_request(const char *request);
-bool is_save_request(const char *request);
-bool is_commit_request(const char *request);
-bool is_edit_config_request(const char *request);
+/**
+ * Poll for NETCONF messages and handle them
+ * @return 0 on success, -1 on failure
+ */
+int netconf_server_poll(void);
 
-/* Edit config handling */
-int handle_edit_config(netd_state_t *state, const char *request,
-                       const char *message_id, char **response);
+/**
+ * Clean up NETCONF server resources
+ */
+void netconf_server_cleanup(void);
 
-/* Request handling functions */
-int handle_commit_request(netd_state_t *state, const char *request,
-                          const char *message_id, char **response);
-int handle_save_request(netd_state_t *state, const char *request,
-                         const char *message_id, char **response);
+/**
+ * Load required YANG modules into the context
+ * @param ctx libyang context
+ * @return 0 on success, -1 on failure
+ */
+int yang_load_modules(struct ly_ctx *ctx);
 
-/* Response creation functions */
-char *create_success_response(const char *message_id);
-char *create_error_response(const char *message_id, const char *error_type,
-                            const char *error_message);
+/**
+ * Get the global yang context
+ * @return libyang context
+ */
+struct ly_ctx *get_yang_ctx(void);
 
-/* Utility functions */
-int prepare_response(char *response, const char *format, ...);
+/* RPC handler function declarations */
+struct nc_server_reply *handle_get_rpc(struct lyd_node *rpc, struct nc_session *session);
+struct nc_server_reply *handle_get_config_rpc(struct lyd_node *rpc, struct nc_session *session);
+struct nc_server_reply *handle_edit_config_rpc(struct lyd_node *rpc, struct nc_session *session);
+struct nc_server_reply *handle_commit_rpc(struct lyd_node *rpc, struct nc_session *session);
+struct nc_server_reply *handle_discard_changes_rpc(struct lyd_node *rpc, struct nc_session *session);
+struct nc_server_reply *handle_validate_rpc(struct lyd_node *rpc, struct nc_session *session);
+struct nc_server_reply *handle_lock_rpc(struct lyd_node *rpc, struct nc_session *session);
+struct nc_server_reply *handle_unlock_rpc(struct lyd_node *rpc, struct nc_session *session);
+struct nc_server_reply *handle_close_session_rpc(struct lyd_node *rpc, struct nc_session *session);
+struct nc_server_reply *handle_kill_session_rpc(struct lyd_node *rpc, struct nc_session *session);
 
-/* YANG/Netconf functions */
-int yang_init(netd_state_t *state);
-void yang_cleanup(netd_state_t *state);
-int yang_validate_xml(netd_state_t *state, const char *xml_data);
-int yang_validate_config(netd_state_t *state, const char *xml_config);
-int yang_validate_rpc(netd_state_t *state, const char *rpc_xml);
-int yang_validate_leafrefs(netd_state_t *state, struct lyd_node *data_tree);
-char *yang_get_validation_error(const struct ly_ctx *ctx);
-int yang_validate_netd_operation(netd_state_t *state, const char *operation,
-                                 const char *data);
-bool yang_module_loaded(netd_state_t *state, const char *module_name);
-void yang_log_callback(LY_LOG_LEVEL level, const char *msg,
-                       const char *data_path, const char *schema_path,
-                       uint64_t line);
-int netconf_handle_request(netd_state_t *state, const char *request,
-                           char **response);
+#endif /* NETCONF_H */
 
 
-#endif /* NETCONF_H */ 

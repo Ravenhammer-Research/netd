@@ -1,19 +1,17 @@
-set(EPAIR_SOURCES
-    set.c
+# CMakeLists.txt for epair interface type
+# Copyright (c) 2025 Paige Thompson / Raven Hammer Research
+
+add_library(freebsd_epair_type STATIC
     delete.c
+    set.c
     show.c
 )
 
-add_library(freebsd_epair STATIC ${EPAIR_SOURCES})
-
-target_include_directories(freebsd_epair PRIVATE
+# Set include directories
+target_include_directories(freebsd_epair_type PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/..
     ${CMAKE_CURRENT_SOURCE_DIR}/../..
     ${CMAKE_CURRENT_SOURCE_DIR}/../../..
     ${CMAKE_CURRENT_SOURCE_DIR}/../../../../shared
-)
-
-target_link_libraries(freebsd_epair
-    netd
 ) 

@@ -49,10 +49,10 @@ target_link_libraries(net
     xml_lib
     table_lib
     netconf_lib
-    ${YANG_LIBRARIES}
+    yang
+    netconf2
     expat
     readline
-    m
 )
 
 # Set include directories for this target

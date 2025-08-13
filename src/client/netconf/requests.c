@@ -13,8 +13,8 @@
  *    and/or other materials provided with the distribution.
  *
  * 3. Neither the name of the copyright holder nor the names of its
- *    contributors may be used to endorse or promote products derived from this
- *    software without specific prior written permission.
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -29,8 +29,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <net.h>
-#include <netconf.h>
+#include <netconf/netconf.h>
+#include <libnetconf2/messages_client.h>
+#include <libyang/tree_data.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -38,206 +39,107 @@
 /**
  * Get interfaces from the server
  */
-int netconf_get_interfaces(net_client_t *client, char **response, const char *interface_type) {
-    char request[1024];
-    const char *type_filter = "";
+int netconf_get_interfaces(net_client_t *client, const char *type_filter, char **response) {
+    struct lyd_node *data = NULL;
+    int ret;
     
     if (!client || !response) {
         return -1;
     }
     
-    debug_log(DEBUG, "netconf_get_interfaces: interface_type=%s", interface_type ? interface_type : "NULL");
-    
-    /* Determine the type filter based on interface type */
-    if (interface_type) {
-        if (strcmp(interface_type, "bridge") == 0) {
-            type_filter = "<type xmlns:ianaift=\"urn:ietf:params:xml:ns:yang:iana-if-type\">ianaift:bridge</type>";
-        } else if (strcmp(interface_type, "vlan") == 0) {
-            type_filter = "<type xmlns:ianaift=\"urn:ietf:params:xml:ns:yang:iana-if-type\">ianaift:l2vlan</type>";
-        } else if (strcmp(interface_type, "ethernet") == 0) {
-            type_filter = "<type xmlns:ianaift=\"urn:ietf:params:xml:ns:yang:iana-if-type\">ianaift:ethernetCsmacd</type>";
-        } else if (strcmp(interface_type, "tap") == 0) {
-            type_filter = "<type xmlns:netd=\"urn:ietf:params:xml:ns:yang:netd\">netd:tap</type>";
-        } else if (strcmp(interface_type, "lagg") == 0) {
-            type_filter = "<type xmlns:netd=\"urn:ietf:params:xml:ns:yang:netd\">netd:lagg</type>";
-        } else if (strcmp(interface_type, "loopback") == 0) {
-            type_filter = "<type xmlns:ianaift=\"urn:ietf:params:xml:ns:yang:iana-if-type\">ianaift:softwareLoopback</type>";
-        } else if (strcmp(interface_type, "wlan") == 0) {
-            type_filter = "<type xmlns:ianaift=\"urn:ietf:params:xml:ns:yang:iana-if-type\">ianaift:ieee80211</type>";
-        } else if (strcmp(interface_type, "epair") == 0) {
-            type_filter = "<type xmlns:netd=\"urn:ietf:params:xml:ns:yang:netd\">netd:epair</type>";
-        } else if (strcmp(interface_type, "gif") == 0) {
-            type_filter = "<type xmlns:netd=\"urn:ietf:params:xml:ns:yang:netd\">netd:gif</type>";
-        } else if (strcmp(interface_type, "vxlan") == 0) {
-            type_filter = "<type xmlns:netd=\"urn:ietf:params:xml:ns:yang:netd\">netd:vxlan</type>";
-        }
+    /* Send get request for interfaces */
+    ret = netconf_get_interfaces_data(client, &data, type_filter);
+    if (ret < 0) {
+        return -1;
     }
     
-    debug_log(DEBUG, "netconf_get_interfaces: type_filter='%s'", type_filter);
+    /* Convert data to XML response */
+    if (data) {
+        *response = yang_data_to_xml(data);
+    } else {
+        *response = NULL;
+    }
     
-    /* Build get-interfaces request */
-    snprintf(request, sizeof(request),
-             "<rpc message-id=\"1\" xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">"
-             "<get>"
-             "<filter type=\"subtree\">"
-             "<interfaces xmlns=\"urn:ietf:params:xml:ns:yang:ietf-interfaces\">"
-             "<interface>"
-             "<name/>"
-             "%s"
-             "<enabled/>"
-             "<description/>"
-             "<ipv4 xmlns=\"urn:ietf:params:xml:ns:yang:ietf-ip\">"
-             "<address>"
-             "<ip/>"
-             "<prefix-length/>"
-             "</address>"
-             "<mtu/>"
-             "</ipv4>"
-             "<ipv6 xmlns=\"urn:ietf:params:xml:ns:yang:ietf-ip\">"
-             "<address>"
-             "<ip/>"
-             "<prefix-length/>"
-             "</address>"
-             "</ipv6>"
-             "<bridge-members xmlns=\"urn:ietf:params:xml:ns:yang:netd\"/>"
-             "</interface>"
-             "</interfaces>"
-             "</filter>"
-             "</get>"
-             "</rpc>",
-             type_filter);
-    
-    return netconf_send_request(client, request, response);
+    return 0;
 }
 
 /**
  * Get VRFs from the server
  */
 int netconf_get_vrfs(net_client_t *client, char **response) {
-    char request[1024];
+    struct lyd_node *data = NULL;
+    int ret;
     
     if (!client || !response) {
         return -1;
     }
     
-    /* Build get-vrfs request */
-    snprintf(request, sizeof(request),
-             "<rpc message-id=\"1\" xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">"
-             "<get>"
-             "<filter type=\"subtree\">"
-             "<vrfs xmlns=\"urn:ietf:params:xml:ns:yang:frr-vrf\">"
-             "<vrf>"
-             "<name/>"
-             "<fib/>"
-             "<description/>"
-             "</vrf>"
-             "</vrfs>"
-             "</filter>"
-             "</get>"
-             "</rpc>");
+    /* Send get request for VRFs */
+    ret = netconf_get_vrfs_data(client, &data);
+    if (ret < 0) {
+        return -1;
+    }
     
-    return netconf_send_request(client, request, response);
+    /* Convert data to XML response */
+    if (data) {
+        *response = yang_data_to_xml(data);
+    } else {
+        *response = NULL;
+    }
+    
+    return 0;
 }
 
 /**
  * Get routes from the server
  */
 int netconf_get_routes(net_client_t *client, uint32_t fib, int family, char **response) {
-    char request[1024];
-    const char *family_ns, *family_tag;
+    struct lyd_node *data = NULL;
+    int ret;
     
     if (!client || !response) {
         return -1;
     }
     
-    /* Determine address family */
-    if (family == AF_INET) {
-        family_ns = "urn:ietf:params:xml:ns:yang:ietf-ipv4-unicast-routing";
-        family_tag = "ipv4";
-    } else if (family == AF_INET6) {
-        family_ns = "urn:ietf:params:xml:ns:yang:ietf-ipv6-unicast-routing";
-        family_tag = "ipv6";
-    } else if (family == AF_UNSPEC) {
-        /* For AF_UNSPEC, use a generic routing namespace that includes both IPv4 and IPv6 */
-        family_ns = "urn:ietf:params:xml:ns:yang:ietf-routing";
-        family_tag = "default";
-    } else {
-        fprintf(stderr, "Unsupported address family: %d\n", family);
+    /* Send get request for routes */
+    ret = netconf_get_routes_data(client, &data, fib, family);
+    if (ret < 0) {
         return -1;
     }
     
-    /* Build get-routes request */
-    snprintf(request, sizeof(request),
-             "<rpc message-id=\"1\" xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">"
-             "<get>"
-             "<filter type=\"subtree\">"
-             "<routing xmlns=\"%s\">"
-             "<routing-instance>"
-             "<name>%u</name>"
-             "<ribs>"
-             "<rib>"
-             "<name>%s</name>"
-             "<routes>"
-             "<route>"
-             "<destination-prefix/>"
-             "<next-hop>"
-             "<next-hop-address/>"
-             "<outgoing-interface/>"
-             "</next-hop>"
-             "<source-protocol/>"
-             "<route-preference/>"
-             "</route>"
-             "</routes>"
-             "</rib>"
-             "</ribs>"
-             "</routing-instance>"
-             "</routing>"
-             "</filter>"
-             "</get>"
-             "</rpc>",
-             family_ns, fib, family_tag);
+    /* Convert data to XML response */
+    if (data) {
+        *response = yang_data_to_xml(data);
+    } else {
+        *response = NULL;
+    }
     
-    return netconf_send_request(client, request, response);
+    return 0;
 }
 
 /**
  * Get interface groups from the server
  */
 int netconf_get_interface_groups(net_client_t *client, char **response) {
-    char request[1024];
+    struct lyd_node *data = NULL;
+    int ret;
     
     if (!client || !response) {
         return -1;
     }
     
-    /* Build get-interface-groups request */
-    snprintf(request, sizeof(request),
-             "<rpc message-id=\"1\" xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">"
-             "<get>"
-             "<filter type=\"subtree\">"
-             "<interfaces xmlns=\"urn:ietf:params:xml:ns:yang:ietf-interfaces\">"
-             "<interface>"
-             "<name/>"
-             "<type/>"
-             "<enabled/>"
-             "<description/>"
-             "<ipv4 xmlns=\"urn:ietf:params:xml:ns:yang:ietf-ip\">"
-             "<address>"
-             "<ip/>"
-             "<prefix-length/>"
-             "</address>"
-             "</ipv4>"
-             "<ipv6 xmlns=\"urn:ietf:params:xml:ns:yang:ietf-ip\">"
-             "<address>"
-             "<ip/>"
-             "<prefix-length/>"
-             "</address>"
-             "</ipv6>"
-             "</interface>"
-             "</interfaces>"
-             "</filter>"
-             "</get>"
-             "</rpc>");
+    /* Send get request for interface groups */
+    ret = netconf_get_interfaces_data(client, &data, "group");
+    if (ret < 0) {
+        return -1;
+    }
     
-    return netconf_send_request(client, request, response);
+    /* Convert data to XML response */
+    if (data) {
+        *response = yang_data_to_xml(data);
+    } else {
+        *response = NULL;
+    }
+    
+    return 0;
 } 

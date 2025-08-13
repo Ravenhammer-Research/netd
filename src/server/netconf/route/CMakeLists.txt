@@ -1,21 +1,24 @@
-# Route module for NETCONF server
-add_library(route STATIC
-    set.c
-    delete.c
-    show.c
+# CMakeLists.txt for route handlers
+# Copyright (c) 2025 Paige Thompson / Raven Hammer Research
+
+# Add subdirectories
+add_subdirectory(request)
+add_subdirectory(response)
+
+# Create route library
+add_library(route INTERFACE)
+
+# Link libraries
+target_link_libraries(route INTERFACE
+    route_request
+    route_response
 )
 
-target_include_directories(route PUBLIC
+# Set include directories
+target_include_directories(route INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/..
     ${CMAKE_CURRENT_SOURCE_DIR}/../..
     ${CMAKE_CURRENT_SOURCE_DIR}/../../..
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../system
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../system/freebsd
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../../shared
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../../../shared
 )
-
-target_link_libraries(route
-    netd
-    shared_debug
-) 

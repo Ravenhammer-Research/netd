@@ -1,19 +1,17 @@
-set(LOOPBACK_SOURCES
-    set.c
+# CMakeLists.txt for loopback interface type
+# Copyright (c) 2025 Paige Thompson / Raven Hammer Research
+
+add_library(freebsd_loopback_type STATIC
     delete.c
+    set.c
     show.c
 )
 
-add_library(freebsd_loopback STATIC ${LOOPBACK_SOURCES})
-
-target_include_directories(freebsd_loopback PRIVATE
+# Set include directories
+target_include_directories(freebsd_loopback_type PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/..
     ${CMAKE_CURRENT_SOURCE_DIR}/../..
     ${CMAKE_CURRENT_SOURCE_DIR}/../../..
     ${CMAKE_CURRENT_SOURCE_DIR}/../../../../shared
-)
-
-target_link_libraries(freebsd_loopback
-    netd
 ) 

@@ -1,12 +1,14 @@
-set(80211_SOURCES
-    set.c
+# CMakeLists.txt for 80211 interface type
+# Copyright (c) 2025 Paige Thompson / Raven Hammer Research
+
+add_library(freebsd_80211_type STATIC
     delete.c
+    set.c
     show.c
 )
 
-add_library(freebsd_80211 STATIC ${80211_SOURCES})
-
-target_include_directories(freebsd_80211 PRIVATE
+# Set include directories
+target_include_directories(freebsd_80211_type PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/..
     ${CMAKE_CURRENT_SOURCE_DIR}/../..
@@ -14,6 +16,5 @@ target_include_directories(freebsd_80211 PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/../../../../shared
 )
 
-target_link_libraries(freebsd_80211
-    netd
-) 
+# Add compile definitions
+target_compile_definitions(freebsd_80211_type PUBLIC ${NETD_DEFINES}) 

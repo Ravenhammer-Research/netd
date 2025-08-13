@@ -1,24 +1,24 @@
-# VRF module for NETCONF server
-add_library(vrf STATIC
-    set.c
-    delete.c
-    show.c
-    request.c
-    response.c
+# CMakeLists.txt for VRF handlers
+# Copyright (c) 2025 Paige Thompson / Raven Hammer Research
+
+# Add subdirectories
+add_subdirectory(request)
+add_subdirectory(response)
+
+# Create VRF library
+add_library(vrf INTERFACE)
+
+# Link libraries
+target_link_libraries(vrf INTERFACE
+    vrf_request
+    vrf_response
 )
 
-target_include_directories(vrf PUBLIC
+# Set include directories
+target_include_directories(vrf INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/..
     ${CMAKE_CURRENT_SOURCE_DIR}/../..
     ${CMAKE_CURRENT_SOURCE_DIR}/../../..
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../system
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../system/freebsd
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../../shared
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../../../shared
 )
-
-target_link_libraries(vrf
-    netd
-    shared_debug
-    route
-) 

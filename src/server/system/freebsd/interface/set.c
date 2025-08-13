@@ -31,6 +31,7 @@
 
 #include <netd.h>
 #include <interface.h>
+#include <freebsd.h>
 #include <sys/types.h>
 #include <fcntl.h>
 #include <sys/un.h>
@@ -69,27 +70,15 @@
  * @param type Interface type
  * @return 0 on success, -1 on failure
  */
-int freebsd_interface_create(const char *name, interface_type_t type) {
+int freebsd_interface_create(const char *name, netd_interface_type_t type) {
   int sock;
   struct ifreq ifr;
-  const char *type_str;
 
   if (!name) {
     return -1;
   }
 
-  /* Get interface type string */
-  type_str = interface_type_to_string(type);
-  if (!type_str) {
-    debug_log(ERROR, "NULL type string for interface %s", name);
-    return -1;
-  }
-  if (strcmp(type_str, "unknown") == 0) {
-    debug_log(ERROR, "Unknown interface type for %s", name);
-    return -1;
-  }
-
-  debug_log(DEBUG, "Creating interface %s of type %s", name, type_str);
+  debug_log(DEBUG, "Creating interface %s of type %d", name, type);
 
   /* Create socket for ioctl */
   sock = socket(AF_INET, SOCK_DGRAM, 0);
@@ -104,7 +93,7 @@ int freebsd_interface_create(const char *name, interface_type_t type) {
   strlcpy(ifr.ifr_name, name, sizeof(ifr.ifr_name));
 
   /* For epair interfaces, we need to use the cloning mechanism */
-  if (type == IF_TYPE_EPAIR) {
+  if (type == NETD_IF_TYPE_EPAIR) {
     /* For epair interfaces, we create the base name and the system creates both
      * a and b interfaces */
     /* First, try to load the epair module if it's not already loaded */
@@ -137,7 +126,7 @@ int freebsd_interface_create(const char *name, interface_type_t type) {
       close(sock);
       return -1;
     }
-    debug_log(INFO, "Created interface %s of type %s", name, type_str);
+    debug_log(INFO, "Created interface %s of type %d", name, type);
   }
 
   close(sock);
@@ -202,7 +191,8 @@ int freebsd_interface_set_address(const char *name, const char *address,
   }
 
   /* Parse address */
-  if (parse_address(address, &addr) < 0) {
+  uint8_t *addr_num = parse_address_freebsd(address, &addr);
+  if (!addr_num) {
     debug_log(ERROR, "Failed to parse address %s", address);
     return -1;
   }
@@ -229,6 +219,7 @@ int freebsd_interface_set_address(const char *name, const char *address,
   }
 
   debug_log(INFO, "Set address %s for interface %s", address, name);
+  free(addr_num);
   close(sock);
   return 0;
 }

@@ -81,7 +81,6 @@ int execute_command(net_client_t *client, const command_t *cmd) {
  * Execute a SET command
  */
 int execute_set_command(net_client_t *client, const command_t *cmd) {
-  char *response = NULL;
   char request[1024];
 
   if (!client || !cmd) {
@@ -198,8 +197,8 @@ int execute_set_command(net_client_t *client, const command_t *cmd) {
                    next_hop, destination, 64); /* Default /64 for IPv6 */
         }
 
-        debug_log(INFO, "Sending route SET request: %s", request);
-        if (netconf_send_request(client, request, &response) < 0) {
+        debug_log(INFO, "Sending route SET request");
+        if (netconf_send_edit_config(client, NC_DATASTORE_RUNNING, NULL, NULL) < 0) {
           fprintf(stderr, "Failed to send route SET request\n");
           return -1;
         }
@@ -282,14 +281,13 @@ int execute_set_command(net_client_t *client, const command_t *cmd) {
       return -1;
     }
 
-    debug_log(INFO, "Sending interface SET request: %s", request);
-    if (netconf_send_request(client, request, &response) < 0) {
+    debug_log(INFO, "Sending interface SET request");
+    if (netconf_send_edit_config(client, NC_DATASTORE_RUNNING, NULL, NULL) < 0) {
       fprintf(stderr, "Failed to send interface SET request\n");
       return -1;
     }
 
     printf("Interface %s %s set to %s successfully\n", ifname, property, value);
-    free(response);
     return 0;
   }
 
@@ -321,14 +319,13 @@ int execute_set_command(net_client_t *client, const command_t *cmd) {
         return -1;
       }
 
-      debug_log(INFO, "Sending VRF SET request: %s", request);
-      if (netconf_send_request(client, request, &response) < 0) {
+      debug_log(INFO, "Sending VRF SET request");
+      if (netconf_send_edit_config(client, NC_DATASTORE_RUNNING, NULL, NULL) < 0) {
         fprintf(stderr, "Failed to send VRF SET request\n");
         return -1;
       }
 
       printf("VRF %d %s set to %s successfully\n", fib, property, value);
-      free(response);
       return 0;
     }
   }
@@ -341,7 +338,6 @@ int execute_set_command(net_client_t *client, const command_t *cmd) {
  * Execute a SHOW command
  */
 int execute_show_command(net_client_t *client, const command_t *cmd) {
-  char *response = NULL;
   int ret = 0;
 
   if (!client || !cmd) {
@@ -356,13 +352,14 @@ int execute_show_command(net_client_t *client, const command_t *cmd) {
   const char *object = cmd->args[0];
 
   if (strcmp(object, "interfaces") == 0) {
-    if (netconf_get_interfaces(client, &response, NULL) < 0) {
+    char *xml_data = yang_get_interfaces_xml(client, NULL);
+    if (!xml_data) {
       fprintf(stderr, "Failed to get interfaces\n");
       return -1;
     }
 
-    print_interface_table(response);
-    free(response);
+    print_interface_table(xml_data);
+    free(xml_data);
   } else if (strcmp(object, "routes") == 0 || strcmp(object, "route") == 0) {
     uint32_t fib = 0; /* Default VRF */
     int family = AF_INET; /* Default to IPv4 */
@@ -383,13 +380,14 @@ int execute_show_command(net_client_t *client, const command_t *cmd) {
       family = AF_INET6;
     }
 
-    if (netconf_get_routes(client, fib, family, &response) < 0) {
+    char *xml_data = yang_get_routes_xml(client, fib, family);
+    if (!xml_data) {
       fprintf(stderr, "Failed to get routes\n");
       return -1;
     }
 
-    print_routes_table(response);
-    free(response);
+    print_routes_table(xml_data);
+    free(xml_data);
   } else if (strcmp(object, "vrfs") == 0 || strcmp(object, "vrf") == 0) {
     /* Handle VRF protocol static routes */
     if (cmd->arg_count >= 4 && strcmp(cmd->args[1], "id") == 0 && 
@@ -409,22 +407,24 @@ int execute_show_command(net_client_t *client, const command_t *cmd) {
       
       debug_log(INFO, "SHOW VRF protocol static: fib=%u, family=%d", fib, family);
       
-      if (netconf_get_routes(client, fib, family, &response) < 0) {
+      char *xml_data = yang_get_routes_xml(client, fib, family);
+      if (!xml_data) {
         fprintf(stderr, "Failed to get VRF routes\n");
         return -1;
       }
       
-      print_routes_table(response);
-      free(response);
+      print_routes_table(xml_data);
+      free(xml_data);
     } else {
       /* Handle basic VRF listing */
-    if (netconf_get_vrfs(client, &response) < 0) {
+    char *xml_data = yang_get_vrfs_xml(client);
+    if (!xml_data) {
       fprintf(stderr, "Failed to get VRFs\n");
       return -1;
     }
 
-    print_vrf_table(response);
-    free(response);
+    print_vrf_table(xml_data);
+    free(xml_data);
     }
   } else if (strcmp(object, "interface") == 0) {
     const char *type = NULL;
@@ -444,19 +444,20 @@ int execute_show_command(net_client_t *client, const command_t *cmd) {
 
     debug_log(INFO, "SHOW interface type: %s", type ? type : "all");
 
-    if (netconf_get_interfaces(client, &response, type) < 0) {
+    char *xml_data = yang_get_interfaces_xml(client, type);
+    if (!xml_data) {
       fprintf(stderr, "Failed to get interfaces%s\n", type ? " of specified type" : "");
       return -1;
     }
 
     /* Display using appropriate table */
     if (type && strcmp(type, "bridge") == 0) {
-        print_bridge_table(response);
+        print_bridge_table(xml_data);
     } else {
-      print_interface_table(response);
+      print_interface_table(xml_data);
     }
-
-    free(response);
+    
+    free(xml_data);
   } else {
     fprintf(stderr, "Unknown SHOW object: %s\n", object);
     ret = -1;
@@ -469,7 +470,6 @@ int execute_show_command(net_client_t *client, const command_t *cmd) {
  * Execute a DELETE command
  */
 int execute_delete_command(net_client_t *client, const command_t *cmd) {
-  char *response = NULL;
   char request[1024];
 
   if (!client || !cmd) {
@@ -525,14 +525,13 @@ int execute_delete_command(net_client_t *client, const command_t *cmd) {
       return -1;
     }
 
-    debug_log(INFO, "Sending interface DELETE request: %s", request);
-    if (netconf_send_request(client, request, &response) < 0) {
+    debug_log(INFO, "Sending interface DELETE request");
+    if (netconf_send_edit_config(client, NC_DATASTORE_RUNNING, NULL, NULL) < 0) {
       fprintf(stderr, "Failed to send interface DELETE request\n");
       return -1;
     }
 
     printf("Interface %s %s deleted successfully\n", name, property);
-    free(response);
     return 0;
   } else if (strcmp(object, "vrf") == 0) {
     if (strcmp(name, "id") == 0 && cmd->arg_count >= 4) {
@@ -560,14 +559,13 @@ int execute_delete_command(net_client_t *client, const command_t *cmd) {
         return -1;
       }
 
-      debug_log(INFO, "Sending VRF DELETE request: %s", request);
-      if (netconf_send_request(client, request, &response) < 0) {
+      debug_log(INFO, "Sending VRF DELETE request");
+      if (netconf_send_edit_config(client, NC_DATASTORE_RUNNING, NULL, NULL) < 0) {
         fprintf(stderr, "Failed to send VRF DELETE request\n");
         return -1;
       }
 
       printf("VRF %d %s deleted successfully\n", fib, vrf_property);
-      free(response);
       return 0;
     }
   }
@@ -580,7 +578,6 @@ int execute_delete_command(net_client_t *client, const command_t *cmd) {
  * Execute a SAVE command
  */
 int execute_save_command(net_client_t *client, const command_t *cmd) {
-  char *response = NULL;
   char request[1024];
 
   if (!client || !cmd) {
@@ -596,13 +593,12 @@ int execute_save_command(net_client_t *client, const command_t *cmd) {
            "</copy-config>"
            "</rpc>");
 
-  debug_log(INFO, "Sending save request: %s", request);
-  if (netconf_send_request(client, request, &response) < 0) {
+  debug_log(INFO, "Sending save request");
+  if (netconf_send_edit_config(client, NC_DATASTORE_STARTUP, NULL, NULL) < 0) {
     fprintf(stderr, "Failed to save configuration\n");
     return -1;
   }
 
   printf("Configuration saved successfully\n");
-  free(response);
   return 0;
 } 
