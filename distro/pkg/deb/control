@@ -1,0 +1,45 @@
+Source: libnetconf2
+Section: libs
+Homepage: https://github.com/CESNET/libnetconf2/
+Maintainer: CESNET <mvasko@cesnet.cz>
+Priority: optional
+Standards-Version: 4.5.0
+Build-Depends: cmake,
+               debhelper (>= 10),
+               libyang-dev,
+               libssl-dev (>= 3.0.0),
+               libssh-dev (>= 0.9.5),
+               libpam0g-dev,
+               pkg-config,
+               libcurl4-openssl-dev (>= 7.30.0)
+Vcs-Browser: https://github.com/CESNET/libnetconf2/tree/master
+Vcs-Git: https://github.com/CESNET/libnetconf2.git
+
+Package: libnetconf4
+Depends: ${misc:Depends},
+         ${shlibs:Depends}
+Architecture: any
+Description: library implementing NETCONF protocol - runtime
+ Libnetconf2 implements network communication using NETCONF
+ protocol specified in IETF RFC 6241. It is based on libnetconf
+ (which it replaces and makes obsolete) but written from scratch.
+ .
+ Both server and client-side functionality is provided.
+ .
+ It is implemented in C.
+
+Package: libnetconf2-dev
+Depends: libyang-dev,
+         libnetconf4 (= ${binary:Version}),
+         ${misc:Depends}
+Section: libdevel
+Architecture: any
+Description: library implementing NETCONF protocol - development files
+ Libnetconf2 implements network communication using NETCONF
+ protocol specified in IETF RFC 6241. It is based on libnetconf
+ (which it replaces and makes obsolete) but written from scratch.
+ .
+ Both server and client-side functionality is provided.
+ .
+ This package contains the C headers, a pkgconfig file, and .so entry
+ point for libnetconf2.
