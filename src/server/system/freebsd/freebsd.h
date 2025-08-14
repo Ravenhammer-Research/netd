@@ -44,7 +44,8 @@ struct sockaddr_storage;
 /* Parse address string into sockaddr_storage (FreeBSD-specific)
  * @param address_str String representation of address (IPv4 or IPv6)
  * @param addr sockaddr_storage structure to fill
- * @return uint8_t[16] numeric representation on success, NULL on failure
+ * @return uint8_t* numeric representation on success, NULL on failure
+ *         Returns 4 bytes for IPv4, 16 bytes for IPv6
  */
 uint8_t* parse_address_freebsd(const char *address_str, struct sockaddr_storage *addr);
 

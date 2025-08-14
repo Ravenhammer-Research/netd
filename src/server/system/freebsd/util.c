@@ -53,11 +53,10 @@ uint8_t* parse_address_freebsd(const char *address_str, struct sockaddr_storage 
         sa4->sin_len = sizeof(struct sockaddr_in);
         memcpy(&sa4->sin_addr.s_addr, &addr4.s_addr, 4);
         
-        /* Return numeric representation */
-        uint8_t *result = malloc(16);
+        /* Return numeric representation - 4 bytes for IPv4 */
+        uint8_t *result = malloc(4);
         if (result) {
-            memset(result, 0, 16);
-            memcpy(&result[12], &addr4.s_addr, 4);
+            memcpy(result, &addr4.s_addr, 4);
         }
         return result;
     }

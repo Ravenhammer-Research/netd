@@ -34,32 +34,27 @@
 #include <netconf/netconf.h>
 #include <netd.h>
 #include <debug.h>
-#include <libyang/tree_data.h>
-#include <libyang/tree_schema.h>
+#include <types.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-/* Global yang context - set by netconf.c */
-extern struct ly_ctx *yang_ctx;
-
 /**
  * Get VLAN interface data from FreeBSD system
- * @param ctx libyang context
  * @param iface_name interface name
- * @param iface_node interface node to add VLAN data to
+ * @param vlan_data pointer to netd_vlan_t structure to populate
  * @return 0 on success, -1 on failure
  */
-int get_vlan_data(struct ly_ctx *ctx, const char *iface_name, struct lyd_node *iface_node) {
-    struct lyd_node *vlan_node = NULL;
-    int ret;
-    
-    /* Create VLAN node */
-    ret = lyd_new_inner(iface_node, ctx, "netd", "vlan", 0, &vlan_node);
-    if (ret != LY_SUCCESS) {
-        debug_log(ERROR, "Failed to create VLAN node");
+int get_vlan_data(const char *iface_name, netd_vlan_t *vlan_data) {
+    if (!iface_name || !vlan_data) {
+        debug_log(ERROR, "Invalid parameters for VLAN data acquisition");
         return -1;
     }
+    
+    /* Initialize the VLAN structure */
+    memset(vlan_data, 0, sizeof(netd_vlan_t));
+    strlcpy(vlan_data->base.name, iface_name, sizeof(vlan_data->base.name));
+    vlan_data->base.type = NETD_IF_TYPE_VLAN;
     
     /* Get VLAN data from system */
     int vlan_id;
@@ -69,36 +64,18 @@ int get_vlan_data(struct ly_ctx *ctx, const char *iface_name, struct lyd_node *i
     
     if (freebsd_vlan_show(iface_name, &vlan_id, vlan_proto, sizeof(vlan_proto), 
                          &vlan_pcp, vlan_parent, sizeof(vlan_parent)) == 0) {
-        /* Set VLAN ID */
-        char vlan_id_str[16];
-        snprintf(vlan_id_str, sizeof(vlan_id_str), "%d", vlan_id);
-        ret = lyd_new_term(vlan_node, ctx, "netd", "vlan-id", vlan_id_str, 0, NULL);
-        if (ret != LY_SUCCESS) {
-            debug_log(ERROR, "Failed to set VLAN ID");
-        }
+        vlan_data->vlan_id = vlan_id;
+        strlcpy(vlan_data->protocol, vlan_proto, sizeof(vlan_data->protocol));
+        vlan_data->priority = vlan_pcp;
+        strlcpy(vlan_data->parent, vlan_parent, sizeof(vlan_data->parent));
         
-        /* Set VLAN parent */
-        ret = lyd_new_term(vlan_node, ctx, "netd", "parent", vlan_parent, 0, NULL);
-        if (ret != LY_SUCCESS) {
-            debug_log(ERROR, "Failed to set VLAN parent");
-        }
-        
-        /* Set VLAN protocol */
-        ret = lyd_new_term(vlan_node, ctx, "netd", "protocol", vlan_proto, 0, NULL);
-        if (ret != LY_SUCCESS) {
-            debug_log(ERROR, "Failed to set VLAN protocol");
-        }
-        
-        /* Set VLAN priority */
-        char vlan_pcp_str[8];
-        snprintf(vlan_pcp_str, sizeof(vlan_pcp_str), "%d", vlan_pcp);
-        ret = lyd_new_term(vlan_node, ctx, "netd", "priority", vlan_pcp_str, 0, NULL);
-        if (ret != LY_SUCCESS) {
-            debug_log(ERROR, "Failed to set VLAN priority");
-        }
+        debug_log(DEBUG, "Successfully acquired VLAN data for %s: id=%d, protocol=%s, priority=%d, parent=%s", 
+                  iface_name, vlan_id, vlan_proto, vlan_pcp, vlan_parent);
+        return 0;
+    } else {
+        debug_log(ERROR, "Failed to get VLAN data for %s", iface_name);
+        return -1;
     }
-    
-    return 0;
 }
 
 /**

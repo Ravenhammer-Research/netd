@@ -31,6 +31,7 @@
 
 #include <netd.h>
 #include <route.h>
+#include <system/freebsd/freebsd.h>
 #include <sys/types.h>
 #include <fcntl.h>
 #include <sys/un.h>
@@ -86,15 +87,21 @@ int freebsd_route_add(uint32_t fib, const char *destination,
   }
 
   /* Parse addresses */
-  if (parse_address(destination, &dest_addr) < 0) {
+  uint8_t *dest_num = parse_address_freebsd(destination, &dest_addr);
+  if (!dest_num) {
     debug_log(ERROR, "Failed to parse destination address %s",
               destination);
     return -1;
   }
 
-  if (gateway && parse_address(gateway, &gw_addr) < 0) {
-    debug_log(ERROR, "Failed to parse gateway address %s", gateway);
-    return -1;
+  uint8_t *gw_num = NULL;
+  if (gateway) {
+    gw_num = parse_address_freebsd(gateway, &gw_addr);
+    if (!gw_num) {
+      debug_log(ERROR, "Failed to parse gateway address %s", gateway);
+      free(dest_num);
+      return -1;
+    }
   }
 
   /* Create PF_ROUTE socket */
@@ -102,6 +109,10 @@ int freebsd_route_add(uint32_t fib, const char *destination,
   if (sock < 0) {
     debug_log(ERROR, "Failed to create PF_ROUTE socket: %s",
               strerror(errno));
+    free(dest_num);
+    if (gw_num) {
+      free(gw_num);
+    }
     return -1;
   }
 
@@ -129,6 +140,10 @@ int freebsd_route_add(uint32_t fib, const char *destination,
   rtm = malloc(len);
   if (!rtm) {
     debug_log(ERROR, "Failed to allocate route message buffer");
+    free(dest_num);
+    if (gw_num) {
+      free(gw_num);
+    }
     close(sock);
     return -1;
   }
@@ -177,6 +192,10 @@ int freebsd_route_add(uint32_t fib, const char *destination,
     debug_log(ERROR, "Failed to add route: %s (errno=%d)",
               strerror(errno), errno);
     free(rtm);
+    free(dest_num);
+    if (gw_num) {
+      free(gw_num);
+    }
     close(sock);
     return -1;
   }
@@ -184,6 +203,10 @@ int freebsd_route_add(uint32_t fib, const char *destination,
   debug_log(INFO, "Added route to %s via %s (FIB %u)", destination,
             gateway ? gateway : "direct", fib);
   free(rtm);
+  free(dest_num);
+  if (gw_num) {
+    free(gw_num);
+  }
   close(sock);
   return 0;
 } 

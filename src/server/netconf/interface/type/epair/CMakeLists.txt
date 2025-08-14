@@ -12,6 +12,7 @@ add_library(epair_type STATIC ${EPAIR_SOURCES})
 
 # Set include directories
 target_include_directories(epair_type PRIVATE
+    ${CMAKE_BINARY_DIR}/vendor_install/include
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/..
     ${CMAKE_CURRENT_SOURCE_DIR}/../..

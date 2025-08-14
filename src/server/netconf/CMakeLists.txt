@@ -36,4 +36,5 @@ target_include_directories(netconf PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/../../shared
     ${CMAKE_CURRENT_SOURCE_DIR}/../../yang
     ${CMAKE_SOURCE_DIR}/src/shared
+    ${CMAKE_BINARY_DIR}/vendor_install/include
 )

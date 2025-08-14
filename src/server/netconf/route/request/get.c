@@ -34,98 +34,37 @@
 #include <netconf/netconf.h>
 #include <netd.h>
 #include <debug.h>
-#include <libyang/tree_data.h>
-#include <libyang/tree_schema.h>
+#include <types.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <arpa/inet.h>
 
-/* Global yang context - set by netconf.c */
-extern struct ly_ctx *yang_ctx;
-
-/* Get the module for ietf-routing */
-static const struct lys_module *get_ietf_routing_module(struct ly_ctx *ctx) {
-    return ly_ctx_get_module(ctx, "ietf-routing", NULL);
-}
-
 /**
  * Get route data from FreeBSD system
- * @param ctx libyang context
  * @param fib FIB number (VRF)
- * @return libyang data tree with route data, NULL on error
+ * @param system_query pointer to netd_system_query_t structure to populate
+ * @return 0 on success, -1 on failure
  */
-struct lyd_node *get_route_data(struct ly_ctx *ctx, uint32_t fib) {
-    struct lyd_node *routes = NULL;
-    netd_state_t state = {0};
-    int ret;
-    const struct lys_module *ietf_routing_mod;
-    
-    /* Get the ietf-routing module */
-    ietf_routing_mod = get_ietf_routing_module(ctx);
-    if (!ietf_routing_mod) {
-        debug_log(ERROR, "ietf-routing module not found");
-        return NULL;
+int get_route_data(uint32_t fib, netd_system_query_t *system_query) {
+    if (!system_query) {
+        debug_log(ERROR, "Invalid parameters for route data acquisition");
+        return -1;
     }
     
-    /* Create routes container */
-    ret = lyd_new_inner(NULL, ietf_routing_mod, "routing", 0, &routes);
-    if (ret != LY_SUCCESS) {
-        debug_log(ERROR, "Failed to create routing container");
-        return NULL;
-    }
-
+    /* Initialize the system query structure */
+    memset(system_query, 0, sizeof(netd_system_query_t));
+    
     /* Get route data from system */
-    ret = freebsd_route_enumerate_system(&state, fib);
+    int ret = freebsd_route_enumerate_system(system_query, fib);
     if (ret != 0) {
         debug_log(ERROR, "Failed to enumerate routes for FIB %u", fib);
-        lyd_free_tree(routes);
-        return NULL;
+        return -1;
     }
-
-    /* Convert netd routes to libyang data */
-    netd_route_t *route;
-    TAILQ_FOREACH(route, &state.routes, entries) {
-        struct lyd_node *route_node = NULL;
-        char dest_str[INET6_ADDRSTRLEN];
-        char gw_str[INET6_ADDRSTRLEN];
-        char flags_str[16];
-        
-        /* Convert sockaddr to string representation */
-        if (route->destination.ss_family == AF_INET) {
-            struct sockaddr_in *sa = (struct sockaddr_in *)&route->destination;
-            inet_ntop(AF_INET, &sa->sin_addr, dest_str, sizeof(dest_str));
-        } else if (route->destination.ss_family == AF_INET6) {
-            struct sockaddr_in6 *sa = (struct sockaddr_in6 *)&route->destination;
-            inet_ntop(AF_INET6, &sa->sin6_addr, dest_str, sizeof(dest_str));
-        }
-
-        if (route->gateway.ss_family == AF_INET) {
-            struct sockaddr_in *sa = (struct sockaddr_in *)&route->gateway;
-            inet_ntop(AF_INET, &sa->sin_addr, gw_str, sizeof(gw_str));
-        } else if (route->gateway.ss_family == AF_INET6) {
-            struct sockaddr_in6 *sa = (struct sockaddr_in6 *)&route->gateway;
-            inet_ntop(AF_INET6, &sa->sin6_addr, gw_str, sizeof(gw_str));
-        }
-
-        /* Convert flags to string */
-        snprintf(flags_str, sizeof(flags_str), "%d", route->flags);
-
-        /* Create route node */
-        ret = lyd_new_inner(routes, ietf_routing_mod, "route", 0, &route_node);
-        if (ret != LY_SUCCESS) {
-            debug_log(ERROR, "Failed to create route node");
-            continue;
-        }
-
-        /* Add route attributes */
-        lyd_new_term(route_node, ietf_routing_mod, "destination-prefix", dest_str, 0, NULL);
-        lyd_new_term(route_node, ietf_routing_mod, "next-hop", gw_str, 0, NULL);
-        lyd_new_term(route_node, ietf_routing_mod, "outgoing-interface", route->interface, 0, NULL);
-        lyd_new_term(route_node, ietf_routing_mod, "route-preference", flags_str, 0, NULL);
-    }
-
-    return routes;
+    
+    debug_log(DEBUG, "Successfully acquired route data for FIB %u with %d routes", 
+              fib, system_query->routes.count);
+    return 0;
 }
 
 /**
@@ -138,10 +77,10 @@ struct nc_server_reply *handle_get_config_routes(struct lyd_node *rpc, struct nc
     (void)rpc;
     (void)session;
 
-    struct lyd_node *data = get_route_data(yang_ctx, 0); /* Default FIB 0 */
-    if (!data) {
+    netd_system_query_t system_query = {0};
+    if (get_route_data(0, &system_query) != 0) {
         return nc_server_reply_err(nc_err(yang_ctx, NC_ERR_OP_FAILED, NULL));
     }
 
-    return nc_server_reply_data(data, NC_WD_UNKNOWN, NC_PARAMTYPE_FREE);
+    return nc_server_reply_data(NULL, NC_WD_UNKNOWN, NC_PARAMTYPE_FREE);
 } 

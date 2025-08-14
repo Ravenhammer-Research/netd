@@ -32,9 +32,11 @@
 #include <bridge.h>
 #include <netconf/netconf.h>
 #include <netd.h>
+#include <types.h>
 #include <debug.h>
 #include <libyang/tree_data.h>
 #include <libyang/tree_schema.h>
+#include <libyang/context.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -43,32 +45,110 @@
 extern struct ly_ctx *yang_ctx;
 
 /**
- * Create bridge response data
+ * Create bridge response data from populated bridge structure
  * @param ctx libyang context
- * @param bridge_name bridge interface name
+ * @param bridge_data populated netd_bridge_t structure
  * @return libyang data tree with bridge response data, NULL on error
  */
-struct lyd_node *create_bridge_response(struct ly_ctx *ctx, const char *bridge_name) {
+struct lyd_node *create_bridge_response(struct ly_ctx *ctx, const netd_bridge_t *bridge_data) {
     struct lyd_node *response = NULL;
+    struct lyd_node *iface_node = NULL;
+    struct lyd_node *bridge_node = NULL;
+    const struct lys_module *ietf_interfaces_mod;
+    const struct lys_module *netd_mod;
     int ret;
 
-    ret = lyd_new_inner(NULL, ctx, "ietf-interfaces", "interfaces", 0, &response);
+    if (!bridge_data) {
+        debug_log(ERROR, "Invalid bridge data for response creation");
+        return NULL;
+    }
+
+    /* Get the required modules */
+    ietf_interfaces_mod = ly_ctx_get_module_implemented(ctx, "ietf-interfaces");
+    if (!ietf_interfaces_mod) {
+        debug_log(ERROR, "Failed to get ietf-interfaces module");
+        return NULL;
+    }
+    
+    netd_mod = ly_ctx_get_module_implemented(ctx, "netd");
+    if (!netd_mod) {
+        debug_log(ERROR, "Failed to get netd module");
+        return NULL;
+    }
+
+    /* Create interfaces container */
+    ret = lyd_new_inner(NULL, ietf_interfaces_mod, "interfaces", 0, &response);
     if (ret != LY_SUCCESS) {
         debug_log(ERROR, "Failed to create interfaces response container");
         return NULL;
     }
 
-    struct lyd_node *iface_node = NULL;
-    ret = lyd_new_inner(response, ctx, "ietf-interfaces", "interface", 0, &iface_node);
+    /* Create interface node */
+    ret = lyd_new_inner(response, ietf_interfaces_mod, "interface", 0, &iface_node);
     if (ret != LY_SUCCESS) {
         debug_log(ERROR, "Failed to create interface node");
         return NULL;
     }
 
-    lyd_new_term(iface_node, ctx, "ietf-interfaces", "name", bridge_name, 0, NULL);
-    lyd_new_term(iface_node, ctx, "ietf-interfaces", "type", "iana-if-type:bridge", 0, NULL);
-    lyd_new_term(iface_node, ctx, "ietf-interfaces", "enabled", 1, 0, NULL);
-    lyd_new_term(iface_node, ctx, "ietf-interfaces", "oper-status", "up", 0, NULL);
+    /* Set interface basic properties */
+    ret = lyd_new_term(iface_node, ietf_interfaces_mod, "name", bridge_data->base.name, 0, NULL);
+    if (ret != LY_SUCCESS) {
+        debug_log(ERROR, "Failed to set interface name");
+    }
+    
+    ret = lyd_new_term(iface_node, ietf_interfaces_mod, "type", "iana-if-type:bridge", 0, NULL);
+    if (ret != LY_SUCCESS) {
+        debug_log(ERROR, "Failed to set interface type");
+    }
+    
+    ret = lyd_new_term(iface_node, ietf_interfaces_mod, "enabled", "true", 0, NULL);
+    if (ret != LY_SUCCESS) {
+        debug_log(ERROR, "Failed to set interface enabled");
+    }
+    
+    ret = lyd_new_term(iface_node, ietf_interfaces_mod, "oper-status", "up", 0, NULL);
+    if (ret != LY_SUCCESS) {
+        debug_log(ERROR, "Failed to set interface oper-status");
+    }
+
+    /* Create bridge-specific node */
+    ret = lyd_new_inner(iface_node, netd_mod, "bridge", 0, &bridge_node);
+    if (ret != LY_SUCCESS) {
+        debug_log(ERROR, "Failed to create bridge node");
+        return response; /* Return partial response */
+    }
+
+    /* Add bridge members */
+    netd_bridge_member_t *member;
+    TAILQ_FOREACH(member, &bridge_data->members.head, entries) {
+        struct lyd_node *member_node = NULL;
+        ret = lyd_new_inner(bridge_node, netd_mod, "member", 0, &member_node);
+        if (ret != LY_SUCCESS) {
+            debug_log(ERROR, "Failed to create bridge member node");
+            break;
+        }
+        
+        /* Use interface name if available, otherwise use placeholder */
+        const char *member_name = member->interface ? member->interface->name : "unknown";
+        ret = lyd_new_term(member_node, netd_mod, "name", member_name, 0, NULL);
+        if (ret != LY_SUCCESS) {
+            debug_log(ERROR, "Failed to set bridge member name");
+        }
+    }
+
+    /* Add bridge-specific properties */
+    char timeout_str[16];
+    snprintf(timeout_str, sizeof(timeout_str), "%d", bridge_data->timeout);
+    ret = lyd_new_term(bridge_node, netd_mod, "timeout", timeout_str, 0, NULL);
+    if (ret != LY_SUCCESS) {
+        debug_log(ERROR, "Failed to set bridge timeout");
+    }
+
+    const char *protocol_str = (bridge_data->protocol == NETD_BRIDGE_PROTO_STP) ? "stp" : "unknown";
+    ret = lyd_new_term(bridge_node, netd_mod, "protocol", protocol_str, 0, NULL);
+    if (ret != LY_SUCCESS) {
+        debug_log(ERROR, "Failed to set bridge protocol");
+    }
 
     return response;
 }

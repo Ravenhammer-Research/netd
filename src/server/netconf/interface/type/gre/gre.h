@@ -29,37 +29,26 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WIFI_H
-#define WIFI_H
+#ifndef GRE_H
+#define GRE_H
 
 #include <libyang/tree_data.h>
-
-/* Forward declarations */
-struct ly_ctx;
+#include <types.h>
 
 /**
- * Get WiFi interface data from FreeBSD system
- * @param ctx libyang context
+ * Get GRE interface data from FreeBSD system
  * @param iface_name interface name
- * @param iface_node interface node to add WiFi data to
+ * @param gre_data pointer to netd_gre_t structure to populate
  * @return 0 on success, -1 on failure
  */
-int get_wifi_data(struct ly_ctx *ctx, const char *iface_name, struct lyd_node *iface_node);
+int get_gre_data(const char *iface_name, netd_gre_t *gre_data);
 
 /**
- * Set WiFi authentication mode
- * @param wifi_name WiFi interface name
- * @param authmode authentication mode (OPEN, WPA, etc.)
- * @return 0 on success, -1 on failure
+ * Create GRE response data from populated GRE structure
+ * @param ctx libyang context
+ * @param gre_data populated netd_gre_t structure
+ * @return libyang data tree with GRE response data, NULL on error
  */
-int wifi_set_authmode(const char *wifi_name, const char *authmode);
+struct lyd_node *create_gre_response(struct ly_ctx *ctx, const netd_gre_t *gre_data);
 
-/**
- * Set WiFi transmit power
- * @param wifi_name WiFi interface name
- * @param txpower transmit power in dBm
- * @return 0 on success, -1 on failure
- */
-int wifi_set_txpower(const char *wifi_name, int txpower);
-
-#endif /* WIFI_H */ 
+#endif /* GRE_H */

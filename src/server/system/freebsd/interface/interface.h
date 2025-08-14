@@ -47,11 +47,9 @@ int freebsd_interface_set_address(const char *name, const char *address,
                                   int family);
 int freebsd_interface_delete_address(const char *name, int family);
 int freebsd_interface_set_mtu(const char *name, int mtu);
-int freebsd_interface_get_mtu(const char *name, int *mtu);
-int freebsd_interface_get_groups(const char *name,
-                                 char (*groups)[MAX_GROUP_NAME_LEN],
-                                 int max_groups, int *group_count);
-int freebsd_enumerate_interfaces(netd_state_t *state);
+int freebsd_interface_get_mtu(const char *name, uint32_t *mtu);
+int freebsd_interface_get_groups(const char *name, netd_interface_groups_t *groups);
+int freebsd_enumerate_interfaces(netd_system_query_t *system_query);
 bool freebsd_is_hardware_interface(netd_interface_type_t type);
 const char *freebsd_get_interface_oper_status(int flags);
 

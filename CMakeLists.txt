@@ -1,4 +1,4 @@
-# Copyright (c) 2025 Paige Thompson / Raven Hammer Research (paige@paige.bio)
+ # Copyright (c) 2025 Paige Thompson / Raven Hammer Research (paige@paige.bio)
 # All rights reserved.
 #
 # Redistribution and use in source code and binary forms, with or without
@@ -30,7 +30,7 @@ cmake_minimum_required(VERSION 3.16)
 project(net VERSION 1.0.0 LANGUAGES C)
 
 # Set C standard
-set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
 # Build type
@@ -43,21 +43,23 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Werror")
 set(CMAKE_C_FLAGS_DEBUG "-g -O0")
 set(CMAKE_C_FLAGS_RELEASE "-O2 -DNDEBUG")
 
-# Find required packages
-find_package(PkgConfig REQUIRED)
+# Add vendored libraries (configured to avoid conflicts)
+add_subdirectory(vendor)
 
-# Set libyang paths directly since pkg-config is unreliable
-set(YANG_INCLUDE_DIRS "/usr/local/include")
-# Set netconf library
-set(NETCONF_INCLUDE_DIRS "/usr/local/include")
+# Use vendored libraries directly instead of pkg-config
+# These will be available after the vendor subdirectory is processed
+set(LIBYANG_INCLUDE_DIRS "${CMAKE_BINARY_DIR}/vendor_install/include")
+set(LIBNETCONF2_INCLUDE_DIRS "${CMAKE_BINARY_DIR}/vendor_install/include")
+set(LIBYANG_LIBRARIES "${CMAKE_BINARY_DIR}/vendor_install/lib/libyang.a")
+set(LIBNETCONF2_LIBRARIES "${CMAKE_BINARY_DIR}/vendor_install/lib/libnetconf2.a")
 
-# Add library search paths
-link_directories(/usr/local/lib /usr/lib)
+# Include directories - vendored libraries first to override system headers
+include_directories(SYSTEM ${LIBYANG_INCLUDE_DIRS})
+include_directories(SYSTEM ${LIBNETCONF2_INCLUDE_DIRS})
 
-# Include directories
+
 include_directories(${CMAKE_SOURCE_DIR}/src/shared)
-include_directories(${YANG_INCLUDE_DIRS})
-include_directories(${NETCONF_INCLUDE_DIRS})
+include_directories(SYSTEM /usr/local/include)
 
 # Define constants that can be used by targets
 set(NETD_DEFINES

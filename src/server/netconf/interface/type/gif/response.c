@@ -33,42 +33,98 @@
 #include <netconf/netconf.h>
 #include <netd.h>
 #include <debug.h>
+#include <types.h>
 #include <libyang/tree_data.h>
 #include <libyang/tree_schema.h>
+#include <libyang/context.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-/* Global yang context - set by netconf.c */
-extern struct ly_ctx *yang_ctx;
-
 /**
- * Create GIF response data
+ * Create GIF response data from populated GIF structure
  * @param ctx libyang context
- * @param gif_name GIF interface name
+ * @param gif_data populated netd_gif_t structure
  * @return libyang data tree with GIF response data, NULL on error
  */
-struct lyd_node *create_gif_response(struct ly_ctx *ctx, const char *gif_name) {
+struct lyd_node *create_gif_response(struct ly_ctx *ctx, const netd_gif_t *gif_data) {
     struct lyd_node *response = NULL;
+    struct lyd_node *iface_node = NULL;
+    struct lyd_node *gif_node = NULL;
+    const struct lys_module *ietf_interfaces_mod;
+    const struct lys_module *netd_mod;
     int ret;
 
-    ret = lyd_new_inner(NULL, ctx, "ietf-interfaces", "interfaces", 0, &response);
+    if (!gif_data) {
+        debug_log(ERROR, "Invalid GIF data for response creation");
+        return NULL;
+    }
+
+    /* Get the required modules */
+    ietf_interfaces_mod = ly_ctx_get_module_implemented(ctx, "ietf-interfaces");
+    if (!ietf_interfaces_mod) {
+        debug_log(ERROR, "Failed to get ietf-interfaces module");
+        return NULL;
+    }
+    
+    netd_mod = ly_ctx_get_module_implemented(ctx, "netd");
+    if (!netd_mod) {
+        debug_log(ERROR, "Failed to get netd module");
+        return NULL;
+    }
+
+    /* Create interfaces container */
+    ret = lyd_new_inner(NULL, ietf_interfaces_mod, "interfaces", 0, &response);
     if (ret != LY_SUCCESS) {
         debug_log(ERROR, "Failed to create interfaces response container");
         return NULL;
     }
 
-    struct lyd_node *iface_node = NULL;
-    ret = lyd_new_inner(response, ctx, "ietf-interfaces", "interface", 0, &iface_node);
+    /* Create interface node */
+    ret = lyd_new_inner(response, ietf_interfaces_mod, "interface", 0, &iface_node);
     if (ret != LY_SUCCESS) {
         debug_log(ERROR, "Failed to create interface node");
         return NULL;
     }
 
-    lyd_new_term(iface_node, ctx, "ietf-interfaces", "name", gif_name, 0, NULL);
-    lyd_new_term(iface_node, ctx, "ietf-interfaces", "type", "iana-if-type:tunnel", 0, NULL);
-    lyd_new_term(iface_node, ctx, "ietf-interfaces", "enabled", 1, 0, NULL);
-    lyd_new_term(iface_node, ctx, "ietf-interfaces", "oper-status", "up", 0, NULL);
+    /* Set interface basic properties */
+    ret = lyd_new_term(iface_node, ietf_interfaces_mod, "name", gif_data->base.name, 0, NULL);
+    if (ret != LY_SUCCESS) {
+        debug_log(ERROR, "Failed to set interface name");
+    }
+    
+    ret = lyd_new_term(iface_node, ietf_interfaces_mod, "type", "iana-if-type:tunnel", 0, NULL);
+    if (ret != LY_SUCCESS) {
+        debug_log(ERROR, "Failed to set interface type");
+    }
+    
+    ret = lyd_new_term(iface_node, ietf_interfaces_mod, "enabled", "true", 0, NULL);
+    if (ret != LY_SUCCESS) {
+        debug_log(ERROR, "Failed to set interface enabled");
+    }
+    
+    ret = lyd_new_term(iface_node, ietf_interfaces_mod, "oper-status", "up", 0, NULL);
+    if (ret != LY_SUCCESS) {
+        debug_log(ERROR, "Failed to set interface oper-status");
+    }
+
+    /* Create GIF-specific node */
+    ret = lyd_new_inner(iface_node, netd_mod, "gif", 0, &gif_node);
+    if (ret != LY_SUCCESS) {
+        debug_log(ERROR, "Failed to create GIF node");
+        return response; /* Return partial response */
+    }
+
+    /* Add GIF-specific properties */
+    ret = lyd_new_term(gif_node, netd_mod, "local-addr", gif_data->local_addr, 0, NULL);
+    if (ret != LY_SUCCESS) {
+        debug_log(ERROR, "Failed to set GIF local address");
+    }
+
+    ret = lyd_new_term(gif_node, netd_mod, "remote-addr", gif_data->remote_addr, 0, NULL);
+    if (ret != LY_SUCCESS) {
+        debug_log(ERROR, "Failed to set GIF remote address");
+    }
 
     return response;
 } 

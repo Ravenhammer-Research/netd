@@ -36,12 +36,13 @@
 #include <stdbool.h>
 #include <sys/queue.h>
 #include <libyang/libyang.h>
-#include <libnetconf2/libnetconf2.h>
+#include <libnetconf2/netconf.h>
 #include <types.h>
+#include <debug.h>
 
 /* System query data structure for temporary system state */
 typedef struct netd_system_query {
-  TAILQ_HEAD(netd_interface_list, netd_interface) interfaces;
+  TAILQ_HEAD(netd_system_interface_list, netd_interface) interfaces;
   TAILQ_HEAD(netd_bridge_list, netd_bridge) bridges;
   TAILQ_HEAD(netd_vlan_list, netd_vlan) vlans;
   TAILQ_HEAD(netd_wifi_list, netd_wifi) wifis;

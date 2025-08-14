@@ -13,11 +13,17 @@ add_library(interface INTERFACE)
 target_link_libraries(interface INTERFACE
     interface_request
     interface_response
-    interface_type
+    bridge_type
+    vlan_type
+    lagg_type
+    gif_type
+    epair_type
+    ieee80211_type
 )
 
 # Set include directories
 target_include_directories(interface INTERFACE
+    ${CMAKE_BINARY_DIR}/vendor_install/include
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/..
     ${CMAKE_CURRENT_SOURCE_DIR}/../..

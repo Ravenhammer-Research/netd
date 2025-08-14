@@ -33,52 +33,39 @@
 #include <netconf/netconf.h>
 #include <netd.h>
 #include <debug.h>
-#include <libyang/tree_data.h>
-#include <libyang/tree_schema.h>
+#include <types.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-/* Global yang context - set by netconf.c */
-extern struct ly_ctx *yang_ctx;
 extern netd_state_t netd_state;
 
 /**
  * Get VRF data from netd state
- * @param ctx libyang context
- * @return libyang data tree with VRF data, NULL on error
+ * @param system_query pointer to netd_system_query_t structure to populate
+ * @return 0 on success, -1 on failure
  */
-static const struct lys_module *get_ietf_routing_module(struct ly_ctx *ctx) {
-    return ly_ctx_get_module(ctx, "ietf-routing", NULL);
-}
-
-struct lyd_node *get_vrf_data(struct ly_ctx *ctx) {
-    struct lyd_node *vrfs = NULL;
-    int ret;
-    const struct lys_module *routing_module = get_ietf_routing_module(ctx);
-    
-    /* Create VRFs container */
-    ret = lyd_new_inner(NULL, routing_module, "routing-instance", 0, &vrfs);
-    if (ret != LY_SUCCESS) {
-        debug_log(ERROR, "Failed to create routing-instance container");
-        return NULL;
+int get_vrf_data(netd_system_query_t *system_query) {
+    if (!system_query) {
+        debug_log(ERROR, "Invalid parameters for VRF data acquisition");
+        return -1;
     }
     
+    /* Initialize the system query structure */
+    memset(system_query, 0, sizeof(netd_system_query_t));
+    
+    /* Copy VRF data from netd state */
     netd_vrf_t *vrf;
     TAILQ_FOREACH(vrf, &netd_state.vrfs, entries) {
-        struct lyd_node *vrf_node = NULL;
-        ret = lyd_new_inner(vrfs, routing_module, "routing-instance", 0, &vrf_node);
-        if (ret != LY_SUCCESS) {
-            debug_log(ERROR, "Failed to create routing-instance node");
+        if (!netd_vrf_list_add(&system_query->vrfs, vrf)) {
+            debug_log(ERROR, "Failed to add VRF to system query");
             continue;
         }
-
-        lyd_new_term(vrf_node, routing_module, "name", vrf->name, 0, NULL);
-        lyd_new_term(vrf_node, routing_module, "type", "l3vpn:l3vpn", 0, NULL);
-        lyd_new_term(vrf_node, routing_module, "enabled", "true", 0, NULL);
     }
     
-    return vrfs;
+    debug_log(DEBUG, "Successfully acquired VRF data with %d VRFs", 
+              system_query->vrfs.count);
+    return 0;
 }
 
 /**
@@ -91,10 +78,10 @@ struct nc_server_reply *handle_get_config_vrfs(struct lyd_node *rpc, struct nc_s
     (void)rpc;
     (void)session;
 
-    struct lyd_node *data = get_vrf_data(yang_ctx);
-    if (!data) {
+    netd_system_query_t system_query;
+    if (get_vrf_data(&system_query) != 0) {
         return nc_server_reply_err(nc_err(yang_ctx, NC_ERR_OP_FAILED, NULL));
     }
 
-    return nc_server_reply_data(data, NC_WD_UNKNOWN, NC_PARAMTYPE_FREE);
+    return nc_server_reply_data(&system_query, NC_WD_UNKNOWN, NC_PARAMTYPE_FREE);
 } 

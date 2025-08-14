@@ -12,6 +12,7 @@ add_library(route_response STATIC ${ROUTE_RESPONSE_SOURCES})
 
 # Set include directories
 target_include_directories(route_response PRIVATE
+    ${CMAKE_BINARY_DIR}/vendor_install/include
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/..
     ${CMAKE_CURRENT_SOURCE_DIR}/../..

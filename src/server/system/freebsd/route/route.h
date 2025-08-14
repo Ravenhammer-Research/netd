@@ -42,6 +42,6 @@ int freebsd_route_add(uint32_t fib, const char *destination,
     const char *gateway, const char *interface, int flags);
 int freebsd_route_delete(uint32_t fib, const char *destination);
 int freebsd_route_list(netd_state_t *state, uint32_t fib, int family);
-int freebsd_route_enumerate_system(netd_state_t *state, uint32_t fib);
+int freebsd_route_enumerate_system(netd_system_query_t *system_query, uint32_t fib);
 
 #endif /* ROUTE_H */

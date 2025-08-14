@@ -34,32 +34,27 @@
 #include <netconf/netconf.h>
 #include <netd.h>
 #include <debug.h>
-#include <libyang/tree_data.h>
-#include <libyang/tree_schema.h>
+#include <types.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-/* Global yang context - set by netconf.c */
-extern struct ly_ctx *yang_ctx;
-
 /**
  * Get GIF interface data from FreeBSD system
- * @param ctx libyang context
  * @param iface_name interface name
- * @param iface_node interface node to add GIF data to
+ * @param gif_data pointer to netd_gif_t structure to populate
  * @return 0 on success, -1 on failure
  */
-int get_gif_data(struct ly_ctx *ctx, const char *iface_name, struct lyd_node *iface_node) {
-    struct lyd_node *gif_node = NULL;
-    int ret;
-    
-    /* Create GIF node */
-    ret = lyd_new_inner(iface_node, ctx, "netd", "gif", 0, &gif_node);
-    if (ret != LY_SUCCESS) {
-        debug_log(ERROR, "Failed to create GIF node");
+int get_gif_data(const char *iface_name, netd_gif_t *gif_data) {
+    if (!iface_name || !gif_data) {
+        debug_log(ERROR, "Invalid parameters for GIF data acquisition");
         return -1;
     }
+    
+    /* Initialize the GIF structure */
+    memset(gif_data, 0, sizeof(netd_gif_t));
+    strlcpy(gif_data->base.name, iface_name, sizeof(gif_data->base.name));
+    gif_data->base.type = NETD_IF_TYPE_GIF;
     
     /* Get GIF data from system */
     char local_addr[64];
@@ -67,20 +62,16 @@ int get_gif_data(struct ly_ctx *ctx, const char *iface_name, struct lyd_node *if
     
     if (freebsd_gif_show(iface_name, local_addr, sizeof(local_addr), 
                         remote_addr, sizeof(remote_addr)) == 0) {
-        /* Set local address */
-        ret = lyd_new_term(gif_node, ctx, "netd", "local-addr", local_addr, 0, NULL);
-        if (ret != LY_SUCCESS) {
-            debug_log(ERROR, "Failed to set GIF local address");
-        }
+        strlcpy(gif_data->local_addr, local_addr, sizeof(gif_data->local_addr));
+        strlcpy(gif_data->remote_addr, remote_addr, sizeof(gif_data->remote_addr));
         
-        /* Set remote address */
-        ret = lyd_new_term(gif_node, ctx, "netd", "remote-addr", remote_addr, 0, NULL);
-        if (ret != LY_SUCCESS) {
-            debug_log(ERROR, "Failed to set GIF remote address");
-        }
+        debug_log(DEBUG, "Successfully acquired GIF data for %s: local=%s, remote=%s", 
+                  iface_name, local_addr, remote_addr);
+        return 0;
+    } else {
+        debug_log(ERROR, "Failed to get GIF data for %s", iface_name);
+        return -1;
     }
-    
-    return 0;
 }
 
 /**

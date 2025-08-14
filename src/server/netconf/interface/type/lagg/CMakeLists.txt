@@ -12,6 +12,7 @@ add_library(lagg_type STATIC ${LAGG_SOURCES})
 
 # Set include directories
 target_include_directories(lagg_type PRIVATE
+    ${CMAKE_BINARY_DIR}/vendor_install/include
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/..
     ${CMAKE_CURRENT_SOURCE_DIR}/../..

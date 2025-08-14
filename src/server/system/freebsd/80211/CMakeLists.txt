@@ -14,6 +14,8 @@ target_include_directories(freebsd_80211_type PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/../..
     ${CMAKE_CURRENT_SOURCE_DIR}/../../..
     ${CMAKE_CURRENT_SOURCE_DIR}/../../../../shared
+    ${CMAKE_CURRENT_BINARY_DIR}/../../../../vendor/libyang
+    ${CMAKE_CURRENT_BINARY_DIR}/../../../../vendor/libnetconf2/include
 )
 
 # Add compile definitions

@@ -32,9 +32,11 @@
 #include <vlan.h>
 #include <netconf/netconf.h>
 #include <netd.h>
+#include <types.h>
 #include <debug.h>
 #include <libyang/tree_data.h>
 #include <libyang/tree_schema.h>
+#include <libyang/context.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -43,32 +45,103 @@
 extern struct ly_ctx *yang_ctx;
 
 /**
- * Create VLAN response data
+ * Create VLAN response data from populated VLAN structure
  * @param ctx libyang context
- * @param vlan_name VLAN interface name
+ * @param vlan_data populated netd_vlan_t structure
  * @return libyang data tree with VLAN response data, NULL on error
  */
-struct lyd_node *create_vlan_response(struct ly_ctx *ctx, const char *vlan_name) {
+struct lyd_node *create_vlan_response(struct ly_ctx *ctx, const netd_vlan_t *vlan_data) {
     struct lyd_node *response = NULL;
+    struct lyd_node *iface_node = NULL;
+    struct lyd_node *vlan_node = NULL;
+    const struct lys_module *ietf_interfaces_mod;
+    const struct lys_module *netd_mod;
     int ret;
 
-    ret = lyd_new_inner(NULL, ctx, "ietf-interfaces", "interfaces", 0, &response);
+    if (!vlan_data) {
+        debug_log(ERROR, "Invalid VLAN data for response creation");
+        return NULL;
+    }
+
+    /* Get the required modules */
+    ietf_interfaces_mod = ly_ctx_get_module_implemented(ctx, "ietf-interfaces");
+    if (!ietf_interfaces_mod) {
+        debug_log(ERROR, "Failed to get ietf-interfaces module");
+        return NULL;
+    }
+    
+    netd_mod = ly_ctx_get_module_implemented(ctx, "netd");
+    if (!netd_mod) {
+        debug_log(ERROR, "Failed to get netd module");
+        return NULL;
+    }
+
+    /* Create interfaces container */
+    ret = lyd_new_inner(NULL, ietf_interfaces_mod, "interfaces", 0, &response);
     if (ret != LY_SUCCESS) {
         debug_log(ERROR, "Failed to create interfaces response container");
         return NULL;
     }
 
-    struct lyd_node *iface_node = NULL;
-    ret = lyd_new_inner(response, ctx, "ietf-interfaces", "interface", 0, &iface_node);
+    /* Create interface node */
+    ret = lyd_new_inner(response, ietf_interfaces_mod, "interface", 0, &iface_node);
     if (ret != LY_SUCCESS) {
         debug_log(ERROR, "Failed to create interface node");
         return NULL;
     }
 
-    lyd_new_term(iface_node, ctx, "ietf-interfaces", "name", vlan_name, 0, NULL);
-    lyd_new_term(iface_node, ctx, "ietf-interfaces", "type", "iana-if-type:l2vlan", 0, NULL);
-    lyd_new_term(iface_node, ctx, "ietf-interfaces", "enabled", 1, 0, NULL);
-    lyd_new_term(iface_node, ctx, "ietf-interfaces", "oper-status", "up", 0, NULL);
+    /* Set interface basic properties */
+    ret = lyd_new_term(iface_node, ietf_interfaces_mod, "name", vlan_data->base.name, 0, NULL);
+    if (ret != LY_SUCCESS) {
+        debug_log(ERROR, "Failed to set interface name");
+    }
+    
+    ret = lyd_new_term(iface_node, ietf_interfaces_mod, "type", "iana-if-type:l2vlan", 0, NULL);
+    if (ret != LY_SUCCESS) {
+        debug_log(ERROR, "Failed to set interface type");
+    }
+    
+    ret = lyd_new_term(iface_node, ietf_interfaces_mod, "enabled", "true", 0, NULL);
+    if (ret != LY_SUCCESS) {
+        debug_log(ERROR, "Failed to set interface enabled");
+    }
+    
+    ret = lyd_new_term(iface_node, ietf_interfaces_mod, "oper-status", "up", 0, NULL);
+    if (ret != LY_SUCCESS) {
+        debug_log(ERROR, "Failed to set interface oper-status");
+    }
+
+    /* Create VLAN-specific node */
+    ret = lyd_new_inner(iface_node, netd_mod, "vlan", 0, &vlan_node);
+    if (ret != LY_SUCCESS) {
+        debug_log(ERROR, "Failed to create VLAN node");
+        return response; /* Return partial response */
+    }
+
+    /* Add VLAN-specific properties */
+    char vlan_id_str[16];
+    snprintf(vlan_id_str, sizeof(vlan_id_str), "%d", vlan_data->vlan_id);
+    ret = lyd_new_term(vlan_node, netd_mod, "vlan-id", vlan_id_str, 0, NULL);
+    if (ret != LY_SUCCESS) {
+        debug_log(ERROR, "Failed to set VLAN ID");
+    }
+
+    ret = lyd_new_term(vlan_node, netd_mod, "parent", vlan_data->parent, 0, NULL);
+    if (ret != LY_SUCCESS) {
+        debug_log(ERROR, "Failed to set VLAN parent");
+    }
+
+    ret = lyd_new_term(vlan_node, netd_mod, "protocol", vlan_data->protocol, 0, NULL);
+    if (ret != LY_SUCCESS) {
+        debug_log(ERROR, "Failed to set VLAN protocol");
+    }
+
+    char priority_str[8];
+    snprintf(priority_str, sizeof(priority_str), "%d", vlan_data->priority);
+    ret = lyd_new_term(vlan_node, netd_mod, "priority", priority_str, 0, NULL);
+    if (ret != LY_SUCCESS) {
+        debug_log(ERROR, "Failed to set VLAN priority");
+    }
 
     return response;
 } 

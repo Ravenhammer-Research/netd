@@ -4,6 +4,51 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <sys/queue.h>
+#include <string.h>
+#include <stdlib.h>
+
+/* Define constants if not already defined */
+#ifndef MAX_VRF_NAME_LEN
+#define MAX_VRF_NAME_LEN 64
+#endif
+
+#ifndef MAX_IFNAME_LEN
+#define MAX_IFNAME_LEN 15
+#endif
+
+#ifndef MAX_GROUP_NAME_LEN
+#define MAX_GROUP_NAME_LEN 15
+#endif
+
+#ifndef MAX_GROUPS_PER_IF
+#define MAX_GROUPS_PER_IF 65536
+#endif
+
+#ifndef MAX_BRIDGE_MEMBERS
+#define MAX_BRIDGE_MEMBERS 65536
+#endif
+
+#ifndef MAX_LAGG_MEMBERS
+#define MAX_LAGG_MEMBERS 65536
+#endif
+
+#ifndef MAX_VRFS
+#define MAX_VRFS 65536
+#endif
+
+#ifndef MAX_IPV4_ADDRESSES_PER_IF
+#define MAX_IPV4_ADDRESSES_PER_IF 256
+#endif
+
+#ifndef MAX_IPV6_ADDRESSES_PER_IF
+#define MAX_IPV6_ADDRESSES_PER_IF 256
+#endif
+
+#ifndef MAX_NETCONF_SESSIONS
+#define MAX_NETCONF_SESSIONS 64
+#endif
+
+
 
 /* Address structure for IPv4/IPv6 */
 typedef struct netd_address {
@@ -346,13 +391,7 @@ typedef enum : uint8_t {
   NETD_BRIDGE_PORT_NORMAL
 } netd_bridge_port_type_t;
 
-/* LAGG protocol types */
-typedef enum : uint8_t {
-  NETD_LAGG_PROTO_FAILOVER,
-  NETD_LAGG_PROTO_LACP,
-  NETD_LAGG_PROTO_ROUNDROBIN,
-  NETD_LAGG_PROTO_LOADBALANCE
-} netd_lagg_proto_t;
+
 
 /* Data structures */
 typedef struct netd_vrf {
@@ -363,12 +402,25 @@ typedef struct netd_vrf {
   TAILQ_ENTRY(netd_vrf) entries;
 } netd_vrf_t;
 
+/* TAILQ structures for capacity-constrained lists */
+typedef struct netd_interface_group {
+  char name[MAX_GROUP_NAME_LEN];
+  TAILQ_ENTRY(netd_interface_group) entries;
+} netd_interface_group_t;
+
+/* Capacity-constrained TAILQ heads */
+typedef struct netd_interface_groups {
+  TAILQ_HEAD(netd_interface_groups_head, netd_interface_group) head;
+  uint32_t count;
+  uint32_t max_count;
+} netd_interface_groups_t;
+
 /* Base interface structure */
 typedef struct netd_interface {
   char name[MAX_IFNAME_LEN];
   netd_interface_type_t type;
   uint32_t fib;
-  char groups[MAX_GROUPS_PER_IF][MAX_GROUP_NAME_LEN];
+  netd_interface_groups_t groups;   /* Interface groups as TAILQ */
   uint32_t mtu;
   netd_interface_flag_t flags;      /* IPv4 interface flags */
   netd_interface6_flag_t flags6;    /* IPv6 interface flags */
@@ -377,10 +429,32 @@ typedef struct netd_interface {
   TAILQ_ENTRY(netd_interface) entries;
 } netd_interface_t;
 
+typedef struct netd_bridge_member {
+  netd_interface_t *interface;
+  TAILQ_ENTRY(netd_bridge_member) entries;
+} netd_bridge_member_t;
+
+typedef struct netd_lagg_member {
+  netd_interface_t *interface;
+  TAILQ_ENTRY(netd_lagg_member) entries;
+} netd_lagg_member_t;
+
+typedef struct netd_bridge_members {
+  TAILQ_HEAD(netd_bridge_members_head, netd_bridge_member) head;
+  uint32_t count;
+  uint32_t max_count;
+} netd_bridge_members_t;
+
+typedef struct netd_lagg_members {
+  TAILQ_HEAD(netd_lagg_members_head, netd_lagg_member) head;
+  uint32_t count;
+  uint32_t max_count;
+} netd_lagg_members_t;
+
 /* Bridge-specific data structure */
 typedef struct netd_bridge {
   netd_interface_t base;  /* Extends netd_interface_t */
-  netd_interface_t *members[MAX_BRIDGE_MEMBERS]; /* Bridge member interfaces as pointer array */
+  netd_bridge_members_t members;  /* Bridge member interfaces as TAILQ */
   uint32_t timeout;
   netd_bridge_proto_t protocol;
   TAILQ_ENTRY(netd_bridge) entries;
@@ -441,7 +515,7 @@ typedef struct netd_vxlan {
   uint32_t vni;           /* VXLAN Network Identifier */
   uint16_t local_port;    /* Local port */
   uint16_t remote_port;   /* Remote port */
-  netd_address_t group;   /* Multicast group address */
+  netd_address_t mc_group;   /* Multicast group address */
   uint16_t port_range_low; /* Port range low */
   uint16_t port_range_high; /* Port range high */
   uint32_t timeout;       /* Forwarding table timeout */
@@ -478,7 +552,7 @@ typedef struct netd_route {
 typedef struct netd_lagg {
   netd_interface_t base;  /* Extends netd_interface_t */
   netd_lagg_proto_t lagg_proto;       /* LAGG protocol */
-  netd_interface_t *members[MAX_LAGG_MEMBERS]; /* LAGG member interfaces as pointer array */
+  netd_lagg_members_t members;  /* LAGG member interfaces as TAILQ */
   netd_lagg_hash_t hash_options;
   bool use_flowid;
   bool use_numa;
@@ -510,5 +584,37 @@ typedef struct netd_wg {
   uint32_t public_key[8];  /* Public key (256-bit) */
   TAILQ_ENTRY(netd_wg) entries;
 } netd_wg_t;
+
+/* Function declarations for capacity-constrained TAILQ operations */
+
+/* Initialize capacity-constrained TAILQ structures */
+void netd_interface_groups_init(netd_interface_groups_t *groups);
+void netd_bridge_members_init(netd_bridge_members_t *members);
+void netd_lagg_members_init(netd_lagg_members_t *members);
+
+/* Add operations (FIFO append) */
+bool netd_interface_groups_add(netd_interface_groups_t *groups, const char *group_name);
+bool netd_bridge_members_add(netd_bridge_members_t *members, netd_interface_t *interface);
+bool netd_lagg_members_add(netd_lagg_members_t *members, netd_interface_t *interface);
+
+/* Remove operations (FIFO pop from head) */
+netd_interface_group_t *netd_interface_groups_remove(netd_interface_groups_t *groups);
+netd_bridge_member_t *netd_bridge_members_remove(netd_bridge_members_t *members);
+netd_lagg_member_t *netd_lagg_members_remove(netd_lagg_members_t *members);
+
+/* Find operations */
+netd_interface_group_t *netd_interface_groups_find(netd_interface_groups_t *groups, const char *group_name);
+netd_bridge_member_t *netd_bridge_members_find(netd_bridge_members_t *members, netd_interface_t *interface);
+netd_lagg_member_t *netd_lagg_members_find(netd_lagg_members_t *members, netd_interface_t *interface);
+
+/* Remove specific item operations */
+bool netd_interface_groups_remove_item(netd_interface_groups_t *groups, const char *group_name);
+bool netd_bridge_members_remove_item(netd_bridge_members_t *members, netd_interface_t *interface);
+bool netd_lagg_members_remove_item(netd_lagg_members_t *members, netd_interface_t *interface);
+
+/* Clear operations */
+void netd_interface_groups_clear(netd_interface_groups_t *groups);
+void netd_bridge_members_clear(netd_bridge_members_t *members);
+void netd_lagg_members_clear(netd_lagg_members_t *members);
 
 #endif /* NETD_TYPES_H */ 

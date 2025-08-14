@@ -34,45 +34,41 @@
 #include <netconf/netconf.h>
 #include <netd.h>
 #include <debug.h>
-#include <libyang/tree_data.h>
-#include <libyang/tree_schema.h>
+#include <types.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-/* Global yang context - set by netconf.c */
-extern struct ly_ctx *yang_ctx;
-
 /**
  * Get EPAIR interface data from FreeBSD system
- * @param ctx libyang context
  * @param iface_name interface name
- * @param iface_node interface node to add EPAIR data to
+ * @param epair_data pointer to netd_epair_t structure to populate
  * @return 0 on success, -1 on failure
  */
-int get_epair_data(struct ly_ctx *ctx, const char *iface_name, struct lyd_node *iface_node) {
-    struct lyd_node *epair_node = NULL;
-    int ret;
-    
-    /* Create EPAIR node */
-    ret = lyd_new_inner(iface_node, ctx, "netd", "epair", 0, &epair_node);
-    if (ret != LY_SUCCESS) {
-        debug_log(ERROR, "Failed to create EPAIR node");
+int get_epair_data(const char *iface_name, netd_epair_t *epair_data) {
+    if (!iface_name || !epair_data) {
+        debug_log(ERROR, "Invalid parameters for EPAIR data acquisition");
         return -1;
     }
+    
+    /* Initialize the EPAIR structure */
+    memset(epair_data, 0, sizeof(netd_epair_t));
+    strlcpy(epair_data->base.name, iface_name, sizeof(epair_data->base.name));
+    epair_data->base.type = NETD_IF_TYPE_EPAIR;
     
     /* Get EPAIR data from system */
     char peer_name[MAX_IFNAME_LEN];
     
     if (freebsd_epair_show(iface_name, peer_name, sizeof(peer_name)) == 0) {
-        /* Set peer name */
-        ret = lyd_new_term(epair_node, ctx, "netd", "peer", peer_name, 0, NULL);
-        if (ret != LY_SUCCESS) {
-            debug_log(ERROR, "Failed to set EPAIR peer name");
-        }
+        strlcpy(epair_data->peer, peer_name, sizeof(epair_data->peer));
+        
+        debug_log(DEBUG, "Successfully acquired EPAIR data for %s: peer=%s", 
+                  iface_name, peer_name);
+        return 0;
+    } else {
+        debug_log(ERROR, "Failed to get EPAIR data for %s", iface_name);
+        return -1;
     }
-    
-    return 0;
 }
 
 /**

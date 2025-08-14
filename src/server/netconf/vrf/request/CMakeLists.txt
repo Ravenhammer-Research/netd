@@ -11,6 +11,7 @@ add_library(vrf_request STATIC ${VRF_REQUEST_SOURCES})
 
 # Set include directories
 target_include_directories(vrf_request PRIVATE
+    ${CMAKE_BINARY_DIR}/vendor_install/include
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/..
     ${CMAKE_CURRENT_SOURCE_DIR}/../..

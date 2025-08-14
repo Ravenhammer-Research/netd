@@ -31,11 +31,11 @@
 
 #include <bridge.h>
 #include <system/freebsd/bridge/bridge.h>
+#include <types.h>
 #include <netconf/netconf.h>
 #include <netd.h>
 #include <debug.h>
-#include <libyang/tree_data.h>
-#include <libyang/tree_schema.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -45,44 +45,24 @@ extern struct ly_ctx *yang_ctx;
 
 /**
  * Get bridge interface data from FreeBSD system
- * @param ctx libyang context
  * @param iface_name interface name
- * @param iface_node interface node to add bridge data to
+ * @param bridge_data pointer to netd_bridge_t structure to populate
  * @return 0 on success, -1 on failure
  */
-int get_bridge_data(struct ly_ctx *ctx, const char *iface_name, struct lyd_node *iface_node) {
-    struct lyd_node *bridge_node = NULL;
-    int ret;
-    
-    /* Create bridge node */
-    ret = lyd_new_inner(iface_node, ctx, "netd", "bridge", 0, &bridge_node);
-    if (ret != LY_SUCCESS) {
-        debug_log(ERROR, "Failed to create bridge node");
+int get_bridge_data(const char *iface_name, netd_bridge_t *bridge_data) {
+    if (!iface_name || !bridge_data) {
+        debug_log(ERROR, "Invalid parameters for bridge data acquisition");
         return -1;
     }
     
-    /* Get bridge members from system */
-    char members[1024];
-    if (freebsd_get_bridge_members(iface_name, members, sizeof(members)) == 0) {
-        /* Parse members and add to bridge node */
-        char *member = strtok(members, " ");
-        while (member != NULL) {
-            struct lyd_node *member_node = NULL;
-            ret = lyd_new_inner(bridge_node, ctx, "netd", "member", 0, &member_node);
-            if (ret != LY_SUCCESS) {
-                debug_log(ERROR, "Failed to create bridge member node");
-                break;
-            }
-            
-            ret = lyd_new_term(member_node, ctx, "netd", "name", member, 0, NULL);
-            if (ret != LY_SUCCESS) {
-                debug_log(ERROR, "Failed to set bridge member name");
-            }
-            
-            member = strtok(NULL, " ");
-        }
+    /* Get complete bridge data from system */
+    if (freebsd_get_bridge_data(iface_name, bridge_data) != 0) {
+        debug_log(ERROR, "Failed to get bridge data for %s", iface_name);
+        return -1;
     }
     
+    debug_log(DEBUG, "Successfully acquired bridge data for %s with %d members", 
+              iface_name, bridge_data->members.count);
     return 0;
 }
 
@@ -114,16 +94,28 @@ int bridge_remove_member(const char *bridge_name, const char *member_name) {
  * @return number of members on success, -1 on failure
  */
 int bridge_get_members(const char *bridge_name, char **members, int max_members) {
-    char member_array[MAX_IFNAME_LEN][max_members];
-    int member_count;
+    netd_bridge_members_t bridge_members;
+    int member_count = 0;
     
-    if (freebsd_get_bridge_members_array(bridge_name, member_array, max_members, &member_count) != 0) {
+    if (freebsd_get_bridge_members(bridge_name, &bridge_members) != 0) {
         return -1;
     }
     
-    for (int i = 0; i < member_count; i++) {
-        members[i] = strdup(member_array[i]);
+    /* Convert TAILQ to array */
+    netd_bridge_member_t *member;
+    TAILQ_FOREACH(member, &bridge_members.head, entries) {
+        if (member_count >= max_members) {
+            break;
+        }
+        
+        /* For now, we'll use a placeholder name since the interface pointer is NULL */
+        const char *member_name = member->interface ? member->interface->name : "unknown";
+        members[member_count] = strdup(member_name);
+        member_count++;
     }
+    
+    /* Clean up the TAILQ structure */
+    netd_bridge_members_clear(&bridge_members);
     
     return member_count;
 }

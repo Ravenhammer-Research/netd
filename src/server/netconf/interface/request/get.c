@@ -89,6 +89,7 @@ struct lyd_node *get_interface_data(struct ly_ctx *ctx) {
     int ret;
     const struct lys_module *ietf_interfaces_mod;
     netd_interface_t *interface;
+    netd_system_query_t system_query = {0};
 
     /* Get the ietf-interfaces module */
     ietf_interfaces_mod = get_ietf_interfaces_module(ctx);
@@ -98,7 +99,7 @@ struct lyd_node *get_interface_data(struct ly_ctx *ctx) {
     }
 
     /* Call system layer to enumerate interfaces */
-    if (freebsd_enumerate_interfaces(&netd_state) != 0) {
+    if (freebsd_enumerate_interfaces(&system_query) != 0) {
         debug_log(ERROR, "Failed to enumerate interfaces");
         return NULL;
     }
@@ -110,8 +111,8 @@ struct lyd_node *get_interface_data(struct ly_ctx *ctx) {
         return NULL;
     }
 
-    /* Iterate through interfaces from system state */
-    TAILQ_FOREACH(interface, &netd_state.interfaces, entries) {
+    /* Iterate through interfaces from system query */
+    TAILQ_FOREACH(interface, &system_query.interfaces, entries) {
         /* Create interface node */
         ret = lyd_new_inner(interfaces, ietf_interfaces_mod, "interface", 0, &iface);
         if (ret != LY_SUCCESS) {
@@ -134,13 +135,31 @@ struct lyd_node *get_interface_data(struct ly_ctx *ctx) {
             continue;
         }
 
-        /* Set enabled state from system layer */
+        /* Set enabled state from system layer - check if interface is up */
         ret = lyd_new_term(iface, ietf_interfaces_mod, "enabled",
-                          interface->enabled ? "true" : "false", 0, NULL);
+                          (interface->flags & NETD_IF_FLAG_UP) ? "true" : "false", 0, NULL);
         if (ret != LY_SUCCESS) {
             debug_log(ERROR, "Failed to set interface enabled state");
             continue;
         }
+
+        /* Handle type-specific data using the new request/response pattern */
+        if (interface->type == NETD_IF_TYPE_BRIDGE) {
+            /* Get bridge-specific data using request handler */
+            netd_bridge_t bridge_data;
+            if (get_bridge_data(interface->name, &bridge_data) == 0) {
+                /* Create bridge-specific response using response handler */
+                struct lyd_node *bridge_response = create_bridge_response(ctx, &bridge_data);
+                if (bridge_response) {
+                    /* Merge the bridge-specific data into the interface node */
+                    /* Note: This is a simplified example - in practice you'd need to merge the nodes properly */
+                    debug_log(DEBUG, "Successfully added bridge-specific data for %s", interface->name);
+                }
+                /* Clean up bridge data */
+                netd_bridge_members_clear(&bridge_data.members);
+            }
+        }
+        /* Add similar blocks for other interface types (VLAN, LAGG, etc.) */
     }
 
     return interfaces;

@@ -29,46 +29,41 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <wifi.h>
+#include <loopback.h>
+#include <system/freebsd/loopback/loopback.h>
 #include <netconf/netconf.h>
 #include <netd.h>
 #include <debug.h>
-#include <libyang/tree_data.h>
-#include <libyang/tree_schema.h>
+#include <types.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-/* Global yang context - set by netconf.c */
-extern struct ly_ctx *yang_ctx;
-
 /**
- * Create WiFi response data
- * @param ctx libyang context
- * @param wifi_name WiFi interface name
- * @return libyang data tree with WiFi response data, NULL on error
+ * Get Loopback interface data from FreeBSD system
+ * @param iface_name interface name
+ * @param loopback_data pointer to netd_loopback_t structure to populate
+ * @return 0 on success, -1 on failure
  */
-struct lyd_node *create_wifi_response(struct ly_ctx *ctx, const char *wifi_name) {
-    struct lyd_node *response = NULL;
-    int ret;
-
-    ret = lyd_new_inner(NULL, ctx, "ietf-interfaces", "interfaces", 0, &response);
-    if (ret != LY_SUCCESS) {
-        debug_log(ERROR, "Failed to create interfaces response container");
-        return NULL;
+int get_loopback_data(const char *iface_name, netd_loopback_t *loopback_data) {
+    if (!iface_name || !loopback_data) {
+        debug_log(ERROR, "Invalid parameters for Loopback data acquisition");
+        return -1;
     }
-
-    struct lyd_node *iface_node = NULL;
-    ret = lyd_new_inner(response, ctx, "ietf-interfaces", "interface", 0, &iface_node);
-    if (ret != LY_SUCCESS) {
-        debug_log(ERROR, "Failed to create interface node");
-        return NULL;
+    
+    /* Initialize the Loopback structure */
+    memset(loopback_data, 0, sizeof(netd_loopback_t));
+    strlcpy(loopback_data->base.name, iface_name, sizeof(loopback_data->base.name));
+    loopback_data->base.type = NETD_IF_TYPE_LOOPBACK;
+    
+    /* Get Loopback data from system */
+    uint32_t mtu;
+    
+    if (freebsd_loopback_get_mtu(iface_name, &mtu) == 0) {
+        loopback_data->mtu = mtu;
     }
-
-    lyd_new_term(iface_node, ctx, "ietf-interfaces", "name", wifi_name, 0, NULL);
-    lyd_new_term(iface_node, ctx, "ietf-interfaces", "type", "iana-if-type:ieee80211", 0, NULL);
-    lyd_new_term(iface_node, ctx, "ietf-interfaces", "enabled", 1, 0, NULL);
-    lyd_new_term(iface_node, ctx, "ietf-interfaces", "oper-status", "up", 0, NULL);
-
-    return response;
-} 
+    
+    debug_log(DEBUG, "Successfully acquired Loopback data for %s: mtu=%d", 
+              iface_name, loopback_data->mtu);
+    return 0;
+}

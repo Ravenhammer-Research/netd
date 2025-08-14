@@ -16,6 +16,7 @@ target_link_libraries(route INTERFACE
 
 # Set include directories
 target_include_directories(route INTERFACE
+    ${CMAKE_BINARY_DIR}/vendor_install/include
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/..
     ${CMAKE_CURRENT_SOURCE_DIR}/../..

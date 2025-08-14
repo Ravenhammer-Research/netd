@@ -12,10 +12,16 @@ add_library(bridge_type STATIC ${BRIDGE_SOURCES})
 
 # Set include directories
 target_include_directories(bridge_type PRIVATE
+    ${CMAKE_BINARY_DIR}/vendor_install/include
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/..
     ${CMAKE_CURRENT_SOURCE_DIR}/../..
     ${CMAKE_CURRENT_SOURCE_DIR}/../../..
     ${CMAKE_CURRENT_SOURCE_DIR}/../../../..
     ${CMAKE_CURRENT_SOURCE_DIR}/../../../../../shared
+)
+
+# Link against FreeBSD bridge library
+target_link_libraries(bridge_type
+    freebsd_bridge_type
 )

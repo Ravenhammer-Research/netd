@@ -34,6 +34,7 @@
 #include <sys/sockio.h>
 #include <unistd.h>
 #include <net/if.h>
+#include "../../../../shared/debug.h"
 
 /**
  * Delete a wireless interface

@@ -29,26 +29,28 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef BRIDGE_H
-#define BRIDGE_H
+#ifndef FREEBSD_BRIDGE_H
+#define FREEBSD_BRIDGE_H
 
 #include <sys/types.h>
 #include <stddef.h>
-
-int freebsd_get_bridge_members_array(const char *ifname,
-    char (*members)[MAX_IFNAME_LEN],
-    int max_members, int *member_count);
-
+#include <types.h>
 
 /**
- * Get bridge member information for a bridge interface
- * @param ifname Interface name
- * @param members Buffer to store member information
- * @param members_size Size of the members buffer
+ * Get bridge members and populate netd_bridge_members_t structure
+ * @param ifname Bridge interface name
+ * @param members netd_bridge_members_t structure to populate
  * @return 0 on success, -1 on failure
  */
-int freebsd_get_bridge_members(const char *ifname, char *members,
-                               size_t members_size);
+int freebsd_get_bridge_members(const char *ifname, netd_bridge_members_t *members);
+
+/**
+ * Get complete bridge data including interface base and members
+ * @param ifname Bridge interface name
+ * @param bridge netd_bridge_t structure to populate
+ * @return 0 on success, -1 on failure
+ */
+int freebsd_get_bridge_data(const char *ifname, netd_bridge_t *bridge);
 
 /**
  * Add a member interface to a bridge
@@ -74,4 +76,4 @@ int freebsd_bridge_remove_member(const char *bridge_name, const char *member_nam
  */
 int freebsd_bridge_set_stp(const char *bridge_name, int stp_mode);
 
-#endif /* BRIDGE_H */ 
+#endif /* FREEBSD_BRIDGE_H */ 

@@ -12,6 +12,7 @@ add_library(gif_type STATIC ${GIF_SOURCES})
 
 # Set include directories
 target_include_directories(gif_type PRIVATE
+    ${CMAKE_BINARY_DIR}/vendor_install/include
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/..
     ${CMAKE_CURRENT_SOURCE_DIR}/../..

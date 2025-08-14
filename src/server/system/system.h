@@ -39,17 +39,10 @@
 
 /* Parse address number into platform-independent storage
  * @param address_num Numeric representation of address (IPv4 or IPv6)
+ * @param len Length of address_num (4 for IPv4, 16 for IPv6)
  * @param addr Platform-independent address storage
  * @return 0 on success, -1 on failure
  */
-int parse_address(uint8_t address_num[16], netd_address_t *addr);
-
-/* Convert platform-independent address to string
- * @param addr Platform-independent address storage
- * @param str Buffer to store string representation
- * @param len Length of buffer
- * @return 0 on success, -1 on failure
- */
-int address_to_string(const netd_address_t *addr, char *str, size_t len);
+int parse_address(uint8_t *address_num, size_t len, netd_address_t *addr);
 
 #endif /* SYSTEM_H */ 

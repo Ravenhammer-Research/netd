@@ -30,6 +30,7 @@
  */
 
 #include <netd.h>
+#include <types.h>
 #include <bridge.h>
 #include <sys/types.h>
 #include <fcntl.h>
@@ -68,16 +69,12 @@
 
 
 /**
- * Get bridge members as an array
+ * Get bridge members and populate netd_bridge_members_t structure
  * @param ifname Bridge interface name
- * @param members Array to store member names
- * @param max_members Maximum number of members to store
- * @param member_count Pointer to store actual number of members
+ * @param members netd_bridge_members_t structure to populate
  * @return 0 on success, -1 on failure
  */
-int freebsd_get_bridge_members_array(const char *ifname,
-                                     char (*members)[MAX_IFNAME_LEN],
-                                     int max_members, int *member_count) {
+int freebsd_get_bridge_members(const char *ifname, netd_bridge_members_t *members) {
   int sock;
   struct ifdrv ifd;
   struct ifbifconf bifc;
@@ -85,11 +82,12 @@ int freebsd_get_bridge_members_array(const char *ifname,
   char *buf = NULL;
   int buflen;
 
-  if (!ifname || !members || !member_count) {
+  if (!ifname || !members) {
     return -1;
   }
 
-  *member_count = 0;
+  /* Initialize the TAILQ structure */
+  netd_bridge_members_init(members);
 
   /* Create socket for ioctl */
   sock = socket(AF_LOCAL, SOCK_DGRAM, 0);
@@ -144,13 +142,20 @@ int freebsd_get_bridge_members_array(const char *ifname,
   breq = (struct ifbreq *)buf;
   int count = bifc.ifbic_len / sizeof(struct ifbreq);
   
-  for (int i = 0; i < count && *member_count < max_members; i++) {
+  for (int i = 0; i < count; i++) {
     /* Skip the bridge interface itself and empty entries */
     if (strlen(breq[i].ifbr_ifsname) > 0 && 
         strcmp(breq[i].ifbr_ifsname, ifname) != 0) {
       
-      strlcpy(members[*member_count], breq[i].ifbr_ifsname, MAX_IFNAME_LEN);
-      (*member_count)++;
+      /* For now, we'll pass NULL for the interface pointer since we don't have
+         the actual interface lookup yet. This should be updated when interface
+         lookup is implemented. The netd_bridge_members_add function will create
+         the member structure internally. */
+      if (!netd_bridge_members_add(members, NULL)) {
+        debug_log(ERROR, "Failed to add bridge member to list");
+        continue;
+      }
+      
       debug_log(DEBUG2, "Found bridge member: %s", breq[i].ifbr_ifsname);
     }
   }
@@ -158,6 +163,54 @@ int freebsd_get_bridge_members_array(const char *ifname,
   free(buf);
   close(sock);
 
-  debug_log(DEBUG2, "Found %d bridge members for %s", *member_count, ifname);
+  debug_log(DEBUG2, "Found %d bridge members for %s", members->count, ifname);
   return 0;
-} 
+}
+
+/**
+ * Get complete bridge data including interface base and members
+ * @param ifname Bridge interface name
+ * @param bridge netd_bridge_t structure to populate
+ * @return 0 on success, -1 on failure
+ */
+int freebsd_get_bridge_data(const char *ifname, netd_bridge_t *bridge) {
+    if (!ifname || !bridge) {
+        return -1;
+    }
+    
+    /* Initialize the bridge structure */
+    memset(bridge, 0, sizeof(netd_bridge_t));
+    
+    /* Set the interface name */
+    strlcpy(bridge->base.name, ifname, sizeof(bridge->base.name));
+    
+    /* Set the interface type */
+    bridge->base.type = NETD_IF_TYPE_BRIDGE;
+    
+    /* Initialize the bridge members TAILQ */
+    netd_bridge_members_init(&bridge->members);
+    
+    /* Get bridge members */
+    if (freebsd_get_bridge_members(ifname, &bridge->members) != 0) {
+        debug_log(ERROR, "Failed to get bridge members for %s", ifname);
+        return -1;
+    }
+    
+    /* For now, set default values for bridge-specific fields */
+    bridge->timeout = 120;  /* Default timeout */
+    bridge->protocol = NETD_BRIDGE_PROTO_STP;  /* Default to STP */
+    
+    /* TODO: Get actual bridge configuration from FreeBSD system:
+     * - MTU from interface
+     * - Bridge timeout from sysctl or ioctl
+     * - Bridge protocol from sysctl or ioctl
+     * - Interface flags from getifaddrs or ioctl
+     * - Addresses from getifaddrs
+     * - Groups from interface groups
+     */
+    
+    debug_log(DEBUG, "Populated bridge data for %s with %d members", ifname, bridge->members.count);
+    return 0;
+}
+
+ 

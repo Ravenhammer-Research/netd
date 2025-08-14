@@ -34,32 +34,28 @@
 #include <netconf/netconf.h>
 #include <netd.h>
 #include <debug.h>
-#include <libyang/tree_data.h>
-#include <libyang/tree_schema.h>
+#include <types.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-/* Global yang context - set by netconf.c */
-extern struct ly_ctx *yang_ctx;
-
 /**
  * Get LAGG interface data from FreeBSD system
- * @param ctx libyang context
  * @param iface_name interface name
- * @param iface_node interface node to add LAGG data to
+ * @param lagg_data pointer to netd_lagg_t structure to populate
  * @return 0 on success, -1 on failure
  */
-int get_lagg_data(struct ly_ctx *ctx, const char *iface_name, struct lyd_node *iface_node) {
-    struct lyd_node *lagg_node = NULL;
-    int ret;
-    
-    /* Create LAGG node */
-    ret = lyd_new_inner(iface_node, ctx, "netd", "lagg", 0, &lagg_node);
-    if (ret != LY_SUCCESS) {
-        debug_log(ERROR, "Failed to create LAGG node");
+int get_lagg_data(const char *iface_name, netd_lagg_t *lagg_data) {
+    if (!iface_name || !lagg_data) {
+        debug_log(ERROR, "Invalid parameters for LAGG data acquisition");
         return -1;
     }
+    
+    /* Initialize the LAGG structure */
+    memset(lagg_data, 0, sizeof(netd_lagg_t));
+    strlcpy(lagg_data->base.name, iface_name, sizeof(lagg_data->base.name));
+    lagg_data->base.type = NETD_IF_TYPE_LAGG;
+    netd_lagg_members_init(&lagg_data->members);
     
     /* Get LAGG data from system */
     char protocol[MAX_IFNAME_LEN];
@@ -68,29 +64,24 @@ int get_lagg_data(struct ly_ctx *ctx, const char *iface_name, struct lyd_node *i
     
     if (freebsd_lagg_show(iface_name, protocol, sizeof(protocol), members, 10, &member_count) == 0) {
         /* Set LAGG protocol */
-        ret = lyd_new_term(lagg_node, ctx, "netd", "protocol", protocol, 0, NULL);
-        if (ret != LY_SUCCESS) {
-            debug_log(ERROR, "Failed to set LAGG protocol");
-            return -1;
-        }
+        strlcpy(lagg_data->protocol, protocol, sizeof(lagg_data->protocol));
         
-        /* Set LAGG members */
+        /* Add LAGG members */
         for (int i = 0; i < member_count; i++) {
-            struct lyd_node *member_node = NULL;
-            ret = lyd_new_inner(lagg_node, ctx, "netd", "member", 0, &member_node);
-            if (ret != LY_SUCCESS) {
-                debug_log(ERROR, "Failed to create LAGG member node");
+            if (!netd_lagg_members_add(&lagg_data->members, NULL)) { /* Pass NULL for interface for now */
+                debug_log(ERROR, "Failed to add LAGG member to list");
                 continue;
             }
-            
-            ret = lyd_new_term(member_node, ctx, "netd", "name", members[i], 0, NULL);
-            if (ret != LY_SUCCESS) {
-                debug_log(ERROR, "Failed to set LAGG member name");
-            }
+            debug_log(DEBUG2, "Found LAGG member: %s", members[i]);
         }
+        
+        debug_log(DEBUG, "Successfully acquired LAGG data for %s: protocol=%s, members=%d", 
+                  iface_name, protocol, member_count);
+        return 0;
+    } else {
+        debug_log(ERROR, "Failed to get LAGG data for %s", iface_name);
+        return -1;
     }
-    
-    return 0;
 }
 
 /**

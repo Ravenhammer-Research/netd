@@ -33,48 +33,29 @@
 #include <string.h>
 #include <arpa/inet.h>
 
-int parse_address(uint8_t address_num[16], netd_address_t *addr) {
+int parse_address(uint8_t *address_num, size_t len, netd_address_t *addr) {
     if (!address_num || !addr) {
         return -1;
     }
 
     memset(addr, 0, sizeof(netd_address_t));
 
-    /* Check if it's IPv4 (first 12 bytes are zero) */
-    int is_ipv4 = 1;
-    for (int i = 0; i < 12; i++) {
-        if (address_num[i] != 0) {
-            is_ipv4 = 0;
-            break;
-        }
-    }
-
-    if (is_ipv4) {
+    if (len == 4) {
+        /* IPv4 - 4 bytes */
         addr->family = AF_INET;
-        memcpy(addr->data, &address_num[12], 4);
+        memcpy(addr->address, address_num, 4);
+        /* Zero out the remaining 12 bytes */
+        memset(&addr->address[4], 0, 12);
+        return 0;
+    } else if (len == 16) {
+        /* IPv6 - 16 bytes */
+        addr->family = AF_INET6;
+        memcpy(addr->address, address_num, 16);
         return 0;
     } else {
-        /* IPv6 */
-        addr->family = AF_INET6;
-        memcpy(addr->data, address_num, 16);
-        return 0;
+        /* Invalid length */
+        return -1;
     }
 }
 
-int address_to_string(const netd_address_t *addr, char *str, size_t len) {
-    if (!addr || !str || len == 0) {
-        return -1;
-    }
-
-    if (addr->family == AF_INET) {
-        struct in_addr addr4;
-        memcpy(&addr4.s_addr, addr->data, 4);
-        return inet_ntop(AF_INET, &addr4, str, len) ? 0 : -1;
-    } else if (addr->family == AF_INET6) {
-        struct in6_addr addr6;
-        memcpy(&addr6.s6_addr, addr->data, 16);
-        return inet_ntop(AF_INET6, &addr6, str, len) ? 0 : -1;
-    }
-
-    return -1;
-} 
+ 

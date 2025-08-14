@@ -147,7 +147,7 @@ int freebsd_interface_get_fib(const char *name, uint32_t *fib) {
  * @param mtu Pointer to store MTU value
  * @return 0 on success, -1 on failure
  */
-int freebsd_interface_get_mtu(const char *name, int *mtu) {
+int freebsd_interface_get_mtu(const char *name, uint32_t *mtu) {
   int sock;
   struct ifreq ifr;
 
@@ -183,24 +183,23 @@ int freebsd_interface_get_mtu(const char *name, int *mtu) {
 /**
  * Get interface groups
  * @param name Interface name
- * @param groups Array to store group names
- * @param max_groups Maximum number of groups to store
- * @param group_count Pointer to store actual number of groups
+ * @param groups TAILQ structure to store group names
  * @return 0 on success, -1 on failure
  */
-int freebsd_interface_get_groups(const char *name,
-                                 char (*groups)[MAX_GROUP_NAME_LEN],
-                                 int max_groups, int *group_count) {
+int freebsd_interface_get_groups(const char *name, netd_interface_groups_t *groups) {
   int sock;
   struct ifgroupreq ifgr;
   struct ifg_req *ifg;
   size_t len;
 
-  if (!name || !groups || !group_count) {
+  if (!name || !groups) {
     return -1;
   }
 
-  *group_count = 0;
+  /* Initialize the groups TAILQ if not already done */
+  if (groups->count == 0) {
+    netd_interface_groups_init(groups);
+  }
 
   /* Create socket for ioctl */
   sock = socket(AF_INET, SOCK_DGRAM, 0);
@@ -232,10 +231,14 @@ int freebsd_interface_get_groups(const char *name,
       if (ioctl(sock, SIOCGIFGROUP, (caddr_t)&ifgr) == 0) {
         /* Process each group */
         for (ifg = ifgr.ifgr_groups;
-             ifg && len >= sizeof(*ifg) && *group_count < max_groups; ifg++) {
+             ifg && len >= sizeof(*ifg); ifg++) {
           len -= sizeof(*ifg);
-          strlcpy(groups[*group_count], ifg->ifgrq_group, MAX_GROUP_NAME_LEN);
-          (*group_count)++;
+          /* Add group to TAILQ structure */
+          if (!netd_interface_groups_add(groups, ifg->ifgrq_group)) {
+            debug_log(DEBUG, "Failed to add group %s to interface %s (capacity limit reached)", 
+                     ifg->ifgrq_group, name);
+            break;
+          }
         }
       } else {
         debug_log(ERROR, "Failed to get groups for %s: %s", name,
@@ -246,5 +249,120 @@ int freebsd_interface_get_groups(const char *name,
   }
 
   close(sock);
+  return 0;
+}
+
+/**
+ * Enumerate all interfaces in the system
+ * @param system_query Pointer to system query structure to populate
+ * @return 0 on success, -1 on failure
+ */
+int freebsd_enumerate_interfaces(netd_system_query_t *system_query) {
+  struct ifaddrs *ifaddrs, *ifa;
+  netd_interface_t *interface;
+  int ret;
+
+  if (!system_query) {
+    return -1;
+  }
+
+  /* Initialize the interface list */
+  TAILQ_INIT(&system_query->interfaces);
+
+  /* Get interface addresses */
+  if (getifaddrs(&ifaddrs) == -1) {
+    debug_log(ERROR, "Failed to get interface addresses: %s", strerror(errno));
+    return -1;
+  }
+
+  /* Iterate through all interfaces */
+  for (ifa = ifaddrs; ifa != NULL; ifa = ifa->ifa_next) {
+    /* Skip if no address or if this is a duplicate interface name */
+    if (!ifa->ifa_addr || !ifa->ifa_name) {
+      continue;
+    }
+
+    /* Check if we already have this interface */
+    TAILQ_FOREACH(interface, &system_query->interfaces, entries) {
+      if (strcmp(interface->name, ifa->ifa_name) == 0) {
+        break;
+      }
+    }
+
+    /* If interface not found, create new one */
+    if (!interface) {
+      interface = calloc(1, sizeof(netd_interface_t));
+      if (!interface) {
+        debug_log(ERROR, "Failed to allocate memory for interface %s", ifa->ifa_name);
+        continue;
+      }
+
+      /* Initialize interface */
+      strlcpy(interface->name, ifa->ifa_name, MAX_IFNAME_LEN);
+      interface->type = NETD_IF_TYPE_UNKNOWN; /* Will be determined later */
+      interface->fib = 0; /* Default FIB */
+      interface->mtu = 1500; /* Default MTU */
+      interface->flags = 0;
+      interface->flags6 = 0;
+
+      /* Get interface flags */
+      if (ifa->ifa_flags & IFF_UP) {
+        interface->flags |= NETD_IF_FLAG_UP;
+      }
+      if (ifa->ifa_flags & IFF_RUNNING) {
+        interface->flags |= NETD_IF_FLAG_RUNNING;
+      }
+      if (ifa->ifa_flags & IFF_LOOPBACK) {
+        interface->flags |= NETD_IF_FLAG_LOOPBACK;
+        interface->type = NETD_IF_TYPE_LOOPBACK;
+      }
+      if (ifa->ifa_flags & IFF_BROADCAST) {
+        interface->flags |= NETD_IF_FLAG_BROADCAST;
+      }
+      if (ifa->ifa_flags & IFF_POINTOPOINT) {
+        interface->flags |= NETD_IF_FLAG_POINTOPOINT;
+      }
+      if (ifa->ifa_flags & IFF_MULTICAST) {
+        interface->flags |= NETD_IF_FLAG_MULTICAST;
+      }
+
+      /* Get MTU */
+      ret = freebsd_interface_get_mtu(ifa->ifa_name, &interface->mtu);
+      if (ret != 0) {
+        debug_log(DEBUG, "Failed to get MTU for interface %s", ifa->ifa_name);
+      }
+
+      /* Initialize interface groups */
+      netd_interface_groups_init(&interface->groups);
+      
+      /* Get groups */
+      ret = freebsd_interface_get_groups(ifa->ifa_name, &interface->groups);
+      if (ret != 0) {
+        debug_log(DEBUG, "Failed to get groups for interface %s", ifa->ifa_name);
+      }
+
+      /* Add interface to list */
+      TAILQ_INSERT_TAIL(&system_query->interfaces, interface, entries);
+    }
+
+    /* Add address to interface - for now just store the first address of each type */
+    if (ifa->ifa_addr->sa_family == AF_INET) {
+      struct sockaddr_in *sa = (struct sockaddr_in *)ifa->ifa_addr;
+      netd_address_t *addr = &interface->addresses[0];
+      
+      addr->family = AF_INET;
+      memcpy(addr->address, &sa->sin_addr, 4);
+      addr->prefixlen = 24; /* Default prefix length */
+    } else if (ifa->ifa_addr->sa_family == AF_INET6) {
+      struct sockaddr_in6 *sa = (struct sockaddr_in6 *)ifa->ifa_addr;
+      netd_address_t *addr = &interface->addresses6[0];
+      
+      addr->family = AF_INET6;
+      memcpy(addr->address, &sa->sin6_addr, 16);
+      addr->prefixlen = 64; /* Default prefix length */
+    }
+  }
+
+  freeifaddrs(ifaddrs);
   return 0;
 } 

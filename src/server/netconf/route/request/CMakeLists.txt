@@ -12,6 +12,7 @@ add_library(route_request STATIC ${ROUTE_REQUEST_SOURCES})
 
 # Set include directories
 target_include_directories(route_request PRIVATE
+    ${CMAKE_BINARY_DIR}/vendor_install/include
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/..
     ${CMAKE_CURRENT_SOURCE_DIR}/../..

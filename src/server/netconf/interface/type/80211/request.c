@@ -29,37 +29,32 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <wifi.h>
+#include <80211.h>
 #include <system/freebsd/80211/80211.h>
 #include <netconf/netconf.h>
 #include <netd.h>
 #include <debug.h>
-#include <libyang/tree_data.h>
-#include <libyang/tree_schema.h>
+#include <types.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-/* Global yang context - set by netconf.c */
-extern struct ly_ctx *yang_ctx;
-
 /**
  * Get WiFi interface data from FreeBSD system
- * @param ctx libyang context
  * @param iface_name interface name
- * @param iface_node interface node to add WiFi data to
+ * @param wifi_data pointer to netd_wifi_t structure to populate
  * @return 0 on success, -1 on failure
  */
-int get_wifi_data(struct ly_ctx *ctx, const char *iface_name, struct lyd_node *iface_node) {
-    struct lyd_node *wifi_node = NULL;
-    int ret;
-    
-    /* Create WiFi node */
-    ret = lyd_new_inner(iface_node, ctx, "netd", "wifi", 0, &wifi_node);
-    if (ret != LY_SUCCESS) {
-        debug_log(ERROR, "Failed to create WiFi node");
+int get_wifi_data(const char *iface_name, netd_wifi_t *wifi_data) {
+    if (!iface_name || !wifi_data) {
+        debug_log(ERROR, "Invalid parameters for WiFi data acquisition");
         return -1;
     }
+    
+    /* Initialize the WiFi structure */
+    memset(wifi_data, 0, sizeof(netd_wifi_t));
+    strlcpy(wifi_data->base.name, iface_name, sizeof(wifi_data->base.name));
+    wifi_data->base.type = NETD_IF_TYPE_WIFI;
     
     /* Get WiFi data from system */
     char regdomain[32];
@@ -77,28 +72,24 @@ int get_wifi_data(struct ly_ctx *ctx, const char *iface_name, struct lyd_node *i
                              country, sizeof(country), authmode, sizeof(authmode),
                              privacy, sizeof(privacy), &txpower, &bmiss, &scanvalid,
                              features, sizeof(features), &bintval, parent, sizeof(parent)) == 0) {
-        /* Set authentication mode */
-        ret = lyd_new_term(wifi_node, ctx, "netd", "authmode", authmode, 0, NULL);
-        if (ret != LY_SUCCESS) {
-            debug_log(ERROR, "Failed to set WiFi authmode");
-        }
+        strlcpy(wifi_data->regdomain, regdomain, sizeof(wifi_data->regdomain));
+        strlcpy(wifi_data->country, country, sizeof(wifi_data->country));
+        strlcpy(wifi_data->authmode, authmode, sizeof(wifi_data->authmode));
+        strlcpy(wifi_data->privacy, privacy, sizeof(wifi_data->privacy));
+        wifi_data->txpower = txpower;
+        wifi_data->bmiss = bmiss;
+        wifi_data->scanvalid = scanvalid;
+        strlcpy(wifi_data->features, features, sizeof(wifi_data->features));
+        wifi_data->bintval = bintval;
+        strlcpy(wifi_data->parent, parent, sizeof(wifi_data->parent));
         
-        /* Set transmit power */
-        char txpower_str[16];
-        snprintf(txpower_str, sizeof(txpower_str), "%d", txpower);
-        ret = lyd_new_term(wifi_node, ctx, "netd", "txpower", txpower_str, 0, NULL);
-        if (ret != LY_SUCCESS) {
-            debug_log(ERROR, "Failed to set WiFi txpower");
-        }
-        
-        /* Set country code */
-        ret = lyd_new_term(wifi_node, ctx, "netd", "country", country, 0, NULL);
-        if (ret != LY_SUCCESS) {
-            debug_log(ERROR, "Failed to set WiFi country");
-        }
+        debug_log(DEBUG, "Successfully acquired WiFi data for %s: authmode=%s, txpower=%d, country=%s", 
+                  iface_name, authmode, txpower, country);
+        return 0;
+    } else {
+        debug_log(ERROR, "Failed to get WiFi data for %s", iface_name);
+        return -1;
     }
-    
-    return 0;
 }
 
 /**

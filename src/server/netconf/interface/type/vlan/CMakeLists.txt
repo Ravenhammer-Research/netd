@@ -12,6 +12,7 @@ add_library(vlan_type STATIC ${VLAN_SOURCES})
 
 # Set include directories
 target_include_directories(vlan_type PRIVATE
+    ${CMAKE_BINARY_DIR}/vendor_install/include
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/..
     ${CMAKE_CURRENT_SOURCE_DIR}/../..

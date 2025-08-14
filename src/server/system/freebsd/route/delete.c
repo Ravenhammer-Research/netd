@@ -31,6 +31,7 @@
 
 #include <netd.h>
 #include <route.h>
+#include <system/freebsd/freebsd.h>
 #include <sys/types.h>
 #include <fcntl.h>
 #include <sys/un.h>
