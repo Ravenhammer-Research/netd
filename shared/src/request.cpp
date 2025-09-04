@@ -27,6 +27,7 @@
 
 #include <shared/include/request.hpp>
 #include <shared/include/yang.hpp>
+#include <shared/include/exception.hpp>
 #include <libyang/tree_data.h>
 #include <atomic>
 
@@ -100,13 +101,35 @@ Request Request::fromYang(const ly_ctx* ctx, const lyd_node* node) {
     std::string data = "";
     std::string messageId = "";
     
+    if (!node) {
+        throw NotImplementedError("Invalid YANG node provided to fromYang");
+    }
+    
     // Find the RPC operation node
     lyd_node* child = lyd_child(node);
     while (child) {
         if (strcmp(child->schema->name, "message-id") == 0) {
             messageId = lyd_get_value(child);
+        } else if (strcmp(child->schema->name, "rpc") == 0) {
+            // Skip the rpc wrapper node, look for the actual operation
+            lyd_node* rpcChild = lyd_child(child);
+            while (rpcChild) {
+                if (strcmp(rpcChild->schema->name, "message-id") == 0) {
+                    messageId = lyd_get_value(rpcChild);
+                } else {
+                    // This is the actual operation node
+                    type = rpcChild->schema->name;
+                    // Extract operation-specific data
+                    lyd_node* opChild = lyd_child(rpcChild);
+                    while (opChild) {
+                        data += std::string(opChild->schema->name) + ":" + lyd_get_value(opChild) + ";";
+                        opChild = opChild->next;
+                    }
+                }
+                rpcChild = rpcChild->next;
+            }
         } else {
-            // This is the operation node
+            // This is the operation node (direct child of rpc)
             type = child->schema->name;
             // Extract operation-specific data
             lyd_node* opChild = lyd_child(child);
@@ -116,6 +139,19 @@ Request Request::fromYang(const ly_ctx* ctx, const lyd_node* node) {
             }
         }
         child = child->next;
+    }
+    
+    // Check for unsupported RPC types
+    if (type.empty()) {
+        throw NotImplementedError("Unable to determine RPC type from YANG node");
+    }
+    
+    // List of supported RPC types
+    if (type != "get" && type != "get-config" && type != "edit-config" && 
+        type != "close-session" && type != "kill-session" && type != "commit" &&
+        type != "discard-changes" && type != "lock" && type != "unlock" &&
+        type != "format") {
+        throw NotImplementedError("Unsupported RPC type: " + type);
     }
     
     return Request(type, data, messageId);

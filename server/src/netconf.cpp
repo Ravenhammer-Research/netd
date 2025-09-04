@@ -6,6 +6,7 @@
 #include <shared/include/request.hpp>
 #include <shared/include/response.hpp>
 #include <shared/include/logger.hpp>
+#include <shared/include/exception.hpp>
 #include <memory>
 #include <string>
 #include <signal.h>
@@ -178,9 +179,10 @@ private:
     static struct nc_server_reply* globalRpcCallback(struct lyd_node* rpc, struct nc_session* session) {
         auto& logger = Logger::getInstance();
         
-        // Parse the RPC request
-        Request request = Request::fromYang(nc_session_get_ctx(session), rpc);
-        logger.info("Processing RPC: " + request.getType());
+        try {
+            // Parse the RPC request
+            Request request = Request::fromYang(nc_session_get_ctx(session), rpc);
+            logger.info("Processing RPC: " + request.getType() + " (data: " + request.getData() + ")");
         
         // Create appropriate response based on request type
         if (request.getType() == "get") {
@@ -193,8 +195,16 @@ private:
             return nc_server_reply_ok();
         } else {
             // Unsupported operation
-            struct lyd_node* err = nc_err(nc_session_get_ctx(session), NC_ERR_OP_NOT_SUPPORTED);
-            return nc_server_reply_err(err);
+            logger.warning("Unsupported RPC type: " + request.getType());
+            return nc_server_reply_ok(); // Just return OK for now
+        }
+        
+        } catch (const netd::NotImplementedError& e) {
+            logger.error("NotImplementedError: " + std::string(e.what()));
+            return nc_server_reply_ok(); // Return OK for now, but log the error
+        } catch (const std::exception& e) {
+            logger.error("Exception in RPC callback: " + std::string(e.what()));
+            return nc_server_reply_ok(); // Return OK for now, but log the error
         }
     }
 

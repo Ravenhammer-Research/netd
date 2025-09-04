@@ -35,6 +35,7 @@ namespace netd {
 // Server management
 bool startNetconfServer(const std::string& socketPath = "/var/run/netd.sock");
 void stopNetconfServer();
+void runNetconfServer();
 bool isNetconfServerRunning();
 
 } // namespace netd

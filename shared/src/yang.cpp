@@ -125,18 +125,46 @@ private:
     void loadStandardSchemas() {
         auto& logger = Logger::getInstance();
         
-        // Load standard IETF schemas by name
+        // Load standard IETF schemas by name in dependency order
         std::vector<std::pair<std::string, std::string>> standardSchemas = {
-            {"ietf-netconf-acm", "2018-02-14"},
+            // Basic types first
             {"ietf-inet-types", "2013-07-15"},
             {"ietf-yang-types", "2013-07-15"},
-            {"ietf-netconf", "2013-09-29"},
-            {"ietf-tcp-common", "2023-12-28"},
-            {"ietf-tcp-server", "2023-12-28"},
+            
+            // IANA modules for TLS and SSH (using actual installed versions)
+            {"iana-tls-cipher-suite-algs", "2022-06-16"},
+            {"iana-ssh-public-key-algs", "2022-06-16"},
+            {"iana-ssh-encryption-algs", "2022-06-16"},
+            {"iana-ssh-key-exchange-algs", "2022-06-16"},
+            {"iana-ssh-mac-algs", "2022-06-16"},
+            
+            // Crypto and keystore modules
+            {"ietf-crypto-types", "2023-12-28"},
+            {"ietf-keystore", "2023-12-28"},
+            
+            // TLS and SSH common modules
             {"ietf-tls-common", "2023-12-28"},
             {"ietf-ssh-common", "2023-12-28"},
+            
+            // TCP and transport modules
+            {"ietf-tcp-common", "2023-12-28"},
+            {"ietf-tcp-server", "2023-12-28"},
             {"ietf-ssh-server", "2023-12-28"},
-            {"ietf-netconf-server", "2023-12-28"}
+            {"ietf-tls-server", "2023-12-28"},
+            
+            // NETCONF modules
+            {"ietf-netconf", "2013-09-29"},
+            {"ietf-netconf-acm", "2018-02-14"},
+            {"ietf-netconf-server", "2023-12-28"},
+            
+            {"ietf-ip", "2018-02-22"},
+            {"ietf-network-instance", "2019-01-21"},
+            {"ietf-network-state", "2018-02-26"},
+            {"ietf-network-topology-state", "2018-02-26"},
+            {"ietf-network-topology", "2018-02-26"},
+            {"ietf-network", "2018-02-26"},
+            {"ietf-routing-types", "2017-12-04"},
+            {"ietf-routing", "2018-03-13"}
         };
         
         for (const auto& schema : standardSchemas) {

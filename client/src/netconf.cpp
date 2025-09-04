@@ -28,6 +28,7 @@
 #include <shared/include/logger.hpp>
 #include <shared/include/request.hpp>
 #include <shared/include/response.hpp>
+#include <shared/include/yang.hpp>
 #include <libnetconf2/session_client.h>
 #include <libnetconf2/messages_client.h>
 #include <libyang/libyang.h>
@@ -38,7 +39,9 @@ namespace netd {
 
 class NetconfClient {
 public:
-    NetconfClient() : session_(nullptr), ctx_(nullptr), connected_(false) {}
+    NetconfClient() : session_(nullptr), connected_(false) {
+        yang_ = createYang();
+    }
     
     ~NetconfClient() {
         if (connected_) {
@@ -49,19 +52,13 @@ public:
     bool connect(const std::string& socketPath = "/tmp/netd.sock") {
         auto& logger = Logger::getInstance();
         
-        // Create YANG context
-        LY_ERR err = ly_ctx_new(nullptr, 0, &ctx_);
-        if (err != LY_SUCCESS) {
-            logger.error("Failed to create YANG context");
-            return false;
-        }
+        // Use the shared YANG context
+        struct ly_ctx* ctx = yang_->getContext();
 
         // Connect to NETCONF server via Unix socket
-        session_ = nc_connect_unix(socketPath.c_str(), ctx_);
+        session_ = nc_connect_unix(socketPath.c_str(), ctx);
         if (!session_) {
             logger.error("Failed to connect to NETD server at " + socketPath);
-            ly_ctx_destroy(ctx_);
-            ctx_ = nullptr;
             return false;
         }
 
@@ -74,10 +71,6 @@ public:
         if (session_) {
             nc_session_free(session_, nullptr);
             session_ = nullptr;
-        }
-        if (ctx_) {
-            ly_ctx_destroy(ctx_);
-            ctx_ = nullptr;
         }
         connected_ = false;
     }
@@ -241,7 +234,7 @@ public:
 
 private:
     struct nc_session* session_;
-    struct ly_ctx* ctx_;
+    std::unique_ptr<YangAbstract> yang_;
     bool connected_;
 };
 

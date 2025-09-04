@@ -60,10 +60,19 @@ int main() {
     logger.info("NETCONF server listening on " + socketPath);
     logger.info("Press Ctrl+C to stop");
     
-    // Main server loop
+    // Run the server in a separate thread so we can handle signals
+    std::thread serverThread([]() {
+        netd::runNetconfServer();
+    });
+    
+    // Main loop - just wait for shutdown signal
     while (g_running) {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
+    
+    // Stop the server and wait for thread to finish
+    netd::stopNetconfServer();
+    serverThread.join();
     
     // Graceful shutdown
     logger.info("Shutting down NETD Server...");
