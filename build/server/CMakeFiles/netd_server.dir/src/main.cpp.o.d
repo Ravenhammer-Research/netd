@@ -501,4 +501,56 @@ server/CMakeFiles/netd_server.dir/src/main.cpp.o: \
   /usr/include/c++/v1/__memory/temporary_buffer.h \
   /usr/include/c++/v1/__memory/assume_aligned.h \
   /usr/include/c++/v1/__memory/ranges_uninitialized_algorithms.h \
-  /usr/include/c++/v1/__memory/uses_allocator_construction.h
+  /usr/include/c++/v1/__memory/uses_allocator_construction.h \
+  /home/sq/netd/server/include/netconf.hpp /usr/include/c++/v1/csignal \
+  /usr/include/signal.h /usr/include/sys/signal.h \
+  /usr/include/machine/signal.h /usr/include/x86/signal.h \
+  /usr/include/machine/ucontext.h /usr/include/x86/ucontext.h \
+  /usr/include/sys/_ucontext.h /usr/include/c++/v1/chrono \
+  /usr/include/c++/v1/__chrono/file_clock.h \
+  /usr/include/c++/v1/__chrono/calendar.h \
+  /usr/include/c++/v1/__chrono/day.h \
+  /usr/include/c++/v1/__chrono/exception.h \
+  /usr/include/c++/v1/__chrono/hh_mm_ss.h \
+  /usr/include/c++/v1/__chrono/literals.h \
+  /usr/include/c++/v1/__chrono/year.h \
+  /usr/include/c++/v1/__chrono/local_info.h \
+  /usr/include/c++/v1/__chrono/month.h \
+  /usr/include/c++/v1/__chrono/month_weekday.h \
+  /usr/include/c++/v1/__chrono/weekday.h \
+  /usr/include/c++/v1/__chrono/monthday.h \
+  /usr/include/c++/v1/__chrono/sys_info.h \
+  /usr/include/c++/v1/__chrono/year_month.h \
+  /usr/include/c++/v1/__chrono/year_month_day.h \
+  /usr/include/c++/v1/__chrono/year_month_weekday.h \
+  /usr/include/c++/v1/__chrono/formatter.h \
+  /usr/include/c++/v1/__chrono/concepts.h \
+  /usr/include/c++/v1/__chrono/convert_to_tm.h \
+  /usr/include/c++/v1/__chrono/zoned_time.h \
+  /usr/include/c++/v1/__chrono/ostream.h \
+  /usr/include/c++/v1/__chrono/parser_std_format_spec.h \
+  /usr/include/c++/v1/sstream /usr/include/c++/v1/thread \
+  /usr/include/c++/v1/__thread/formatter.h \
+  /usr/include/c++/v1/__thread/id.h \
+  /usr/include/c++/v1/__thread/jthread.h \
+  /usr/include/c++/v1/__stop_token/stop_source.h \
+  /usr/include/c++/v1/__stop_token/intrusive_shared_ptr.h \
+  /usr/include/c++/v1/__stop_token/stop_state.h \
+  /usr/include/c++/v1/__stop_token/atomic_unique_lock.h \
+  /usr/include/c++/v1/atomic /usr/include/c++/v1/__atomic/aliases.h \
+  /usr/include/c++/v1/__atomic/atomic_lock_free.h \
+  /usr/include/c++/v1/__atomic/atomic_flag.h \
+  /usr/include/c++/v1/__atomic/atomic_init.h \
+  /usr/include/c++/v1/__atomic/fence.h \
+  /usr/include/c++/v1/__atomic/kill_dependency.h \
+  /usr/include/c++/v1/__atomic/atomic_ref.h \
+  /usr/include/c++/v1/__type_traits/has_unique_object_representation.h \
+  /usr/include/c++/v1/__stop_token/intrusive_list_view.h \
+  /usr/include/c++/v1/__stop_token/stop_token.h \
+  /usr/include/c++/v1/__thread/thread.h \
+  /usr/include/c++/v1/__condition_variable/condition_variable.h \
+  /usr/include/c++/v1/__mutex/mutex.h \
+  /usr/include/c++/v1/__mutex/unique_lock.h \
+  /usr/include/c++/v1/__mutex/tag_types.h \
+  /usr/include/c++/v1/__exception/terminate.h \
+  /usr/include/c++/v1/__thread/this_thread.h

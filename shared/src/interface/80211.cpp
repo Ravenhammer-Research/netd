@@ -25,20 +25,21 @@
  * SUCH DAMAGE.
  */
 
-#include <shared/include/ethernet.hpp>
-#include <shared/include/base/serialization.hpp>
+#include <shared/include/interface/80211.hpp>
 #include <libyang/tree_data.h>
 
 namespace netd {
 
-class WirelessInterface : public Ethernet, public base::Serialization<WirelessInterface> {
-public:
-    WirelessInterface() = default;
-    virtual ~WirelessInterface() = default;
+lyd_node* WirelessInterface::toYang() const {
+    // TODO: Implement YANG serialization for wireless interfaces
+    // This should create a YANG node representing the wireless interface configuration
+    return nullptr;
+}
 
-    // Implement Serialization methods
-    lyd_node* toYang() const override { return nullptr; }
-    static WirelessInterface fromYang(const lyd_node* node) { return WirelessInterface(); }
-};
+WirelessInterface WirelessInterface::fromYang(const lyd_node* node) {
+    // TODO: Implement YANG deserialization for wireless interfaces
+    // This should parse a YANG node to extract wireless interface configuration
+    return WirelessInterface();
+}
 
 } // namespace netd

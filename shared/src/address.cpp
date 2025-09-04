@@ -30,14 +30,87 @@
 
 namespace netd {
 
+Address::Address(const std::string& type, const std::string& data) 
+    : type_(type), data_(data) {
+}
+
 lyd_node* Address::toYang() const {
-    // TODO: Implement YANG serialization for addresses
+    // Base Address class doesn't have specific YANG representation
+    // This should be overridden by concrete classes
     return nullptr;
 }
 
 Address Address::fromYang(const lyd_node* node) {
-    // TODO: Implement YANG deserialization for addresses
-    return Address();
+    // Base Address class doesn't have specific YANG representation
+    // This should be overridden by concrete classes
+    return Address("", "");
+}
+
+// IPv4Address implementation
+IPv4Address::IPv4Address(uint32_t addr, uint8_t prefix)
+    : address_(addr), prefixLength_(prefix) {
+}
+
+lyd_node* IPv4Address::toYang() const {
+    // TODO: Implement YANG serialization for IPv4 addresses
+    // This should create a YANG node representing the IPv4 address
+    return nullptr;
+}
+
+IPv4Address IPv4Address::fromYang(const lyd_node* node) {
+    // TODO: Implement YANG deserialization for IPv4 addresses
+    // This should parse a YANG node to extract IPv4 address information
+    return IPv4Address();
+}
+
+std::string IPv4Address::getString() const {
+    struct in_addr addr;
+    addr.s_addr = htonl(address_);
+    char str[INET_ADDRSTRLEN];
+    inet_ntop(AF_INET, &addr, str, INET_ADDRSTRLEN);
+    return std::string(str) + "/" + std::to_string(prefixLength_);
+}
+
+bool IPv4Address::isValid() const {
+    return address_ != 0 && prefixLength_ <= 32;
+}
+
+// IPv6Address implementation
+IPv6Address::IPv6Address(const uint8_t addr[16], uint8_t prefix)
+    : prefixLength_(prefix) {
+    setAddress(addr);
+}
+
+lyd_node* IPv6Address::toYang() const {
+    // TODO: Implement YANG serialization for IPv6 addresses
+    // This should create a YANG node representing the IPv6 address
+    return nullptr;
+}
+
+IPv6Address IPv6Address::fromYang(const lyd_node* node) {
+    // TODO: Implement YANG deserialization for IPv6 addresses
+    // This should parse a YANG node to extract IPv6 address information
+    return IPv6Address();
+}
+
+std::string IPv6Address::getString() const {
+    char str[INET6_ADDRSTRLEN];
+    inet_ntop(AF_INET6, address_, str, INET6_ADDRSTRLEN);
+    return std::string(str) + "/" + std::to_string(prefixLength_);
+}
+
+bool IPv6Address::isValid() const {
+    // Check if address is not all zeros
+    for (int i = 0; i < 16; i++) {
+        if (address_[i] != 0) {
+            return prefixLength_ <= 128;
+        }
+    }
+    return false;
+}
+
+void IPv6Address::setAddress(const uint8_t addr[16]) {
+    std::memcpy(address_, addr, 16);
 }
 
 } // namespace netd

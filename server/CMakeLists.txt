@@ -15,8 +15,10 @@ add_subdirectory(src)
 # Link dependencies
 target_link_libraries(netd_server
     netd_shared
+    netd_freebsd
     yang
     netconf2
+    pthread
 )
 
 # Set library directories

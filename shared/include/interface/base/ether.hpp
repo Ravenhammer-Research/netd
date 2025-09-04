@@ -43,27 +43,27 @@ public:
     virtual ~Ether() = default;
 
     // Address management
-    virtual bool addAddress(const std::shared_ptr<netd::Address>& address) = 0;
-    virtual bool removeAddress(const std::shared_ptr<netd::Address>& address) = 0;
-    virtual std::vector<std::shared_ptr<netd::Address>> getAddresses() const = 0;
+    virtual bool addAddress(const std::shared_ptr<netd::Address>& address);
+    virtual bool removeAddress(const std::shared_ptr<netd::Address>& address);
+    virtual std::vector<std::shared_ptr<netd::Address>> getAddresses() const;
 
     // Group management
-    virtual bool addGroup(const std::string& group) = 0;
-    virtual bool removeGroup(const std::string& group) = 0;
-    virtual std::vector<std::string> getGroups() const = 0;
+    virtual bool addGroup(const std::string& group);
+    virtual bool removeGroup(const std::string& group);
+    virtual std::vector<std::string> getGroups() const;
 
     // Interface configuration
-    virtual bool setMTU(uint16_t mtu) = 0;
-    virtual uint16_t getMTU() const = 0;
-    virtual bool setFlags(uint32_t flags) = 0;
-    virtual uint32_t getFlags() const = 0;
-    virtual bool up() = 0;
-    virtual bool down() = 0;
-    virtual bool isUp() const = 0;
+    virtual bool setMTU(uint16_t mtu);
+    virtual uint16_t getMTU() const;
+    virtual bool setFlags(uint32_t flags);
+    virtual uint32_t getFlags() const;
+    virtual bool up();
+    virtual bool down();
+    virtual bool isUp() const;
 
     // VRF/FIB management
-    virtual bool setVRF(uint32_t vrfId) = 0;
-    virtual uint32_t getVRF() const = 0;
+    virtual bool setVRF(uint32_t vrfId);
+    virtual uint32_t getVRF() const;
 
     // Basic interface operations
     virtual bool create() { return false; }

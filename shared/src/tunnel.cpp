@@ -26,61 +26,10 @@
  */
 
 #include <shared/include/tunnel.hpp>
-#include <shared/include/address.hpp>
 
 namespace netd {
 
-bool Tunnel::setLocalAddr(const std::shared_ptr<Address>& localAddr) {
-    localAddr_ = localAddr;
-    return true;
-}
-
-std::shared_ptr<Address> Tunnel::getLocalAddr() const {
-    return localAddr_;
-}
-
-bool Tunnel::setRemoteAddr(const std::shared_ptr<Address>& remoteAddr) {
-    remoteAddr_ = remoteAddr;
-    return true;
-}
-
-std::shared_ptr<Address> Tunnel::getRemoteAddr() const {
-    return remoteAddr_;
-}
-
-bool Tunnel::setTunnelVRF(uint32_t vrfId) {
-    tunnelVrfId_ = vrfId;
-    return true;
-}
-
-uint32_t Tunnel::getTunnelVRF() const {
-    return tunnelVrfId_;
-}
-
-bool Tunnel::setTunnelMTU(uint16_t mtu) {
-    if (mtu > 0) {
-        tunnelMtu_ = mtu;
-        return true;
-    }
-    return false;
-}
-
-uint16_t Tunnel::getTunnelMTU() const {
-    return tunnelMtu_;
-}
-
-bool Tunnel::isTunnelEstablished() const {
-    return tunnelEstablished_;
-}
-
-bool Tunnel::establishTunnel() {
-    tunnelEstablished_ = true;
-    return true;
-}
-
-bool Tunnel::teardownTunnel() {
-    tunnelEstablished_ = false;
-    return true;
-}
+// Tunnel class now inherits all functionality from interface::base::Tunnel
+// No additional implementation needed unless Tunnel-specific behavior is required
 
 } // namespace netd

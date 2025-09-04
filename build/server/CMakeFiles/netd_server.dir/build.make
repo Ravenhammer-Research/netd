@@ -128,6 +128,7 @@ server/netd-1.0.0: server/CMakeFiles/netd_server.dir/src/netconf.cpp.o
 server/netd-1.0.0: server/CMakeFiles/netd_server.dir/src/store.cpp.o
 server/netd-1.0.0: server/CMakeFiles/netd_server.dir/build.make
 server/netd-1.0.0: server/CMakeFiles/netd_server.dir/compiler_depend.ts
+server/netd-1.0.0: freebsd/src/libnetd_freebsd.a
 server/netd-1.0.0: shared/libnetd_shared.so.1.0.0
 server/netd-1.0.0: server/CMakeFiles/netd_server.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/sq/netd/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Linking CXX executable netd"

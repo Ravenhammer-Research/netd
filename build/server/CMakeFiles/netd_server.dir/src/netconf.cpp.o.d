@@ -426,4 +426,80 @@ server/CMakeFiles/netd_server.dir/src/netconf.cpp.o: \
   /usr/include/c++/v1/__memory/temporary_buffer.h \
   /usr/include/c++/v1/__memory/assume_aligned.h \
   /usr/include/c++/v1/__memory/ranges_uninitialized_algorithms.h \
-  /usr/include/c++/v1/__memory/uses_allocator_construction.h
+  /usr/include/c++/v1/__memory/uses_allocator_construction.h \
+  /home/sq/netd/shared/include/request.hpp \
+  /home/sq/netd/shared/include/base/serialization.hpp \
+  /home/sq/netd/shared/include/response.hpp \
+  /home/sq/netd/server/include/store.hpp /usr/include/sys/socket.h \
+  /usr/include/sys/_iovec.h /usr/include/sys/_timeval.h \
+  /usr/include/machine/_align.h /usr/include/x86/_align.h \
+  /usr/include/sys/_sockaddr_storage.h /usr/include/sys/un.h \
+  /usr/include/unistd.h /usr/include/sys/types.h \
+  /usr/include/machine/endian.h /usr/include/x86/endian.h \
+  /usr/include/sys/_endian.h /usr/include/sys/_pthreadtypes.h \
+  /usr/include/sys/bitcount.h /usr/include/sys/select.h \
+  /usr/include/sys/_sigset.h /usr/include/sys/timespec.h \
+  /usr/include/sys/_timespec.h /usr/include/sys/unistd.h \
+  /usr/include/c++/v1/thread /usr/include/c++/v1/__thread/formatter.h \
+  /usr/include/c++/v1/__thread/id.h \
+  /usr/include/c++/v1/__thread/support.h \
+  /usr/include/c++/v1/__thread/support/pthread.h \
+  /usr/include/c++/v1/__chrono/convert_to_timespec.h \
+  /usr/include/c++/v1/__chrono/duration.h /usr/include/c++/v1/ratio \
+  /usr/include/c++/v1/ctime /usr/include/time.h \
+  /usr/include/sys/_clock_id.h /usr/include/xlocale/_time.h \
+  /usr/include/pthread.h /usr/include/sys/_sigval.h /usr/include/sched.h \
+  /usr/include/sys/sched.h /usr/include/sys/cpuset.h \
+  /usr/include/sys/_cpuset.h /usr/include/sys/_bitset.h \
+  /usr/include/sys/bitset.h /usr/include/c++/v1/__thread/jthread.h \
+  /usr/include/c++/v1/__stop_token/stop_source.h \
+  /usr/include/c++/v1/__stop_token/intrusive_shared_ptr.h \
+  /usr/include/c++/v1/__atomic/atomic.h \
+  /usr/include/c++/v1/__atomic/atomic_base.h \
+  /usr/include/c++/v1/__atomic/atomic_sync.h \
+  /usr/include/c++/v1/__atomic/contention_t.h \
+  /usr/include/c++/v1/__atomic/cxx_atomic_impl.h \
+  /usr/include/c++/v1/__atomic/to_gcc_order.h \
+  /usr/include/c++/v1/__thread/poll_with_backoff.h \
+  /usr/include/c++/v1/__chrono/high_resolution_clock.h \
+  /usr/include/c++/v1/__chrono/steady_clock.h \
+  /usr/include/c++/v1/__chrono/time_point.h \
+  /usr/include/c++/v1/__chrono/system_clock.h \
+  /usr/include/c++/v1/__atomic/check_memory_order.h \
+  /usr/include/c++/v1/__atomic/is_always_lock_free.h \
+  /usr/include/c++/v1/__stop_token/stop_state.h \
+  /usr/include/c++/v1/__stop_token/atomic_unique_lock.h \
+  /usr/include/c++/v1/atomic /usr/include/c++/v1/__atomic/aliases.h \
+  /usr/include/c++/v1/__atomic/atomic_lock_free.h \
+  /usr/include/c++/v1/__atomic/atomic_flag.h \
+  /usr/include/c++/v1/__atomic/atomic_init.h \
+  /usr/include/c++/v1/__atomic/fence.h \
+  /usr/include/c++/v1/__atomic/kill_dependency.h \
+  /usr/include/c++/v1/__atomic/atomic_ref.h \
+  /usr/include/c++/v1/__type_traits/has_unique_object_representation.h \
+  /usr/include/c++/v1/__stop_token/intrusive_list_view.h \
+  /usr/include/c++/v1/__stop_token/stop_token.h \
+  /usr/include/c++/v1/__thread/thread.h \
+  /usr/include/c++/v1/__condition_variable/condition_variable.h \
+  /usr/include/c++/v1/__mutex/mutex.h \
+  /usr/include/c++/v1/__mutex/unique_lock.h \
+  /usr/include/c++/v1/__mutex/tag_types.h \
+  /usr/include/c++/v1/__system_error/system_error.h \
+  /usr/include/c++/v1/__system_error/error_category.h \
+  /usr/include/c++/v1/__system_error/error_code.h \
+  /usr/include/c++/v1/__system_error/error_condition.h \
+  /usr/include/c++/v1/__exception/terminate.h /usr/include/c++/v1/locale \
+  /usr/include/c++/v1/__algorithm/reverse.h \
+  /usr/include/c++/v1/__iterator/istreambuf_iterator.h \
+  /usr/include/c++/v1/__iterator/default_sentinel.h \
+  /usr/include/c++/v1/__iterator/ostreambuf_iterator.h \
+  /usr/include/c++/v1/ios /usr/include/c++/v1/streambuf \
+  /usr/include/nl_types.h \
+  /usr/include/c++/v1/__locale_dir/locale_base_api/bsd_locale_defaults.h \
+  /usr/include/c++/v1/sstream \
+  /usr/include/c++/v1/__ostream/basic_ostream.h \
+  /usr/include/c++/v1/__exception/operations.h \
+  /usr/include/c++/v1/bitset /usr/include/c++/v1/__algorithm/count.h \
+  /usr/include/c++/v1/__algorithm/fill.h \
+  /usr/include/c++/v1/__type_traits/is_char_like_type.h \
+  /usr/include/c++/v1/istream /usr/include/c++/v1/__thread/this_thread.h

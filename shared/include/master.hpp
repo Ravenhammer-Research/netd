@@ -37,18 +37,8 @@ public:
     Master() = default;
     virtual ~Master() = default;
 
-    // Implement all virtual methods from base::Master
-    bool addSlave(const std::string& slaveName, uint32_t priority = 0) override;
-    bool removeSlave(const std::string& slaveName) override;
-    std::vector<std::string> getSlaves() const override;
-    bool hasSlave(const std::string& slaveName) const override;
-    bool setSlavePriority(const std::string& slaveName, uint32_t priority) override;
-    uint32_t getSlavePriority(const std::string& slaveName) const override;
-    bool setSlaveEnabled(const std::string& slaveName, bool enabled) override;
-    bool isSlaveEnabled(const std::string& slaveName) const override;
-    bool isMaster() const override;
-    uint32_t getSlaveCount() const override;
-    bool validateSlaveConfiguration() const override;
+    // Master class now inherits all functionality from interface::base::Master
+    // No additional implementation needed unless Master-specific behavior is required
 };
 
 } // namespace netd

@@ -37,18 +37,8 @@ public:
     Tunnel() = default;
     virtual ~Tunnel() = default;
 
-    // Implement all virtual methods from base::Tunnel
-    bool setLocalAddr(const std::shared_ptr<Address>& localAddr) override;
-    std::shared_ptr<Address> getLocalAddr() const override;
-    bool setRemoteAddr(const std::shared_ptr<Address>& remoteAddr) override;
-    std::shared_ptr<Address> getRemoteAddr() const override;
-    bool setTunnelVRF(uint32_t vrfId) override;
-    uint32_t getTunnelVRF() const override;
-    bool setTunnelMTU(uint16_t mtu) override;
-    uint16_t getTunnelMTU() const override;
-    bool isTunnelEstablished() const override;
-    bool establishTunnel() override;
-    bool teardownTunnel() override;
+    // Tunnel class now inherits all functionality from interface::base::Tunnel
+    // No additional implementation needed unless Tunnel-specific behavior is required
 };
 
 } // namespace netd

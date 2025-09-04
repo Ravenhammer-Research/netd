@@ -1,5 +1,6 @@
 shared/CMakeFiles/netd_shared.dir/src/interface/bridge.cpp.o: \
   /home/sq/netd/shared/src/interface/bridge.cpp \
+  /home/sq/netd/shared/include/interface/bridge.hpp \
   /home/sq/netd/shared/include/master.hpp \
   /home/sq/netd/shared/include/interface/base/master.hpp \
   /usr/include/c++/v1/vector /usr/include/c++/v1/__algorithm/copy.h \

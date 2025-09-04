@@ -26,95 +26,10 @@
  */
 
 #include <shared/include/ethernet.hpp>
-#include <shared/include/address.hpp>
-#include <algorithm>
 
 namespace netd {
 
-bool Ethernet::addAddress(const std::shared_ptr<Address>& address) {
-    if (address) {
-        addresses_.push_back(address);
-        return true;
-    }
-    return false;
-}
-
-bool Ethernet::removeAddress(const std::shared_ptr<Address>& address) {
-    auto it = std::find(addresses_.begin(), addresses_.end(), address);
-    if (it != addresses_.end()) {
-        addresses_.erase(it);
-        return true;
-    }
-    return false;
-}
-
-std::vector<std::shared_ptr<Address>> Ethernet::getAddresses() const {
-    return addresses_;
-}
-
-bool Ethernet::addGroup(const std::string& group) {
-    if (!group.empty()) {
-        groups_.push_back(group);
-        return true;
-    }
-    return false;
-}
-
-bool Ethernet::removeGroup(const std::string& group) {
-    auto it = std::find(groups_.begin(), groups_.end(), group);
-    if (it != groups_.end()) {
-        groups_.erase(it);
-        return true;
-    }
-    return false;
-}
-
-std::vector<std::string> Ethernet::getGroups() const {
-    return groups_;
-}
-
-bool Ethernet::setMTU(uint16_t mtu) {
-    if (mtu > 0) {
-        mtu_ = mtu;
-        return true;
-    }
-    return false;
-}
-
-uint16_t Ethernet::getMTU() const {
-    return mtu_;
-}
-
-bool Ethernet::setFlags(uint32_t flags) {
-    flags_ = flags;
-    return true;
-}
-
-uint32_t Ethernet::getFlags() const {
-    return flags_;
-}
-
-bool Ethernet::up() {
-    up_ = true;
-    return true;
-}
-
-bool Ethernet::down() {
-    up_ = false;
-    return true;
-}
-
-bool Ethernet::isUp() const {
-    return up_;
-}
-
-bool Ethernet::setVRF(uint32_t vrfId) {
-    vrfId_ = vrfId;
-    return true;
-}
-
-uint32_t Ethernet::getVRF() const {
-    return vrfId_;
-}
+// Ethernet class now inherits all functionality from interface::base::Ether
+// No additional implementation needed unless Ethernet-specific behavior is required
 
 } // namespace netd

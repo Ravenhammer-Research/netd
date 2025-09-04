@@ -45,6 +45,7 @@ find_package(Curses REQUIRED)
 
 # Add subdirectories
 add_subdirectory(shared)
+add_subdirectory(freebsd)
 add_subdirectory(server)
 add_subdirectory(client)
 

@@ -37,22 +37,8 @@ public:
     Ethernet() = default;
     virtual ~Ethernet() = default;
 
-    // Implement all pure virtual methods from base::Ether
-    bool addAddress(const std::shared_ptr<Address>& address) override;
-    bool removeAddress(const std::shared_ptr<Address>& address) override;
-    std::vector<std::shared_ptr<Address>> getAddresses() const override;
-    bool addGroup(const std::string& group) override;
-    bool removeGroup(const std::string& group) override;
-    std::vector<std::string> getGroups() const override;
-    bool setMTU(uint16_t mtu) override;
-    uint16_t getMTU() const override;
-    bool setFlags(uint32_t flags) override;
-    uint32_t getFlags() const override;
-    bool up() override;
-    bool down() override;
-    bool isUp() const override;
-    bool setVRF(uint32_t vrfId) override;
-    uint32_t getVRF() const override;
+    // Ethernet-specific functionality can be added here
+    // The base class provides default implementations for all methods
 };
 
 } // namespace netd

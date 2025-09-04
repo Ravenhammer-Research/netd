@@ -32,16 +32,10 @@
 
 namespace netd {
 
-class NetconfServer {
-public:
-    NetconfServer() = default;
-    virtual ~NetconfServer() = default;
-
-    // Server operations
-    virtual bool start() = 0;
-    virtual void stop() = 0;
-    virtual bool isRunning() const = 0;
-};
+// Server management
+bool startNetconfServer(const std::string& socketPath = "/var/run/netd.sock");
+void stopNetconfServer();
+bool isNetconfServerRunning();
 
 } // namespace netd
 

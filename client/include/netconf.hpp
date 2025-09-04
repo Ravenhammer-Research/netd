@@ -32,18 +32,16 @@
 
 namespace netd {
 
-class NetconfClient {
-public:
-    NetconfClient() = default;
-    virtual ~NetconfClient() = default;
+// Connection management
+bool connectToServer(const std::string& socketPath = "/var/run/netd.sock");
+void disconnectFromServer();
+bool isConnectedToServer();
 
-    // NETCONF operations
-    virtual bool connect(const std::string& socketPath) = 0;
-    virtual bool disconnect() = 0;
-    virtual std::string getConfig(const std::string& source) = 0;
-    virtual bool editConfig(const std::string& target, const std::string& config) = 0;
-    virtual bool commit() = 0;
-};
+// NETCONF operations
+std::string sendNetconfRequest(const std::string& request);
+std::string getConfig(const std::string& source = "running");
+std::string editConfig(const std::string& target = "candidate", const std::string& config = "");
+std::string commit();
 
 } // namespace netd
 

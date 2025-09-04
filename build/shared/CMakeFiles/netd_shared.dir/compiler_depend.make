@@ -390,214 +390,52 @@ shared/CMakeFiles/netd_shared.dir/src/ethernet.cpp.o: /home/sq/netd/shared/src/e
   /home/sq/netd/shared/include/interface/base/ether.hpp \
   /usr/include/_ctype.h \
   /usr/include/arpa/inet.h \
-  /usr/include/c++/v1/__algorithm/adjacent_find.h \
-  /usr/include/c++/v1/__algorithm/all_of.h \
-  /usr/include/c++/v1/__algorithm/any_of.h \
-  /usr/include/c++/v1/__algorithm/binary_search.h \
-  /usr/include/c++/v1/__algorithm/clamp.h \
   /usr/include/c++/v1/__algorithm/comp.h \
   /usr/include/c++/v1/__algorithm/comp_ref_type.h \
   /usr/include/c++/v1/__algorithm/copy.h \
-  /usr/include/c++/v1/__algorithm/copy_backward.h \
-  /usr/include/c++/v1/__algorithm/copy_if.h \
   /usr/include/c++/v1/__algorithm/copy_move_common.h \
   /usr/include/c++/v1/__algorithm/copy_n.h \
-  /usr/include/c++/v1/__algorithm/count.h \
-  /usr/include/c++/v1/__algorithm/count_if.h \
   /usr/include/c++/v1/__algorithm/equal.h \
-  /usr/include/c++/v1/__algorithm/equal_range.h \
-  /usr/include/c++/v1/__algorithm/fill.h \
   /usr/include/c++/v1/__algorithm/fill_n.h \
   /usr/include/c++/v1/__algorithm/find.h \
   /usr/include/c++/v1/__algorithm/find_end.h \
   /usr/include/c++/v1/__algorithm/find_first_of.h \
   /usr/include/c++/v1/__algorithm/find_if.h \
-  /usr/include/c++/v1/__algorithm/find_if_not.h \
   /usr/include/c++/v1/__algorithm/find_segment_if.h \
-  /usr/include/c++/v1/__algorithm/fold.h \
-  /usr/include/c++/v1/__algorithm/for_each.h \
-  /usr/include/c++/v1/__algorithm/for_each_n.h \
   /usr/include/c++/v1/__algorithm/for_each_segment.h \
-  /usr/include/c++/v1/__algorithm/generate.h \
-  /usr/include/c++/v1/__algorithm/generate_n.h \
   /usr/include/c++/v1/__algorithm/half_positive.h \
-  /usr/include/c++/v1/__algorithm/in_found_result.h \
-  /usr/include/c++/v1/__algorithm/in_fun_result.h \
   /usr/include/c++/v1/__algorithm/in_in_out_result.h \
-  /usr/include/c++/v1/__algorithm/in_in_result.h \
-  /usr/include/c++/v1/__algorithm/in_out_out_result.h \
   /usr/include/c++/v1/__algorithm/in_out_result.h \
-  /usr/include/c++/v1/__algorithm/includes.h \
-  /usr/include/c++/v1/__algorithm/inplace_merge.h \
-  /usr/include/c++/v1/__algorithm/is_heap.h \
-  /usr/include/c++/v1/__algorithm/is_heap_until.h \
-  /usr/include/c++/v1/__algorithm/is_partitioned.h \
-  /usr/include/c++/v1/__algorithm/is_permutation.h \
-  /usr/include/c++/v1/__algorithm/is_sorted.h \
-  /usr/include/c++/v1/__algorithm/is_sorted_until.h \
   /usr/include/c++/v1/__algorithm/iter_swap.h \
   /usr/include/c++/v1/__algorithm/iterator_operations.h \
   /usr/include/c++/v1/__algorithm/lexicographical_compare.h \
   /usr/include/c++/v1/__algorithm/lexicographical_compare_three_way.h \
   /usr/include/c++/v1/__algorithm/lower_bound.h \
-  /usr/include/c++/v1/__algorithm/make_heap.h \
-  /usr/include/c++/v1/__algorithm/make_projected.h \
   /usr/include/c++/v1/__algorithm/max.h \
   /usr/include/c++/v1/__algorithm/max_element.h \
-  /usr/include/c++/v1/__algorithm/merge.h \
   /usr/include/c++/v1/__algorithm/min.h \
   /usr/include/c++/v1/__algorithm/min_element.h \
-  /usr/include/c++/v1/__algorithm/min_max_result.h \
-  /usr/include/c++/v1/__algorithm/minmax.h \
-  /usr/include/c++/v1/__algorithm/minmax_element.h \
-  /usr/include/c++/v1/__algorithm/mismatch.h \
   /usr/include/c++/v1/__algorithm/move.h \
   /usr/include/c++/v1/__algorithm/move_backward.h \
-  /usr/include/c++/v1/__algorithm/next_permutation.h \
-  /usr/include/c++/v1/__algorithm/none_of.h \
-  /usr/include/c++/v1/__algorithm/nth_element.h \
-  /usr/include/c++/v1/__algorithm/partial_sort.h \
-  /usr/include/c++/v1/__algorithm/partial_sort_copy.h \
-  /usr/include/c++/v1/__algorithm/partition.h \
-  /usr/include/c++/v1/__algorithm/partition_copy.h \
-  /usr/include/c++/v1/__algorithm/partition_point.h \
-  /usr/include/c++/v1/__algorithm/pop_heap.h \
-  /usr/include/c++/v1/__algorithm/prev_permutation.h \
-  /usr/include/c++/v1/__algorithm/pstl.h \
-  /usr/include/c++/v1/__algorithm/push_heap.h \
-  /usr/include/c++/v1/__algorithm/ranges_adjacent_find.h \
-  /usr/include/c++/v1/__algorithm/ranges_all_of.h \
-  /usr/include/c++/v1/__algorithm/ranges_any_of.h \
-  /usr/include/c++/v1/__algorithm/ranges_binary_search.h \
-  /usr/include/c++/v1/__algorithm/ranges_clamp.h \
-  /usr/include/c++/v1/__algorithm/ranges_contains.h \
-  /usr/include/c++/v1/__algorithm/ranges_contains_subrange.h \
   /usr/include/c++/v1/__algorithm/ranges_copy.h \
-  /usr/include/c++/v1/__algorithm/ranges_copy_backward.h \
-  /usr/include/c++/v1/__algorithm/ranges_copy_if.h \
   /usr/include/c++/v1/__algorithm/ranges_copy_n.h \
-  /usr/include/c++/v1/__algorithm/ranges_count.h \
-  /usr/include/c++/v1/__algorithm/ranges_count_if.h \
-  /usr/include/c++/v1/__algorithm/ranges_ends_with.h \
-  /usr/include/c++/v1/__algorithm/ranges_equal.h \
-  /usr/include/c++/v1/__algorithm/ranges_equal_range.h \
-  /usr/include/c++/v1/__algorithm/ranges_fill.h \
   /usr/include/c++/v1/__algorithm/ranges_fill_n.h \
-  /usr/include/c++/v1/__algorithm/ranges_find.h \
-  /usr/include/c++/v1/__algorithm/ranges_find_end.h \
-  /usr/include/c++/v1/__algorithm/ranges_find_first_of.h \
-  /usr/include/c++/v1/__algorithm/ranges_find_if.h \
-  /usr/include/c++/v1/__algorithm/ranges_find_if_not.h \
-  /usr/include/c++/v1/__algorithm/ranges_find_last.h \
-  /usr/include/c++/v1/__algorithm/ranges_for_each.h \
-  /usr/include/c++/v1/__algorithm/ranges_for_each_n.h \
-  /usr/include/c++/v1/__algorithm/ranges_generate.h \
-  /usr/include/c++/v1/__algorithm/ranges_generate_n.h \
-  /usr/include/c++/v1/__algorithm/ranges_includes.h \
-  /usr/include/c++/v1/__algorithm/ranges_inplace_merge.h \
-  /usr/include/c++/v1/__algorithm/ranges_is_heap.h \
-  /usr/include/c++/v1/__algorithm/ranges_is_heap_until.h \
-  /usr/include/c++/v1/__algorithm/ranges_is_partitioned.h \
-  /usr/include/c++/v1/__algorithm/ranges_is_permutation.h \
-  /usr/include/c++/v1/__algorithm/ranges_is_sorted.h \
-  /usr/include/c++/v1/__algorithm/ranges_is_sorted_until.h \
   /usr/include/c++/v1/__algorithm/ranges_iterator_concept.h \
-  /usr/include/c++/v1/__algorithm/ranges_lexicographical_compare.h \
-  /usr/include/c++/v1/__algorithm/ranges_lower_bound.h \
-  /usr/include/c++/v1/__algorithm/ranges_make_heap.h \
-  /usr/include/c++/v1/__algorithm/ranges_max.h \
-  /usr/include/c++/v1/__algorithm/ranges_max_element.h \
-  /usr/include/c++/v1/__algorithm/ranges_merge.h \
-  /usr/include/c++/v1/__algorithm/ranges_min.h \
-  /usr/include/c++/v1/__algorithm/ranges_min_element.h \
-  /usr/include/c++/v1/__algorithm/ranges_minmax.h \
-  /usr/include/c++/v1/__algorithm/ranges_minmax_element.h \
-  /usr/include/c++/v1/__algorithm/ranges_mismatch.h \
-  /usr/include/c++/v1/__algorithm/ranges_move.h \
-  /usr/include/c++/v1/__algorithm/ranges_move_backward.h \
-  /usr/include/c++/v1/__algorithm/ranges_next_permutation.h \
-  /usr/include/c++/v1/__algorithm/ranges_none_of.h \
-  /usr/include/c++/v1/__algorithm/ranges_nth_element.h \
-  /usr/include/c++/v1/__algorithm/ranges_partial_sort.h \
-  /usr/include/c++/v1/__algorithm/ranges_partial_sort_copy.h \
-  /usr/include/c++/v1/__algorithm/ranges_partition.h \
-  /usr/include/c++/v1/__algorithm/ranges_partition_copy.h \
-  /usr/include/c++/v1/__algorithm/ranges_partition_point.h \
-  /usr/include/c++/v1/__algorithm/ranges_pop_heap.h \
-  /usr/include/c++/v1/__algorithm/ranges_prev_permutation.h \
-  /usr/include/c++/v1/__algorithm/ranges_push_heap.h \
-  /usr/include/c++/v1/__algorithm/ranges_remove.h \
-  /usr/include/c++/v1/__algorithm/ranges_remove_copy.h \
-  /usr/include/c++/v1/__algorithm/ranges_remove_copy_if.h \
-  /usr/include/c++/v1/__algorithm/ranges_remove_if.h \
-  /usr/include/c++/v1/__algorithm/ranges_replace.h \
-  /usr/include/c++/v1/__algorithm/ranges_replace_copy.h \
-  /usr/include/c++/v1/__algorithm/ranges_replace_copy_if.h \
-  /usr/include/c++/v1/__algorithm/ranges_replace_if.h \
-  /usr/include/c++/v1/__algorithm/ranges_reverse.h \
-  /usr/include/c++/v1/__algorithm/ranges_reverse_copy.h \
-  /usr/include/c++/v1/__algorithm/ranges_rotate.h \
-  /usr/include/c++/v1/__algorithm/ranges_rotate_copy.h \
-  /usr/include/c++/v1/__algorithm/ranges_sample.h \
-  /usr/include/c++/v1/__algorithm/ranges_search.h \
-  /usr/include/c++/v1/__algorithm/ranges_search_n.h \
-  /usr/include/c++/v1/__algorithm/ranges_set_difference.h \
-  /usr/include/c++/v1/__algorithm/ranges_set_intersection.h \
-  /usr/include/c++/v1/__algorithm/ranges_set_symmetric_difference.h \
-  /usr/include/c++/v1/__algorithm/ranges_set_union.h \
-  /usr/include/c++/v1/__algorithm/ranges_shuffle.h \
-  /usr/include/c++/v1/__algorithm/ranges_sort.h \
-  /usr/include/c++/v1/__algorithm/ranges_sort_heap.h \
-  /usr/include/c++/v1/__algorithm/ranges_stable_partition.h \
-  /usr/include/c++/v1/__algorithm/ranges_stable_sort.h \
-  /usr/include/c++/v1/__algorithm/ranges_starts_with.h \
-  /usr/include/c++/v1/__algorithm/ranges_swap_ranges.h \
   /usr/include/c++/v1/__algorithm/ranges_transform.h \
-  /usr/include/c++/v1/__algorithm/ranges_unique.h \
-  /usr/include/c++/v1/__algorithm/ranges_unique_copy.h \
   /usr/include/c++/v1/__algorithm/ranges_upper_bound.h \
   /usr/include/c++/v1/__algorithm/remove.h \
-  /usr/include/c++/v1/__algorithm/remove_copy.h \
-  /usr/include/c++/v1/__algorithm/remove_copy_if.h \
   /usr/include/c++/v1/__algorithm/remove_if.h \
-  /usr/include/c++/v1/__algorithm/replace.h \
-  /usr/include/c++/v1/__algorithm/replace_copy.h \
-  /usr/include/c++/v1/__algorithm/replace_copy_if.h \
-  /usr/include/c++/v1/__algorithm/replace_if.h \
-  /usr/include/c++/v1/__algorithm/reverse.h \
-  /usr/include/c++/v1/__algorithm/reverse_copy.h \
   /usr/include/c++/v1/__algorithm/rotate.h \
-  /usr/include/c++/v1/__algorithm/rotate_copy.h \
-  /usr/include/c++/v1/__algorithm/sample.h \
   /usr/include/c++/v1/__algorithm/search.h \
-  /usr/include/c++/v1/__algorithm/search_n.h \
-  /usr/include/c++/v1/__algorithm/set_difference.h \
-  /usr/include/c++/v1/__algorithm/set_intersection.h \
-  /usr/include/c++/v1/__algorithm/set_symmetric_difference.h \
-  /usr/include/c++/v1/__algorithm/set_union.h \
-  /usr/include/c++/v1/__algorithm/shift_left.h \
-  /usr/include/c++/v1/__algorithm/shift_right.h \
-  /usr/include/c++/v1/__algorithm/shuffle.h \
-  /usr/include/c++/v1/__algorithm/sift_down.h \
-  /usr/include/c++/v1/__algorithm/simd_utils.h \
-  /usr/include/c++/v1/__algorithm/sort.h \
-  /usr/include/c++/v1/__algorithm/sort_heap.h \
-  /usr/include/c++/v1/__algorithm/stable_partition.h \
-  /usr/include/c++/v1/__algorithm/stable_sort.h \
   /usr/include/c++/v1/__algorithm/swap_ranges.h \
   /usr/include/c++/v1/__algorithm/three_way_comp_ref_type.h \
   /usr/include/c++/v1/__algorithm/transform.h \
-  /usr/include/c++/v1/__algorithm/uniform_random_bit_generator_adaptor.h \
-  /usr/include/c++/v1/__algorithm/unique.h \
-  /usr/include/c++/v1/__algorithm/unique_copy.h \
   /usr/include/c++/v1/__algorithm/unwrap_iter.h \
   /usr/include/c++/v1/__algorithm/unwrap_range.h \
-  /usr/include/c++/v1/__algorithm/upper_bound.h \
   /usr/include/c++/v1/__assert \
   /usr/include/c++/v1/__assertion_handler \
   /usr/include/c++/v1/__atomic/memory_order.h \
   /usr/include/c++/v1/__bit/bit_cast.h \
-  /usr/include/c++/v1/__bit/blsr.h \
   /usr/include/c++/v1/__bit/countl.h \
   /usr/include/c++/v1/__bit/countr.h \
   /usr/include/c++/v1/__bit/invert_if.h \
@@ -650,9 +488,7 @@ shared/CMakeFiles/netd_shared.dir/src/ethernet.cpp.o: /home/sq/netd/shared/src/e
   /usr/include/c++/v1/__configuration/compiler.h \
   /usr/include/c++/v1/__configuration/language.h \
   /usr/include/c++/v1/__configuration/platform.h \
-  /usr/include/c++/v1/__debug_utils/randomize_range.h \
   /usr/include/c++/v1/__debug_utils/sanitizers.h \
-  /usr/include/c++/v1/__debug_utils/strict_weak_ordering_check.h \
   /usr/include/c++/v1/__exception/exception.h \
   /usr/include/c++/v1/__format/buffer.h \
   /usr/include/c++/v1/__format/concepts.h \
@@ -702,7 +538,6 @@ shared/CMakeFiles/netd_shared.dir/src/ethernet.cpp.o: /home/sq/netd/shared/src/e
   /usr/include/c++/v1/__ios/fpos.h \
   /usr/include/c++/v1/__iterator/access.h \
   /usr/include/c++/v1/__iterator/advance.h \
-  /usr/include/c++/v1/__iterator/aliasing_iterator.h \
   /usr/include/c++/v1/__iterator/back_insert_iterator.h \
   /usr/include/c++/v1/__iterator/bounded_iter.h \
   /usr/include/c++/v1/__iterator/concepts.h \
@@ -710,16 +545,13 @@ shared/CMakeFiles/netd_shared.dir/src/ethernet.cpp.o: /home/sq/netd/shared/src/e
   /usr/include/c++/v1/__iterator/distance.h \
   /usr/include/c++/v1/__iterator/empty.h \
   /usr/include/c++/v1/__iterator/incrementable_traits.h \
-  /usr/include/c++/v1/__iterator/indirectly_comparable.h \
   /usr/include/c++/v1/__iterator/iter_move.h \
   /usr/include/c++/v1/__iterator/iter_swap.h \
   /usr/include/c++/v1/__iterator/iterator.h \
   /usr/include/c++/v1/__iterator/iterator_traits.h \
-  /usr/include/c++/v1/__iterator/mergeable.h \
   /usr/include/c++/v1/__iterator/move_iterator.h \
   /usr/include/c++/v1/__iterator/move_sentinel.h \
   /usr/include/c++/v1/__iterator/next.h \
-  /usr/include/c++/v1/__iterator/permutable.h \
   /usr/include/c++/v1/__iterator/prev.h \
   /usr/include/c++/v1/__iterator/projected.h \
   /usr/include/c++/v1/__iterator/readable_traits.h \
@@ -727,7 +559,6 @@ shared/CMakeFiles/netd_shared.dir/src/ethernet.cpp.o: /home/sq/netd/shared/src/e
   /usr/include/c++/v1/__iterator/reverse_iterator.h \
   /usr/include/c++/v1/__iterator/segmented_iterator.h \
   /usr/include/c++/v1/__iterator/size.h \
-  /usr/include/c++/v1/__iterator/sortable.h \
   /usr/include/c++/v1/__iterator/unreachable_sentinel.h \
   /usr/include/c++/v1/__iterator/wrap_iter.h \
   /usr/include/c++/v1/__locale \
@@ -748,7 +579,6 @@ shared/CMakeFiles/netd_shared.dir/src/ethernet.cpp.o: /home/sq/netd/shared/src/e
   /usr/include/c++/v1/__memory/compressed_pair.h \
   /usr/include/c++/v1/__memory/concepts.h \
   /usr/include/c++/v1/__memory/construct_at.h \
-  /usr/include/c++/v1/__memory/destruct_n.h \
   /usr/include/c++/v1/__memory/inout_ptr.h \
   /usr/include/c++/v1/__memory/out_ptr.h \
   /usr/include/c++/v1/__memory/pointer_traits.h \
@@ -767,10 +597,6 @@ shared/CMakeFiles/netd_shared.dir/src/ethernet.cpp.o: /home/sq/netd/shared/src/e
   /usr/include/c++/v1/__memory_resource/memory_resource.h \
   /usr/include/c++/v1/__memory_resource/polymorphic_allocator.h \
   /usr/include/c++/v1/__mutex/once_flag.h \
-  /usr/include/c++/v1/__random/is_valid.h \
-  /usr/include/c++/v1/__random/log2.h \
-  /usr/include/c++/v1/__random/uniform_int_distribution.h \
-  /usr/include/c++/v1/__random/uniform_random_bit_generator.h \
   /usr/include/c++/v1/__ranges/access.h \
   /usr/include/c++/v1/__ranges/concepts.h \
   /usr/include/c++/v1/__ranges/container_compatible_range.h \
@@ -780,7 +606,6 @@ shared/CMakeFiles/netd_shared.dir/src/ethernet.cpp.o: /home/sq/netd/shared/src/e
   /usr/include/c++/v1/__ranges/enable_borrowed_range.h \
   /usr/include/c++/v1/__ranges/enable_view.h \
   /usr/include/c++/v1/__ranges/from_range.h \
-  /usr/include/c++/v1/__ranges/movable_box.h \
   /usr/include/c++/v1/__ranges/size.h \
   /usr/include/c++/v1/__ranges/subrange.h \
   /usr/include/c++/v1/__ranges/view_interface.h \
@@ -908,7 +733,6 @@ shared/CMakeFiles/netd_shared.dir/src/ethernet.cpp.o: /home/sq/netd/shared/src/e
   /usr/include/c++/v1/__utility/exception_guard.h \
   /usr/include/c++/v1/__utility/exchange.h \
   /usr/include/c++/v1/__utility/forward.h \
-  /usr/include/c++/v1/__utility/in_place.h \
   /usr/include/c++/v1/__utility/integer_sequence.h \
   /usr/include/c++/v1/__utility/is_pointer_in_range.h \
   /usr/include/c++/v1/__utility/is_valid_range.h \
@@ -922,7 +746,6 @@ shared/CMakeFiles/netd_shared.dir/src/ethernet.cpp.o: /home/sq/netd/shared/src/e
   /usr/include/c++/v1/__utility/unreachable.h \
   /usr/include/c++/v1/__variant/monostate.h \
   /usr/include/c++/v1/__verbose_abort \
-  /usr/include/c++/v1/algorithm \
   /usr/include/c++/v1/array \
   /usr/include/c++/v1/cctype \
   /usr/include/c++/v1/cerrno \
@@ -939,13 +762,11 @@ shared/CMakeFiles/netd_shared.dir/src/ethernet.cpp.o: /home/sq/netd/shared/src/e
   /usr/include/c++/v1/cwctype \
   /usr/include/c++/v1/errno.h \
   /usr/include/c++/v1/initializer_list \
-  /usr/include/c++/v1/inttypes.h \
   /usr/include/c++/v1/iosfwd \
   /usr/include/c++/v1/limits \
   /usr/include/c++/v1/locale.h \
   /usr/include/c++/v1/memory \
   /usr/include/c++/v1/new \
-  /usr/include/c++/v1/optional \
   /usr/include/c++/v1/stddef.h \
   /usr/include/c++/v1/stdexcept \
   /usr/include/c++/v1/stdint.h \
@@ -962,11 +783,8 @@ shared/CMakeFiles/netd_shared.dir/src/ethernet.cpp.o: /home/sq/netd/shared/src/e
   /usr/include/c++/v1/wctype.h \
   /usr/include/ctype.h \
   /usr/include/errno.h \
-  /usr/include/inttypes.h \
   /usr/include/limits.h \
   /usr/include/locale.h \
-  /usr/include/machine/_align.h \
-  /usr/include/machine/_inttypes.h \
   /usr/include/machine/_limits.h \
   /usr/include/machine/_stdint.h \
   /usr/include/machine/_types.h \
@@ -980,46 +798,28 @@ shared/CMakeFiles/netd_shared.dir/src/ethernet.cpp.o: /home/sq/netd/shared/src/e
   /usr/include/stdlib.h \
   /usr/include/string.h \
   /usr/include/strings.h \
-  /usr/include/sys/_clock_id.h \
   /usr/include/sys/_endian.h \
-  /usr/include/sys/_iovec.h \
   /usr/include/sys/_null.h \
   /usr/include/sys/_sockaddr_storage.h \
   /usr/include/sys/_stdint.h \
-  /usr/include/sys/_timespec.h \
-  /usr/include/sys/_timeval.h \
   /usr/include/sys/_types.h \
   /usr/include/sys/cdefs.h \
   /usr/include/sys/limits.h \
-  /usr/include/sys/socket.h \
-  /usr/include/sys/stdint.h \
   /usr/include/sys/syslimits.h \
-  /usr/include/sys/timespec.h \
-  /usr/include/time.h \
   /usr/include/wchar.h \
   /usr/include/wctype.h \
-  /usr/include/x86/_align.h \
-  /usr/include/x86/_inttypes.h \
   /usr/include/x86/_limits.h \
   /usr/include/x86/_stdint.h \
   /usr/include/x86/_types.h \
   /usr/include/x86/endian.h \
   /usr/include/xlocale.h \
   /usr/include/xlocale/_ctype.h \
-  /usr/include/xlocale/_inttypes.h \
   /usr/include/xlocale/_locale.h \
   /usr/include/xlocale/_stdio.h \
   /usr/include/xlocale/_stdlib.h \
   /usr/include/xlocale/_string.h \
   /usr/include/xlocale/_strings.h \
-  /usr/include/xlocale/_time.h \
-  /usr/include/xlocale/_wchar.h \
-  /usr/local/include/libyang/log.h \
-  /usr/local/include/libyang/ly_config.h \
-  /usr/local/include/libyang/tree.h \
-  /usr/local/include/libyang/tree_data.h \
-  /usr/local/include/libyang/tree_schema.h \
-  /usr/local/include/pcre2.h
+  /usr/include/xlocale/_wchar.h
 
 shared/CMakeFiles/netd_shared.dir/src/exception.cpp.o: /home/sq/netd/shared/src/exception.cpp \
   /home/sq/netd/shared/include/exception.hpp \
@@ -1341,7 +1141,6 @@ shared/CMakeFiles/netd_shared.dir/src/interface.cpp.o: /home/sq/netd/shared/src/
   /home/sq/netd/shared/include/base/serialization.hpp \
   /home/sq/netd/shared/include/interface.hpp \
   /usr/include/_ctype.h \
-  /usr/include/arpa/inet.h \
   /usr/include/c++/v1/__algorithm/comp.h \
   /usr/include/c++/v1/__algorithm/comp_ref_type.h \
   /usr/include/c++/v1/__algorithm/copy.h \
@@ -1647,7 +1446,6 @@ shared/CMakeFiles/netd_shared.dir/src/interface.cpp.o: /home/sq/netd/shared/src/
   /usr/include/c++/v1/cwchar \
   /usr/include/c++/v1/cwctype \
   /usr/include/c++/v1/initializer_list \
-  /usr/include/c++/v1/inttypes.h \
   /usr/include/c++/v1/iosfwd \
   /usr/include/c++/v1/limits \
   /usr/include/c++/v1/memory \
@@ -1656,7 +1454,6 @@ shared/CMakeFiles/netd_shared.dir/src/interface.cpp.o: /home/sq/netd/shared/src/
   /usr/include/c++/v1/stdexcept \
   /usr/include/c++/v1/stdint.h \
   /usr/include/c++/v1/stdio.h \
-  /usr/include/c++/v1/stdlib.h \
   /usr/include/c++/v1/string \
   /usr/include/c++/v1/string.h \
   /usr/include/c++/v1/string_view \
@@ -1666,63 +1463,37 @@ shared/CMakeFiles/netd_shared.dir/src/interface.cpp.o: /home/sq/netd/shared/src/
   /usr/include/c++/v1/wchar.h \
   /usr/include/c++/v1/wctype.h \
   /usr/include/ctype.h \
-  /usr/include/inttypes.h \
   /usr/include/limits.h \
-  /usr/include/machine/_align.h \
-  /usr/include/machine/_inttypes.h \
   /usr/include/machine/_limits.h \
   /usr/include/machine/_stdint.h \
   /usr/include/machine/_types.h \
-  /usr/include/machine/endian.h \
-  /usr/include/netinet/in.h \
-  /usr/include/netinet6/in6.h \
   /usr/include/runetype.h \
   /usr/include/stddef.h \
   /usr/include/stdint.h \
   /usr/include/stdio.h \
-  /usr/include/stdlib.h \
   /usr/include/string.h \
   /usr/include/strings.h \
-  /usr/include/sys/_clock_id.h \
-  /usr/include/sys/_endian.h \
-  /usr/include/sys/_iovec.h \
   /usr/include/sys/_null.h \
-  /usr/include/sys/_sockaddr_storage.h \
   /usr/include/sys/_stdint.h \
-  /usr/include/sys/_timespec.h \
-  /usr/include/sys/_timeval.h \
   /usr/include/sys/_types.h \
   /usr/include/sys/cdefs.h \
   /usr/include/sys/limits.h \
-  /usr/include/sys/socket.h \
-  /usr/include/sys/stdint.h \
   /usr/include/sys/syslimits.h \
-  /usr/include/sys/timespec.h \
-  /usr/include/time.h \
   /usr/include/wchar.h \
   /usr/include/wctype.h \
-  /usr/include/x86/_align.h \
-  /usr/include/x86/_inttypes.h \
   /usr/include/x86/_limits.h \
   /usr/include/x86/_stdint.h \
   /usr/include/x86/_types.h \
-  /usr/include/x86/endian.h \
   /usr/include/xlocale/_ctype.h \
   /usr/include/xlocale/_string.h \
   /usr/include/xlocale/_strings.h \
-  /usr/include/xlocale/_time.h \
-  /usr/include/xlocale/_wchar.h \
-  /usr/local/include/libyang/log.h \
-  /usr/local/include/libyang/ly_config.h \
-  /usr/local/include/libyang/tree.h \
-  /usr/local/include/libyang/tree_data.h \
-  /usr/local/include/libyang/tree_schema.h \
-  /usr/local/include/pcre2.h
+  /usr/include/xlocale/_wchar.h
 
 shared/CMakeFiles/netd_shared.dir/src/interface/80211.cpp.o: /home/sq/netd/shared/src/interface/80211.cpp \
   /home/sq/netd/shared/include/address.hpp \
   /home/sq/netd/shared/include/base/serialization.hpp \
   /home/sq/netd/shared/include/ethernet.hpp \
+  /home/sq/netd/shared/include/interface/80211.hpp \
   /home/sq/netd/shared/include/interface/base/ether.hpp \
   /usr/include/_ctype.h \
   /usr/include/arpa/inet.h \
@@ -2734,7 +2505,6 @@ shared/CMakeFiles/netd_shared.dir/src/interface/base/ether.cpp.o: /home/sq/netd/
   /usr/include/c++/v1/cwctype \
   /usr/include/c++/v1/errno.h \
   /usr/include/c++/v1/initializer_list \
-  /usr/include/c++/v1/inttypes.h \
   /usr/include/c++/v1/iosfwd \
   /usr/include/c++/v1/limits \
   /usr/include/c++/v1/locale.h \
@@ -2757,11 +2527,8 @@ shared/CMakeFiles/netd_shared.dir/src/interface/base/ether.cpp.o: /home/sq/netd/
   /usr/include/c++/v1/wctype.h \
   /usr/include/ctype.h \
   /usr/include/errno.h \
-  /usr/include/inttypes.h \
   /usr/include/limits.h \
   /usr/include/locale.h \
-  /usr/include/machine/_align.h \
-  /usr/include/machine/_inttypes.h \
   /usr/include/machine/_limits.h \
   /usr/include/machine/_stdint.h \
   /usr/include/machine/_types.h \
@@ -2775,46 +2542,28 @@ shared/CMakeFiles/netd_shared.dir/src/interface/base/ether.cpp.o: /home/sq/netd/
   /usr/include/stdlib.h \
   /usr/include/string.h \
   /usr/include/strings.h \
-  /usr/include/sys/_clock_id.h \
   /usr/include/sys/_endian.h \
-  /usr/include/sys/_iovec.h \
   /usr/include/sys/_null.h \
   /usr/include/sys/_sockaddr_storage.h \
   /usr/include/sys/_stdint.h \
-  /usr/include/sys/_timespec.h \
-  /usr/include/sys/_timeval.h \
   /usr/include/sys/_types.h \
   /usr/include/sys/cdefs.h \
   /usr/include/sys/limits.h \
-  /usr/include/sys/socket.h \
-  /usr/include/sys/stdint.h \
   /usr/include/sys/syslimits.h \
-  /usr/include/sys/timespec.h \
-  /usr/include/time.h \
   /usr/include/wchar.h \
   /usr/include/wctype.h \
-  /usr/include/x86/_align.h \
-  /usr/include/x86/_inttypes.h \
   /usr/include/x86/_limits.h \
   /usr/include/x86/_stdint.h \
   /usr/include/x86/_types.h \
   /usr/include/x86/endian.h \
   /usr/include/xlocale.h \
   /usr/include/xlocale/_ctype.h \
-  /usr/include/xlocale/_inttypes.h \
   /usr/include/xlocale/_locale.h \
   /usr/include/xlocale/_stdio.h \
   /usr/include/xlocale/_stdlib.h \
   /usr/include/xlocale/_string.h \
   /usr/include/xlocale/_strings.h \
-  /usr/include/xlocale/_time.h \
-  /usr/include/xlocale/_wchar.h \
-  /usr/local/include/libyang/log.h \
-  /usr/local/include/libyang/ly_config.h \
-  /usr/local/include/libyang/tree.h \
-  /usr/local/include/libyang/tree_data.h \
-  /usr/local/include/libyang/tree_schema.h \
-  /usr/local/include/pcre2.h
+  /usr/include/xlocale/_wchar.h
 
 shared/CMakeFiles/netd_shared.dir/src/interface/base/master.cpp.o: /home/sq/netd/shared/src/interface/base/master.cpp \
   /home/sq/netd/shared/include/interface/base/master.hpp \
@@ -3733,7 +3482,6 @@ shared/CMakeFiles/netd_shared.dir/src/interface/base/tunnel.cpp.o: /home/sq/netd
   /usr/include/c++/v1/cwchar \
   /usr/include/c++/v1/cwctype \
   /usr/include/c++/v1/initializer_list \
-  /usr/include/c++/v1/inttypes.h \
   /usr/include/c++/v1/iosfwd \
   /usr/include/c++/v1/limits \
   /usr/include/c++/v1/memory \
@@ -3742,7 +3490,6 @@ shared/CMakeFiles/netd_shared.dir/src/interface/base/tunnel.cpp.o: /home/sq/netd
   /usr/include/c++/v1/stdexcept \
   /usr/include/c++/v1/stdint.h \
   /usr/include/c++/v1/stdio.h \
-  /usr/include/c++/v1/stdlib.h \
   /usr/include/c++/v1/string \
   /usr/include/c++/v1/string.h \
   /usr/include/c++/v1/string_view \
@@ -3752,10 +3499,7 @@ shared/CMakeFiles/netd_shared.dir/src/interface/base/tunnel.cpp.o: /home/sq/netd
   /usr/include/c++/v1/wchar.h \
   /usr/include/c++/v1/wctype.h \
   /usr/include/ctype.h \
-  /usr/include/inttypes.h \
   /usr/include/limits.h \
-  /usr/include/machine/_align.h \
-  /usr/include/machine/_inttypes.h \
   /usr/include/machine/_limits.h \
   /usr/include/machine/_stdint.h \
   /usr/include/machine/_types.h \
@@ -3766,29 +3510,18 @@ shared/CMakeFiles/netd_shared.dir/src/interface/base/tunnel.cpp.o: /home/sq/netd
   /usr/include/stddef.h \
   /usr/include/stdint.h \
   /usr/include/stdio.h \
-  /usr/include/stdlib.h \
   /usr/include/string.h \
   /usr/include/strings.h \
-  /usr/include/sys/_clock_id.h \
   /usr/include/sys/_endian.h \
-  /usr/include/sys/_iovec.h \
   /usr/include/sys/_null.h \
   /usr/include/sys/_sockaddr_storage.h \
   /usr/include/sys/_stdint.h \
-  /usr/include/sys/_timespec.h \
-  /usr/include/sys/_timeval.h \
   /usr/include/sys/_types.h \
   /usr/include/sys/cdefs.h \
   /usr/include/sys/limits.h \
-  /usr/include/sys/socket.h \
-  /usr/include/sys/stdint.h \
   /usr/include/sys/syslimits.h \
-  /usr/include/sys/timespec.h \
-  /usr/include/time.h \
   /usr/include/wchar.h \
   /usr/include/wctype.h \
-  /usr/include/x86/_align.h \
-  /usr/include/x86/_inttypes.h \
   /usr/include/x86/_limits.h \
   /usr/include/x86/_stdint.h \
   /usr/include/x86/_types.h \
@@ -3796,18 +3529,12 @@ shared/CMakeFiles/netd_shared.dir/src/interface/base/tunnel.cpp.o: /home/sq/netd
   /usr/include/xlocale/_ctype.h \
   /usr/include/xlocale/_string.h \
   /usr/include/xlocale/_strings.h \
-  /usr/include/xlocale/_time.h \
-  /usr/include/xlocale/_wchar.h \
-  /usr/local/include/libyang/log.h \
-  /usr/local/include/libyang/ly_config.h \
-  /usr/local/include/libyang/tree.h \
-  /usr/local/include/libyang/tree_data.h \
-  /usr/local/include/libyang/tree_schema.h \
-  /usr/local/include/pcre2.h
+  /usr/include/xlocale/_wchar.h
 
 shared/CMakeFiles/netd_shared.dir/src/interface/bridge.cpp.o: /home/sq/netd/shared/src/interface/bridge.cpp \
   /home/sq/netd/shared/include/base/serialization.hpp \
   /home/sq/netd/shared/include/interface/base/master.hpp \
+  /home/sq/netd/shared/include/interface/bridge.hpp \
   /home/sq/netd/shared/include/master.hpp \
   /usr/include/_ctype.h \
   /usr/include/arpa/inet.h \
@@ -8506,214 +8233,52 @@ shared/CMakeFiles/netd_shared.dir/src/master.cpp.o: /home/sq/netd/shared/src/mas
   /home/sq/netd/shared/include/interface/base/master.hpp \
   /home/sq/netd/shared/include/master.hpp \
   /usr/include/_ctype.h \
-  /usr/include/c++/v1/__algorithm/adjacent_find.h \
-  /usr/include/c++/v1/__algorithm/all_of.h \
-  /usr/include/c++/v1/__algorithm/any_of.h \
-  /usr/include/c++/v1/__algorithm/binary_search.h \
-  /usr/include/c++/v1/__algorithm/clamp.h \
   /usr/include/c++/v1/__algorithm/comp.h \
   /usr/include/c++/v1/__algorithm/comp_ref_type.h \
   /usr/include/c++/v1/__algorithm/copy.h \
-  /usr/include/c++/v1/__algorithm/copy_backward.h \
-  /usr/include/c++/v1/__algorithm/copy_if.h \
   /usr/include/c++/v1/__algorithm/copy_move_common.h \
   /usr/include/c++/v1/__algorithm/copy_n.h \
-  /usr/include/c++/v1/__algorithm/count.h \
-  /usr/include/c++/v1/__algorithm/count_if.h \
   /usr/include/c++/v1/__algorithm/equal.h \
-  /usr/include/c++/v1/__algorithm/equal_range.h \
-  /usr/include/c++/v1/__algorithm/fill.h \
   /usr/include/c++/v1/__algorithm/fill_n.h \
   /usr/include/c++/v1/__algorithm/find.h \
   /usr/include/c++/v1/__algorithm/find_end.h \
   /usr/include/c++/v1/__algorithm/find_first_of.h \
   /usr/include/c++/v1/__algorithm/find_if.h \
-  /usr/include/c++/v1/__algorithm/find_if_not.h \
   /usr/include/c++/v1/__algorithm/find_segment_if.h \
-  /usr/include/c++/v1/__algorithm/fold.h \
-  /usr/include/c++/v1/__algorithm/for_each.h \
-  /usr/include/c++/v1/__algorithm/for_each_n.h \
   /usr/include/c++/v1/__algorithm/for_each_segment.h \
-  /usr/include/c++/v1/__algorithm/generate.h \
-  /usr/include/c++/v1/__algorithm/generate_n.h \
   /usr/include/c++/v1/__algorithm/half_positive.h \
-  /usr/include/c++/v1/__algorithm/in_found_result.h \
-  /usr/include/c++/v1/__algorithm/in_fun_result.h \
   /usr/include/c++/v1/__algorithm/in_in_out_result.h \
-  /usr/include/c++/v1/__algorithm/in_in_result.h \
-  /usr/include/c++/v1/__algorithm/in_out_out_result.h \
   /usr/include/c++/v1/__algorithm/in_out_result.h \
-  /usr/include/c++/v1/__algorithm/includes.h \
-  /usr/include/c++/v1/__algorithm/inplace_merge.h \
-  /usr/include/c++/v1/__algorithm/is_heap.h \
-  /usr/include/c++/v1/__algorithm/is_heap_until.h \
-  /usr/include/c++/v1/__algorithm/is_partitioned.h \
-  /usr/include/c++/v1/__algorithm/is_permutation.h \
-  /usr/include/c++/v1/__algorithm/is_sorted.h \
-  /usr/include/c++/v1/__algorithm/is_sorted_until.h \
   /usr/include/c++/v1/__algorithm/iter_swap.h \
   /usr/include/c++/v1/__algorithm/iterator_operations.h \
   /usr/include/c++/v1/__algorithm/lexicographical_compare.h \
   /usr/include/c++/v1/__algorithm/lexicographical_compare_three_way.h \
   /usr/include/c++/v1/__algorithm/lower_bound.h \
-  /usr/include/c++/v1/__algorithm/make_heap.h \
-  /usr/include/c++/v1/__algorithm/make_projected.h \
   /usr/include/c++/v1/__algorithm/max.h \
   /usr/include/c++/v1/__algorithm/max_element.h \
-  /usr/include/c++/v1/__algorithm/merge.h \
   /usr/include/c++/v1/__algorithm/min.h \
   /usr/include/c++/v1/__algorithm/min_element.h \
-  /usr/include/c++/v1/__algorithm/min_max_result.h \
-  /usr/include/c++/v1/__algorithm/minmax.h \
-  /usr/include/c++/v1/__algorithm/minmax_element.h \
-  /usr/include/c++/v1/__algorithm/mismatch.h \
   /usr/include/c++/v1/__algorithm/move.h \
   /usr/include/c++/v1/__algorithm/move_backward.h \
-  /usr/include/c++/v1/__algorithm/next_permutation.h \
-  /usr/include/c++/v1/__algorithm/none_of.h \
-  /usr/include/c++/v1/__algorithm/nth_element.h \
-  /usr/include/c++/v1/__algorithm/partial_sort.h \
-  /usr/include/c++/v1/__algorithm/partial_sort_copy.h \
-  /usr/include/c++/v1/__algorithm/partition.h \
-  /usr/include/c++/v1/__algorithm/partition_copy.h \
-  /usr/include/c++/v1/__algorithm/partition_point.h \
-  /usr/include/c++/v1/__algorithm/pop_heap.h \
-  /usr/include/c++/v1/__algorithm/prev_permutation.h \
-  /usr/include/c++/v1/__algorithm/pstl.h \
-  /usr/include/c++/v1/__algorithm/push_heap.h \
-  /usr/include/c++/v1/__algorithm/ranges_adjacent_find.h \
-  /usr/include/c++/v1/__algorithm/ranges_all_of.h \
-  /usr/include/c++/v1/__algorithm/ranges_any_of.h \
-  /usr/include/c++/v1/__algorithm/ranges_binary_search.h \
-  /usr/include/c++/v1/__algorithm/ranges_clamp.h \
-  /usr/include/c++/v1/__algorithm/ranges_contains.h \
-  /usr/include/c++/v1/__algorithm/ranges_contains_subrange.h \
   /usr/include/c++/v1/__algorithm/ranges_copy.h \
-  /usr/include/c++/v1/__algorithm/ranges_copy_backward.h \
-  /usr/include/c++/v1/__algorithm/ranges_copy_if.h \
   /usr/include/c++/v1/__algorithm/ranges_copy_n.h \
-  /usr/include/c++/v1/__algorithm/ranges_count.h \
-  /usr/include/c++/v1/__algorithm/ranges_count_if.h \
-  /usr/include/c++/v1/__algorithm/ranges_ends_with.h \
-  /usr/include/c++/v1/__algorithm/ranges_equal.h \
-  /usr/include/c++/v1/__algorithm/ranges_equal_range.h \
-  /usr/include/c++/v1/__algorithm/ranges_fill.h \
   /usr/include/c++/v1/__algorithm/ranges_fill_n.h \
-  /usr/include/c++/v1/__algorithm/ranges_find.h \
-  /usr/include/c++/v1/__algorithm/ranges_find_end.h \
-  /usr/include/c++/v1/__algorithm/ranges_find_first_of.h \
-  /usr/include/c++/v1/__algorithm/ranges_find_if.h \
-  /usr/include/c++/v1/__algorithm/ranges_find_if_not.h \
-  /usr/include/c++/v1/__algorithm/ranges_find_last.h \
-  /usr/include/c++/v1/__algorithm/ranges_for_each.h \
-  /usr/include/c++/v1/__algorithm/ranges_for_each_n.h \
-  /usr/include/c++/v1/__algorithm/ranges_generate.h \
-  /usr/include/c++/v1/__algorithm/ranges_generate_n.h \
-  /usr/include/c++/v1/__algorithm/ranges_includes.h \
-  /usr/include/c++/v1/__algorithm/ranges_inplace_merge.h \
-  /usr/include/c++/v1/__algorithm/ranges_is_heap.h \
-  /usr/include/c++/v1/__algorithm/ranges_is_heap_until.h \
-  /usr/include/c++/v1/__algorithm/ranges_is_partitioned.h \
-  /usr/include/c++/v1/__algorithm/ranges_is_permutation.h \
-  /usr/include/c++/v1/__algorithm/ranges_is_sorted.h \
-  /usr/include/c++/v1/__algorithm/ranges_is_sorted_until.h \
   /usr/include/c++/v1/__algorithm/ranges_iterator_concept.h \
-  /usr/include/c++/v1/__algorithm/ranges_lexicographical_compare.h \
-  /usr/include/c++/v1/__algorithm/ranges_lower_bound.h \
-  /usr/include/c++/v1/__algorithm/ranges_make_heap.h \
-  /usr/include/c++/v1/__algorithm/ranges_max.h \
-  /usr/include/c++/v1/__algorithm/ranges_max_element.h \
-  /usr/include/c++/v1/__algorithm/ranges_merge.h \
-  /usr/include/c++/v1/__algorithm/ranges_min.h \
-  /usr/include/c++/v1/__algorithm/ranges_min_element.h \
-  /usr/include/c++/v1/__algorithm/ranges_minmax.h \
-  /usr/include/c++/v1/__algorithm/ranges_minmax_element.h \
-  /usr/include/c++/v1/__algorithm/ranges_mismatch.h \
-  /usr/include/c++/v1/__algorithm/ranges_move.h \
-  /usr/include/c++/v1/__algorithm/ranges_move_backward.h \
-  /usr/include/c++/v1/__algorithm/ranges_next_permutation.h \
-  /usr/include/c++/v1/__algorithm/ranges_none_of.h \
-  /usr/include/c++/v1/__algorithm/ranges_nth_element.h \
-  /usr/include/c++/v1/__algorithm/ranges_partial_sort.h \
-  /usr/include/c++/v1/__algorithm/ranges_partial_sort_copy.h \
-  /usr/include/c++/v1/__algorithm/ranges_partition.h \
-  /usr/include/c++/v1/__algorithm/ranges_partition_copy.h \
-  /usr/include/c++/v1/__algorithm/ranges_partition_point.h \
-  /usr/include/c++/v1/__algorithm/ranges_pop_heap.h \
-  /usr/include/c++/v1/__algorithm/ranges_prev_permutation.h \
-  /usr/include/c++/v1/__algorithm/ranges_push_heap.h \
-  /usr/include/c++/v1/__algorithm/ranges_remove.h \
-  /usr/include/c++/v1/__algorithm/ranges_remove_copy.h \
-  /usr/include/c++/v1/__algorithm/ranges_remove_copy_if.h \
-  /usr/include/c++/v1/__algorithm/ranges_remove_if.h \
-  /usr/include/c++/v1/__algorithm/ranges_replace.h \
-  /usr/include/c++/v1/__algorithm/ranges_replace_copy.h \
-  /usr/include/c++/v1/__algorithm/ranges_replace_copy_if.h \
-  /usr/include/c++/v1/__algorithm/ranges_replace_if.h \
-  /usr/include/c++/v1/__algorithm/ranges_reverse.h \
-  /usr/include/c++/v1/__algorithm/ranges_reverse_copy.h \
-  /usr/include/c++/v1/__algorithm/ranges_rotate.h \
-  /usr/include/c++/v1/__algorithm/ranges_rotate_copy.h \
-  /usr/include/c++/v1/__algorithm/ranges_sample.h \
-  /usr/include/c++/v1/__algorithm/ranges_search.h \
-  /usr/include/c++/v1/__algorithm/ranges_search_n.h \
-  /usr/include/c++/v1/__algorithm/ranges_set_difference.h \
-  /usr/include/c++/v1/__algorithm/ranges_set_intersection.h \
-  /usr/include/c++/v1/__algorithm/ranges_set_symmetric_difference.h \
-  /usr/include/c++/v1/__algorithm/ranges_set_union.h \
-  /usr/include/c++/v1/__algorithm/ranges_shuffle.h \
-  /usr/include/c++/v1/__algorithm/ranges_sort.h \
-  /usr/include/c++/v1/__algorithm/ranges_sort_heap.h \
-  /usr/include/c++/v1/__algorithm/ranges_stable_partition.h \
-  /usr/include/c++/v1/__algorithm/ranges_stable_sort.h \
-  /usr/include/c++/v1/__algorithm/ranges_starts_with.h \
-  /usr/include/c++/v1/__algorithm/ranges_swap_ranges.h \
   /usr/include/c++/v1/__algorithm/ranges_transform.h \
-  /usr/include/c++/v1/__algorithm/ranges_unique.h \
-  /usr/include/c++/v1/__algorithm/ranges_unique_copy.h \
   /usr/include/c++/v1/__algorithm/ranges_upper_bound.h \
   /usr/include/c++/v1/__algorithm/remove.h \
-  /usr/include/c++/v1/__algorithm/remove_copy.h \
-  /usr/include/c++/v1/__algorithm/remove_copy_if.h \
   /usr/include/c++/v1/__algorithm/remove_if.h \
-  /usr/include/c++/v1/__algorithm/replace.h \
-  /usr/include/c++/v1/__algorithm/replace_copy.h \
-  /usr/include/c++/v1/__algorithm/replace_copy_if.h \
-  /usr/include/c++/v1/__algorithm/replace_if.h \
-  /usr/include/c++/v1/__algorithm/reverse.h \
-  /usr/include/c++/v1/__algorithm/reverse_copy.h \
   /usr/include/c++/v1/__algorithm/rotate.h \
-  /usr/include/c++/v1/__algorithm/rotate_copy.h \
-  /usr/include/c++/v1/__algorithm/sample.h \
   /usr/include/c++/v1/__algorithm/search.h \
-  /usr/include/c++/v1/__algorithm/search_n.h \
-  /usr/include/c++/v1/__algorithm/set_difference.h \
-  /usr/include/c++/v1/__algorithm/set_intersection.h \
-  /usr/include/c++/v1/__algorithm/set_symmetric_difference.h \
-  /usr/include/c++/v1/__algorithm/set_union.h \
-  /usr/include/c++/v1/__algorithm/shift_left.h \
-  /usr/include/c++/v1/__algorithm/shift_right.h \
-  /usr/include/c++/v1/__algorithm/shuffle.h \
-  /usr/include/c++/v1/__algorithm/sift_down.h \
-  /usr/include/c++/v1/__algorithm/simd_utils.h \
-  /usr/include/c++/v1/__algorithm/sort.h \
-  /usr/include/c++/v1/__algorithm/sort_heap.h \
-  /usr/include/c++/v1/__algorithm/stable_partition.h \
-  /usr/include/c++/v1/__algorithm/stable_sort.h \
   /usr/include/c++/v1/__algorithm/swap_ranges.h \
   /usr/include/c++/v1/__algorithm/three_way_comp_ref_type.h \
   /usr/include/c++/v1/__algorithm/transform.h \
-  /usr/include/c++/v1/__algorithm/uniform_random_bit_generator_adaptor.h \
-  /usr/include/c++/v1/__algorithm/unique.h \
-  /usr/include/c++/v1/__algorithm/unique_copy.h \
   /usr/include/c++/v1/__algorithm/unwrap_iter.h \
   /usr/include/c++/v1/__algorithm/unwrap_range.h \
-  /usr/include/c++/v1/__algorithm/upper_bound.h \
   /usr/include/c++/v1/__assert \
   /usr/include/c++/v1/__assertion_handler \
   /usr/include/c++/v1/__atomic/memory_order.h \
   /usr/include/c++/v1/__bit/bit_cast.h \
-  /usr/include/c++/v1/__bit/blsr.h \
   /usr/include/c++/v1/__bit/countl.h \
   /usr/include/c++/v1/__bit/countr.h \
   /usr/include/c++/v1/__bit/invert_if.h \
@@ -8766,9 +8331,7 @@ shared/CMakeFiles/netd_shared.dir/src/master.cpp.o: /home/sq/netd/shared/src/mas
   /usr/include/c++/v1/__configuration/compiler.h \
   /usr/include/c++/v1/__configuration/language.h \
   /usr/include/c++/v1/__configuration/platform.h \
-  /usr/include/c++/v1/__debug_utils/randomize_range.h \
   /usr/include/c++/v1/__debug_utils/sanitizers.h \
-  /usr/include/c++/v1/__debug_utils/strict_weak_ordering_check.h \
   /usr/include/c++/v1/__exception/exception.h \
   /usr/include/c++/v1/__format/buffer.h \
   /usr/include/c++/v1/__format/concepts.h \
@@ -8818,7 +8381,6 @@ shared/CMakeFiles/netd_shared.dir/src/master.cpp.o: /home/sq/netd/shared/src/mas
   /usr/include/c++/v1/__ios/fpos.h \
   /usr/include/c++/v1/__iterator/access.h \
   /usr/include/c++/v1/__iterator/advance.h \
-  /usr/include/c++/v1/__iterator/aliasing_iterator.h \
   /usr/include/c++/v1/__iterator/back_insert_iterator.h \
   /usr/include/c++/v1/__iterator/bounded_iter.h \
   /usr/include/c++/v1/__iterator/concepts.h \
@@ -8826,16 +8388,13 @@ shared/CMakeFiles/netd_shared.dir/src/master.cpp.o: /home/sq/netd/shared/src/mas
   /usr/include/c++/v1/__iterator/distance.h \
   /usr/include/c++/v1/__iterator/empty.h \
   /usr/include/c++/v1/__iterator/incrementable_traits.h \
-  /usr/include/c++/v1/__iterator/indirectly_comparable.h \
   /usr/include/c++/v1/__iterator/iter_move.h \
   /usr/include/c++/v1/__iterator/iter_swap.h \
   /usr/include/c++/v1/__iterator/iterator.h \
   /usr/include/c++/v1/__iterator/iterator_traits.h \
-  /usr/include/c++/v1/__iterator/mergeable.h \
   /usr/include/c++/v1/__iterator/move_iterator.h \
   /usr/include/c++/v1/__iterator/move_sentinel.h \
   /usr/include/c++/v1/__iterator/next.h \
-  /usr/include/c++/v1/__iterator/permutable.h \
   /usr/include/c++/v1/__iterator/prev.h \
   /usr/include/c++/v1/__iterator/projected.h \
   /usr/include/c++/v1/__iterator/readable_traits.h \
@@ -8843,7 +8402,6 @@ shared/CMakeFiles/netd_shared.dir/src/master.cpp.o: /home/sq/netd/shared/src/mas
   /usr/include/c++/v1/__iterator/reverse_iterator.h \
   /usr/include/c++/v1/__iterator/segmented_iterator.h \
   /usr/include/c++/v1/__iterator/size.h \
-  /usr/include/c++/v1/__iterator/sortable.h \
   /usr/include/c++/v1/__iterator/unreachable_sentinel.h \
   /usr/include/c++/v1/__iterator/wrap_iter.h \
   /usr/include/c++/v1/__locale \
@@ -8864,7 +8422,6 @@ shared/CMakeFiles/netd_shared.dir/src/master.cpp.o: /home/sq/netd/shared/src/mas
   /usr/include/c++/v1/__memory/compressed_pair.h \
   /usr/include/c++/v1/__memory/concepts.h \
   /usr/include/c++/v1/__memory/construct_at.h \
-  /usr/include/c++/v1/__memory/destruct_n.h \
   /usr/include/c++/v1/__memory/inout_ptr.h \
   /usr/include/c++/v1/__memory/out_ptr.h \
   /usr/include/c++/v1/__memory/pointer_traits.h \
@@ -8883,10 +8440,6 @@ shared/CMakeFiles/netd_shared.dir/src/master.cpp.o: /home/sq/netd/shared/src/mas
   /usr/include/c++/v1/__memory_resource/memory_resource.h \
   /usr/include/c++/v1/__memory_resource/polymorphic_allocator.h \
   /usr/include/c++/v1/__mutex/once_flag.h \
-  /usr/include/c++/v1/__random/is_valid.h \
-  /usr/include/c++/v1/__random/log2.h \
-  /usr/include/c++/v1/__random/uniform_int_distribution.h \
-  /usr/include/c++/v1/__random/uniform_random_bit_generator.h \
   /usr/include/c++/v1/__ranges/access.h \
   /usr/include/c++/v1/__ranges/concepts.h \
   /usr/include/c++/v1/__ranges/container_compatible_range.h \
@@ -8896,7 +8449,6 @@ shared/CMakeFiles/netd_shared.dir/src/master.cpp.o: /home/sq/netd/shared/src/mas
   /usr/include/c++/v1/__ranges/enable_borrowed_range.h \
   /usr/include/c++/v1/__ranges/enable_view.h \
   /usr/include/c++/v1/__ranges/from_range.h \
-  /usr/include/c++/v1/__ranges/movable_box.h \
   /usr/include/c++/v1/__ranges/size.h \
   /usr/include/c++/v1/__ranges/subrange.h \
   /usr/include/c++/v1/__ranges/view_interface.h \
@@ -9024,7 +8576,6 @@ shared/CMakeFiles/netd_shared.dir/src/master.cpp.o: /home/sq/netd/shared/src/mas
   /usr/include/c++/v1/__utility/exception_guard.h \
   /usr/include/c++/v1/__utility/exchange.h \
   /usr/include/c++/v1/__utility/forward.h \
-  /usr/include/c++/v1/__utility/in_place.h \
   /usr/include/c++/v1/__utility/integer_sequence.h \
   /usr/include/c++/v1/__utility/is_pointer_in_range.h \
   /usr/include/c++/v1/__utility/is_valid_range.h \
@@ -9038,7 +8589,6 @@ shared/CMakeFiles/netd_shared.dir/src/master.cpp.o: /home/sq/netd/shared/src/mas
   /usr/include/c++/v1/__utility/unreachable.h \
   /usr/include/c++/v1/__variant/monostate.h \
   /usr/include/c++/v1/__verbose_abort \
-  /usr/include/c++/v1/algorithm \
   /usr/include/c++/v1/array \
   /usr/include/c++/v1/cctype \
   /usr/include/c++/v1/cerrno \
@@ -9060,7 +8610,6 @@ shared/CMakeFiles/netd_shared.dir/src/master.cpp.o: /home/sq/netd/shared/src/mas
   /usr/include/c++/v1/locale.h \
   /usr/include/c++/v1/memory \
   /usr/include/c++/v1/new \
-  /usr/include/c++/v1/optional \
   /usr/include/c++/v1/stddef.h \
   /usr/include/c++/v1/stdexcept \
   /usr/include/c++/v1/stdint.h \
@@ -10114,7 +9663,6 @@ shared/CMakeFiles/netd_shared.dir/src/route.cpp.o: /home/sq/netd/shared/src/rout
   /usr/include/c++/v1/cwchar \
   /usr/include/c++/v1/cwctype \
   /usr/include/c++/v1/initializer_list \
-  /usr/include/c++/v1/inttypes.h \
   /usr/include/c++/v1/iosfwd \
   /usr/include/c++/v1/limits \
   /usr/include/c++/v1/memory \
@@ -10123,7 +9671,6 @@ shared/CMakeFiles/netd_shared.dir/src/route.cpp.o: /home/sq/netd/shared/src/rout
   /usr/include/c++/v1/stdexcept \
   /usr/include/c++/v1/stdint.h \
   /usr/include/c++/v1/stdio.h \
-  /usr/include/c++/v1/stdlib.h \
   /usr/include/c++/v1/string \
   /usr/include/c++/v1/string.h \
   /usr/include/c++/v1/string_view \
@@ -10133,10 +9680,7 @@ shared/CMakeFiles/netd_shared.dir/src/route.cpp.o: /home/sq/netd/shared/src/rout
   /usr/include/c++/v1/wchar.h \
   /usr/include/c++/v1/wctype.h \
   /usr/include/ctype.h \
-  /usr/include/inttypes.h \
   /usr/include/limits.h \
-  /usr/include/machine/_align.h \
-  /usr/include/machine/_inttypes.h \
   /usr/include/machine/_limits.h \
   /usr/include/machine/_stdint.h \
   /usr/include/machine/_types.h \
@@ -10147,29 +9691,18 @@ shared/CMakeFiles/netd_shared.dir/src/route.cpp.o: /home/sq/netd/shared/src/rout
   /usr/include/stddef.h \
   /usr/include/stdint.h \
   /usr/include/stdio.h \
-  /usr/include/stdlib.h \
   /usr/include/string.h \
   /usr/include/strings.h \
-  /usr/include/sys/_clock_id.h \
   /usr/include/sys/_endian.h \
-  /usr/include/sys/_iovec.h \
   /usr/include/sys/_null.h \
   /usr/include/sys/_sockaddr_storage.h \
   /usr/include/sys/_stdint.h \
-  /usr/include/sys/_timespec.h \
-  /usr/include/sys/_timeval.h \
   /usr/include/sys/_types.h \
   /usr/include/sys/cdefs.h \
   /usr/include/sys/limits.h \
-  /usr/include/sys/socket.h \
-  /usr/include/sys/stdint.h \
   /usr/include/sys/syslimits.h \
-  /usr/include/sys/timespec.h \
-  /usr/include/time.h \
   /usr/include/wchar.h \
   /usr/include/wctype.h \
-  /usr/include/x86/_align.h \
-  /usr/include/x86/_inttypes.h \
   /usr/include/x86/_limits.h \
   /usr/include/x86/_stdint.h \
   /usr/include/x86/_types.h \
@@ -10177,14 +9710,7 @@ shared/CMakeFiles/netd_shared.dir/src/route.cpp.o: /home/sq/netd/shared/src/rout
   /usr/include/xlocale/_ctype.h \
   /usr/include/xlocale/_string.h \
   /usr/include/xlocale/_strings.h \
-  /usr/include/xlocale/_time.h \
-  /usr/include/xlocale/_wchar.h \
-  /usr/local/include/libyang/log.h \
-  /usr/local/include/libyang/ly_config.h \
-  /usr/local/include/libyang/tree.h \
-  /usr/local/include/libyang/tree_data.h \
-  /usr/local/include/libyang/tree_schema.h \
-  /usr/local/include/pcre2.h
+  /usr/include/xlocale/_wchar.h
 
 shared/CMakeFiles/netd_shared.dir/src/tunnel.cpp.o: /home/sq/netd/shared/src/tunnel.cpp \
   /home/sq/netd/shared/include/address.hpp \
@@ -10498,7 +10024,6 @@ shared/CMakeFiles/netd_shared.dir/src/tunnel.cpp.o: /home/sq/netd/shared/src/tun
   /usr/include/c++/v1/cwchar \
   /usr/include/c++/v1/cwctype \
   /usr/include/c++/v1/initializer_list \
-  /usr/include/c++/v1/inttypes.h \
   /usr/include/c++/v1/iosfwd \
   /usr/include/c++/v1/limits \
   /usr/include/c++/v1/memory \
@@ -10507,7 +10032,6 @@ shared/CMakeFiles/netd_shared.dir/src/tunnel.cpp.o: /home/sq/netd/shared/src/tun
   /usr/include/c++/v1/stdexcept \
   /usr/include/c++/v1/stdint.h \
   /usr/include/c++/v1/stdio.h \
-  /usr/include/c++/v1/stdlib.h \
   /usr/include/c++/v1/string \
   /usr/include/c++/v1/string.h \
   /usr/include/c++/v1/string_view \
@@ -10517,10 +10041,7 @@ shared/CMakeFiles/netd_shared.dir/src/tunnel.cpp.o: /home/sq/netd/shared/src/tun
   /usr/include/c++/v1/wchar.h \
   /usr/include/c++/v1/wctype.h \
   /usr/include/ctype.h \
-  /usr/include/inttypes.h \
   /usr/include/limits.h \
-  /usr/include/machine/_align.h \
-  /usr/include/machine/_inttypes.h \
   /usr/include/machine/_limits.h \
   /usr/include/machine/_stdint.h \
   /usr/include/machine/_types.h \
@@ -10531,29 +10052,18 @@ shared/CMakeFiles/netd_shared.dir/src/tunnel.cpp.o: /home/sq/netd/shared/src/tun
   /usr/include/stddef.h \
   /usr/include/stdint.h \
   /usr/include/stdio.h \
-  /usr/include/stdlib.h \
   /usr/include/string.h \
   /usr/include/strings.h \
-  /usr/include/sys/_clock_id.h \
   /usr/include/sys/_endian.h \
-  /usr/include/sys/_iovec.h \
   /usr/include/sys/_null.h \
   /usr/include/sys/_sockaddr_storage.h \
   /usr/include/sys/_stdint.h \
-  /usr/include/sys/_timespec.h \
-  /usr/include/sys/_timeval.h \
   /usr/include/sys/_types.h \
   /usr/include/sys/cdefs.h \
   /usr/include/sys/limits.h \
-  /usr/include/sys/socket.h \
-  /usr/include/sys/stdint.h \
   /usr/include/sys/syslimits.h \
-  /usr/include/sys/timespec.h \
-  /usr/include/time.h \
   /usr/include/wchar.h \
   /usr/include/wctype.h \
-  /usr/include/x86/_align.h \
-  /usr/include/x86/_inttypes.h \
   /usr/include/x86/_limits.h \
   /usr/include/x86/_stdint.h \
   /usr/include/x86/_types.h \
@@ -10561,20 +10071,12 @@ shared/CMakeFiles/netd_shared.dir/src/tunnel.cpp.o: /home/sq/netd/shared/src/tun
   /usr/include/xlocale/_ctype.h \
   /usr/include/xlocale/_string.h \
   /usr/include/xlocale/_strings.h \
-  /usr/include/xlocale/_time.h \
-  /usr/include/xlocale/_wchar.h \
-  /usr/local/include/libyang/log.h \
-  /usr/local/include/libyang/ly_config.h \
-  /usr/local/include/libyang/tree.h \
-  /usr/local/include/libyang/tree_data.h \
-  /usr/local/include/libyang/tree_schema.h \
-  /usr/local/include/pcre2.h
+  /usr/include/xlocale/_wchar.h
 
 shared/CMakeFiles/netd_shared.dir/src/vrf.cpp.o: /home/sq/netd/shared/src/vrf.cpp \
   /home/sq/netd/shared/include/base/serialization.hpp \
   /home/sq/netd/shared/include/vrf.hpp \
   /usr/include/_ctype.h \
-  /usr/include/arpa/inet.h \
   /usr/include/c++/v1/__algorithm/comp.h \
   /usr/include/c++/v1/__algorithm/comp_ref_type.h \
   /usr/include/c++/v1/__algorithm/fill_n.h \
@@ -10847,7 +10349,6 @@ shared/CMakeFiles/netd_shared.dir/src/vrf.cpp.o: /home/sq/netd/shared/src/vrf.cp
   /usr/include/c++/v1/cwchar \
   /usr/include/c++/v1/cwctype \
   /usr/include/c++/v1/initializer_list \
-  /usr/include/c++/v1/inttypes.h \
   /usr/include/c++/v1/iosfwd \
   /usr/include/c++/v1/limits \
   /usr/include/c++/v1/new \
@@ -10855,7 +10356,6 @@ shared/CMakeFiles/netd_shared.dir/src/vrf.cpp.o: /home/sq/netd/shared/src/vrf.cp
   /usr/include/c++/v1/stdexcept \
   /usr/include/c++/v1/stdint.h \
   /usr/include/c++/v1/stdio.h \
-  /usr/include/c++/v1/stdlib.h \
   /usr/include/c++/v1/string \
   /usr/include/c++/v1/string.h \
   /usr/include/c++/v1/string_view \
@@ -10864,58 +10364,31 @@ shared/CMakeFiles/netd_shared.dir/src/vrf.cpp.o: /home/sq/netd/shared/src/vrf.cp
   /usr/include/c++/v1/wchar.h \
   /usr/include/c++/v1/wctype.h \
   /usr/include/ctype.h \
-  /usr/include/inttypes.h \
   /usr/include/limits.h \
-  /usr/include/machine/_align.h \
-  /usr/include/machine/_inttypes.h \
   /usr/include/machine/_limits.h \
   /usr/include/machine/_stdint.h \
   /usr/include/machine/_types.h \
-  /usr/include/machine/endian.h \
-  /usr/include/netinet/in.h \
-  /usr/include/netinet6/in6.h \
   /usr/include/runetype.h \
   /usr/include/stddef.h \
   /usr/include/stdint.h \
   /usr/include/stdio.h \
-  /usr/include/stdlib.h \
   /usr/include/string.h \
   /usr/include/strings.h \
-  /usr/include/sys/_clock_id.h \
-  /usr/include/sys/_endian.h \
-  /usr/include/sys/_iovec.h \
   /usr/include/sys/_null.h \
-  /usr/include/sys/_sockaddr_storage.h \
   /usr/include/sys/_stdint.h \
-  /usr/include/sys/_timespec.h \
-  /usr/include/sys/_timeval.h \
   /usr/include/sys/_types.h \
   /usr/include/sys/cdefs.h \
   /usr/include/sys/limits.h \
-  /usr/include/sys/socket.h \
-  /usr/include/sys/stdint.h \
   /usr/include/sys/syslimits.h \
-  /usr/include/sys/timespec.h \
-  /usr/include/time.h \
   /usr/include/wchar.h \
   /usr/include/wctype.h \
-  /usr/include/x86/_align.h \
-  /usr/include/x86/_inttypes.h \
   /usr/include/x86/_limits.h \
   /usr/include/x86/_stdint.h \
   /usr/include/x86/_types.h \
-  /usr/include/x86/endian.h \
   /usr/include/xlocale/_ctype.h \
   /usr/include/xlocale/_string.h \
   /usr/include/xlocale/_strings.h \
-  /usr/include/xlocale/_time.h \
-  /usr/include/xlocale/_wchar.h \
-  /usr/local/include/libyang/log.h \
-  /usr/local/include/libyang/ly_config.h \
-  /usr/local/include/libyang/tree.h \
-  /usr/local/include/libyang/tree_data.h \
-  /usr/local/include/libyang/tree_schema.h \
-  /usr/local/include/pcre2.h
+  /usr/include/xlocale/_wchar.h
 
 shared/CMakeFiles/netd_shared.dir/src/yang.cpp.o: /home/sq/netd/shared/src/yang.cpp \
   /home/sq/netd/shared/include/yang.hpp \
@@ -11412,8 +10885,6 @@ shared/CMakeFiles/netd_shared.dir/src/interface/base/master.cpp.o:
 
 /home/sq/netd/shared/src/route.cpp:
 
-/home/sq/netd/shared/include/response.hpp:
-
 /home/sq/netd/shared/src/response.cpp:
 
 /home/sq/netd/shared/include/request.hpp:
@@ -11474,87 +10945,25 @@ shared/CMakeFiles/netd_shared.dir/src/interface/ppp.cpp.o:
 
 /home/sq/netd/shared/src/interface/ethernet.cpp:
 
-/home/sq/netd/shared/src/interface/base/ether.cpp:
-
-/usr/include/xlocale/_locale.h:
-
-/usr/include/xlocale/_inttypes.h:
-
-/home/sq/netd/shared/include/interface/base/master.hpp:
-
-/usr/include/c++/v1/vector:
-
 /usr/include/c++/v1/optional:
 
-/usr/include/c++/v1/locale.h:
-
-/usr/include/c++/v1/clocale:
-
-/usr/include/c++/v1/array:
-
 /usr/include/c++/v1/algorithm:
-
-/usr/include/c++/v1/__variant/monostate.h:
-
-/usr/include/c++/v1/__utility/no_destroy.h:
 
 /usr/include/c++/v1/__utility/in_place.h:
 
 /usr/include/c++/v1/__random/log2.h:
 
-/usr/include/c++/v1/__mutex/once_flag.h:
-
-/usr/include/c++/v1/__functional/pointer_to_binary_function.h:
-
-/usr/include/c++/v1/__memory/temp_value.h:
-
 /usr/include/c++/v1/__memory/destruct_n.h:
-
-/usr/include/c++/v1/__locale:
-
-/usr/include/c++/v1/__iterator/unreachable_sentinel.h:
-
-/usr/include/c++/v1/__iterator/move_sentinel.h:
 
 /usr/include/c++/v1/__iterator/mergeable.h:
 
 /usr/include/c++/v1/__iterator/indirectly_comparable.h:
 
-/usr/include/c++/v1/__iterator/back_insert_iterator.h:
-
 /usr/include/c++/v1/__iterator/aliasing_iterator.h:
-
-/usr/include/c++/v1/__format/parser_std_format_spec.h:
-
-/usr/include/c++/v1/__format/format_to_n_result.h:
-
-/usr/include/c++/v1/__format/format_string.h:
-
-/usr/local/include/libyang/out.h:
-
-/usr/include/c++/v1/__format/format_arg.h:
-
-/usr/include/c++/v1/__format/extended_grapheme_cluster_table.h:
-
-/usr/include/c++/v1/__format/buffer.h:
 
 /usr/include/c++/v1/__debug_utils/strict_weak_ordering_check.h:
 
 /usr/include/c++/v1/__debug_utils/randomize_range.h:
-
-/usr/include/c++/v1/__charconv/traits.h:
-
-/usr/include/c++/v1/__charconv/to_chars_result.h:
-
-/usr/include/c++/v1/__charconv/to_chars_base_10.h:
-
-/usr/include/c++/v1/__charconv/tables.h:
-
-/usr/include/c++/v1/__random/uniform_int_distribution.h:
-
-/usr/include/c++/v1/__bit/popcount.h:
-
-/usr/include/c++/v1/__bit/countl.h:
 
 /usr/include/c++/v1/__iterator/permutable.h:
 
@@ -11563,10 +10972,6 @@ shared/CMakeFiles/netd_shared.dir/src/interface/ppp.cpp.o:
 /usr/include/c++/v1/__algorithm/unique_copy.h:
 
 /usr/include/c++/v1/__algorithm/uniform_random_bit_generator_adaptor.h:
-
-/usr/include/c++/v1/__algorithm/transform.h:
-
-/usr/include/c++/v1/__algorithm/swap_ranges.h:
 
 /usr/include/c++/v1/__algorithm/stable_sort.h:
 
@@ -11604,17 +11009,11 @@ shared/CMakeFiles/netd_shared.dir/src/interface/ppp.cpp.o:
 
 /usr/include/c++/v1/__algorithm/remove_copy.h:
 
-/home/sq/netd/shared/include/exception.hpp:
-
-/usr/include/c++/v1/__algorithm/ranges_upper_bound.h:
-
 shared/CMakeFiles/netd_shared.dir/src/interface/tap.cpp.o:
 
 /usr/include/c++/v1/__algorithm/ranges_unique_copy.h:
 
 /usr/include/c++/v1/__algorithm/ranges_unique.h:
-
-/usr/include/c++/v1/__algorithm/ranges_transform.h:
 
 /usr/include/c++/v1/__algorithm/ranges_swap_ranges.h:
 
@@ -11658,10 +11057,6 @@ shared/CMakeFiles/netd_shared.dir/src/master.cpp.o:
 
 /usr/include/c++/v1/__algorithm/ranges_move_backward.h:
 
-/usr/include/c++/v1/__format/concepts.h:
-
-/usr/include/c++/v1/__algorithm/ranges_minmax_element.h:
-
 /usr/include/c++/v1/__algorithm/ranges_minmax.h:
 
 /usr/include/c++/v1/__algorithm/ranges_min_element.h:
@@ -11669,12 +11064,6 @@ shared/CMakeFiles/netd_shared.dir/src/master.cpp.o:
 /usr/include/c++/v1/__algorithm/ranges_min.h:
 
 /usr/include/c++/v1/__algorithm/ranges_merge.h:
-
-/usr/include/c++/v1/__iterator/sortable.h:
-
-/usr/include/c++/v1/__iterator/projected.h:
-
-/usr/include/c++/v1/__algorithm/ranges_max.h:
 
 /usr/include/c++/v1/__algorithm/ranges_lower_bound.h:
 
@@ -11696,18 +11085,6 @@ shared/CMakeFiles/netd_shared.dir/src/tunnel.cpp.o:
 
 /usr/include/c++/v1/__algorithm/ranges_for_each.h:
 
-/usr/include/c++/v1/__format/format_parse_context.h:
-
-/usr/include/c++/v1/__algorithm/ranges_find_if_not.h:
-
-/usr/include/c++/v1/__type_traits/aligned_storage.h:
-
-/usr/include/c++/v1/__algorithm/ranges_rotate_copy.h:
-
-/usr/include/c++/v1/__algorithm/ranges_equal_range.h:
-
-/usr/include/c++/v1/__algorithm/ranges_copy_n.h:
-
 /usr/include/c++/v1/__algorithm/ranges_contains.h:
 
 /usr/include/c++/v1/__algorithm/ranges_binary_search.h:
@@ -11722,12 +11099,6 @@ shared/CMakeFiles/netd_shared.dir/src/tunnel.cpp.o:
 
 /usr/include/c++/v1/__algorithm/partition_copy.h:
 
-/home/sq/netd/shared/src/interface/80211.cpp:
-
-/usr/include/c++/v1/__algorithm/ranges_generate.h:
-
-/usr/include/c++/v1/__algorithm/partial_sort_copy.h:
-
 shared/CMakeFiles/netd_shared.dir/src/ethernet.cpp.o:
 
 /usr/include/c++/v1/__algorithm/partial_sort.h:
@@ -11739,10 +11110,6 @@ shared/CMakeFiles/netd_shared.dir/src/ethernet.cpp.o:
 /usr/include/c++/v1/__algorithm/none_of.h:
 
 /usr/include/c++/v1/__algorithm/next_permutation.h:
-
-/usr/include/sys/select.h:
-
-/usr/include/c++/v1/__algorithm/move_backward.h:
 
 /usr/include/c++/v1/__algorithm/mismatch.h:
 
@@ -11759,12 +11126,6 @@ shared/CMakeFiles/netd_shared.dir/src/ethernet.cpp.o:
 /usr/include/c++/v1/__algorithm/make_projected.h:
 
 /usr/include/c++/v1/__algorithm/make_heap.h:
-
-/usr/include/c++/v1/cmath:
-
-/usr/include/c++/v1/__algorithm/lower_bound.h:
-
-/usr/include/c++/v1/__algorithm/lexicographical_compare_three_way.h:
 
 /usr/include/c++/v1/__algorithm/ranges_count.h:
 
@@ -11786,15 +11147,7 @@ shared/CMakeFiles/netd_shared.dir/src/ethernet.cpp.o:
 
 /usr/include/c++/v1/__algorithm/in_out_out_result.h:
 
-/lib/libc.so.7:
-
-/usr/include/c++/v1/__algorithm/in_in_out_result.h:
-
 /usr/include/c++/v1/__algorithm/in_found_result.h:
-
-/usr/include/c++/v1/__algorithm/ranges_next_permutation.h:
-
-/usr/include/c++/v1/__algorithm/half_positive.h:
 
 shared/CMakeFiles/netd_shared.dir/src/route.cpp.o:
 
@@ -11806,25 +11159,131 @@ shared/CMakeFiles/netd_shared.dir/src/route.cpp.o:
 
 /usr/include/c++/v1/__algorithm/fold.h:
 
-/usr/include/c++/v1/__algorithm/ranges_fill_n.h:
+/usr/include/c++/v1/__algorithm/count_if.h:
 
-/home/sq/netd/shared/include/ethernet.hpp:
+/usr/include/c++/v1/__algorithm/copy_if.h:
+
+/usr/include/c++/v1/__algorithm/binary_search.h:
+
+/usr/include/c++/v1/__algorithm/ranges_pop_heap.h:
+
+/usr/include/c++/v1/__algorithm/any_of.h:
+
+/usr/include/c++/v1/__algorithm/adjacent_find.h:
+
+/home/sq/netd/shared/src/interface/base/ether.cpp:
+
+/usr/include/xlocale/_inttypes.h:
+
+/home/sq/netd/shared/include/response.hpp:
+
+/home/sq/netd/shared/include/interface/80211.hpp:
+
+/usr/include/c++/v1/__algorithm/ranges_generate.h:
+
+/usr/include/c++/v1/__algorithm/partial_sort_copy.h:
+
+/home/sq/netd/shared/src/interface/80211.cpp:
+
+/usr/include/xlocale/_locale.h:
+
+/home/sq/netd/shared/include/interface/base/master.hpp:
+
+/usr/include/c++/v1/vector:
+
+/usr/include/c++/v1/locale.h:
+
+/usr/include/c++/v1/clocale:
+
+/usr/include/c++/v1/array:
+
+/usr/include/c++/v1/__variant/monostate.h:
+
+/usr/include/c++/v1/__utility/no_destroy.h:
+
+/usr/include/c++/v1/__algorithm/ranges_rotate_copy.h:
+
+/usr/include/c++/v1/__algorithm/ranges_equal_range.h:
+
+/usr/include/c++/v1/__type_traits/aligned_storage.h:
+
+/usr/include/c++/v1/__mutex/once_flag.h:
+
+/usr/include/c++/v1/__functional/pointer_to_binary_function.h:
+
+/usr/include/c++/v1/__memory/temp_value.h:
+
+/usr/include/c++/v1/__locale:
+
+/usr/include/c++/v1/__iterator/unreachable_sentinel.h:
+
+/usr/include/c++/v1/__iterator/sortable.h:
+
+/usr/include/c++/v1/__algorithm/ranges_max.h:
+
+/usr/include/c++/v1/__iterator/projected.h:
+
+/usr/include/c++/v1/__iterator/move_sentinel.h:
+
+/usr/include/c++/v1/__iterator/back_insert_iterator.h:
+
+/usr/include/c++/v1/__format/parser_std_format_spec.h:
+
+/usr/include/c++/v1/__format/format_to_n_result.h:
+
+/usr/include/c++/v1/__format/format_string.h:
+
+/usr/include/c++/v1/__algorithm/ranges_find_if_not.h:
+
+/usr/include/c++/v1/__format/format_parse_context.h:
+
+/usr/local/include/libyang/out.h:
+
+/usr/include/c++/v1/__format/format_arg.h:
+
+/usr/include/c++/v1/__format/extended_grapheme_cluster_table.h:
+
+/usr/include/c++/v1/__algorithm/ranges_minmax_element.h:
+
+/usr/include/c++/v1/__format/concepts.h:
+
+/usr/include/c++/v1/__format/buffer.h:
+
+/usr/include/c++/v1/__charconv/traits.h:
+
+/usr/include/c++/v1/__charconv/to_chars_result.h:
+
+/usr/include/c++/v1/__charconv/to_chars_base_10.h:
+
+/usr/include/c++/v1/__charconv/tables.h:
+
+/usr/include/c++/v1/__random/uniform_int_distribution.h:
+
+/usr/include/c++/v1/__bit/popcount.h:
+
+/usr/include/c++/v1/__bit/countl.h:
+
+/usr/include/c++/v1/__algorithm/transform.h:
+
+/usr/include/c++/v1/__algorithm/swap_ranges.h:
+
+/home/sq/netd/shared/include/exception.hpp:
+
+/usr/include/c++/v1/__algorithm/ranges_upper_bound.h:
 
 /usr/include/c++/v1/__algorithm/equal_range.h:
 
-/usr/lib/libc++.so:
+/home/sq/netd/shared/include/ethernet.hpp:
 
-/usr/include/inttypes.h:
+/usr/include/c++/v1/__algorithm/ranges_fill_n.h:
 
-/usr/include/c++/v1/__algorithm/count.h:
+/usr/include/c++/v1/__algorithm/min.h:
 
-/usr/include/c++/v1/__math/fdim.h:
+/usr/include/c++/v1/__algorithm/ranges_copy.h:
 
-/usr/include/c++/v1/__type_traits/is_unsigned.h:
+/usr/include/c++/v1/__algorithm/ranges_next_permutation.h:
 
-/usr/include/c++/v1/__algorithm/clamp.h:
-
-/usr/include/c++/v1/__algorithm/binary_search.h:
+/usr/include/c++/v1/__algorithm/half_positive.h:
 
 /usr/include/c++/v1/__bit_reference:
 
@@ -11872,10 +11331,6 @@ shared/CMakeFiles/netd_shared.dir/src/route.cpp.o:
 
 /usr/include/time.h:
 
-/usr/include/machine/_align.h:
-
-/usr/include/c++/v1/__algorithm/copy_backward.h:
-
 /usr/include/c++/v1/__algorithm/lexicographical_compare.h:
 
 /usr/include/sys/timespec.h:
@@ -11912,7 +11367,15 @@ shared/CMakeFiles/netd_shared.dir/src/route.cpp.o:
 
 /usr/include/machine/_limits.h:
 
-/usr/include/c++/v1/__algorithm/adjacent_find.h:
+/usr/include/c++/v1/__algorithm/copy_backward.h:
+
+/usr/include/machine/_align.h:
+
+/usr/lib/libc++.so:
+
+/usr/include/c++/v1/__algorithm/count.h:
+
+/usr/include/inttypes.h:
 
 /usr/include/c++/v1/wctype.h:
 
@@ -11953,12 +11416,6 @@ shared/CMakeFiles/netd_shared.dir/src/route.cpp.o:
 /usr/include/c++/v1/__exception/exception.h:
 
 /usr/include/c++/v1/cwctype:
-
-/usr/include/c++/v1/__math/inverse_hyperbolic_functions.h:
-
-/usr/include/c++/v1/__fwd/subrange.h:
-
-/usr/include/c++/v1/__algorithm/all_of.h:
 
 /usr/include/c++/v1/__functional/binary_negate.h:
 
@@ -12011,6 +11468,10 @@ shared/CMakeFiles/netd_shared.dir/src/route.cpp.o:
 /usr/include/xlocale.h:
 
 /usr/include/c++/v1/__undef_macros:
+
+/usr/include/sys/select.h:
+
+/usr/include/c++/v1/__algorithm/move_backward.h:
 
 /usr/include/c++/v1/__type_traits/is_allocator.h:
 
@@ -12162,6 +11623,8 @@ shared/CMakeFiles/netd_shared.dir/src/interface/ethernet.cpp.o:
 
 /usr/include/c++/v1/__type_traits/is_nothrow_assignable.h:
 
+/usr/include/c++/v1/__algorithm/ranges_transform.h:
+
 /usr/include/c++/v1/__type_traits/is_member_function_pointer.h:
 
 /usr/include/c++/v1/__algorithm/unique.h:
@@ -12183,6 +11646,10 @@ shared/CMakeFiles/netd_shared.dir/src/interface/ethernet.cpp.o:
 /usr/local/include/libyang/metadata.h:
 
 /usr/include/c++/v1/__type_traits/is_enum.h:
+
+/lib/libc.so.7:
+
+/usr/include/c++/v1/__algorithm/in_in_out_result.h:
 
 /usr/include/c++/v1/__type_traits/is_destructible.h:
 
@@ -12324,6 +11791,8 @@ shared/CMakeFiles/netd_shared.dir/src/interface/tun.cpp.o:
 
 /usr/include/c++/v1/__ranges/subrange.h:
 
+/usr/include/c++/v1/__algorithm/lexicographical_compare_three_way.h:
+
 /usr/include/c++/v1/__std_mbstate_t.h:
 
 /usr/include/c++/v1/__memory/voidify.h:
@@ -12361,6 +11830,8 @@ shared/CMakeFiles/netd_shared.dir/src/interface/80211.cpp.o:
 /home/sq/netd/shared/src/address.cpp:
 
 /usr/include/c++/v1/__compare/compare_partial_order_fallback.h:
+
+/home/sq/netd/shared/include/interface/bridge.hpp:
 
 /usr/include/c++/v1/__algorithm/replace_copy.h:
 
@@ -12432,6 +11903,12 @@ shared/CMakeFiles/netd_shared.dir/src/interface/80211.cpp.o:
 
 /usr/include/c++/v1/__memory/allocator_traits.h:
 
+/usr/include/c++/v1/__math/fdim.h:
+
+/usr/include/c++/v1/__algorithm/clamp.h:
+
+/usr/include/c++/v1/__type_traits/is_unsigned.h:
+
 /usr/include/c++/v1/__concepts/swappable.h:
 
 /usr/include/c++/v1/__memory/allocator_arg_t.h:
@@ -12452,6 +11929,8 @@ shared/CMakeFiles/netd_shared.dir/src/interface/80211.cpp.o:
 
 /usr/include/c++/v1/__memory/align.h:
 
+/usr/include/c++/v1/__algorithm/ranges_copy_n.h:
+
 /usr/include/c++/v1/__math/inverse_trigonometric_functions.h:
 
 /usr/include/c++/v1/errno.h:
@@ -12460,11 +11939,11 @@ shared/CMakeFiles/netd_shared.dir/src/interface/80211.cpp.o:
 
 /usr/include/c++/v1/__iterator/prev.h:
 
+/usr/include/c++/v1/__algorithm/shuffle.h:
+
 /home/sq/netd/shared/src/interface.cpp:
 
 /usr/include/c++/v1/__fwd/vector.h:
-
-/usr/include/c++/v1/__algorithm/shuffle.h:
 
 /usr/include/c++/v1/__concepts/different_from.h:
 
@@ -12495,10 +11974,6 @@ shared/CMakeFiles/netd_shared.dir/src/interface/80211.cpp.o:
 /usr/include/c++/v1/__algorithm/ranges_ends_with.h:
 
 /usr/include/c++/v1/__memory/allocator_destructor.h:
-
-/usr/include/c++/v1/__algorithm/ranges_pop_heap.h:
-
-/usr/include/c++/v1/__algorithm/any_of.h:
 
 /usr/include/c++/v1/__iterator/data.h:
 
@@ -12537,6 +12012,12 @@ shared/CMakeFiles/netd_shared.dir/src/interface/wireguard.cpp.o:
 /usr/include/c++/v1/__type_traits/is_null_pointer.h:
 
 /usr/include/c++/v1/__memory/pointer_traits.h:
+
+/usr/include/c++/v1/__math/inverse_hyperbolic_functions.h:
+
+/usr/include/c++/v1/__algorithm/all_of.h:
+
+/usr/include/c++/v1/__fwd/subrange.h:
 
 /usr/include/sys/syslimits.h:
 
@@ -12712,8 +12193,6 @@ shared/CMakeFiles/netd_shared.dir/src/vrf.cpp.o:
 
 /usr/include/c++/v1/__concepts/same_as.h:
 
-/usr/include/c++/v1/__algorithm/count_if.h:
-
 /usr/include/c++/v1/string.h:
 
 /usr/include/c++/v1/__algorithm/ranges_move.h:
@@ -12808,8 +12287,6 @@ shared/CMakeFiles/netd_shared.dir/src/vrf.cpp.o:
 
 /usr/include/c++/v1/__iterator/concepts.h:
 
-/usr/include/c++/v1/__algorithm/copy_if.h:
-
 /usr/include/c++/v1/__algorithm/max_element.h:
 
 /home/sq/netd/shared/include/interface/base/tunnel.hpp:
@@ -12827,6 +12304,10 @@ shared/CMakeFiles/netd_shared.dir/src/interface/base/ether.cpp.o:
 /usr/include/c++/v1/__compare/three_way_comparable.h:
 
 /usr/include/c++/v1/__configuration/abi.h:
+
+/usr/include/c++/v1/cmath:
+
+/usr/include/c++/v1/__algorithm/lower_bound.h:
 
 /usr/include/c++/v1/__fwd/memory.h:
 
@@ -12848,10 +12329,6 @@ shared/CMakeFiles/netd_shared.dir/src/interface/base/ether.cpp.o:
 
 /usr/include/c++/v1/__type_traits/noexcept_move_assign_container.h:
 
-/usr/include/c++/v1/__algorithm/ranges_copy.h:
-
-/usr/include/c++/v1/__algorithm/min.h:
-
 /usr/include/c++/v1/__functional/invoke.h:
 
 /usr/include/c++/v1/__iterator/empty.h:
@@ -12864,9 +12341,9 @@ shared/CMakeFiles/netd_shared.dir/src/interface/base/ether.cpp.o:
 
 /home/sq/netd/shared/src/interface/vlan.cpp:
 
-/usr/include/locale.h:
-
 /usr/include/c++/v1/__algorithm/is_sorted.h:
+
+/usr/include/locale.h:
 
 /usr/include/c++/v1/__algorithm/max.h:
 

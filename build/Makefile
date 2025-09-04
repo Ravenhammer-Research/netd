@@ -175,6 +175,19 @@ netd_shared/fast:
 .PHONY : netd_shared/fast
 
 #=============================================================================
+# Target rules for targets named netd_freebsd
+
+# Build rule for target.
+netd_freebsd: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 netd_freebsd
+.PHONY : netd_freebsd
+
+# fast build rule for target.
+netd_freebsd/fast:
+	$(MAKE) $(MAKESILENT) -f freebsd/src/CMakeFiles/netd_freebsd.dir/build.make freebsd/src/CMakeFiles/netd_freebsd.dir/build
+.PHONY : netd_freebsd/fast
+
+#=============================================================================
 # Target rules for targets named netd_server
 
 # Build rule for target.
@@ -213,6 +226,7 @@ help:
 	@echo "... list_install_components"
 	@echo "... rebuild_cache"
 	@echo "... netd_client"
+	@echo "... netd_freebsd"
 	@echo "... netd_server"
 	@echo "... netd_shared"
 .PHONY : help

@@ -25,20 +25,21 @@
  * SUCH DAMAGE.
  */
 
-#include <shared/include/master.hpp>
-#include <shared/include/base/serialization.hpp>
+#include <shared/include/interface/bridge.hpp>
 #include <libyang/tree_data.h>
 
 namespace netd {
 
-class BridgeInterface : public Master, public base::Serialization<BridgeInterface> {
-public:
-    BridgeInterface() = default;
-    virtual ~BridgeInterface() = default;
+lyd_node* BridgeInterface::toYang() const {
+    // TODO: Implement YANG serialization for bridge interfaces
+    // This should create a YANG node representing the bridge interface configuration
+    return nullptr;
+}
 
-    // Implement Serialization methods
-    lyd_node* toYang() const override { return nullptr; }
-    static BridgeInterface fromYang(const lyd_node* node) { return BridgeInterface(); }
-};
+BridgeInterface BridgeInterface::fromYang(const lyd_node* node) {
+    // TODO: Implement YANG deserialization for bridge interfaces
+    // This should parse a YANG node to extract bridge interface configuration
+    return BridgeInterface();
+}
 
 } // namespace netd

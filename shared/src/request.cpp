@@ -37,11 +37,13 @@ Request::Request(const std::string& type, const std::string& data)
 
 lyd_node* Request::toYang() const {
     // TODO: Implement YANG serialization for base requests
+    // This should create a YANG node representing the request
     return nullptr;
 }
 
 Request Request::fromYang(const lyd_node* node) {
     // TODO: Implement YANG deserialization for base requests
+    // This should parse a YANG node to extract request information
     return Request("", "");
 }
 
@@ -61,11 +63,13 @@ GetConfigRequest::GetConfigRequest(const std::string& source) : source_(source) 
 
 lyd_node* GetConfigRequest::toYang() const {
     // TODO: Implement YANG serialization for get-config requests
+    // This should create a YANG node representing the get-config request
     return nullptr;
 }
 
 GetConfigRequest GetConfigRequest::fromYang(const lyd_node* node) {
     // TODO: Implement YANG deserialization for get-config requests
+    // This should parse a YANG node to extract get-config request information
     return GetConfigRequest();
 }
 
@@ -90,11 +94,13 @@ EditConfigRequest::EditConfigRequest(const std::string& target, const std::strin
 
 lyd_node* EditConfigRequest::toYang() const {
     // TODO: Implement YANG serialization for edit-config requests
+    // This should create a YANG node representing the edit-config request
     return nullptr;
 }
 
 EditConfigRequest EditConfigRequest::fromYang(const lyd_node* node) {
     // TODO: Implement YANG deserialization for edit-config requests
+    // This should parse a YANG node to extract edit-config request information
     return EditConfigRequest();
 }
 
@@ -115,11 +121,13 @@ EditConfigRequest EditConfigRequest::fromNetconfRequest(const std::string& reque
 // CommitRequest implementations
 lyd_node* CommitRequest::toYang() const {
     // TODO: Implement YANG serialization for commit requests
+    // This should create a YANG node representing the commit request
     return nullptr;
 }
 
 CommitRequest CommitRequest::fromYang(const lyd_node* node) {
     // TODO: Implement YANG deserialization for commit requests
+    // This should parse a YANG node to extract commit request information
     return CommitRequest();
 }
 

@@ -27,17 +27,42 @@
 
 #include <iostream>
 #include <shared/include/logger.hpp>
+#include <client/include/netconf.hpp>
+#include <string>
 
 int main() {
     auto& logger = netd::Logger::getInstance();
     logger.info("NETD Client starting...");
 
-    // TODO: Initialize client components
     std::cout << "NETD Client - Network Configuration Tool" << std::endl;
-    std::cout << "Type 'help' for available commands" << std::endl;
+    std::cout << "Connecting to server..." << std::endl;
 
-    // TODO: Start interactive CLI or process command line arguments
+    // Try to connect to the NETD server
+    if (netd::connectToServer()) {
+        std::cout << "Connected to NETD server successfully!" << std::endl;
+        
+        // Test basic NETCONF operations
+        try {
+            std::cout << "Testing get-config..." << std::endl;
+            std::string response = netd::getConfig();
+            std::cout << "Response: " << response << std::endl;
+            
+            std::cout << "Testing commit..." << std::endl;
+            response = netd::commit();
+            std::cout << "Response: " << response << std::endl;
+            
+        } catch (const std::exception& e) {
+            std::cout << "Error: " << e.what() << std::endl;
+        }
+        
+        // Disconnect from server
+        netd::disconnectFromServer();
+        std::cout << "Disconnected from server" << std::endl;
+    } else {
+        std::cout << "Failed to connect to NETD server" << std::endl;
+        std::cout << "Make sure the server is running with: ./netd" << std::endl;
+    }
 
-    logger.info("NETD Client started successfully");
+    logger.info("NETD Client finished");
     return 0;
 }

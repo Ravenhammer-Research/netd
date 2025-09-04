@@ -36,11 +36,13 @@ Response::Response(const std::string& type, const std::string& data, bool succes
 
 lyd_node* Response::toYang() const {
     // TODO: Implement YANG serialization for NETCONF responses
+    // This should create a YANG node representing the response
     return nullptr;
 }
 
 Response Response::fromYang(const lyd_node* node) {
     // TODO: Implement YANG deserialization for NETCONF responses
+    // This should parse a YANG node to extract response information
     return Response("", "", false);
 }
 

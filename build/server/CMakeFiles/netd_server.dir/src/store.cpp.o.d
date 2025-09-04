@@ -426,4 +426,127 @@ server/CMakeFiles/netd_server.dir/src/store.cpp.o: \
   /usr/include/c++/v1/__memory/temporary_buffer.h \
   /usr/include/c++/v1/__memory/assume_aligned.h \
   /usr/include/c++/v1/__memory/ranges_uninitialized_algorithms.h \
-  /usr/include/c++/v1/__memory/uses_allocator_construction.h
+  /usr/include/c++/v1/__memory/uses_allocator_construction.h \
+  /home/sq/netd/shared/include/interface.hpp \
+  /home/sq/netd/shared/include/base/serialization.hpp \
+  /home/sq/netd/shared/include/vrf.hpp \
+  /home/sq/netd/shared/include/route.hpp \
+  /home/sq/netd/shared/include/address.hpp /usr/include/netinet/in.h \
+  /usr/include/machine/endian.h /usr/include/x86/endian.h \
+  /usr/include/sys/_endian.h /usr/include/sys/_sockaddr_storage.h \
+  /usr/include/netinet6/in6.h /usr/include/arpa/inet.h \
+  /home/sq/netd/shared/include/yang.hpp \
+  /usr/local/include/libyang/libyang.h \
+  /usr/local/include/libyang/ly_config.h /usr/include/sys/socket.h \
+  /usr/include/sys/_iovec.h /usr/include/sys/_timeval.h \
+  /usr/include/machine/_align.h /usr/include/x86/_align.h \
+  /usr/local/include/libyang/context.h /usr/local/include/libyang/log.h \
+  /usr/local/include/libyang/parser_schema.h \
+  /usr/local/include/libyang/tree_data.h /usr/local/include/pcre2.h \
+  /usr/include/c++/v1/inttypes.h /usr/include/inttypes.h \
+  /usr/include/machine/_inttypes.h /usr/include/x86/_inttypes.h \
+  /usr/include/sys/stdint.h /usr/include/xlocale/_inttypes.h \
+  /usr/include/time.h /usr/include/sys/_clock_id.h \
+  /usr/include/sys/timespec.h /usr/include/sys/_timespec.h \
+  /usr/include/xlocale/_time.h /usr/local/include/libyang/tree.h \
+  /usr/local/include/libyang/tree_schema.h \
+  /usr/local/include/libyang/dict.h /usr/local/include/libyang/in.h \
+  /usr/local/include/libyang/metadata.h \
+  /usr/local/include/libyang/plugins_exts.h \
+  /usr/local/include/libyang/parser_data.h \
+  /usr/local/include/libyang/plugins.h \
+  /usr/local/include/libyang/tree_edit.h \
+  /usr/local/include/libyang/out.h /usr/include/sys/types.h \
+  /usr/include/sys/_pthreadtypes.h /usr/include/sys/bitcount.h \
+  /usr/include/sys/select.h /usr/include/sys/_sigset.h \
+  /usr/local/include/libyang/printer_data.h \
+  /usr/local/include/libyang/printer_schema.h \
+  /usr/local/include/libyang/set.h \
+  /home/sq/netd/server/include/store.hpp /usr/include/c++/v1/fstream \
+  /usr/include/c++/v1/filesystem \
+  /usr/include/c++/v1/__filesystem/copy_options.h \
+  /usr/include/c++/v1/__filesystem/directory_entry.h \
+  /usr/include/c++/v1/__chrono/time_point.h \
+  /usr/include/c++/v1/__chrono/duration.h /usr/include/c++/v1/ratio \
+  /usr/include/c++/v1/__filesystem/file_status.h \
+  /usr/include/c++/v1/__filesystem/file_type.h \
+  /usr/include/c++/v1/__filesystem/perms.h \
+  /usr/include/c++/v1/__filesystem/file_time_type.h \
+  /usr/include/c++/v1/__chrono/file_clock.h \
+  /usr/include/c++/v1/__chrono/system_clock.h /usr/include/c++/v1/ctime \
+  /usr/include/c++/v1/__filesystem/filesystem_error.h \
+  /usr/include/c++/v1/__filesystem/path.h \
+  /usr/include/c++/v1/__algorithm/replace.h \
+  /usr/include/c++/v1/__algorithm/replace_copy.h \
+  /usr/include/c++/v1/iomanip /usr/include/c++/v1/istream \
+  /usr/include/c++/v1/__iterator/istreambuf_iterator.h \
+  /usr/include/c++/v1/__iterator/default_sentinel.h \
+  /usr/include/c++/v1/__ostream/basic_ostream.h \
+  /usr/include/c++/v1/__exception/operations.h \
+  /usr/include/c++/v1/__system_error/error_code.h \
+  /usr/include/c++/v1/__system_error/error_category.h \
+  /usr/include/c++/v1/__system_error/error_condition.h \
+  /usr/include/c++/v1/bitset /usr/include/c++/v1/__algorithm/count.h \
+  /usr/include/c++/v1/__algorithm/fill.h \
+  /usr/include/c++/v1/__type_traits/is_char_like_type.h \
+  /usr/include/c++/v1/ios \
+  /usr/include/c++/v1/__system_error/system_error.h \
+  /usr/include/c++/v1/__atomic/atomic.h \
+  /usr/include/c++/v1/__atomic/atomic_base.h \
+  /usr/include/c++/v1/__atomic/atomic_sync.h \
+  /usr/include/c++/v1/__atomic/contention_t.h \
+  /usr/include/c++/v1/__atomic/cxx_atomic_impl.h \
+  /usr/include/c++/v1/__atomic/to_gcc_order.h \
+  /usr/include/c++/v1/__thread/poll_with_backoff.h \
+  /usr/include/c++/v1/__chrono/high_resolution_clock.h \
+  /usr/include/c++/v1/__chrono/steady_clock.h \
+  /usr/include/c++/v1/__thread/support.h \
+  /usr/include/c++/v1/__thread/support/pthread.h \
+  /usr/include/c++/v1/__chrono/convert_to_timespec.h \
+  /usr/include/pthread.h /usr/include/sys/_sigval.h /usr/include/sched.h \
+  /usr/include/sys/sched.h /usr/include/sys/cpuset.h \
+  /usr/include/sys/_cpuset.h /usr/include/sys/_bitset.h \
+  /usr/include/sys/bitset.h \
+  /usr/include/c++/v1/__atomic/check_memory_order.h \
+  /usr/include/c++/v1/__atomic/is_always_lock_free.h \
+  /usr/include/c++/v1/locale /usr/include/c++/v1/__algorithm/reverse.h \
+  /usr/include/c++/v1/__iterator/ostreambuf_iterator.h \
+  /usr/include/c++/v1/streambuf /usr/include/nl_types.h \
+  /usr/include/c++/v1/__locale_dir/locale_base_api/bsd_locale_defaults.h \
+  /usr/include/c++/v1/__filesystem/operations.h \
+  /usr/include/c++/v1/__filesystem/perm_options.h \
+  /usr/include/c++/v1/__filesystem/space_info.h \
+  /usr/include/c++/v1/__filesystem/directory_iterator.h \
+  /usr/include/c++/v1/__filesystem/directory_options.h \
+  /usr/include/c++/v1/__filesystem/path_iterator.h \
+  /usr/include/c++/v1/__filesystem/recursive_directory_iterator.h \
+  /usr/include/c++/v1/__filesystem/u8path.h /usr/include/c++/v1/ostream \
+  /usr/include/c++/v1/__ostream/print.h /usr/include/c++/v1/format \
+  /usr/include/c++/v1/__format/container_adaptor.h \
+  /usr/include/c++/v1/__format/range_default_formatter.h \
+  /usr/include/c++/v1/__chrono/statically_widen.h \
+  /usr/include/c++/v1/__format/range_formatter.h \
+  /usr/include/c++/v1/__format/format_context.h \
+  /usr/include/c++/v1/__format/format_arg_store.h \
+  /usr/include/c++/v1/__format/format_args.h \
+  /usr/include/c++/v1/__fwd/queue.h /usr/include/c++/v1/__fwd/deque.h \
+  /usr/include/c++/v1/__fwd/stack.h \
+  /usr/include/c++/v1/__ranges/ref_view.h \
+  /usr/include/c++/v1/__format/escaped_output_table.h \
+  /usr/include/c++/v1/__format/format_functions.h \
+  /usr/include/c++/v1/__algorithm/clamp.h \
+  /usr/include/c++/v1/__format/formatter_char.h \
+  /usr/include/c++/v1/__format/write_escaped.h \
+  /usr/include/c++/v1/__algorithm/ranges_for_each.h \
+  /usr/include/c++/v1/__algorithm/in_fun_result.h \
+  /usr/include/c++/v1/__format/formatter_floating_point.h \
+  /usr/include/c++/v1/__charconv/chars_format.h \
+  /usr/include/c++/v1/__utility/to_underlying.h \
+  /usr/include/c++/v1/__charconv/to_chars_floating_point.h \
+  /usr/include/c++/v1/__format/formatter_integer.h \
+  /usr/include/c++/v1/__format/formatter_pointer.h \
+  /usr/include/c++/v1/__format/formatter_string.h \
+  /usr/include/c++/v1/__format/formatter_tuple.h \
+  /usr/include/c++/v1/print /usr/include/unistd.h \
+  /usr/include/c++/v1/sstream /usr/include/c++/v1/map \
+  /usr/include/c++/v1/__tree

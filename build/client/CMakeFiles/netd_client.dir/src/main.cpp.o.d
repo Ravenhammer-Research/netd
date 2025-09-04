@@ -501,4 +501,5 @@ client/CMakeFiles/netd_client.dir/src/main.cpp.o: \
   /usr/include/c++/v1/__memory/temporary_buffer.h \
   /usr/include/c++/v1/__memory/assume_aligned.h \
   /usr/include/c++/v1/__memory/ranges_uninitialized_algorithms.h \
-  /usr/include/c++/v1/__memory/uses_allocator_construction.h
+  /usr/include/c++/v1/__memory/uses_allocator_construction.h \
+  /home/sq/netd/client/include/netconf.hpp

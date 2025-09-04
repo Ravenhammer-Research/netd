@@ -13,6 +13,8 @@ set(CMAKE_MAKEFILE_DEPENDS
   "/home/sq/netd/client/CMakeLists.txt"
   "/home/sq/netd/client/parser/CMakeLists.txt"
   "/home/sq/netd/client/src/CMakeLists.txt"
+  "/home/sq/netd/freebsd/CMakeLists.txt"
+  "/home/sq/netd/freebsd/src/CMakeLists.txt"
   "/home/sq/netd/server/CMakeLists.txt"
   "/home/sq/netd/server/src/CMakeLists.txt"
   "/home/sq/netd/shared/CMakeLists.txt"
@@ -60,6 +62,8 @@ set(CMAKE_MAKEFILE_PRODUCTS
   "shared/CMakeFiles/CMakeDirectoryInformation.cmake"
   "shared/src/CMakeFiles/CMakeDirectoryInformation.cmake"
   "shared/src/interface/CMakeFiles/CMakeDirectoryInformation.cmake"
+  "freebsd/CMakeFiles/CMakeDirectoryInformation.cmake"
+  "freebsd/src/CMakeFiles/CMakeDirectoryInformation.cmake"
   "server/CMakeFiles/CMakeDirectoryInformation.cmake"
   "server/src/CMakeFiles/CMakeDirectoryInformation.cmake"
   "client/CMakeFiles/CMakeDirectoryInformation.cmake"
@@ -70,6 +74,7 @@ set(CMAKE_MAKEFILE_PRODUCTS
 # Dependency information for all targets:
 set(CMAKE_DEPEND_INFO_FILES
   "shared/CMakeFiles/netd_shared.dir/DependInfo.cmake"
+  "freebsd/src/CMakeFiles/netd_freebsd.dir/DependInfo.cmake"
   "server/CMakeFiles/netd_server.dir/DependInfo.cmake"
   "client/CMakeFiles/netd_client.dir/DependInfo.cmake"
   )

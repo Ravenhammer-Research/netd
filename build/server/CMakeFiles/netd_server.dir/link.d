@@ -5,9 +5,11 @@ netd-1.0.0: \
  CMakeFiles/netd_server.dir/src/main.cpp.o \
  CMakeFiles/netd_server.dir/src/netconf.cpp.o \
  CMakeFiles/netd_server.dir/src/store.cpp.o \
- ../shared/libnetd_shared.so.1.0.0 \
+ ../freebsd/src/libnetd_freebsd.a \
  /usr/local/lib/libyang.so \
  /usr/local/lib/libnetconf2.so \
+ /usr/lib/libpthread.so \
+ ../shared/libnetd_shared.so.1.0.0 \
  /usr/lib/libc++.so \
  /lib/libc++.so.1 \
  /usr/lib/libcxxrt.so \
@@ -32,11 +34,15 @@ CMakeFiles/netd_server.dir/src/netconf.cpp.o:
 
 CMakeFiles/netd_server.dir/src/store.cpp.o:
 
-../shared/libnetd_shared.so.1.0.0:
+../freebsd/src/libnetd_freebsd.a:
 
 /usr/local/lib/libyang.so:
 
 /usr/local/lib/libnetconf2.so:
+
+/usr/lib/libpthread.so:
+
+../shared/libnetd_shared.so.1.0.0:
 
 /usr/lib/libc++.so:
 
