@@ -31,10 +31,7 @@
 
 namespace netd {
 
-lyd_node* BridgeInterface::toYang() const {
-    // Create YANG context and serialize bridge interface
-    auto yang = createYang();
-    ly_ctx* ctx = yang->getContext();
+lyd_node* BridgeInterface::toYang(ly_ctx* ctx) const {
     
     if (!ctx) {
         return nullptr;
@@ -79,7 +76,7 @@ lyd_node* BridgeInterface::toYang() const {
     return interfaces;
 }
 
-BridgeInterface BridgeInterface::fromYang(const lyd_node* node) {
+BridgeInterface BridgeInterface::fromYang(const ly_ctx* ctx, const lyd_node* node) {
     // TODO: Implement YANG deserialization for bridge interfaces
     // This should parse a YANG node to extract bridge interface configuration
     return BridgeInterface();

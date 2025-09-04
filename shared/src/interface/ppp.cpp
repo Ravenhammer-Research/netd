@@ -39,10 +39,7 @@ public:
     virtual ~PppInterface() = default;
 
     // Implement Serialization methods
-    lyd_node* toYang() const override {
-        // Create YANG context and serialize PPP interface
-        auto yang = createYang();
-        ly_ctx* ctx = yang->getContext();
+    lyd_node* toYang(ly_ctx* ctx) const override {
         
         if (!ctx) {
             return nullptr;
@@ -87,7 +84,7 @@ public:
         return interfaces;
     }
     
-    static PppInterface fromYang(const lyd_node* node) {
+    static PppInterface fromYang(const ly_ctx* ctx, const lyd_node* node) {
         // TODO: Implement YANG deserialization for PPP interfaces
         return PppInterface();
     }

@@ -26,11 +26,26 @@
  */
 
 #include <shared/include/logger.hpp>
+#include <iostream>
+#include <iomanip>
 
 namespace netd {
 
 Logger& Logger::getInstance() {
     static Logger instance;
+    if (!instance.callback_) {
+        // Set up default console logging
+        instance.setCallback([](LogLevel level, const std::string& message) {
+            const char* levelStr = "";
+            switch (level) {
+                case LogLevel::DEBUG:   levelStr = "DEBUG"; break;
+                case LogLevel::INFO:    levelStr = "INFO "; break;
+                case LogLevel::WARNING: levelStr = "WARN "; break;
+                case LogLevel::ERROR:   levelStr = "ERROR"; break;
+            }
+            std::cerr << "[" << levelStr << "] " << message << std::endl;
+        });
+    }
     return instance;
 }
 

@@ -40,8 +40,8 @@ public:
     virtual ~Interface() = default;
 
     // Pure virtual methods from Serialization
-    lyd_node* toYang() const override = 0;
-    static Interface fromYang(const lyd_node* node);
+    lyd_node* toYang(ly_ctx* ctx) const override = 0;
+    static Interface fromYang(const ly_ctx* ctx, const lyd_node* node);
 
     // Basic interface properties
     virtual std::string getName() const = 0;

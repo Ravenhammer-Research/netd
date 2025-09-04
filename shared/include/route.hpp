@@ -42,8 +42,8 @@ public:
     virtual ~Route() = default;
 
     // Pure virtual methods from Serialization
-    lyd_node* toYang() const override = 0;
-    static Route fromYang(const lyd_node* node);
+    lyd_node* toYang(ly_ctx* ctx) const override = 0;
+    static Route fromYang(const ly_ctx* ctx, const lyd_node* node);
 
     // Route properties
     virtual std::shared_ptr<Address> getDestination() const = 0;

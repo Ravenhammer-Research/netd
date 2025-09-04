@@ -48,7 +48,9 @@ std::string Request::generateMessageId() {
 }
 
 RequestType Request::getRequestType() const {
-    if (type_ == "get-config") {
+    if (type_ == "get") {
+        return RequestType::GET;
+    } else if (type_ == "get-config") {
         return RequestType::GET_CONFIG;
     } else if (type_ == "edit-config") {
         return RequestType::EDIT_CONFIG;
@@ -59,24 +61,8 @@ RequestType Request::getRequestType() const {
     }
 }
 
-std::unique_ptr<Request> Request::fromString(const std::string& request) {
-    // TODO: Parse NETCONF XML request and convert to YANG, then to Request object
-    // For now, create a simple request based on content
-    if (request.find("get-config") != std::string::npos) {
-        return std::make_unique<GetConfigRequest>("running");
-    } else if (request.find("edit-config") != std::string::npos) {
-        return std::make_unique<EditConfigRequest>("candidate", "");
-    } else if (request.find("commit") != std::string::npos) {
-        return std::make_unique<CommitRequest>();
-    } else {
-        return std::make_unique<GetConfigRequest>("running"); // Default
-    }
-}
 
-lyd_node* Request::toYang() const {
-    // Create YANG context and serialize request
-    auto yang = createYang();
-    ly_ctx* ctx = yang->getContext();
+lyd_node* Request::toYang(ly_ctx* ctx) const {
     
     if (!ctx) {
         return nullptr;
@@ -86,20 +72,20 @@ lyd_node* Request::toYang() const {
     lyd_node* rpcNode = nullptr;
     
     // Create the RPC container
-    if (lyd_new_path(nullptr, ctx, "/ietf-netconf:rpc", nullptr, 0, &rpcNode) != LY_SUCCESS) {
+    if (lyd_new_path(nullptr, ctx, "/nc:rpc", nullptr, 0, &rpcNode) != LY_SUCCESS) {
         return nullptr;
     }
     
     // Set message ID
     lyd_node* messageIdNode = nullptr;
-    if (lyd_new_path(rpcNode, ctx, "/ietf-netconf:rpc/message-id", messageId_.c_str(), 0, &messageIdNode) != LY_SUCCESS) {
+    if (lyd_new_path(rpcNode, ctx, "/nc:rpc/message-id", messageId_.c_str(), 0, &messageIdNode) != LY_SUCCESS) {
         lyd_free_tree(rpcNode);
         return nullptr;
     }
     
     // Create the specific RPC operation based on type
     lyd_node* operationNode = nullptr;
-    std::string operationPath = "/ietf-netconf:rpc/" + type_;
+    std::string operationPath = "/nc:rpc/" + type_;
     if (lyd_new_path(rpcNode, ctx, operationPath.c_str(), nullptr, 0, &operationNode) != LY_SUCCESS) {
         lyd_free_tree(rpcNode);
         return nullptr;
@@ -108,7 +94,7 @@ lyd_node* Request::toYang() const {
     return rpcNode;
 }
 
-Request Request::fromYang(const lyd_node* node) {
+Request Request::fromYang(const ly_ctx* ctx, const lyd_node* node) {
     // Parse NETCONF RPC node to extract request information
     std::string type = "";
     std::string data = "";
@@ -135,13 +121,18 @@ Request Request::fromYang(const lyd_node* node) {
     return Request(type, data, messageId);
 }
 
+
 // GetConfigRequest implementations
-GetConfigRequest::GetConfigRequest(const std::string& source) 
+GetConfigRequest::GetConfigRequest(const std::string& source)
     : Request("get-config", source), source_(source) {
 }
 
+GetConfigRequest::GetConfigRequest(const std::string& source, const std::string& filter)
+    : Request("get-config", source), source_(source), filter_(filter) {
+}
 
-GetConfigRequest GetConfigRequest::fromYang(const lyd_node* node) {
+
+GetConfigRequest GetConfigRequest::fromYang(const ly_ctx* ctx, const lyd_node* node) {
     // Parse get-config specific data
     std::string source = "running";
     std::string messageId = "";
@@ -176,7 +167,7 @@ EditConfigRequest::EditConfigRequest(const std::string& target, const std::strin
 }
 
 
-EditConfigRequest EditConfigRequest::fromYang(const lyd_node* node) {
+EditConfigRequest EditConfigRequest::fromYang(const ly_ctx* ctx, const lyd_node* node) {
     // Parse edit-config specific data
     std::string target = "candidate";
     std::string config = "";
@@ -211,7 +202,7 @@ EditConfigRequest EditConfigRequest::fromYang(const lyd_node* node) {
 
 // CommitRequest implementations
 
-CommitRequest CommitRequest::fromYang(const lyd_node* node) {
+CommitRequest CommitRequest::fromYang(const ly_ctx* ctx, const lyd_node* node) {
     // Parse commit request - just need to extract message ID
     std::string messageId = "";
     
@@ -225,6 +216,16 @@ CommitRequest CommitRequest::fromYang(const lyd_node* node) {
     }
     
     return CommitRequest();
+}
+
+// GetRequest implementations
+GetRequest::GetRequest(const std::string& filter)
+    : Request("get", filter), filter_(filter) {
+}
+
+GetRequest GetRequest::fromYang(const ly_ctx* ctx, const lyd_node* node) {
+    // TODO: Implement get request parsing from YANG
+    return GetRequest("");
 }
 
 } // namespace netd

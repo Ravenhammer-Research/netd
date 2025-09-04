@@ -49,8 +49,8 @@ public:
     virtual std::string getTapMode() const { return "tap"; }
 
     // YANG serialization
-    lyd_node* toYang() const override;
-    static TapInterface fromYang(const lyd_node* node);
+    lyd_node* toYang(ly_ctx* ctx) const override;
+    static TapInterface fromYang(const ly_ctx* ctx, const lyd_node* node);
 };
 
 } // namespace netd

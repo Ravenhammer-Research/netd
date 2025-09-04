@@ -31,10 +31,7 @@
 
 namespace netd {
 
-lyd_node* Ieee80211Interface::toYang() const {
-    // Create YANG context and serialize wireless interface
-    auto yang = createYang();
-    ly_ctx* ctx = yang->getContext();
+lyd_node* Ieee80211Interface::toYang(ly_ctx* ctx) const {
     
     if (!ctx) {
         return nullptr;
@@ -79,7 +76,7 @@ lyd_node* Ieee80211Interface::toYang() const {
     return interfaces;
 }
 
-Ieee80211Interface Ieee80211Interface::fromYang(const lyd_node* node) {
+Ieee80211Interface Ieee80211Interface::fromYang(const ly_ctx* ctx, const lyd_node* node) {
     // TODO: Implement YANG deserialization for wireless interfaces
     // This should parse a YANG node to extract wireless interface configuration
     return Ieee80211Interface();

@@ -37,9 +37,9 @@
 
 namespace netd {
 
-class YangImpl : public Yang {
+class Yang : public YangAbstract {
 public:
-    YangImpl() : ctx_(nullptr) {
+    Yang() : ctx_(nullptr) {
         // Initialize libyang context
         ly_ctx_new(nullptr, 0, &ctx_);
         if (!ctx_) {
@@ -48,11 +48,19 @@ public:
             throw std::runtime_error("Failed to create libyang context");
         }
         
-        // Load standard IETF schemas
+        // Set up search paths for YANG modules
+        ly_ctx_set_searchdir(ctx_, YANG_DIR "/standard/ietf/RFC");
+        ly_ctx_set_searchdir(ctx_, YANG_DIR "/standard/iana/");
+        ly_ctx_set_searchdir(ctx_, "/usr/local/share/yang/modules/libyang");
+        ly_ctx_set_searchdir(ctx_, "/usr/local/share/yang/modules/libnetconf2");
+        ly_ctx_set_searchdir(ctx_, "/usr/share/yang/modules/libyang");
+        ly_ctx_set_searchdir(ctx_, "/usr/share/yang/modules/libnetconf2");
+        
+        // Load standard schemas
         loadStandardSchemas();
     }
     
-    virtual ~YangImpl() {
+    virtual ~Yang() {
         if (ctx_) {
             ly_ctx_destroy(ctx_);
         }
@@ -80,6 +88,36 @@ public:
         logger.info("Loaded YANG schema: " + schemaPath);
         return true;
     }
+    
+    bool loadSchemaByName(const std::string& name, const std::string& revision = "") override {
+        auto& logger = Logger::getInstance();
+        
+        if (!ctx_) {
+            logger.error("YANG context not initialized");
+            return false;
+        }
+        
+        // Search for the schema file in search paths
+        char* localfile = nullptr;
+        LYS_INFORMAT format;
+        const char* const* searchpaths = ly_ctx_get_searchdirs(ctx_);
+        if (lys_search_localfile(searchpaths, 0, name.c_str(), revision.empty() ? nullptr : revision.c_str(), &localfile, &format) != LY_SUCCESS || !localfile) {
+            logger.error("Failed to find YANG schema: " + name);
+            return false;
+        }
+        
+        // Load the found schema
+        struct lys_module* module = nullptr;
+        if (lys_parse_path(ctx_, localfile, format, &module) != LY_SUCCESS) {
+            logger.error("Failed to load YANG schema: " + std::string(localfile));
+            free(localfile);
+            return false;
+        }
+        
+        logger.info("Loaded YANG schema: " + std::string(localfile));
+        free(localfile);
+        return true;
+    }
 
 private:
     ly_ctx* ctx_;
@@ -87,25 +125,31 @@ private:
     void loadStandardSchemas() {
         auto& logger = Logger::getInstance();
         
-        // Load standard IETF schemas that NETD depends on
-        std::vector<std::string> standardSchemas = {
-            "yang/standard/ietf/RFC/ietf-interfaces@2018-02-20.yang",
-            "yang/standard/ietf/RFC/ietf-routing@2018-03-13.yang", 
-            "yang/standard/ietf/RFC/ietf-ip@2018-02-22.yang",
-            "yang/standard/ietf/RFC/ietf-network-instance@2019-01-21.yang",
-            "yang/standard/iana/RFC/iana-if-type@2014-05-08.yang"
+        // Load standard IETF schemas by name
+        std::vector<std::pair<std::string, std::string>> standardSchemas = {
+            {"ietf-netconf-acm", "2018-02-14"},
+            {"ietf-inet-types", "2013-07-15"},
+            {"ietf-yang-types", "2013-07-15"},
+            {"ietf-netconf", "2013-09-29"},
+            {"ietf-tcp-common", "2023-12-28"},
+            {"ietf-tcp-server", "2023-12-28"},
+            {"ietf-tls-common", "2023-12-28"},
+            {"ietf-ssh-common", "2023-12-28"},
+            {"ietf-ssh-server", "2023-12-28"},
+            {"ietf-netconf-server", "2023-12-28"}
         };
         
         for (const auto& schema : standardSchemas) {
-            if (!loadSchema(schema)) {
-                logger.warning("Failed to load standard schema: " + schema);
+            if (!loadSchemaByName(schema.first, schema.second)) {
+                logger.warning("Failed to load standard schema: " + schema.first + "@" + schema.second);
             }
         }
     }
+    
 };
 
 // Static utility functions
-std::string Yang::yangToXml(const lyd_node* node) {
+std::string YangAbstract::yangToXml(const lyd_node* node) {
     if (!node) {
         return "";
     }
@@ -120,7 +164,7 @@ std::string Yang::yangToXml(const lyd_node* node) {
     return result;
 }
 
-std::string Yang::yangToJson(const lyd_node* node) {
+std::string YangAbstract::yangToJson(const lyd_node* node) {
     if (!node) {
         return "";
     }
@@ -135,7 +179,7 @@ std::string Yang::yangToJson(const lyd_node* node) {
     return result;
 }
 
-lyd_node* Yang::xmlToYang(ly_ctx* ctx, const std::string& xml) {
+lyd_node* YangAbstract::xmlToYang(ly_ctx* ctx, const std::string& xml) {
     if (!ctx || xml.empty()) {
         return nullptr;
     }
@@ -148,7 +192,7 @@ lyd_node* Yang::xmlToYang(ly_ctx* ctx, const std::string& xml) {
     return node;
 }
 
-lyd_node* Yang::jsonToYang(ly_ctx* ctx, const std::string& json) {
+lyd_node* YangAbstract::jsonToYang(ly_ctx* ctx, const std::string& json) {
     if (!ctx || json.empty()) {
         return nullptr;
     }
@@ -162,8 +206,8 @@ lyd_node* Yang::jsonToYang(ly_ctx* ctx, const std::string& json) {
 }
 
 // Factory function to create Yang instance
-std::unique_ptr<Yang> createYang() {
-    return std::make_unique<YangImpl>();
+std::unique_ptr<YangAbstract> createYang() {
+    return std::make_unique<Yang>();
 }
 
 } // namespace netd

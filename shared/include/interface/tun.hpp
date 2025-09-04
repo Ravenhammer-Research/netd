@@ -49,8 +49,8 @@ public:
     virtual std::string getTunMode() const { return "tun"; }
 
     // YANG serialization
-    lyd_node* toYang() const override;
-    static TunInterface fromYang(const lyd_node* node);
+    lyd_node* toYang(ly_ctx* ctx) const override;
+    static TunInterface fromYang(const ly_ctx* ctx, const lyd_node* node);
 };
 
 } // namespace netd

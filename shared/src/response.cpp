@@ -39,10 +39,7 @@ Response::Response(const std::string& messageId, const std::string& data, bool s
     : messageId_(messageId), data_(data), success_(success) {
 }
 
-lyd_node* Response::toYang() const {
-    // Create YANG context and serialize response
-    auto yang = createYang();
-    ly_ctx* ctx = yang->getContext();
+lyd_node* Response::toYang(ly_ctx* ctx) const {
     
     if (!ctx) {
         return nullptr;
@@ -52,13 +49,13 @@ lyd_node* Response::toYang() const {
     lyd_node* rpcReplyNode = nullptr;
     
     // Create the RPC reply container
-    if (lyd_new_path(nullptr, ctx, "/ietf-netconf:rpc-reply", nullptr, 0, &rpcReplyNode) != LY_SUCCESS) {
+    if (lyd_new_path(nullptr, ctx, "/nc:rpc-reply", nullptr, 0, &rpcReplyNode) != LY_SUCCESS) {
         return nullptr;
     }
     
     // Set message ID
     lyd_node* messageIdNode = nullptr;
-    if (lyd_new_path(rpcReplyNode, ctx, "/ietf-netconf:rpc-reply/message-id", messageId_.c_str(), 0, &messageIdNode) != LY_SUCCESS) {
+    if (lyd_new_path(rpcReplyNode, ctx, "/nc:rpc-reply/message-id", messageId_.c_str(), 0, &messageIdNode) != LY_SUCCESS) {
         lyd_free_tree(rpcReplyNode);
         return nullptr;
     }
@@ -67,14 +64,14 @@ lyd_node* Response::toYang() const {
         if (!data_.empty()) {
             // Add data node for successful responses with data
             lyd_node* dataNode = nullptr;
-            if (lyd_new_path(rpcReplyNode, ctx, "/ietf-netconf:rpc-reply/data", nullptr, 0, &dataNode) != LY_SUCCESS) {
+            if (lyd_new_path(rpcReplyNode, ctx, "/nc:rpc-reply/data", nullptr, 0, &dataNode) != LY_SUCCESS) {
                 lyd_free_tree(rpcReplyNode);
                 return nullptr;
             }
         } else {
             // Add ok node for successful responses without data
             lyd_node* okNode = nullptr;
-            if (lyd_new_path(rpcReplyNode, ctx, "/ietf-netconf:rpc-reply/ok", nullptr, 0, &okNode) != LY_SUCCESS) {
+            if (lyd_new_path(rpcReplyNode, ctx, "/nc:rpc-reply/ok", nullptr, 0, &okNode) != LY_SUCCESS) {
                 lyd_free_tree(rpcReplyNode);
                 return nullptr;
             }
@@ -82,7 +79,7 @@ lyd_node* Response::toYang() const {
     } else {
         // Add rpc-error node for failed responses
         lyd_node* errorNode = nullptr;
-        if (lyd_new_path(rpcReplyNode, ctx, "/ietf-netconf:rpc-reply/rpc-error", nullptr, 0, &errorNode) != LY_SUCCESS) {
+        if (lyd_new_path(rpcReplyNode, ctx, "/nc:rpc-reply/rpc-error", nullptr, 0, &errorNode) != LY_SUCCESS) {
             lyd_free_tree(rpcReplyNode);
             return nullptr;
         }
@@ -91,7 +88,7 @@ lyd_node* Response::toYang() const {
     return rpcReplyNode;
 }
 
-Response Response::fromYang(const lyd_node* node) {
+Response Response::fromYang(const ly_ctx* ctx, const lyd_node* node) {
     // Parse NETCONF RPC reply node to extract response information
     std::string messageId = "";
     std::string data = "";

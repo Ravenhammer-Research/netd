@@ -34,13 +34,13 @@ Address::Address(const std::string& type, const std::string& data)
     : type_(type), data_(data) {
 }
 
-lyd_node* Address::toYang() const {
+lyd_node* Address::toYang(ly_ctx* ctx) const {
     // Base Address class doesn't have specific YANG representation
     // This should be overridden by concrete classes
     return nullptr;
 }
 
-Address Address::fromYang(const lyd_node* node) {
+Address Address::fromYang(const ly_ctx* ctx, const lyd_node* node) {
     // Base Address class doesn't have specific YANG representation
     // This should be overridden by concrete classes
     return Address("", "");
@@ -51,13 +51,13 @@ IPv4Address::IPv4Address(uint32_t addr, uint8_t prefix)
     : address_(addr), prefixLength_(prefix) {
 }
 
-lyd_node* IPv4Address::toYang() const {
+lyd_node* IPv4Address::toYang(ly_ctx* ctx) const {
     // TODO: Implement YANG serialization for IPv4 addresses
     // This should create a YANG node representing the IPv4 address
     return nullptr;
 }
 
-IPv4Address IPv4Address::fromYang(const lyd_node* node) {
+IPv4Address IPv4Address::fromYang(const ly_ctx* ctx, const lyd_node* node) {
     // TODO: Implement YANG deserialization for IPv4 addresses
     // This should parse a YANG node to extract IPv4 address information
     return IPv4Address();
@@ -81,13 +81,13 @@ IPv6Address::IPv6Address(const uint8_t addr[16], uint8_t prefix)
     setAddress(addr);
 }
 
-lyd_node* IPv6Address::toYang() const {
+lyd_node* IPv6Address::toYang(ly_ctx* ctx) const {
     // TODO: Implement YANG serialization for IPv6 addresses
     // This should create a YANG node representing the IPv6 address
     return nullptr;
 }
 
-IPv6Address IPv6Address::fromYang(const lyd_node* node) {
+IPv6Address IPv6Address::fromYang(const ly_ctx* ctx, const lyd_node* node) {
     // TODO: Implement YANG deserialization for IPv6 addresses
     // This should parse a YANG node to extract IPv6 address information
     return IPv6Address();

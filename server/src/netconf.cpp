@@ -1,285 +1,250 @@
-/*
- * Copyright (c) 2024 Paige Thompson / Ravenhammer Research (paige@paige.bio)
- * 
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
- */
-
-#include <shared/include/logger.hpp>
+#include <libnetconf2/session_server.h>
+#include <libnetconf2/messages_server.h>
+#include <libnetconf2/netconf.h>
+#include <libnetconf2/server_config.h>
+#include <shared/include/yang.hpp>
 #include <shared/include/request.hpp>
 #include <shared/include/response.hpp>
-#include <server/include/store.hpp>
-#include <sys/socket.h>
-#include <sys/un.h>
+#include <shared/include/logger.hpp>
+#include <memory>
+#include <string>
+#include <signal.h>
 #include <unistd.h>
-#include <cstring>
-#include <stdexcept>
-#include <thread>
-#include <vector>
 
 namespace netd {
 
 class NetconfServer {
+private:
+    std::unique_ptr<YangAbstract> yang_;
+    struct ly_ctx* serverCtx_;
+    struct nc_pollsession* ps_;
+    bool running_;
+    std::string socketPath_;
+
 public:
-    NetconfServer() : socketFd_(-1), running_(false) {}
-    
-    ~NetconfServer() {
-        if (running_) {
-            stop();
-        }
+    NetconfServer() : serverCtx_(nullptr), ps_(nullptr), running_(false) {
+        yang_ = createYang();
     }
 
-    bool start(const std::string& socketPath = "/var/run/netd.sock") {
+    ~NetconfServer() {
+        stop();
+    }
+
+    bool start(const std::string& socketPath) {
         auto& logger = Logger::getInstance();
         
-        // Create Unix domain socket
-        socketFd_ = socket(AF_UNIX, SOCK_STREAM, 0);
-        if (socketFd_ == -1) {
-            logger.error("Failed to create socket: " + std::string(strerror(errno)));
+        socketPath_ = socketPath;
+        
+        // Create a libyang context
+        // Use the existing YANG context from yang_ object
+        serverCtx_ = yang_->getContext();
+
+        // Implement the base NETCONF modules
+        if (nc_server_init_ctx(&serverCtx_) != 0) {
+            logger.error("Failed to initialize context");
             return false;
         }
 
-        // Set socket options
-        int opt = 1;
-        if (setsockopt(socketFd_, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) == -1) {
-            logger.error("Failed to set socket options: " + std::string(strerror(errno)));
-            close(socketFd_);
-            socketFd_ = -1;
+        // Load all required modules for configuration
+        if (nc_server_config_load_modules(&serverCtx_) != 0) {
+            logger.error("Failed to load server configuration modules");
             return false;
         }
 
-        struct sockaddr_un addr;
-        memset(&addr, 0, sizeof(addr));
-        addr.sun_family = AF_UNIX;
-        strncpy(addr.sun_path, socketPath.c_str(), sizeof(addr.sun_path) - 1);
-
-        // Remove existing socket file if it exists
-        unlink(socketPath.c_str());
-
-        if (bind(socketFd_, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
-            logger.error("Failed to bind socket: " + std::string(strerror(errno)));
-            close(socketFd_);
-            socketFd_ = -1;
+        // Initialize the server
+        if (nc_server_init() != 0) {
+            logger.error("Failed to initialize libnetconf2 server");
             return false;
         }
 
-        if (listen(socketFd_, 5) == -1) {
-            logger.error("Failed to listen on socket: " + std::string(strerror(errno)));
-            close(socketFd_);
-            socketFd_ = -1;
+        // Create pollsession for managing sessions
+        ps_ = nc_ps_new();
+        if (!ps_) {
+            logger.error("Failed to create pollsession");
+            nc_server_destroy();
             return false;
         }
+
+        // Add Unix socket endpoint using the old API (this version doesn't have the new endpoint functions)
+        if (nc_server_add_endpt_unix_socket_listen("netd", socketPath.c_str(), 0666, -1, -1) != 0) {
+            logger.error("Failed to add Unix socket endpoint: " + socketPath);
+            nc_ps_free(ps_);
+            nc_server_destroy();
+            return false;
+        }
+
+        // Set up RPC callbacks
+        nc_set_global_rpc_clb(globalRpcCallback);
 
         running_ = true;
         logger.info("NETCONF server started on " + socketPath);
-        
-        // Start listening thread
-        listenThread_ = std::thread(&NetconfServer::listenLoop, this);
-        
         return true;
     }
 
     void stop() {
         if (!running_) return;
         
-        running_ = false;
-        
-        // Close socket to unblock accept
-        if (socketFd_ != -1) {
-            close(socketFd_);
-            socketFd_ = -1;
-        }
-        
-        // Wait for listen thread to finish
-        if (listenThread_.joinable()) {
-            listenThread_.join();
-        }
-        
         auto& logger = Logger::getInstance();
+        running_ = false;
+
+        if (ps_) {
+            nc_ps_clear(ps_, 1, nullptr);  // Free all sessions
+            nc_ps_free(ps_);
+            ps_ = nullptr;
+        }
+
+        nc_server_destroy();
+        // Don't destroy serverCtx_ since it's owned by yang_ object
+        serverCtx_ = nullptr;
         logger.info("NETCONF server stopped");
     }
 
-    bool isRunning() const {
-        return running_;
+    void run() {
+        auto& logger = Logger::getInstance();
+        logger.info("Starting server main loop");
+        
+        while (running_) {
+            int no_new_sessions = 0;
+            
+            // Try to accept new NETCONF sessions on all configured endpoints
+            struct nc_session* newSession = nullptr;
+            NC_MSG_TYPE msgType = nc_accept(0, serverCtx_, &newSession);  // Non-blocking
+            
+            switch (msgType) {
+            case NC_MSG_HELLO:
+                logger.info("New session accepted");
+                if (nc_ps_add_session(ps_, newSession) != 0) {
+                    logger.error("Failed to add session to poll");
+                    nc_session_free(newSession, nullptr);
+                }
+                break;
+                
+            case NC_MSG_WOULDBLOCK:
+                no_new_sessions = 1;
+                break;
+                
+            case NC_MSG_BAD_HELLO:
+                logger.error("Bad hello message received");
+                if (newSession) {
+                    nc_session_free(newSession, nullptr);
+                }
+                break;
+                
+            case NC_MSG_ERROR:
+                logger.error("Error accepting new session");
+                if (newSession) {
+                    nc_session_free(newSession, nullptr);
+                }
+                break;
+                
+            default:
+                logger.debug("nc_accept returned: " + std::to_string(msgType));
+                break;
+            }
+            
+            // Poll all sessions and process events
+            struct nc_session* session = nullptr;
+            int ret = nc_ps_poll(ps_, 0, &session);  // Non-blocking
+            
+            if (ret & NC_PSPOLL_ERROR) {
+                logger.error("Polling error occurred");
+                break;
+            }
+            
+            if (ret & NC_PSPOLL_SESSION_TERM) {
+                logger.info("Session terminated");
+                if (session) {
+                    nc_ps_del_session(ps_, session);
+                    nc_session_free(session, nullptr);
+                }
+            }
+            
+            if (ret & NC_PSPOLL_SESSION_ERROR) {
+                logger.error("Session error occurred");
+                if (session) {
+                    nc_ps_del_session(ps_, session);
+                    nc_session_free(session, nullptr);
+                }
+            }
+            
+            // Prevent active waiting by sleeping when no activity
+            if (no_new_sessions && (ret & (NC_PSPOLL_TIMEOUT | NC_PSPOLL_NOSESSIONS))) {
+                usleep(10000);  // 10ms sleep
+            }
+        }
     }
 
 private:
-    void listenLoop() {
+    static struct nc_server_reply* globalRpcCallback(struct lyd_node* rpc, struct nc_session* session) {
         auto& logger = Logger::getInstance();
         
-        while (running_) {
-            struct sockaddr_un clientAddr;
-            socklen_t clientAddrLen = sizeof(clientAddr);
-            
-            int clientFd = accept(socketFd_, (struct sockaddr*)&clientAddr, &clientAddrLen);
-            if (clientFd == -1) {
-                if (running_) {
-                    logger.error("Failed to accept connection: " + std::string(strerror(errno)));
-                }
-                continue;
-            }
-
-            logger.info("Client connected");
-            
-            // Handle client in a separate thread
-            std::thread clientThread(&NetconfServer::handleClient, this, clientFd);
-            clientThread.detach();
+        // Parse the RPC request
+        Request request = Request::fromYang(nc_session_get_ctx(session), rpc);
+        logger.info("Processing RPC: " + request.getType());
+        
+        // Create appropriate response based on request type
+        if (request.getType() == "get") {
+            return handleGetRequest(request, session);
+        } else if (request.getType() == "get-config") {
+            return handleGetConfigRequest(request, session);
+        } else if (request.getType() == "edit-config") {
+            return handleEditConfigRequest(request, session);
+        } else if (request.getType() == "close-session") {
+            return nc_server_reply_ok();
+        } else {
+            // Unsupported operation
+            struct lyd_node* err = nc_err(nc_session_get_ctx(session), NC_ERR_OP_NOT_SUPPORTED);
+            return nc_server_reply_err(err);
         }
     }
 
-    void handleClient(int clientFd) {
+    static struct nc_server_reply* handleGetRequest(const Request& request, struct nc_session* session) {
         auto& logger = Logger::getInstance();
         
-        try {
-            while (running_) {
-                // Receive request
-                char buffer[4096];
-                ssize_t received = recv(clientFd, buffer, sizeof(buffer) - 1, 0);
-                if (received <= 0) {
-                    break;
-                }
-
-                buffer[received] = '\0';
-                std::string request(buffer);
-                
-                logger.debug("Received request: " + request);
-                
-                // Process request and generate response
-                std::string response = processRequest(request);
-                
-                // Send response
-                ssize_t sent = send(clientFd, response.c_str(), response.length(), 0);
-                if (sent == -1) {
-                    logger.error("Failed to send response: " + std::string(strerror(errno)));
-                    break;
-                }
-            }
-        } catch (const std::exception& e) {
-            logger.error("Error handling client: " + std::string(e.what()));
-        }
-        
-        close(clientFd);
-        logger.info("Client disconnected");
+        // For now, return a simple OK response
+        // TODO: Implement actual data retrieval based on request filters
+        logger.info("Handling get request");
+        return nc_server_reply_ok();
     }
 
-    std::string processRequest(const std::string& request) {
+    static struct nc_server_reply* handleGetConfigRequest(const Request& request, struct nc_session* session) {
         auto& logger = Logger::getInstance();
         
-        try {
-            // Parse request using factory method
-            auto netconfRequest = netd::Request::fromString(request);
-            RequestType requestType = netconfRequest->getRequestType();
-            std::string messageId = netconfRequest->getMessageId();
-            
-            logger.info("Processing " + netconfRequest->getType() + " request");
-            
-            netd::Response response(messageId, false);
-            
-            if (requestType == RequestType::GET_CONFIG) {
-                // Create GetConfigRequest with default source
-                netd::GetConfigRequest getConfigRequest("running");
-                std::string source = getConfigRequest.getSource();
-                
-                // Get configuration from store
-                netd::ConfigType configType;
-                if (source == "running") {
-                    configType = netd::ConfigType::RUNNING;
-                } else if (source == "candidate") {
-                    configType = netd::ConfigType::CANDIDATE;
-                } else if (source == "startup") {
-                    configType = netd::ConfigType::STARTUP;
-                } else {
-                    configType = netd::ConfigType::RUNNING;
-                }
-                
-                std::string config = getConfiguration(configType);
-                response = netd::Response(messageId, config, true);
-                
-            } else if (requestType == RequestType::EDIT_CONFIG) {
-                // Create EditConfigRequest with default values
-                netd::EditConfigRequest editConfigRequest("candidate", "");
-                std::string target = editConfigRequest.getTarget();
-                std::string config = editConfigRequest.getConfig();
-                
-                // Set configuration in store
-                if (setCandidateConfiguration(config)) {
-                    response = netd::Response(messageId, "", true);
-                } else {
-                    response = netd::Response(messageId, "Invalid configuration", false);
-                }
-                
-            } else if (requestType == RequestType::COMMIT) {
-                // Create CommitRequest
-                netd::CommitRequest commitRequest;
-                
-                if (commitCandidateConfiguration()) {
-                    response = netd::Response(messageId, "", true);
-                } else {
-                    response = netd::Response(messageId, "Failed to commit configuration", false);
-                }
-                
-            } else {
-                logger.warning("Unknown request type: " + netconfRequest->getType());
-                response = netd::Response(messageId, "Unknown operation", false);
-            }
-            
-            // Convert response to YANG and then to string
-            lyd_node* yangNode = response.toYang();
-            if (yangNode) {
-                // TODO: Convert YANG node to string representation
-                // For now, return a simple success indicator
-                lyd_free_tree(yangNode);
-                return response.isSuccess() ? "SUCCESS" : "ERROR: " + response.getData();
-            } else {
-                return "ERROR: Failed to serialize response";
-            }
-            
-        } catch (const std::exception& e) {
-            logger.error("Error parsing NETCONF request: " + std::string(e.what()));
-            netd::Response errorResponse("1", "Malformed request", false);
-            return "ERROR: " + errorResponse.getData();
-        }
+        // For now, return a simple OK response
+        // TODO: Implement actual configuration retrieval
+        logger.info("Handling get-config request");
+        return nc_server_reply_ok();
     }
 
-    int socketFd_;
-    bool running_;
-    std::thread listenThread_;
+    static struct nc_server_reply* handleEditConfigRequest(const Request& request, struct nc_session* session) {
+        auto& logger = Logger::getInstance();
+        
+        // For now, return a simple OK response
+        // TODO: Implement actual configuration editing
+        logger.info("Handling edit-config request");
+        return nc_server_reply_ok();
+    }
 };
 
-// Global NETCONF server instance
-static NetconfServer g_netconfServer;
+// Global server instance
+static std::unique_ptr<NetconfServer> g_server;
 
-// Public interface functions
 bool startNetconfServer(const std::string& socketPath) {
-    return g_netconfServer.start(socketPath);
+    g_server = std::make_unique<NetconfServer>();
+    return g_server->start(socketPath);
 }
 
 void stopNetconfServer() {
-    g_netconfServer.stop();
+    if (g_server) {
+        g_server->stop();
+        g_server.reset();
+    }
 }
 
-bool isNetconfServerRunning() {
-    return g_netconfServer.isRunning();
+void runNetconfServer() {
+    if (g_server) {
+        g_server->run();
+    }
 }
 
 } // namespace netd

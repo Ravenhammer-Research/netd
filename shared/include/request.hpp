@@ -35,6 +35,7 @@
 namespace netd {
 
 enum class RequestType {
+    GET,
     GET_CONFIG,
     EDIT_CONFIG,
     COMMIT,
@@ -60,12 +61,12 @@ public:
     // Generate unique message ID
     static std::string generateMessageId();
 
-    // Parse request from string
+    // Parse request from XML string
     static std::unique_ptr<Request> fromString(const std::string& request);
 
     // Implement Serialization methods
-    lyd_node* toYang() const override;
-    static Request fromYang(const lyd_node* node);
+    lyd_node* toYang(ly_ctx* ctx) const override;
+    static Request fromYang(const ly_ctx* ctx, const lyd_node* node);
 
 private:
     std::string type_;
@@ -74,10 +75,31 @@ private:
 };
 
 // Concrete NETCONF request classes
+class GetRequest : public Request {
+public:
+    GetRequest() = default;
+    explicit GetRequest(const std::string& filter);
+    virtual ~GetRequest() = default;
+
+    std::string getType() const override { return "get"; }
+    RequestType getRequestType() const override { return RequestType::GET; }
+    std::string getData() const override { return filter_; }
+
+    // Get-specific methods
+    std::string getFilter() const { return filter_; }
+    void setFilter(const std::string& filter) { filter_ = filter; }
+
+    // Implement Serialization methods
+    static GetRequest fromYang(const ly_ctx* ctx, const lyd_node* node);
+private:
+    std::string filter_;
+};
+
 class GetConfigRequest : public Request {
 public:
     GetConfigRequest() = default;
     explicit GetConfigRequest(const std::string& source);
+    GetConfigRequest(const std::string& source, const std::string& filter);
     virtual ~GetConfigRequest() = default;
 
     std::string getType() const override { return "get-config"; }
@@ -86,13 +108,16 @@ public:
 
     // GetConfig-specific methods
     std::string getSource() const { return source_; }
+    std::string getFilter() const { return filter_; }
     void setSource(const std::string& source) { source_ = source; }
+    void setFilter(const std::string& filter) { filter_ = filter; }
 
     // Implement Serialization methods
-    static GetConfigRequest fromYang(const lyd_node* node);
+    static GetConfigRequest fromYang(const ly_ctx* ctx, const lyd_node* node);
 
 private:
     std::string source_{"running"};
+    std::string filter_;
 };
 
 class EditConfigRequest : public Request {
@@ -112,7 +137,7 @@ public:
     void setConfig(const std::string& config) { config_ = config; }
 
     // Implement Serialization methods
-    static EditConfigRequest fromYang(const lyd_node* node);
+    static EditConfigRequest fromYang(const ly_ctx* ctx, const lyd_node* node);
 
 private:
     std::string target_{"candidate"};
@@ -129,7 +154,7 @@ public:
     std::string getData() const override { return ""; }
 
     // Implement Serialization methods
-    static CommitRequest fromYang(const lyd_node* node);
+    static CommitRequest fromYang(const ly_ctx* ctx, const lyd_node* node);
 };
 
 } // namespace netd

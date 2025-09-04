@@ -39,10 +39,7 @@ public:
     virtual ~LagInterface() = default;
 
     // Implement Serialization methods
-    lyd_node* toYang() const override {
-        // Create YANG context and serialize LAGG interface
-        auto yang = createYang();
-        ly_ctx* ctx = yang->getContext();
+    lyd_node* toYang(ly_ctx* ctx) const override {
         
         if (!ctx) {
             return nullptr;
@@ -87,7 +84,7 @@ public:
         return interfaces;
     }
     
-    static LagInterface fromYang(const lyd_node* node) {
+    static LagInterface fromYang(const ly_ctx* ctx, const lyd_node* node) {
         // TODO: Implement YANG deserialization for LAGG interfaces
         return LagInterface();
     }

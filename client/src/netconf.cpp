@@ -46,7 +46,7 @@ public:
         }
     }
 
-    bool connect(const std::string& socketPath = "/var/run/netd.sock") {
+    bool connect(const std::string& socketPath = "/tmp/netd.sock") {
         auto& logger = Logger::getInstance();
         
         // Create YANG context

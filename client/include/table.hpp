@@ -25,34 +25,47 @@
  * SUCH DAMAGE.
  */
 
-#ifndef NETD_INTERFACE_EPAIR_HPP
-#define NETD_INTERFACE_EPAIR_HPP
+#ifndef NETD_CLIENT_TABLE_HPP
+#define NETD_CLIENT_TABLE_HPP
 
-#include <shared/include/ethernet.hpp>
-#include <shared/include/base/serialization.hpp>
 #include <string>
-#include <cstdint>
-#include <memory>
+#include <vector>
+#include <map>
 
 namespace netd {
 
-class EpairInterface : public Ethernet, public base::Serialization<EpairInterface> {
+class Table {
 public:
-    EpairInterface();
-    explicit EpairInterface(const std::string& name);
-    virtual ~EpairInterface();
+    Table();
+    ~Table() = default;
 
-    // Epair-specific configuration
-    virtual bool setPeerEnd(const std::string& peerEnd) { return false; }
-    virtual std::string getPeerEnd() const { return ""; }
-    virtual bool setEpairUnit(int unit) { return false; }
-    virtual int getEpairUnit() const { return -1; }
+    // Add columns
+    void addColumn(const std::string& name);
+    
+    // Add rows
+    void addRow(const std::vector<std::string>& values);
+    
+    // Format and return the table as a string
+    std::string format() const;
+    
+    // Clear the table
+    void clear();
 
-    // YANG serialization
-    lyd_node* toYang(ly_ctx* ctx) const override;
-    static EpairInterface fromYang(const ly_ctx* ctx, const lyd_node* node);
+private:
+    std::vector<std::string> columns_;
+    std::vector<std::vector<std::string>> rows_;
+    
+    // Calculate column widths dynamically
+    std::vector<size_t> calculateColumnWidths() const;
+    
+    // Format a single row
+    std::string formatRow(const std::vector<std::string>& values, 
+                         const std::vector<size_t>& widths) const;
+    
+    // Format the header separator
+    std::string formatSeparator(const std::vector<size_t>& widths) const;
 };
 
 } // namespace netd
 
-#endif // NETD_INTERFACE_EPAIR_HPP
+#endif // NETD_CLIENT_TABLE_HPP

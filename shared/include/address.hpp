@@ -50,8 +50,8 @@ public:
     virtual ~Address() = default;
 
     // Implement Serialization methods
-    lyd_node* toYang() const override;
-    static Address fromYang(const lyd_node* node);
+    lyd_node* toYang(ly_ctx* ctx) const override;
+    static Address fromYang(const ly_ctx* ctx, const lyd_node* node);
 
     // Address properties
     virtual Family getFamily() const { return Family::IPv4; }
@@ -76,8 +76,8 @@ public:
     virtual ~IPv4Address() = default;
 
     // Implement Address methods
-    lyd_node* toYang() const override;
-    static IPv4Address fromYang(const lyd_node* node);
+    lyd_node* toYang(ly_ctx* ctx) const override;
+    static IPv4Address fromYang(const ly_ctx* ctx, const lyd_node* node);
 
     Family getFamily() const override { return Family::IPv4; }
     std::string getString() const override;
@@ -102,8 +102,8 @@ public:
     virtual ~IPv6Address() = default;
 
     // Implement Address methods
-    lyd_node* toYang() const override;
-    static IPv6Address fromYang(const lyd_node* node);
+    lyd_node* toYang(ly_ctx* ctx) const override;
+    static IPv6Address fromYang(const ly_ctx* ctx, const lyd_node* node);
 
     Family getFamily() const override { return Family::IPv6; }
     std::string getString() const override;

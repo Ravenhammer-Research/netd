@@ -29,20 +29,61 @@
 #define NETD_CLIENT_TERMINAL_HPP
 
 #include <string>
+#include <vector>
+#include <functional>
 
 namespace netd {
 
 class Terminal {
 public:
-    Terminal() = default;
-    virtual ~Terminal() = default;
+    Terminal();
+    ~Terminal();
 
-    // Terminal operations
-    virtual bool initialize() = 0;
-    virtual void cleanup() = 0;
-    virtual void write(const std::string& message) = 0;
-    virtual std::string read() = 0;
-    virtual bool isInteractive() const = 0;
+    // Terminal control
+    bool initialize();
+    void cleanup();
+    bool isInitialized() const { return initialized_; }
+
+    // Input/Output
+    std::string readLine();
+    void write(const std::string& text);
+    void writeLine(const std::string& text);
+    void clear();
+    void refresh();
+
+    // Command history
+    void addToHistory(const std::string& command);
+    std::string getHistoryUp();
+    std::string getHistoryDown();
+    void resetHistoryPosition();
+
+    // Command completion
+    void setCompletions(const std::vector<std::string>& completions);
+    std::string completeCommand(const std::string& partial);
+
+    // Interactive mode
+    void runInteractive();
+    void setPrompt(const std::string& prompt) { prompt_ = prompt; }
+
+    // Command processing
+    void setCommandHandler(std::function<bool(const std::string&)> handler) {
+        commandHandler_ = handler;
+    }
+
+private:
+    bool initialized_;
+    std::string prompt_;
+    std::vector<std::string> history_;
+    int historyPosition_;
+    std::vector<std::string> completions_;
+    std::function<bool(const std::string&)> commandHandler_;
+
+    // Curses helpers
+    void setupCurses();
+    void handleKeyInput(char key);
+    void updateDisplay();
+    std::string currentLine_;
+    int cursorPosition_;
 };
 
 } // namespace netd

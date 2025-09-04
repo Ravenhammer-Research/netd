@@ -39,8 +39,8 @@ public:
     virtual ~Ieee80211Interface() = default;
 
     // Implement Serialization methods
-    lyd_node* toYang() const override;
-    static Ieee80211Interface fromYang(const lyd_node* node);
+    lyd_node* toYang(ly_ctx* ctx) const override;
+    static Ieee80211Interface fromYang(const ly_ctx* ctx, const lyd_node* node);
 
     // Wireless-specific functionality can be added here
 };

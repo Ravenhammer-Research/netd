@@ -34,14 +34,15 @@
 
 namespace netd {
 
-class Yang {
+class YangAbstract {
 public:
-    Yang() = default;
-    virtual ~Yang() = default;
+    YangAbstract() = default;
+    virtual ~YangAbstract() = default;
 
     // YANG context management
     virtual ly_ctx* getContext() const = 0;
     virtual bool loadSchema(const std::string& schemaPath) = 0;
+    virtual bool loadSchemaByName(const std::string& name, const std::string& revision = "") = 0;
     
     // Utility functions for YANG data conversion
     static std::string yangToXml(const lyd_node* node);
@@ -51,7 +52,7 @@ public:
 };
 
 // Factory function to create Yang instance
-std::unique_ptr<Yang> createYang();
+std::unique_ptr<YangAbstract> createYang();
 
 } // namespace netd
 

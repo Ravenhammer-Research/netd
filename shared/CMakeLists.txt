@@ -40,6 +40,7 @@ target_include_directories(netd_shared
 target_compile_definitions(netd_shared
     PRIVATE
         NETD_SHARED_EXPORTS
+        YANG_DIR="${CMAKE_SOURCE_DIR}/yang"
 )
 
 # Install rules

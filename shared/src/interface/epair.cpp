@@ -38,10 +38,7 @@ public:
     virtual ~EpairInterface() = default;
 
     // Implement Serialization methods
-    lyd_node* toYang() const override {
-        // Create YANG context and serialize epair interface
-        auto yang = createYang();
-        ly_ctx* ctx = yang->getContext();
+    lyd_node* toYang(ly_ctx* ctx) const override {
         
         if (!ctx) {
             return nullptr;
@@ -86,7 +83,7 @@ public:
         return interfaces;
     }
     
-    static EpairInterface fromYang(const lyd_node* node) {
+    static EpairInterface fromYang(const ly_ctx* ctx, const lyd_node* node) {
         // TODO: Implement YANG deserialization for epair interfaces
         return EpairInterface();
     }

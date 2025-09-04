@@ -49,14 +49,15 @@ int main() {
     signal(SIGINT, signalHandler);
     signal(SIGTERM, signalHandler);
     
-    // Start NETCONF server
-    if (!netd::startNetconfServer()) {
+    // Start NETCONF server with user-writable socket path
+    std::string socketPath = "/tmp/netd.sock";
+    if (!netd::startNetconfServer(socketPath)) {
         logger.error("Failed to start NETCONF server");
         return 1;
     }
     
     logger.info("NETD Server started successfully");
-    logger.info("NETCONF server listening on /var/run/netd.sock");
+    logger.info("NETCONF server listening on " + socketPath);
     logger.info("Press Ctrl+C to stop");
     
     // Main server loop

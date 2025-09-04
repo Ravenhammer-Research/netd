@@ -40,8 +40,8 @@ public:
     virtual ~BridgeInterface() = default;
 
     // Implement Serialization methods
-    lyd_node* toYang() const override;
-    static BridgeInterface fromYang(const lyd_node* node);
+    lyd_node* toYang(ly_ctx* ctx) const override;
+    static BridgeInterface fromYang(const ly_ctx* ctx, const lyd_node* node);
 
     // Bridge-specific functionality can be added here
 };

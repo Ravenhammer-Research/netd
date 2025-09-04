@@ -40,8 +40,8 @@ public:
     virtual ~Serialization() = default;
 
     // YANG serialization
-    virtual lyd_node* toYang() const = 0;
-    static T fromYang(const lyd_node* node);
+    virtual lyd_node* toYang(ly_ctx* ctx) const = 0;
+    static T fromYang(const ly_ctx* ctx, const lyd_node* node);
 };
 
 } // namespace base
