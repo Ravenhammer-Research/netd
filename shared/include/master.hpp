@@ -32,6 +32,21 @@
 
 namespace netd {
 
+/**
+ * XXX this seems stupid 
+ * like something hyou could fix by ya know.. doing the namespaces right .. idk
+ *
+ * Wrapper class for interface::base::Master
+ * 
+ * This wrapper exists to provide a cleaner namespace structure:
+ * - interface::base::Master is the actual implementation with all the methods
+ * - netd::Master is a simple wrapper that inherits from interface::base::Master
+ * 
+ * This allows interface classes to inherit from "Master" instead of the 
+ * longer "interface::base::Master" name, making the code more readable.
+ * 
+ * The wrapper adds no functionality - it just provides a shorter, cleaner name.
+ */
 class Master : public interface::base::Master {
 public:
     Master() = default;

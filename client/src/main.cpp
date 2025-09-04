@@ -44,12 +44,12 @@ int main() {
         // Test basic NETCONF operations
         try {
             std::cout << "Testing get-config..." << std::endl;
-            std::string response = netd::getConfig();
-            std::cout << "Response: " << response << std::endl;
+            netd::Response response = netd::getConfig();
+            std::cout << "Response: " << (response.isSuccess() ? "SUCCESS" : "ERROR") << " - " << response.getData() << std::endl;
             
             std::cout << "Testing commit..." << std::endl;
             response = netd::commit();
-            std::cout << "Response: " << response << std::endl;
+            std::cout << "Response: " << (response.isSuccess() ? "SUCCESS" : "ERROR") << " - " << response.getData() << std::endl;
             
         } catch (const std::exception& e) {
             std::cout << "Error: " << e.what() << std::endl;

@@ -185,123 +185,79 @@ private:
     std::string processRequest(const std::string& request) {
         auto& logger = Logger::getInstance();
         
-        // TODO: Implement proper NETCONF request parsing
-        // For now, handle basic operations using the configuration store
-        
-        if (request.find("<get-config>") != std::string::npos) {
-            logger.info("Processing get-config request");
+        try {
+            // Parse request using factory method
+            auto netconfRequest = netd::Request::fromString(request);
+            RequestType requestType = netconfRequest->getRequestType();
+            std::string messageId = netconfRequest->getMessageId();
             
-            // Extract source from request (default to running)
-            std::string source = "running";
-            if (request.find("<running/>") != std::string::npos) {
-                source = "running";
-            } else if (request.find("<candidate/>") != std::string::npos) {
-                source = "candidate";
-            } else if (request.find("<startup/>") != std::string::npos) {
-                source = "startup";
-            }
+            logger.info("Processing " + netconfRequest->getType() + " request");
             
-            // Get configuration from store
-            netd::ConfigType configType;
-            if (source == "running") {
-                configType = netd::ConfigType::RUNNING;
-            } else if (source == "candidate") {
-                configType = netd::ConfigType::CANDIDATE;
-            } else if (source == "startup") {
-                configType = netd::ConfigType::STARTUP;
+            netd::Response response(messageId, false);
+            
+            if (requestType == RequestType::GET_CONFIG) {
+                // Create GetConfigRequest with default source
+                netd::GetConfigRequest getConfigRequest("running");
+                std::string source = getConfigRequest.getSource();
+                
+                // Get configuration from store
+                netd::ConfigType configType;
+                if (source == "running") {
+                    configType = netd::ConfigType::RUNNING;
+                } else if (source == "candidate") {
+                    configType = netd::ConfigType::CANDIDATE;
+                } else if (source == "startup") {
+                    configType = netd::ConfigType::STARTUP;
+                } else {
+                    configType = netd::ConfigType::RUNNING;
+                }
+                
+                std::string config = getConfiguration(configType);
+                response = netd::Response(messageId, config, true);
+                
+            } else if (requestType == RequestType::EDIT_CONFIG) {
+                // Create EditConfigRequest with default values
+                netd::EditConfigRequest editConfigRequest("candidate", "");
+                std::string target = editConfigRequest.getTarget();
+                std::string config = editConfigRequest.getConfig();
+                
+                // Set configuration in store
+                if (setCandidateConfiguration(config)) {
+                    response = netd::Response(messageId, "", true);
+                } else {
+                    response = netd::Response(messageId, "Invalid configuration", false);
+                }
+                
+            } else if (requestType == RequestType::COMMIT) {
+                // Create CommitRequest
+                netd::CommitRequest commitRequest;
+                
+                if (commitCandidateConfiguration()) {
+                    response = netd::Response(messageId, "", true);
+                } else {
+                    response = netd::Response(messageId, "Failed to commit configuration", false);
+                }
+                
             } else {
-                configType = netd::ConfigType::RUNNING;
+                logger.warning("Unknown request type: " + netconfRequest->getType());
+                response = netd::Response(messageId, "Unknown operation", false);
             }
             
-            std::string config = getConfiguration(configType);
-            
-            std::string response = R"(<?xml version="1.0" encoding="UTF-8"?>
-<rpc-reply message-id="1" xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
-  <data>
-)";
-            response += config;
-            response += R"(
-  </data>
-</rpc-reply>)";
-            return response;
-            
-        } else if (request.find("<edit-config>") != std::string::npos) {
-            logger.info("Processing edit-config request");
-            
-            // TODO: Extract configuration data from request
-            // For now, just set a placeholder configuration
-            std::string config = R"(<interfaces xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces">
-  <!-- Configuration data would go here -->
-</interfaces>)";
-            
-            if (setCandidateConfiguration(config)) {
-                return R"(<?xml version="1.0" encoding="UTF-8"?>
-<rpc-reply message-id="1" xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
-  <ok/>
-</rpc-reply>)";
+            // Convert response to YANG and then to string
+            lyd_node* yangNode = response.toYang();
+            if (yangNode) {
+                // TODO: Convert YANG node to string representation
+                // For now, return a simple success indicator
+                lyd_free_tree(yangNode);
+                return response.isSuccess() ? "SUCCESS" : "ERROR: " + response.getData();
             } else {
-                return R"(<?xml version="1.0" encoding="UTF-8"?>
-<rpc-reply message-id="1" xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
-  <rpc-error>
-    <error-type>application</error-type>
-    <error-tag>invalid-value</error-tag>
-    <error-severity>error</error-severity>
-    <error-message>Invalid configuration</error-message>
-  </rpc-error>
-</rpc-reply>)";
+                return "ERROR: Failed to serialize response";
             }
             
-        } else if (request.find("<commit>") != std::string::npos) {
-            logger.info("Processing commit request");
-            
-            if (commitCandidateConfiguration()) {
-                return R"(<?xml version="1.0" encoding="UTF-8"?>
-<rpc-reply message-id="1" xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
-  <ok/>
-</rpc-reply>)";
-            } else {
-                return R"(<?xml version="1.0" encoding="UTF-8"?>
-<rpc-reply message-id="1" xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
-  <rpc-error>
-    <error-type>application</error-type>
-    <error-tag>operation-failed</error-tag>
-    <error-severity>error</error-severity>
-    <error-message>Failed to commit configuration</error-message>
-  </rpc-error>
-</rpc-reply>)";
-            }
-            
-        } else if (request.find("<discard-changes>") != std::string::npos) {
-            logger.info("Processing discard-changes request");
-            
-            if (discardCandidateConfiguration()) {
-                return R"(<?xml version="1.0" encoding="UTF-8"?>
-<rpc-reply message-id="1" xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
-  <ok/>
-</rpc-reply>)";
-            } else {
-                return R"(<?xml version="1.0" encoding="UTF-8"?>
-<rpc-reply message-id="1" xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
-  <rpc-error>
-    <error-type>application</error-type>
-    <error-tag>operation-failed</error-tag>
-    <error-severity>error</error-severity>
-    <error-message>Failed to discard changes</error-message>
-  </rpc-error>
-</rpc-reply>)";
-            }
-            
-        } else {
-            logger.warning("Unknown request type");
-            return R"(<?xml version="1.0" encoding="UTF-8"?>
-<rpc-reply message-id="1" xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
-  <rpc-error>
-    <error-type>rpc</error-type>
-    <error-tag>unknown-operation</error-tag>
-    <error-severity>error</error-severity>
-    <error-message>Unknown operation</error-message>
-  </rpc-error>
-</rpc-reply>)";
+        } catch (const std::exception& e) {
+            logger.error("Error parsing NETCONF request: " + std::string(e.what()));
+            netd::Response errorResponse("1", "Malformed request", false);
+            return "ERROR: " + errorResponse.getData();
         }
     }
 

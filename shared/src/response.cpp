@@ -26,24 +26,96 @@
  */
 
 #include <shared/include/response.hpp>
+#include <shared/include/yang.hpp>
 #include <libyang/tree_data.h>
 
 namespace netd {
 
-Response::Response(const std::string& type, const std::string& data, bool success) 
-    : type_(type), data_(data), success_(success) {
+Response::Response(const std::string& messageId, bool success) 
+    : messageId_(messageId), data_(""), success_(success) {
+}
+
+Response::Response(const std::string& messageId, const std::string& data, bool success) 
+    : messageId_(messageId), data_(data), success_(success) {
 }
 
 lyd_node* Response::toYang() const {
-    // TODO: Implement YANG serialization for NETCONF responses
-    // This should create a YANG node representing the response
-    return nullptr;
+    // Create YANG context and serialize response
+    auto yang = createYang();
+    ly_ctx* ctx = yang->getContext();
+    
+    if (!ctx) {
+        return nullptr;
+    }
+    
+    // Create NETCONF RPC reply node using standard NETCONF schema
+    lyd_node* rpcReplyNode = nullptr;
+    
+    // Create the RPC reply container
+    if (lyd_new_path(nullptr, ctx, "/ietf-netconf:rpc-reply", nullptr, 0, &rpcReplyNode) != LY_SUCCESS) {
+        return nullptr;
+    }
+    
+    // Set message ID
+    lyd_node* messageIdNode = nullptr;
+    if (lyd_new_path(rpcReplyNode, ctx, "/ietf-netconf:rpc-reply/message-id", messageId_.c_str(), 0, &messageIdNode) != LY_SUCCESS) {
+        lyd_free_tree(rpcReplyNode);
+        return nullptr;
+    }
+    
+    if (success_) {
+        if (!data_.empty()) {
+            // Add data node for successful responses with data
+            lyd_node* dataNode = nullptr;
+            if (lyd_new_path(rpcReplyNode, ctx, "/ietf-netconf:rpc-reply/data", nullptr, 0, &dataNode) != LY_SUCCESS) {
+                lyd_free_tree(rpcReplyNode);
+                return nullptr;
+            }
+        } else {
+            // Add ok node for successful responses without data
+            lyd_node* okNode = nullptr;
+            if (lyd_new_path(rpcReplyNode, ctx, "/ietf-netconf:rpc-reply/ok", nullptr, 0, &okNode) != LY_SUCCESS) {
+                lyd_free_tree(rpcReplyNode);
+                return nullptr;
+            }
+        }
+    } else {
+        // Add rpc-error node for failed responses
+        lyd_node* errorNode = nullptr;
+        if (lyd_new_path(rpcReplyNode, ctx, "/ietf-netconf:rpc-reply/rpc-error", nullptr, 0, &errorNode) != LY_SUCCESS) {
+            lyd_free_tree(rpcReplyNode);
+            return nullptr;
+        }
+    }
+    
+    return rpcReplyNode;
 }
 
 Response Response::fromYang(const lyd_node* node) {
-    // TODO: Implement YANG deserialization for NETCONF responses
-    // This should parse a YANG node to extract response information
-    return Response("", "", false);
+    // Parse NETCONF RPC reply node to extract response information
+    std::string messageId = "";
+    std::string data = "";
+    bool success = true;
+    
+    // Find the message ID and response content
+    lyd_node* child = lyd_child(node);
+    while (child) {
+        if (strcmp(child->schema->name, "message-id") == 0) {
+            messageId = lyd_get_value(child);
+        } else if (strcmp(child->schema->name, "data") == 0) {
+            // Extract data content
+            data = lyd_get_value(child);
+        } else if (strcmp(child->schema->name, "ok") == 0) {
+            // Success response without data
+            success = true;
+        } else if (strcmp(child->schema->name, "rpc-error") == 0) {
+            // Error response
+            success = false;
+        }
+        child = child->next;
+    }
+    
+    return Response(messageId, data, success);
 }
 
 } // namespace netd

@@ -40,7 +40,7 @@ namespace netd {
 namespace freebsd {
 namespace interface {
 
-class WifiInterface : public netd::WirelessInterface {
+class WifiInterface : public netd::Ieee80211Interface {
 public:
     WifiInterface();
     explicit WifiInterface(const std::string& name);
@@ -69,7 +69,7 @@ public:
     std::string getType() const { return "80211"; }
 
     // Conversion to shared interface for serialization
-    operator netd::WirelessInterface() const;
+    operator netd::Ieee80211Interface() const;
 
 private:
     // Interface name

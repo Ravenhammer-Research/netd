@@ -281,7 +281,41 @@ shared/CMakeFiles/netd_shared.dir/src/request.cpp.o: \
   /usr/include/c++/v1/__iterator/data.h \
   /usr/include/c++/v1/__iterator/empty.h \
   /usr/include/c++/v1/__iterator/reverse_access.h \
-  /usr/include/c++/v1/__iterator/size.h \
+  /usr/include/c++/v1/__iterator/size.h /usr/include/c++/v1/memory \
+  /usr/include/c++/v1/__memory/align.h \
+  /usr/include/c++/v1/__memory/auto_ptr.h \
+  /usr/include/c++/v1/__memory/inout_ptr.h \
+  /usr/include/c++/v1/__memory/shared_ptr.h \
+  /usr/include/c++/v1/__functional/binary_function.h \
+  /usr/include/c++/v1/__functional/operations.h \
+  /usr/include/c++/v1/__functional/reference_wrapper.h \
+  /usr/include/c++/v1/__functional/weak_result_type.h \
+  /usr/include/c++/v1/__memory/allocation_guard.h \
+  /usr/include/c++/v1/__memory/allocator_destructor.h \
+  /usr/include/c++/v1/__memory/uninitialized_algorithms.h \
+  /usr/include/c++/v1/__algorithm/copy.h \
+  /usr/include/c++/v1/__algorithm/copy_move_common.h \
+  /usr/include/c++/v1/__algorithm/unwrap_range.h \
+  /usr/include/c++/v1/__type_traits/is_trivially_assignable.h \
+  /usr/include/c++/v1/__type_traits/add_const.h \
+  /usr/include/c++/v1/__algorithm/for_each_segment.h \
+  /usr/include/c++/v1/__algorithm/move.h \
+  /usr/include/c++/v1/__type_traits/is_trivially_constructible.h \
+  /usr/include/c++/v1/__type_traits/is_unbounded_array.h \
+  /usr/include/c++/v1/__memory/unique_ptr.h \
+  /usr/include/c++/v1/__type_traits/is_bounded_array.h \
+  /usr/include/c++/v1/typeinfo \
+  /usr/include/c++/v1/__atomic/memory_order.h \
+  /usr/include/c++/v1/__type_traits/is_specialization.h \
+  /usr/include/c++/v1/__memory/out_ptr.h \
+  /usr/include/c++/v1/__memory/raw_storage_iterator.h \
+  /usr/include/c++/v1/__memory/temporary_buffer.h \
+  /usr/include/c++/v1/__memory/assume_aligned.h \
+  /usr/include/c++/v1/__memory/concepts.h \
+  /usr/include/c++/v1/__memory/ranges_construct_at.h \
+  /usr/include/c++/v1/__memory/ranges_uninitialized_algorithms.h \
+  /usr/include/c++/v1/__algorithm/in_out_result.h \
+  /usr/include/c++/v1/__memory/uses_allocator_construction.h \
   /home/sq/netd/shared/include/base/serialization.hpp \
   /usr/local/include/libyang/libyang.h \
   /usr/local/include/libyang/ly_config.h /usr/include/arpa/inet.h \
@@ -313,4 +347,34 @@ shared/CMakeFiles/netd_shared.dir/src/request.cpp.o: \
   /usr/include/sys/select.h /usr/include/sys/_sigset.h \
   /usr/local/include/libyang/printer_data.h \
   /usr/local/include/libyang/printer_schema.h \
-  /usr/local/include/libyang/set.h
+  /usr/local/include/libyang/set.h /home/sq/netd/shared/include/yang.hpp \
+  /usr/include/c++/v1/atomic /usr/include/c++/v1/__atomic/aliases.h \
+  /usr/include/c++/v1/__atomic/atomic.h \
+  /usr/include/c++/v1/__atomic/atomic_base.h \
+  /usr/include/c++/v1/__atomic/atomic_sync.h \
+  /usr/include/c++/v1/__atomic/contention_t.h \
+  /usr/include/c++/v1/__atomic/cxx_atomic_impl.h \
+  /usr/include/c++/v1/__atomic/to_gcc_order.h \
+  /usr/include/c++/v1/__chrono/duration.h /usr/include/c++/v1/ratio \
+  /usr/include/c++/v1/__thread/poll_with_backoff.h \
+  /usr/include/c++/v1/__chrono/high_resolution_clock.h \
+  /usr/include/c++/v1/__chrono/steady_clock.h \
+  /usr/include/c++/v1/__chrono/time_point.h \
+  /usr/include/c++/v1/__chrono/system_clock.h /usr/include/c++/v1/ctime \
+  /usr/include/c++/v1/__thread/support.h \
+  /usr/include/c++/v1/__thread/support/pthread.h \
+  /usr/include/c++/v1/__chrono/convert_to_timespec.h \
+  /usr/include/c++/v1/errno.h /usr/include/errno.h \
+  /usr/include/pthread.h /usr/include/sys/_sigval.h /usr/include/sched.h \
+  /usr/include/sys/sched.h /usr/include/sys/cpuset.h \
+  /usr/include/sys/_cpuset.h /usr/include/sys/_bitset.h \
+  /usr/include/sys/bitset.h \
+  /usr/include/c++/v1/__atomic/check_memory_order.h \
+  /usr/include/c++/v1/__atomic/is_always_lock_free.h \
+  /usr/include/c++/v1/__atomic/atomic_lock_free.h \
+  /usr/include/c++/v1/__atomic/atomic_flag.h \
+  /usr/include/c++/v1/__atomic/atomic_init.h \
+  /usr/include/c++/v1/__atomic/fence.h \
+  /usr/include/c++/v1/__atomic/kill_dependency.h \
+  /usr/include/c++/v1/__atomic/atomic_ref.h \
+  /usr/include/c++/v1/__type_traits/has_unique_object_representation.h

@@ -29,6 +29,7 @@
 #define NETD_CLIENT_NETCONF_HPP
 
 #include <string>
+#include <shared/include/response.hpp>
 
 namespace netd {
 
@@ -39,9 +40,9 @@ bool isConnectedToServer();
 
 // NETCONF operations
 std::string sendNetconfRequest(const std::string& request);
-std::string getConfig(const std::string& source = "running");
-std::string editConfig(const std::string& target = "candidate", const std::string& config = "");
-std::string commit();
+Response getConfig(const std::string& source = "running");
+Response editConfig(const std::string& target = "candidate", const std::string& config = "");
+Response commit();
 
 } // namespace netd
 

@@ -8551,33 +8551,62 @@ shared/CMakeFiles/netd_shared.dir/src/logger.cpp.o: /home/sq/netd/shared/src/log
 shared/CMakeFiles/netd_shared.dir/src/request.cpp.o: /home/sq/netd/shared/src/request.cpp \
   /home/sq/netd/shared/include/base/serialization.hpp \
   /home/sq/netd/shared/include/request.hpp \
+  /home/sq/netd/shared/include/yang.hpp \
   /usr/include/_ctype.h \
   /usr/include/arpa/inet.h \
   /usr/include/c++/v1/__algorithm/comp.h \
   /usr/include/c++/v1/__algorithm/comp_ref_type.h \
+  /usr/include/c++/v1/__algorithm/copy.h \
+  /usr/include/c++/v1/__algorithm/copy_move_common.h \
   /usr/include/c++/v1/__algorithm/fill_n.h \
   /usr/include/c++/v1/__algorithm/find.h \
   /usr/include/c++/v1/__algorithm/find_end.h \
   /usr/include/c++/v1/__algorithm/find_first_of.h \
   /usr/include/c++/v1/__algorithm/find_if.h \
   /usr/include/c++/v1/__algorithm/find_segment_if.h \
+  /usr/include/c++/v1/__algorithm/for_each_segment.h \
+  /usr/include/c++/v1/__algorithm/in_out_result.h \
   /usr/include/c++/v1/__algorithm/iter_swap.h \
   /usr/include/c++/v1/__algorithm/iterator_operations.h \
   /usr/include/c++/v1/__algorithm/max.h \
   /usr/include/c++/v1/__algorithm/max_element.h \
   /usr/include/c++/v1/__algorithm/min.h \
   /usr/include/c++/v1/__algorithm/min_element.h \
+  /usr/include/c++/v1/__algorithm/move.h \
   /usr/include/c++/v1/__algorithm/ranges_iterator_concept.h \
   /usr/include/c++/v1/__algorithm/remove.h \
   /usr/include/c++/v1/__algorithm/remove_if.h \
   /usr/include/c++/v1/__algorithm/search.h \
   /usr/include/c++/v1/__algorithm/unwrap_iter.h \
+  /usr/include/c++/v1/__algorithm/unwrap_range.h \
   /usr/include/c++/v1/__assert \
   /usr/include/c++/v1/__assertion_handler \
+  /usr/include/c++/v1/__atomic/aliases.h \
+  /usr/include/c++/v1/__atomic/atomic.h \
+  /usr/include/c++/v1/__atomic/atomic_base.h \
+  /usr/include/c++/v1/__atomic/atomic_flag.h \
+  /usr/include/c++/v1/__atomic/atomic_init.h \
+  /usr/include/c++/v1/__atomic/atomic_lock_free.h \
+  /usr/include/c++/v1/__atomic/atomic_ref.h \
+  /usr/include/c++/v1/__atomic/atomic_sync.h \
+  /usr/include/c++/v1/__atomic/check_memory_order.h \
+  /usr/include/c++/v1/__atomic/contention_t.h \
+  /usr/include/c++/v1/__atomic/cxx_atomic_impl.h \
+  /usr/include/c++/v1/__atomic/fence.h \
+  /usr/include/c++/v1/__atomic/is_always_lock_free.h \
+  /usr/include/c++/v1/__atomic/kill_dependency.h \
+  /usr/include/c++/v1/__atomic/memory_order.h \
+  /usr/include/c++/v1/__atomic/to_gcc_order.h \
   /usr/include/c++/v1/__bit/bit_cast.h \
   /usr/include/c++/v1/__bit/countr.h \
   /usr/include/c++/v1/__bit/invert_if.h \
   /usr/include/c++/v1/__bit/rotate.h \
+  /usr/include/c++/v1/__chrono/convert_to_timespec.h \
+  /usr/include/c++/v1/__chrono/duration.h \
+  /usr/include/c++/v1/__chrono/high_resolution_clock.h \
+  /usr/include/c++/v1/__chrono/steady_clock.h \
+  /usr/include/c++/v1/__chrono/system_clock.h \
+  /usr/include/c++/v1/__chrono/time_point.h \
   /usr/include/c++/v1/__compare/common_comparison_category.h \
   /usr/include/c++/v1/__compare/compare_partial_order_fallback.h \
   /usr/include/c++/v1/__compare/compare_strong_order_fallback.h \
@@ -8622,10 +8651,14 @@ shared/CMakeFiles/netd_shared.dir/src/request.cpp.o: /home/sq/netd/shared/src/re
   /usr/include/c++/v1/__debug_utils/sanitizers.h \
   /usr/include/c++/v1/__exception/exception.h \
   /usr/include/c++/v1/__format/enable_insertable.h \
+  /usr/include/c++/v1/__functional/binary_function.h \
   /usr/include/c++/v1/__functional/hash.h \
   /usr/include/c++/v1/__functional/identity.h \
   /usr/include/c++/v1/__functional/invoke.h \
+  /usr/include/c++/v1/__functional/operations.h \
+  /usr/include/c++/v1/__functional/reference_wrapper.h \
   /usr/include/c++/v1/__functional/unary_function.h \
+  /usr/include/c++/v1/__functional/weak_result_type.h \
   /usr/include/c++/v1/__fwd/array.h \
   /usr/include/c++/v1/__fwd/bit_reference.h \
   /usr/include/c++/v1/__fwd/complex.h \
@@ -8668,15 +8701,31 @@ shared/CMakeFiles/netd_shared.dir/src/request.cpp.o: /home/sq/netd/shared/src/re
   /usr/include/c++/v1/__math/traits.h \
   /usr/include/c++/v1/__mbstate_t.h \
   /usr/include/c++/v1/__memory/addressof.h \
+  /usr/include/c++/v1/__memory/align.h \
   /usr/include/c++/v1/__memory/allocate_at_least.h \
+  /usr/include/c++/v1/__memory/allocation_guard.h \
   /usr/include/c++/v1/__memory/allocator.h \
   /usr/include/c++/v1/__memory/allocator_arg_t.h \
+  /usr/include/c++/v1/__memory/allocator_destructor.h \
   /usr/include/c++/v1/__memory/allocator_traits.h \
+  /usr/include/c++/v1/__memory/assume_aligned.h \
+  /usr/include/c++/v1/__memory/auto_ptr.h \
   /usr/include/c++/v1/__memory/compressed_pair.h \
+  /usr/include/c++/v1/__memory/concepts.h \
   /usr/include/c++/v1/__memory/construct_at.h \
+  /usr/include/c++/v1/__memory/inout_ptr.h \
+  /usr/include/c++/v1/__memory/out_ptr.h \
   /usr/include/c++/v1/__memory/pointer_traits.h \
+  /usr/include/c++/v1/__memory/ranges_construct_at.h \
+  /usr/include/c++/v1/__memory/ranges_uninitialized_algorithms.h \
+  /usr/include/c++/v1/__memory/raw_storage_iterator.h \
+  /usr/include/c++/v1/__memory/shared_ptr.h \
   /usr/include/c++/v1/__memory/swap_allocator.h \
+  /usr/include/c++/v1/__memory/temporary_buffer.h \
+  /usr/include/c++/v1/__memory/uninitialized_algorithms.h \
+  /usr/include/c++/v1/__memory/unique_ptr.h \
   /usr/include/c++/v1/__memory/uses_allocator.h \
+  /usr/include/c++/v1/__memory/uses_allocator_construction.h \
   /usr/include/c++/v1/__memory/voidify.h \
   /usr/include/c++/v1/__memory_resource/memory_resource.h \
   /usr/include/c++/v1/__memory_resource/polymorphic_allocator.h \
@@ -8696,6 +8745,9 @@ shared/CMakeFiles/netd_shared.dir/src/request.cpp.o: /home/sq/netd/shared/src/re
   /usr/include/c++/v1/__string/char_traits.h \
   /usr/include/c++/v1/__string/constexpr_c_functions.h \
   /usr/include/c++/v1/__string/extern_template_lists.h \
+  /usr/include/c++/v1/__thread/poll_with_backoff.h \
+  /usr/include/c++/v1/__thread/support.h \
+  /usr/include/c++/v1/__thread/support/pthread.h \
   /usr/include/c++/v1/__tuple/find_index.h \
   /usr/include/c++/v1/__tuple/ignore.h \
   /usr/include/c++/v1/__tuple/make_tuple_types.h \
@@ -8706,6 +8758,7 @@ shared/CMakeFiles/netd_shared.dir/src/request.cpp.o: /home/sq/netd/shared/src/re
   /usr/include/c++/v1/__tuple/tuple_like_no_subrange.h \
   /usr/include/c++/v1/__tuple/tuple_size.h \
   /usr/include/c++/v1/__tuple/tuple_types.h \
+  /usr/include/c++/v1/__type_traits/add_const.h \
   /usr/include/c++/v1/__type_traits/add_lvalue_reference.h \
   /usr/include/c++/v1/__type_traits/add_pointer.h \
   /usr/include/c++/v1/__type_traits/add_rvalue_reference.h \
@@ -8722,6 +8775,7 @@ shared/CMakeFiles/netd_shared.dir/src/request.cpp.o: /home/sq/netd/shared/src/re
   /usr/include/c++/v1/__type_traits/disjunction.h \
   /usr/include/c++/v1/__type_traits/enable_if.h \
   /usr/include/c++/v1/__type_traits/extent.h \
+  /usr/include/c++/v1/__type_traits/has_unique_object_representation.h \
   /usr/include/c++/v1/__type_traits/integral_constant.h \
   /usr/include/c++/v1/__type_traits/invoke.h \
   /usr/include/c++/v1/__type_traits/is_allocator.h \
@@ -8730,6 +8784,7 @@ shared/CMakeFiles/netd_shared.dir/src/request.cpp.o: /home/sq/netd/shared/src/re
   /usr/include/c++/v1/__type_traits/is_array.h \
   /usr/include/c++/v1/__type_traits/is_assignable.h \
   /usr/include/c++/v1/__type_traits/is_base_of.h \
+  /usr/include/c++/v1/__type_traits/is_bounded_array.h \
   /usr/include/c++/v1/__type_traits/is_callable.h \
   /usr/include/c++/v1/__type_traits/is_class.h \
   /usr/include/c++/v1/__type_traits/is_const.h \
@@ -8763,12 +8818,16 @@ shared/CMakeFiles/netd_shared.dir/src/request.cpp.o: /home/sq/netd/shared/src/re
   /usr/include/c++/v1/__type_traits/is_scalar.h \
   /usr/include/c++/v1/__type_traits/is_signed.h \
   /usr/include/c++/v1/__type_traits/is_signed_integer.h \
+  /usr/include/c++/v1/__type_traits/is_specialization.h \
   /usr/include/c++/v1/__type_traits/is_standard_layout.h \
   /usr/include/c++/v1/__type_traits/is_swappable.h \
   /usr/include/c++/v1/__type_traits/is_trivial.h \
+  /usr/include/c++/v1/__type_traits/is_trivially_assignable.h \
+  /usr/include/c++/v1/__type_traits/is_trivially_constructible.h \
   /usr/include/c++/v1/__type_traits/is_trivially_copyable.h \
   /usr/include/c++/v1/__type_traits/is_trivially_lexicographically_comparable.h \
   /usr/include/c++/v1/__type_traits/is_trivially_relocatable.h \
+  /usr/include/c++/v1/__type_traits/is_unbounded_array.h \
   /usr/include/c++/v1/__type_traits/is_union.h \
   /usr/include/c++/v1/__type_traits/is_unsigned.h \
   /usr/include/c++/v1/__type_traits/is_unsigned_integer.h \
@@ -8814,6 +8873,7 @@ shared/CMakeFiles/netd_shared.dir/src/request.cpp.o: /home/sq/netd/shared/src/re
   /usr/include/c++/v1/__utility/swap.h \
   /usr/include/c++/v1/__utility/unreachable.h \
   /usr/include/c++/v1/__verbose_abort \
+  /usr/include/c++/v1/atomic \
   /usr/include/c++/v1/cctype \
   /usr/include/c++/v1/climits \
   /usr/include/c++/v1/compare \
@@ -8821,14 +8881,18 @@ shared/CMakeFiles/netd_shared.dir/src/request.cpp.o: /home/sq/netd/shared/src/re
   /usr/include/c++/v1/cstdint \
   /usr/include/c++/v1/cstdio \
   /usr/include/c++/v1/cstring \
+  /usr/include/c++/v1/ctime \
   /usr/include/c++/v1/ctype.h \
   /usr/include/c++/v1/cwchar \
   /usr/include/c++/v1/cwctype \
+  /usr/include/c++/v1/errno.h \
   /usr/include/c++/v1/initializer_list \
   /usr/include/c++/v1/inttypes.h \
   /usr/include/c++/v1/iosfwd \
   /usr/include/c++/v1/limits \
+  /usr/include/c++/v1/memory \
   /usr/include/c++/v1/new \
+  /usr/include/c++/v1/ratio \
   /usr/include/c++/v1/stddef.h \
   /usr/include/c++/v1/stdexcept \
   /usr/include/c++/v1/stdint.h \
@@ -8838,10 +8902,12 @@ shared/CMakeFiles/netd_shared.dir/src/request.cpp.o: /home/sq/netd/shared/src/re
   /usr/include/c++/v1/string.h \
   /usr/include/c++/v1/string_view \
   /usr/include/c++/v1/tuple \
+  /usr/include/c++/v1/typeinfo \
   /usr/include/c++/v1/version \
   /usr/include/c++/v1/wchar.h \
   /usr/include/c++/v1/wctype.h \
   /usr/include/ctype.h \
+  /usr/include/errno.h \
   /usr/include/inttypes.h \
   /usr/include/limits.h \
   /usr/include/machine/_align.h \
@@ -8852,27 +8918,35 @@ shared/CMakeFiles/netd_shared.dir/src/request.cpp.o: /home/sq/netd/shared/src/re
   /usr/include/machine/endian.h \
   /usr/include/netinet/in.h \
   /usr/include/netinet6/in6.h \
+  /usr/include/pthread.h \
   /usr/include/runetype.h \
+  /usr/include/sched.h \
   /usr/include/stddef.h \
   /usr/include/stdint.h \
   /usr/include/stdio.h \
   /usr/include/stdlib.h \
   /usr/include/string.h \
   /usr/include/strings.h \
+  /usr/include/sys/_bitset.h \
   /usr/include/sys/_clock_id.h \
+  /usr/include/sys/_cpuset.h \
   /usr/include/sys/_endian.h \
   /usr/include/sys/_iovec.h \
   /usr/include/sys/_null.h \
   /usr/include/sys/_pthreadtypes.h \
   /usr/include/sys/_sigset.h \
+  /usr/include/sys/_sigval.h \
   /usr/include/sys/_sockaddr_storage.h \
   /usr/include/sys/_stdint.h \
   /usr/include/sys/_timespec.h \
   /usr/include/sys/_timeval.h \
   /usr/include/sys/_types.h \
   /usr/include/sys/bitcount.h \
+  /usr/include/sys/bitset.h \
   /usr/include/sys/cdefs.h \
+  /usr/include/sys/cpuset.h \
   /usr/include/sys/limits.h \
+  /usr/include/sys/sched.h \
   /usr/include/sys/select.h \
   /usr/include/sys/socket.h \
   /usr/include/sys/stdint.h \
@@ -8917,29 +8991,37 @@ shared/CMakeFiles/netd_shared.dir/src/request.cpp.o: /home/sq/netd/shared/src/re
 shared/CMakeFiles/netd_shared.dir/src/response.cpp.o: /home/sq/netd/shared/src/response.cpp \
   /home/sq/netd/shared/include/base/serialization.hpp \
   /home/sq/netd/shared/include/response.hpp \
+  /home/sq/netd/shared/include/yang.hpp \
   /usr/include/_ctype.h \
   /usr/include/arpa/inet.h \
   /usr/include/c++/v1/__algorithm/comp.h \
   /usr/include/c++/v1/__algorithm/comp_ref_type.h \
+  /usr/include/c++/v1/__algorithm/copy.h \
+  /usr/include/c++/v1/__algorithm/copy_move_common.h \
   /usr/include/c++/v1/__algorithm/fill_n.h \
   /usr/include/c++/v1/__algorithm/find.h \
   /usr/include/c++/v1/__algorithm/find_end.h \
   /usr/include/c++/v1/__algorithm/find_first_of.h \
   /usr/include/c++/v1/__algorithm/find_if.h \
   /usr/include/c++/v1/__algorithm/find_segment_if.h \
+  /usr/include/c++/v1/__algorithm/for_each_segment.h \
+  /usr/include/c++/v1/__algorithm/in_out_result.h \
   /usr/include/c++/v1/__algorithm/iter_swap.h \
   /usr/include/c++/v1/__algorithm/iterator_operations.h \
   /usr/include/c++/v1/__algorithm/max.h \
   /usr/include/c++/v1/__algorithm/max_element.h \
   /usr/include/c++/v1/__algorithm/min.h \
   /usr/include/c++/v1/__algorithm/min_element.h \
+  /usr/include/c++/v1/__algorithm/move.h \
   /usr/include/c++/v1/__algorithm/ranges_iterator_concept.h \
   /usr/include/c++/v1/__algorithm/remove.h \
   /usr/include/c++/v1/__algorithm/remove_if.h \
   /usr/include/c++/v1/__algorithm/search.h \
   /usr/include/c++/v1/__algorithm/unwrap_iter.h \
+  /usr/include/c++/v1/__algorithm/unwrap_range.h \
   /usr/include/c++/v1/__assert \
   /usr/include/c++/v1/__assertion_handler \
+  /usr/include/c++/v1/__atomic/memory_order.h \
   /usr/include/c++/v1/__bit/bit_cast.h \
   /usr/include/c++/v1/__bit/countr.h \
   /usr/include/c++/v1/__bit/invert_if.h \
@@ -8988,10 +9070,14 @@ shared/CMakeFiles/netd_shared.dir/src/response.cpp.o: /home/sq/netd/shared/src/r
   /usr/include/c++/v1/__debug_utils/sanitizers.h \
   /usr/include/c++/v1/__exception/exception.h \
   /usr/include/c++/v1/__format/enable_insertable.h \
+  /usr/include/c++/v1/__functional/binary_function.h \
   /usr/include/c++/v1/__functional/hash.h \
   /usr/include/c++/v1/__functional/identity.h \
   /usr/include/c++/v1/__functional/invoke.h \
+  /usr/include/c++/v1/__functional/operations.h \
+  /usr/include/c++/v1/__functional/reference_wrapper.h \
   /usr/include/c++/v1/__functional/unary_function.h \
+  /usr/include/c++/v1/__functional/weak_result_type.h \
   /usr/include/c++/v1/__fwd/array.h \
   /usr/include/c++/v1/__fwd/bit_reference.h \
   /usr/include/c++/v1/__fwd/complex.h \
@@ -9034,15 +9120,31 @@ shared/CMakeFiles/netd_shared.dir/src/response.cpp.o: /home/sq/netd/shared/src/r
   /usr/include/c++/v1/__math/traits.h \
   /usr/include/c++/v1/__mbstate_t.h \
   /usr/include/c++/v1/__memory/addressof.h \
+  /usr/include/c++/v1/__memory/align.h \
   /usr/include/c++/v1/__memory/allocate_at_least.h \
+  /usr/include/c++/v1/__memory/allocation_guard.h \
   /usr/include/c++/v1/__memory/allocator.h \
   /usr/include/c++/v1/__memory/allocator_arg_t.h \
+  /usr/include/c++/v1/__memory/allocator_destructor.h \
   /usr/include/c++/v1/__memory/allocator_traits.h \
+  /usr/include/c++/v1/__memory/assume_aligned.h \
+  /usr/include/c++/v1/__memory/auto_ptr.h \
   /usr/include/c++/v1/__memory/compressed_pair.h \
+  /usr/include/c++/v1/__memory/concepts.h \
   /usr/include/c++/v1/__memory/construct_at.h \
+  /usr/include/c++/v1/__memory/inout_ptr.h \
+  /usr/include/c++/v1/__memory/out_ptr.h \
   /usr/include/c++/v1/__memory/pointer_traits.h \
+  /usr/include/c++/v1/__memory/ranges_construct_at.h \
+  /usr/include/c++/v1/__memory/ranges_uninitialized_algorithms.h \
+  /usr/include/c++/v1/__memory/raw_storage_iterator.h \
+  /usr/include/c++/v1/__memory/shared_ptr.h \
   /usr/include/c++/v1/__memory/swap_allocator.h \
+  /usr/include/c++/v1/__memory/temporary_buffer.h \
+  /usr/include/c++/v1/__memory/uninitialized_algorithms.h \
+  /usr/include/c++/v1/__memory/unique_ptr.h \
   /usr/include/c++/v1/__memory/uses_allocator.h \
+  /usr/include/c++/v1/__memory/uses_allocator_construction.h \
   /usr/include/c++/v1/__memory/voidify.h \
   /usr/include/c++/v1/__memory_resource/memory_resource.h \
   /usr/include/c++/v1/__memory_resource/polymorphic_allocator.h \
@@ -9072,6 +9174,7 @@ shared/CMakeFiles/netd_shared.dir/src/response.cpp.o: /home/sq/netd/shared/src/r
   /usr/include/c++/v1/__tuple/tuple_like_no_subrange.h \
   /usr/include/c++/v1/__tuple/tuple_size.h \
   /usr/include/c++/v1/__tuple/tuple_types.h \
+  /usr/include/c++/v1/__type_traits/add_const.h \
   /usr/include/c++/v1/__type_traits/add_lvalue_reference.h \
   /usr/include/c++/v1/__type_traits/add_pointer.h \
   /usr/include/c++/v1/__type_traits/add_rvalue_reference.h \
@@ -9096,6 +9199,7 @@ shared/CMakeFiles/netd_shared.dir/src/response.cpp.o: /home/sq/netd/shared/src/r
   /usr/include/c++/v1/__type_traits/is_array.h \
   /usr/include/c++/v1/__type_traits/is_assignable.h \
   /usr/include/c++/v1/__type_traits/is_base_of.h \
+  /usr/include/c++/v1/__type_traits/is_bounded_array.h \
   /usr/include/c++/v1/__type_traits/is_callable.h \
   /usr/include/c++/v1/__type_traits/is_class.h \
   /usr/include/c++/v1/__type_traits/is_const.h \
@@ -9129,12 +9233,16 @@ shared/CMakeFiles/netd_shared.dir/src/response.cpp.o: /home/sq/netd/shared/src/r
   /usr/include/c++/v1/__type_traits/is_scalar.h \
   /usr/include/c++/v1/__type_traits/is_signed.h \
   /usr/include/c++/v1/__type_traits/is_signed_integer.h \
+  /usr/include/c++/v1/__type_traits/is_specialization.h \
   /usr/include/c++/v1/__type_traits/is_standard_layout.h \
   /usr/include/c++/v1/__type_traits/is_swappable.h \
   /usr/include/c++/v1/__type_traits/is_trivial.h \
+  /usr/include/c++/v1/__type_traits/is_trivially_assignable.h \
+  /usr/include/c++/v1/__type_traits/is_trivially_constructible.h \
   /usr/include/c++/v1/__type_traits/is_trivially_copyable.h \
   /usr/include/c++/v1/__type_traits/is_trivially_lexicographically_comparable.h \
   /usr/include/c++/v1/__type_traits/is_trivially_relocatable.h \
+  /usr/include/c++/v1/__type_traits/is_unbounded_array.h \
   /usr/include/c++/v1/__type_traits/is_union.h \
   /usr/include/c++/v1/__type_traits/is_unsigned.h \
   /usr/include/c++/v1/__type_traits/is_unsigned_integer.h \
@@ -9194,6 +9302,7 @@ shared/CMakeFiles/netd_shared.dir/src/response.cpp.o: /home/sq/netd/shared/src/r
   /usr/include/c++/v1/inttypes.h \
   /usr/include/c++/v1/iosfwd \
   /usr/include/c++/v1/limits \
+  /usr/include/c++/v1/memory \
   /usr/include/c++/v1/new \
   /usr/include/c++/v1/stddef.h \
   /usr/include/c++/v1/stdexcept \
@@ -9204,6 +9313,7 @@ shared/CMakeFiles/netd_shared.dir/src/response.cpp.o: /home/sq/netd/shared/src/r
   /usr/include/c++/v1/string.h \
   /usr/include/c++/v1/string_view \
   /usr/include/c++/v1/tuple \
+  /usr/include/c++/v1/typeinfo \
   /usr/include/c++/v1/version \
   /usr/include/c++/v1/wchar.h \
   /usr/include/c++/v1/wctype.h \
@@ -10757,8 +10867,6 @@ shared/CMakeFiles/netd_shared.dir/src/yang.cpp.o:
 
 shared/CMakeFiles/netd_shared.dir/src/vrf.cpp.o:
 
-shared/CMakeFiles/netd_shared.dir/src/interface/vxlan.cpp.o:
-
 shared/CMakeFiles/netd_shared.dir/src/interface/tap.cpp.o:
 
 shared/CMakeFiles/netd_shared.dir/src/interface/lagg.cpp.o:
@@ -10801,14 +10909,6 @@ shared/CMakeFiles/netd_shared.dir/src/address.cpp.o:
 
 /usr/include/unistd.h:
 
-/usr/include/sys/sched.h:
-
-/usr/include/sys/cpuset.h:
-
-/usr/include/sys/_sigval.h:
-
-/usr/include/sched.h:
-
 /usr/include/nl_types.h:
 
 /usr/include/c++/v1/sstream:
@@ -10823,29 +10923,41 @@ shared/CMakeFiles/netd_shared.dir/src/address.cpp.o:
 
 /usr/include/c++/v1/filesystem:
 
-/usr/include/c++/v1/__thread/support/pthread.h:
-
-/usr/include/c++/v1/__thread/poll_with_backoff.h:
-
 /usr/include/c++/v1/__system_error/error_category.h:
 
 /usr/include/c++/v1/__ostream/basic_ostream.h:
 
+/usr/include/c++/v1/__locale_dir/locale_base_api/bsd_locale_defaults.h:
+
+/usr/include/c++/v1/__iterator/ostreambuf_iterator.h:
+
+/usr/include/c++/v1/__iterator/istreambuf_iterator.h:
+
+/usr/include/c++/v1/__iterator/default_sentinel.h:
+
+/usr/include/c++/v1/__fwd/stack.h:
+
 /usr/include/c++/v1/__fwd/queue.h:
 
-/usr/include/c++/v1/__algorithm/ranges_all_of.h:
+/usr/include/c++/v1/__format/formatter_string.h:
 
-/usr/include/c++/v1/__fwd/deque.h:
-
-/usr/include/c++/v1/__algorithm/shuffle.h:
-
-/usr/include/c++/v1/__format/formatter_tuple.h:
+/usr/include/c++/v1/__format/formatter_pointer.h:
 
 /usr/include/c++/v1/__format/formatter_integer.h:
 
-/usr/include/c++/v1/__algorithm/iter_swap.h:
+/usr/include/c++/v1/__format/formatter_floating_point.h:
 
-/usr/include/c++/v1/__format/escaped_output_table.h:
+/usr/include/c++/v1/__format/formatter_char.h:
+
+/usr/include/c++/v1/__format/format_functions.h:
+
+/usr/include/c++/v1/__format/format_context.h:
+
+/usr/include/c++/v1/__format/format_args.h:
+
+/usr/include/c++/v1/__format/format_arg_store.h:
+
+/usr/include/c++/v1/__format/container_adaptor.h:
 
 /usr/include/c++/v1/__algorithm/in_in_result.h:
 
@@ -10865,27 +10977,9 @@ shared/CMakeFiles/netd_shared.dir/src/interface/wireguard.cpp.o:
 
 /usr/include/c++/v1/__exception/operations.h:
 
-/usr/include/c++/v1/__algorithm/ranges_upper_bound.h:
-
-/usr/include/c++/v1/__chrono/time_point.h:
-
-/usr/include/c++/v1/__chrono/system_clock.h:
-
 /usr/local/include/libyang/tree_schema.h:
 
 /usr/include/c++/v1/__chrono/statically_widen.h:
-
-/usr/include/c++/v1/__ranges/ref_view.h:
-
-/usr/include/c++/v1/compare:
-
-/usr/include/c++/v1/__atomic/to_gcc_order.h:
-
-/usr/include/c++/v1/__algorithm/ranges_sort.h:
-
-/usr/include/c++/v1/__atomic/contention_t.h:
-
-/usr/include/c++/v1/__atomic/atomic_base.h:
 
 /home/sq/netd/shared/src/yang.cpp:
 
@@ -10896,6 +10990,64 @@ shared/CMakeFiles/netd_shared.dir/src/interface/wireguard.cpp.o:
 /usr/include/c++/v1/__math/logarithms.h:
 
 /home/sq/netd/shared/src/response.cpp:
+
+/usr/include/c++/v1/__algorithm/copy_move_common.h:
+
+/usr/include/sys/bitset.h:
+
+/usr/include/sys/_sigval.h:
+
+/usr/include/c++/v1/__type_traits/remove_cv.h:
+
+/usr/include/c++/v1/ratio:
+
+/usr/include/c++/v1/__tuple/sfinae_helpers.h:
+
+/home/sq/netd/shared/src/interface/bridge.cpp:
+
+/usr/include/c++/v1/ctime:
+
+/usr/include/c++/v1/__thread/support/pthread.h:
+
+/usr/include/c++/v1/__iterator/erase_if_container.h:
+
+/usr/local/include/libyang/log.h:
+
+/usr/include/c++/v1/__thread/support.h:
+
+/usr/include/c++/v1/__thread/poll_with_backoff.h:
+
+/usr/include/c++/v1/__algorithm/ranges_upper_bound.h:
+
+/usr/include/c++/v1/__chrono/time_point.h:
+
+/usr/include/c++/v1/__chrono/system_clock.h:
+
+/usr/include/c++/v1/__ranges/ref_view.h:
+
+/usr/include/c++/v1/compare:
+
+/usr/include/c++/v1/__atomic/to_gcc_order.h:
+
+/usr/include/c++/v1/__type_traits/add_rvalue_reference.h:
+
+/usr/include/c++/v1/__atomic/kill_dependency.h:
+
+/usr/include/c++/v1/__iterator/iterator_traits.h:
+
+/usr/include/c++/v1/__format/concepts.h:
+
+/usr/include/c++/v1/__atomic/fence.h:
+
+/usr/include/c++/v1/__algorithm/ranges_sort.h:
+
+/usr/include/c++/v1/__atomic/contention_t.h:
+
+/usr/include/c++/v1/__atomic/atomic_ref.h:
+
+/usr/include/c++/v1/__atomic/atomic_init.h:
+
+/usr/include/c++/v1/__atomic/atomic_base.h:
 
 /usr/include/c++/v1/__memory/shared_ptr.h:
 
@@ -10963,6 +11115,8 @@ shared/CMakeFiles/netd_shared.dir/src/logger.cpp.o:
 
 /usr/include/c++/v1/__functional/bind_front.h:
 
+/usr/include/sys/sched.h:
+
 /usr/include/c++/v1/__functional/bind.h:
 
 /usr/include/c++/v1/__debug_utils/strict_weak_ordering_check.h:
@@ -10982,8 +11136,6 @@ shared/CMakeFiles/netd_shared.dir/src/logger.cpp.o:
 /home/sq/netd/shared/src/interface/tap.cpp:
 
 /home/sq/netd/shared/include/tunnel.hpp:
-
-/usr/include/c++/v1/__format/format_functions.h:
 
 /home/sq/netd/shared/src/interface/lagg.cpp:
 
@@ -11038,8 +11190,6 @@ shared/CMakeFiles/netd_shared.dir/src/logger.cpp.o:
 /usr/lib/crtbeginS.o:
 
 /usr/include/c++/v1/__algorithm/sort_heap.h:
-
-/usr/include/c++/v1/__format/formatter_pointer.h:
 
 /usr/include/c++/v1/__algorithm/simd_utils.h:
 
@@ -11209,6 +11359,10 @@ shared/CMakeFiles/netd_shared.dir/src/logger.cpp.o:
 
 /usr/include/c++/v1/__algorithm/ranges_any_of.h:
 
+/usr/include/c++/v1/__fwd/deque.h:
+
+/usr/include/c++/v1/__algorithm/ranges_all_of.h:
+
 /usr/include/c++/v1/cstdlib:
 
 /usr/include/c++/v1/__concepts/boolean_testable.h:
@@ -11216,6 +11370,8 @@ shared/CMakeFiles/netd_shared.dir/src/logger.cpp.o:
 /usr/include/c++/v1/__algorithm/push_heap.h:
 
 /usr/include/c++/v1/__algorithm/pstl.h:
+
+/usr/include/sched.h:
 
 /usr/include/c++/v1/__algorithm/ranges_for_each_n.h:
 
@@ -11345,10 +11501,6 @@ shared/CMakeFiles/netd_shared.dir/src/logger.cpp.o:
 
 /usr/include/c++/v1/__memory/temp_value.h:
 
-/usr/local/include/libyang/libyang.h:
-
-/usr/include/c++/v1/__format/range_formatter.h:
-
 /usr/include/c++/v1/__chrono/convert_to_timespec.h:
 
 /usr/include/c++/v1/__locale:
@@ -11379,17 +11531,13 @@ shared/CMakeFiles/netd_shared.dir/src/logger.cpp.o:
 
 /usr/include/c++/v1/__format/format_parse_context.h:
 
+/usr/include/c++/v1/__atomic/aliases.h:
+
 /usr/include/c++/v1/__format/unicode.h:
 
 /usr/include/c++/v1/__format/extended_grapheme_cluster_table.h:
 
 /usr/include/c++/v1/__algorithm/ranges_minmax_element.h:
-
-/usr/include/c++/v1/__iterator/iterator_traits.h:
-
-/usr/include/c++/v1/__format/concepts.h:
-
-/usr/include/c++/v1/__iterator/default_sentinel.h:
 
 /usr/include/c++/v1/__format/buffer.h:
 
@@ -11515,17 +11663,9 @@ shared/CMakeFiles/netd_shared.dir/src/logger.cpp.o:
 
 /usr/include/xlocale/_wchar.h:
 
-/usr/include/c++/v1/ctime:
-
-/usr/include/c++/v1/__tuple/sfinae_helpers.h:
-
-/home/sq/netd/shared/src/interface/bridge.cpp:
-
 /usr/local/include/libyang/tree_edit.h:
 
 /usr/include/xlocale/_strings.h:
-
-/usr/include/c++/v1/__iterator/ostreambuf_iterator.h:
 
 /usr/include/xlocale/_string.h:
 
@@ -11533,9 +11673,11 @@ shared/CMakeFiles/netd_shared.dir/src/logger.cpp.o:
 
 /usr/include/x86/endian.h:
 
-/usr/include/x86/_types.h:
+/usr/include/c++/v1/stdlib.h:
 
-/usr/include/c++/v1/__format/container_adaptor.h:
+/usr/include/c++/v1/__type_traits/has_unique_object_representation.h:
+
+/usr/include/x86/_types.h:
 
 /usr/include/c++/v1/__algorithm/search.h:
 
@@ -11631,8 +11773,6 @@ shared/CMakeFiles/netd_shared.dir/src/request.cpp.o:
 
 /usr/include/c++/v1/__type_traits/is_member_pointer.h:
 
-/usr/include/c++/v1/stdlib.h:
-
 /usr/include/c++/v1/__concepts/class_or_enum.h:
 
 /usr/include/c++/v1/__math/exponential_functions.h:
@@ -11675,6 +11815,10 @@ shared/CMakeFiles/netd_shared.dir/src/request.cpp.o:
 
 /usr/include/c++/v1/__ranges/container_compatible_range.h:
 
+/usr/include/c++/v1/__algorithm/in_out_result.h:
+
+/usr/include/sys/_bitset.h:
+
 /usr/include/x86/_inttypes.h:
 
 /usr/include/c++/v1/__functional/boyer_moore_searcher.h:
@@ -11700,12 +11844,6 @@ shared/CMakeFiles/netd_shared.dir/src/request.cpp.o:
 /usr/include/c++/v1/__undef_macros:
 
 /usr/include/c++/v1/__type_traits/is_allocator.h:
-
-/usr/include/c++/v1/__thread/support.h:
-
-/usr/include/c++/v1/__iterator/erase_if_container.h:
-
-/usr/local/include/libyang/log.h:
 
 /usr/include/c++/v1/__filesystem/filesystem_error.h:
 
@@ -11747,10 +11885,6 @@ shared/CMakeFiles/netd_shared.dir/src/request.cpp.o:
 
 /usr/include/c++/v1/__memory/assume_aligned.h:
 
-/usr/include/c++/v1/ratio:
-
-/usr/include/c++/v1/__type_traits/remove_cv.h:
-
 /usr/include/c++/v1/__type_traits/remove_all_extents.h:
 
 /usr/include/c++/v1/__algorithm/rotate.h:
@@ -11786,8 +11920,6 @@ shared/CMakeFiles/netd_shared.dir/src/request.cpp.o:
 /usr/include/c++/v1/__memory/allocator_destructor.h:
 
 /usr/include/c++/v1/__type_traits/lazy.h:
-
-/usr/include/c++/v1/__iterator/istreambuf_iterator.h:
 
 /usr/include/c++/v1/__type_traits/is_union.h:
 
@@ -11907,6 +12039,8 @@ shared/CMakeFiles/netd_shared.dir/src/interface/tun.cpp.o:
 
 /usr/include/c++/v1/__type_traits/is_constant_evaluated.h:
 
+/usr/include/sys/cpuset.h:
+
 /usr/include/c++/v1/__algorithm/ranges_max_element.h:
 
 /usr/include/c++/v1/__algorithm/ranges_partial_sort_copy.h:
@@ -11918,8 +12052,6 @@ shared/CMakeFiles/netd_shared.dir/src/interface/tun.cpp.o:
 /usr/include/c++/v1/__utility/is_valid_range.h:
 
 /usr/include/c++/v1/__type_traits/is_class.h:
-
-/usr/include/c++/v1/__format/format_context.h:
 
 /usr/include/c++/v1/__algorithm/ranges_adjacent_find.h:
 
@@ -11954,6 +12086,8 @@ shared/CMakeFiles/netd_shared.dir/src/interface/tun.cpp.o:
 /usr/include/c++/v1/__type_traits/enable_if.h:
 
 /usr/include/c++/v1/__type_traits/desugars_to.h:
+
+/usr/include/c++/v1/__atomic/atomic_flag.h:
 
 /usr/include/c++/v1/__functional/default_searcher.h:
 
@@ -12013,6 +12147,10 @@ shared/CMakeFiles/netd_shared.dir/src/route.cpp.o:
 
 /usr/include/c++/v1/__algorithm/find_if.h:
 
+shared/CMakeFiles/netd_shared.dir/src/interface/vxlan.cpp.o:
+
+/usr/include/c++/v1/atomic:
+
 /usr/include/c++/v1/__concepts/swappable.h:
 
 /home/sq/netd/shared/include/interface.hpp:
@@ -12049,8 +12187,6 @@ shared/CMakeFiles/netd_shared.dir/src/route.cpp.o:
 
 /usr/include/c++/v1/__type_traits/is_void.h:
 
-/usr/include/c++/v1/__format/formatter_floating_point.h:
-
 /usr/include/c++/v1/__compare/ordering.h:
 
 /usr/include/c++/v1/__ranges/enable_view.h:
@@ -12068,6 +12204,8 @@ shared/CMakeFiles/netd_shared.dir/src/route.cpp.o:
 /usr/include/c++/v1/__algorithm/find_end.h:
 
 /usr/include/c++/v1/__chrono/file_clock.h:
+
+/usr/include/c++/v1/__atomic/atomic_lock_free.h:
 
 /usr/local/include/libyang/plugins_exts.h:
 
@@ -12115,8 +12253,6 @@ shared/CMakeFiles/netd_shared.dir/src/route.cpp.o:
 
 /usr/include/c++/v1/__memory/concepts.h:
 
-/usr/include/c++/v1/__format/format_arg_store.h:
-
 /usr/include/c++/v1/stdio.h:
 
 /usr/include/c++/v1/__fwd/pair.h:
@@ -12143,6 +12279,10 @@ shared/CMakeFiles/netd_shared.dir/src/interface/ppp.cpp.o:
 
 /usr/include/c++/v1/__memory/allocator_arg_t.h:
 
+/usr/include/c++/v1/__format/range_formatter.h:
+
+/usr/local/include/libyang/libyang.h:
+
 /usr/include/c++/v1/__concepts/regular.h:
 
 /usr/include/c++/v1/__algorithm/for_each.h:
@@ -12161,7 +12301,9 @@ shared/CMakeFiles/netd_shared.dir/src/interface/ppp.cpp.o:
 
 /usr/include/c++/v1/__iterator/prev.h:
 
-/usr/include/c++/v1/__locale_dir/locale_base_api/bsd_locale_defaults.h:
+/usr/include/c++/v1/__format/formatter_tuple.h:
+
+/usr/include/c++/v1/__algorithm/shuffle.h:
 
 /home/sq/netd/shared/src/interface.cpp:
 
@@ -12263,8 +12405,6 @@ shared/CMakeFiles/netd_shared.dir/src/interface/vlan.cpp.o:
 
 /usr/include/c++/v1/__concepts/invocable.h:
 
-/usr/include/c++/v1/__format/format_args.h:
-
 /usr/include/c++/v1/__iterator/bounded_iter.h:
 
 /usr/include/c++/v1/wchar.h:
@@ -12272,8 +12412,6 @@ shared/CMakeFiles/netd_shared.dir/src/interface/vlan.cpp.o:
 /usr/include/c++/v1/__chrono/duration.h:
 
 /usr/include/c++/v1/__functional/hash.h:
-
-/usr/include/c++/v1/__fwd/stack.h:
 
 /home/sq/netd/shared/src/interface/ppp.cpp:
 
@@ -12339,8 +12477,6 @@ shared/CMakeFiles/netd_shared.dir/src/interface/vlan.cpp.o:
 
 /usr/include/c++/v1/__compare/compare_three_way_result.h:
 
-/usr/include/c++/v1/__format/formatter_char.h:
-
 /usr/include/c++/v1/__type_traits/is_core_convertible.h:
 
 /usr/include/c++/v1/__locale_dir/locale_base_api.h:
@@ -12389,8 +12525,6 @@ shared/CMakeFiles/netd_shared.dir/src/interface/vlan.cpp.o:
 
 /usr/include/c++/v1/__type_traits/is_arithmetic.h:
 
-/usr/include/c++/v1/__type_traits/add_rvalue_reference.h:
-
 /usr/include/c++/v1/__filesystem/u8path.h:
 
 /usr/include/c++/v1/__algorithm/ranges_is_heap.h:
@@ -12405,17 +12539,15 @@ shared/CMakeFiles/netd_shared.dir/src/interface/vlan.cpp.o:
 
 /usr/include/c++/v1/__concepts/constructible.h:
 
-/usr/include/c++/v1/__format/formatter_string.h:
-
-/usr/include/sys/_bitset.h:
-
-/usr/include/c++/v1/__algorithm/in_out_result.h:
-
 /usr/include/c++/v1/__functional/pointer_to_unary_function.h:
 
 /usr/include/sys/_timespec.h:
 
 /usr/include/sys/stdint.h:
+
+/usr/include/c++/v1/__format/escaped_output_table.h:
+
+/usr/include/c++/v1/__algorithm/iter_swap.h:
 
 /usr/include/c++/v1/__chrono/high_resolution_clock.h:
 
@@ -12476,10 +12608,6 @@ shared/CMakeFiles/netd_shared.dir/src/interface/base/ether.cpp.o:
 shared/CMakeFiles/netd_shared.dir/src/response.cpp.o:
 
 /usr/include/stdint.h:
-
-/usr/include/sys/bitset.h:
-
-/usr/include/c++/v1/__algorithm/copy_move_common.h:
 
 /usr/include/c++/v1/__fwd/string_view.h:
 

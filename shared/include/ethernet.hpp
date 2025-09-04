@@ -32,6 +32,18 @@
 
 namespace netd {
 
+/**
+ * Wrapper class for interface::base::Ether
+ * 
+ * This wrapper exists to provide a cleaner namespace structure:
+ * - interface::base::Ether is the actual implementation with all the methods
+ * - netd::Ethernet is a simple wrapper that inherits from interface::base::Ether
+ * 
+ * This allows interface classes to inherit from "Ethernet" instead of the 
+ * longer "interface::base::Ether" name, making the code more readable.
+ * 
+ * The wrapper adds no functionality - it just provides a shorter, cleaner name.
+ */
 class Ethernet : public interface::base::Ether {
 public:
     Ethernet() = default;

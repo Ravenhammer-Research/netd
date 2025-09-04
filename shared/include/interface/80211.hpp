@@ -33,14 +33,14 @@
 
 namespace netd {
 
-class WirelessInterface : public Ethernet, public base::Serialization<WirelessInterface> {
+class Ieee80211Interface : public Ethernet, public base::Serialization<Ieee80211Interface> {
 public:
-    WirelessInterface() = default;
-    virtual ~WirelessInterface() = default;
+    Ieee80211Interface() = default;
+    virtual ~Ieee80211Interface() = default;
 
     // Implement Serialization methods
     lyd_node* toYang() const override;
-    static WirelessInterface fromYang(const lyd_node* node);
+    static Ieee80211Interface fromYang(const lyd_node* node);
 
     // Wireless-specific functionality can be added here
 };

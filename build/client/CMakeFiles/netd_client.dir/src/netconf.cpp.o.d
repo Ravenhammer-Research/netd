@@ -459,5 +459,8 @@ client/CMakeFiles/netd_client.dir/src/netconf.cpp.o: \
   /usr/local/include/libyang/printer_data.h \
   /usr/local/include/libyang/printer_schema.h \
   /usr/local/include/libyang/set.h \
-  /home/sq/netd/shared/include/response.hpp /usr/include/sys/un.h \
-  /usr/include/unistd.h /usr/include/sys/unistd.h
+  /home/sq/netd/shared/include/response.hpp \
+  /usr/local/include/libnetconf2/session_client.h \
+  /usr/local/include/libnetconf2/messages_client.h \
+  /usr/local/include/libnetconf2/netconf.h \
+  /usr/local/include/libnetconf2/session.h

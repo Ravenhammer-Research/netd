@@ -29,33 +29,48 @@
 #define NETD_REQUEST_HPP
 
 #include <string>
+#include <memory>
 #include <shared/include/base/serialization.hpp>
 
 namespace netd {
+
+enum class RequestType {
+    GET_CONFIG,
+    EDIT_CONFIG,
+    COMMIT,
+    UNKNOWN
+};
 
 class Request : public base::Serialization<Request> {
 public:
     Request() = default;
     explicit Request(const std::string& type, const std::string& data);
+    Request(const std::string& type, const std::string& data, const std::string& messageId);
     virtual ~Request() = default;
+
+    // Request properties
+    virtual std::string getType() const { return type_; }
+    virtual RequestType getRequestType() const;
+    virtual std::string getData() const { return data_; }
+    virtual std::string getMessageId() const { return messageId_; }
+    void setType(const std::string& type) { type_ = type; }
+    void setData(const std::string& data) { data_ = data; }
+    void setMessageId(const std::string& messageId) { messageId_ = messageId; }
+
+    // Generate unique message ID
+    static std::string generateMessageId();
+
+    // Parse request from string
+    static std::unique_ptr<Request> fromString(const std::string& request);
 
     // Implement Serialization methods
     lyd_node* toYang() const override;
     static Request fromYang(const lyd_node* node);
 
-    // Request properties
-    virtual std::string getType() const { return type_; }
-    virtual std::string getData() const { return data_; }
-    void setType(const std::string& type) { type_ = type; }
-    void setData(const std::string& data) { data_ = data; }
-
-    // NETCONF-specific methods
-    virtual std::string toNetconfRequest() const;
-    static Request fromNetconfRequest(const std::string& request);
-
 private:
     std::string type_;
     std::string data_;
+    std::string messageId_;
 };
 
 // Concrete NETCONF request classes
@@ -65,17 +80,16 @@ public:
     explicit GetConfigRequest(const std::string& source);
     virtual ~GetConfigRequest() = default;
 
-    // Implement Request methods
-    lyd_node* toYang() const override;
-    static GetConfigRequest fromYang(const lyd_node* node);
     std::string getType() const override { return "get-config"; }
+    RequestType getRequestType() const override { return RequestType::GET_CONFIG; }
     std::string getData() const override { return source_; }
-    std::string toNetconfRequest() const override;
-    static GetConfigRequest fromNetconfRequest(const std::string& request);
 
     // GetConfig-specific methods
     std::string getSource() const { return source_; }
     void setSource(const std::string& source) { source_ = source; }
+
+    // Implement Serialization methods
+    static GetConfigRequest fromYang(const lyd_node* node);
 
 private:
     std::string source_{"running"};
@@ -87,19 +101,18 @@ public:
     explicit EditConfigRequest(const std::string& target, const std::string& config);
     virtual ~EditConfigRequest() = default;
 
-    // Implement Request methods
-    lyd_node* toYang() const override;
-    static EditConfigRequest fromYang(const lyd_node* node);
     std::string getType() const override { return "edit-config"; }
+    RequestType getRequestType() const override { return RequestType::EDIT_CONFIG; }
     std::string getData() const override { return config_; }
-    std::string toNetconfRequest() const override;
-    static EditConfigRequest fromNetconfRequest(const std::string& request);
 
     // EditConfig-specific methods
     std::string getTarget() const { return target_; }
     std::string getConfig() const { return config_; }
     void setTarget(const std::string& target) { target_ = target; }
     void setConfig(const std::string& config) { config_ = config; }
+
+    // Implement Serialization methods
+    static EditConfigRequest fromYang(const lyd_node* node);
 
 private:
     std::string target_{"candidate"};
@@ -111,13 +124,12 @@ public:
     CommitRequest() = default;
     virtual ~CommitRequest() = default;
 
-    // Implement Request methods
-    lyd_node* toYang() const override;
-    static CommitRequest fromYang(const lyd_node* node);
     std::string getType() const override { return "commit"; }
+    RequestType getRequestType() const override { return RequestType::COMMIT; }
     std::string getData() const override { return ""; }
-    std::string toNetconfRequest() const override;
-    static CommitRequest fromNetconfRequest(const std::string& request);
+
+    // Implement Serialization methods
+    static CommitRequest fromYang(const lyd_node* node);
 };
 
 } // namespace netd

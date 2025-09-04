@@ -43,7 +43,7 @@ namespace freebsd {
 namespace interface {
 
 WifiInterface::WifiInterface()
-    : netd::WirelessInterface(),
+    : netd::Ieee80211Interface(),
       name_(""),
       ssid_(""),
       channel_(0),
@@ -53,7 +53,7 @@ WifiInterface::WifiInterface()
 }
 
 WifiInterface::WifiInterface(const std::string& name)
-    : netd::WirelessInterface(),
+    : netd::Ieee80211Interface(),
       name_(name),
       ssid_(""),
       channel_(0),
@@ -182,9 +182,9 @@ std::string WifiInterface::getSecurity() const {
     return security_;
 }
 
-WifiInterface::operator netd::WirelessInterface() const {
+WifiInterface::operator netd::Ieee80211Interface() const {
     // Cast to shared interface - we inherit from it so this is safe
-    return static_cast<const netd::WirelessInterface&>(*this);
+    return static_cast<const netd::Ieee80211Interface&>(*this);
 }
 
 bool WifiInterface::openSocket() {

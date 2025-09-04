@@ -36,7 +36,8 @@ namespace netd {
 class Response : public base::Serialization<Response> {
 public:
     Response() = default;
-    explicit Response(const std::string& type, const std::string& data, bool success = true);
+    explicit Response(const std::string& messageId, bool success = true);
+    Response(const std::string& messageId, const std::string& data, bool success = true);
     virtual ~Response() = default;
 
     // Implement Serialization methods
@@ -44,16 +45,16 @@ public:
     static Response fromYang(const lyd_node* node);
 
     // Response properties
-    virtual std::string getType() const { return type_; }
+    virtual std::string getMessageId() const { return messageId_; }
     virtual std::string getData() const { return data_; }
     virtual bool isSuccess() const { return success_; }
     
-    void setType(const std::string& type) { type_ = type; }
+    void setMessageId(const std::string& messageId) { messageId_ = messageId; }
     void setData(const std::string& data) { data_ = data; }
     void setSuccess(bool success) { success_ = success; }
 
 private:
-    std::string type_;
+    std::string messageId_;
     std::string data_;
     bool success_;
 };

@@ -3,8 +3,11 @@
 
 client/CMakeFiles/netd_client.dir/src/main.cpp.o: /home/sq/netd/client/src/main.cpp \
   /home/sq/netd/client/include/netconf.hpp \
+  /home/sq/netd/shared/include/base/serialization.hpp \
   /home/sq/netd/shared/include/logger.hpp \
+  /home/sq/netd/shared/include/response.hpp \
   /usr/include/_ctype.h \
+  /usr/include/arpa/inet.h \
   /usr/include/c++/v1/__algorithm/clamp.h \
   /usr/include/c++/v1/__algorithm/comp.h \
   /usr/include/c++/v1/__algorithm/comp_ref_type.h \
@@ -485,6 +488,7 @@ client/CMakeFiles/netd_client.dir/src/main.cpp.o: /home/sq/netd/client/src/main.
   /usr/include/c++/v1/format \
   /usr/include/c++/v1/functional \
   /usr/include/c++/v1/initializer_list \
+  /usr/include/c++/v1/inttypes.h \
   /usr/include/c++/v1/ios \
   /usr/include/c++/v1/iosfwd \
   /usr/include/c++/v1/iostream \
@@ -517,13 +521,18 @@ client/CMakeFiles/netd_client.dir/src/main.cpp.o: /home/sq/netd/client/src/main.
   /usr/include/c++/v1/wctype.h \
   /usr/include/ctype.h \
   /usr/include/errno.h \
+  /usr/include/inttypes.h \
   /usr/include/limits.h \
   /usr/include/locale.h \
+  /usr/include/machine/_align.h \
+  /usr/include/machine/_inttypes.h \
   /usr/include/machine/_limits.h \
   /usr/include/machine/_stdint.h \
   /usr/include/machine/_types.h \
   /usr/include/machine/endian.h \
   /usr/include/math.h \
+  /usr/include/netinet/in.h \
+  /usr/include/netinet6/in6.h \
   /usr/include/nl_types.h \
   /usr/include/pthread.h \
   /usr/include/runetype.h \
@@ -538,10 +547,12 @@ client/CMakeFiles/netd_client.dir/src/main.cpp.o: /home/sq/netd/client/src/main.
   /usr/include/sys/_clock_id.h \
   /usr/include/sys/_cpuset.h \
   /usr/include/sys/_endian.h \
+  /usr/include/sys/_iovec.h \
   /usr/include/sys/_null.h \
   /usr/include/sys/_pthreadtypes.h \
   /usr/include/sys/_sigset.h \
   /usr/include/sys/_sigval.h \
+  /usr/include/sys/_sockaddr_storage.h \
   /usr/include/sys/_stdint.h \
   /usr/include/sys/_timespec.h \
   /usr/include/sys/_timeval.h \
@@ -553,6 +564,8 @@ client/CMakeFiles/netd_client.dir/src/main.cpp.o: /home/sq/netd/client/src/main.
   /usr/include/sys/limits.h \
   /usr/include/sys/sched.h \
   /usr/include/sys/select.h \
+  /usr/include/sys/socket.h \
+  /usr/include/sys/stdint.h \
   /usr/include/sys/syslimits.h \
   /usr/include/sys/timespec.h \
   /usr/include/sys/types.h \
@@ -560,19 +573,42 @@ client/CMakeFiles/netd_client.dir/src/main.cpp.o: /home/sq/netd/client/src/main.
   /usr/include/unistd.h \
   /usr/include/wchar.h \
   /usr/include/wctype.h \
+  /usr/include/x86/_align.h \
+  /usr/include/x86/_inttypes.h \
   /usr/include/x86/_limits.h \
   /usr/include/x86/_stdint.h \
   /usr/include/x86/_types.h \
   /usr/include/x86/endian.h \
   /usr/include/xlocale.h \
   /usr/include/xlocale/_ctype.h \
+  /usr/include/xlocale/_inttypes.h \
   /usr/include/xlocale/_locale.h \
   /usr/include/xlocale/_stdio.h \
   /usr/include/xlocale/_stdlib.h \
   /usr/include/xlocale/_string.h \
   /usr/include/xlocale/_strings.h \
   /usr/include/xlocale/_time.h \
-  /usr/include/xlocale/_wchar.h
+  /usr/include/xlocale/_wchar.h \
+  /usr/local/include/libyang/context.h \
+  /usr/local/include/libyang/dict.h \
+  /usr/local/include/libyang/in.h \
+  /usr/local/include/libyang/libyang.h \
+  /usr/local/include/libyang/log.h \
+  /usr/local/include/libyang/ly_config.h \
+  /usr/local/include/libyang/metadata.h \
+  /usr/local/include/libyang/out.h \
+  /usr/local/include/libyang/parser_data.h \
+  /usr/local/include/libyang/parser_schema.h \
+  /usr/local/include/libyang/plugins.h \
+  /usr/local/include/libyang/plugins_exts.h \
+  /usr/local/include/libyang/printer_data.h \
+  /usr/local/include/libyang/printer_schema.h \
+  /usr/local/include/libyang/set.h \
+  /usr/local/include/libyang/tree.h \
+  /usr/local/include/libyang/tree_data.h \
+  /usr/local/include/libyang/tree_edit.h \
+  /usr/local/include/libyang/tree_schema.h \
+  /usr/local/include/pcre2.h
 
 client/CMakeFiles/netd_client.dir/src/netconf.cpp.o: /home/sq/netd/client/src/netconf.cpp \
   /home/sq/netd/shared/include/base/serialization.hpp \
@@ -1064,10 +1100,7 @@ client/CMakeFiles/netd_client.dir/src/netconf.cpp.o: /home/sq/netd/client/src/ne
   /usr/include/sys/syslimits.h \
   /usr/include/sys/timespec.h \
   /usr/include/sys/types.h \
-  /usr/include/sys/un.h \
-  /usr/include/sys/unistd.h \
   /usr/include/time.h \
-  /usr/include/unistd.h \
   /usr/include/wchar.h \
   /usr/include/wctype.h \
   /usr/include/x86/_align.h \
@@ -1086,6 +1119,10 @@ client/CMakeFiles/netd_client.dir/src/netconf.cpp.o: /home/sq/netd/client/src/ne
   /usr/include/xlocale/_strings.h \
   /usr/include/xlocale/_time.h \
   /usr/include/xlocale/_wchar.h \
+  /usr/local/include/libnetconf2/messages_client.h \
+  /usr/local/include/libnetconf2/netconf.h \
+  /usr/local/include/libnetconf2/session.h \
+  /usr/local/include/libnetconf2/session_client.h \
   /usr/local/include/libyang/context.h \
   /usr/local/include/libyang/dict.h \
   /usr/local/include/libyang/in.h \
@@ -1636,6 +1673,14 @@ client/CMakeFiles/netd_client.dir/src/main.cpp.o:
 
 shared/libnetd_shared.so.1.0.0:
 
+/usr/local/include/libnetconf2/session_client.h:
+
+/usr/local/include/libnetconf2/session.h:
+
+/usr/local/include/libnetconf2/netconf.h:
+
+/home/sq/netd/shared/include/request.hpp:
+
 /usr/local/include/libyang/tree_data.h:
 
 /usr/local/include/libyang/tree.h:
@@ -1644,29 +1689,11 @@ shared/libnetd_shared.so.1.0.0:
 
 /usr/local/include/libyang/plugins.h:
 
-/usr/local/include/libyang/in.h:
-
-/usr/include/xlocale/_inttypes.h:
-
-/usr/include/sys/stdint.h:
-
-/usr/include/sys/_sockaddr_storage.h:
-
-/usr/include/sys/_iovec.h:
-
-/usr/include/netinet6/in6.h:
-
-/usr/include/machine/_align.h:
-
-/home/sq/netd/shared/include/response.hpp:
-
-/home/sq/netd/shared/include/request.hpp:
-
-/home/sq/netd/shared/include/base/serialization.hpp:
+/home/sq/netd/client/src/netconf.cpp:
 
 /usr/local/include/libyang/ly_config.h:
 
-/home/sq/netd/client/src/netconf.cpp:
+/usr/local/include/libyang/in.h:
 
 /usr/include/xlocale/_wchar.h:
 
@@ -1675,6 +1702,8 @@ shared/libnetd_shared.so.1.0.0:
 /usr/include/xlocale/_strings.h:
 
 /usr/include/xlocale/_locale.h:
+
+/usr/include/xlocale/_inttypes.h:
 
 /usr/local/include/libyang/dict.h:
 
@@ -1692,6 +1721,8 @@ shared/libnetd_shared.so.1.0.0:
 
 /usr/include/sys/syslimits.h:
 
+/usr/include/sys/stdint.h:
+
 /usr/include/sys/cdefs.h:
 
 /usr/include/sys/bitset.h:
@@ -1700,7 +1731,11 @@ shared/libnetd_shared.so.1.0.0:
 
 /usr/include/sys/_stdint.h:
 
+/usr/include/sys/_sockaddr_storage.h:
+
 /usr/include/sys/_sigval.h:
+
+/usr/include/sys/_iovec.h:
 
 /usr/include/sys/_clock_id.h:
 
@@ -1724,6 +1759,8 @@ shared/libnetd_shared.so.1.0.0:
 
 /usr/include/pthread.h:
 
+/usr/include/netinet6/in6.h:
+
 /usr/include/math.h:
 
 /usr/include/machine/_types.h:
@@ -1731,6 +1768,8 @@ shared/libnetd_shared.so.1.0.0:
 /usr/include/x86/_align.h:
 
 /usr/include/machine/_stdint.h:
+
+/usr/include/machine/_align.h:
 
 /usr/include/time.h:
 
@@ -1816,6 +1855,8 @@ shared/libnetd_shared.so.1.0.0:
 
 /usr/include/c++/v1/__utility/private_constructor_tag.h:
 
+/usr/local/include/libnetconf2/messages_client.h:
+
 /usr/include/c++/v1/__utility/piecewise_construct.h:
 
 /usr/include/c++/v1/__utility/no_destroy.h:
@@ -1896,6 +1937,20 @@ shared/libnetd_shared.so.1.0.0:
 
 /usr/include/c++/v1/__type_traits/is_signed_integer.h:
 
+client/CMakeFiles/netd_client.dir/src/terminal.cpp.o:
+
+/usr/include/sys/_null.h:
+
+/usr/include/c++/v1/__type_traits/is_signed.h:
+
+/usr/include/c++/v1/ios:
+
+/usr/include/c++/v1/__type_traits/is_scalar.h:
+
+/usr/include/c++/v1/__utility/pair.h:
+
+/usr/include/c++/v1/__type_traits/is_same.h:
+
 /usr/include/c++/v1/__type_traits/is_reference.h:
 
 /usr/include/c++/v1/__iterator/move_iterator.h:
@@ -1960,9 +2015,9 @@ shared/libnetd_shared.so.1.0.0:
 
 /usr/include/c++/v1/__type_traits/copy_cv.h:
 
-/usr/include/sys/socket.h:
-
 /usr/include/xlocale/_stdlib.h:
+
+/usr/include/sys/socket.h:
 
 /usr/include/sys/_pthreadtypes.h:
 
@@ -2106,10 +2161,6 @@ shared/libnetd_shared.so.1.0.0:
 
 /usr/include/c++/v1/__memory/builtin_new_allocator.h:
 
-/usr/include/c++/v1/__iterator/readable_traits.h:
-
-/usr/include/c++/v1/__memory/auto_ptr.h:
-
 /usr/include/nl_types.h:
 
 /usr/include/c++/v1/__concepts/swappable.h:
@@ -2208,6 +2259,10 @@ shared/libnetd_shared.so.1.0.0:
 
 /usr/include/c++/v1/__memory/compressed_pair.h:
 
+/usr/include/c++/v1/__memory/auto_ptr.h:
+
+/usr/include/c++/v1/__iterator/readable_traits.h:
+
 /usr/include/c++/v1/__format/buffer.h:
 
 /usr/include/c++/v1/__iterator/default_sentinel.h:
@@ -2261,18 +2316,6 @@ shared/libnetd_shared.so.1.0.0:
 /usr/include/c++/v1/__assert:
 
 /usr/include/c++/v1/__fwd/ostream.h:
-
-/usr/include/c++/v1/cmath:
-
-/usr/include/c++/v1/__algorithm/lower_bound.h:
-
-/usr/include/c++/v1/__fwd/memory.h:
-
-/usr/include/c++/v1/__memory/uninitialized_algorithms.h:
-
-/usr/include/c++/v1/__functional/bind_front.h:
-
-/usr/include/c++/v1/__fwd/istream.h:
 
 /usr/include/c++/v1/__type_traits/is_member_object_pointer.h:
 
@@ -2446,14 +2489,6 @@ shared/libnetd_shared.so.1.0.0:
 
 /usr/include/c++/v1/__format/extended_grapheme_cluster_table.h:
 
-client/CMakeFiles/netd_client.dir/src/terminal.cpp.o:
-
-/usr/include/sys/_null.h:
-
-/usr/include/c++/v1/__type_traits/is_signed.h:
-
-/usr/include/c++/v1/__format/escaped_output_table.h:
-
 /usr/include/c++/v1/__type_traits/is_arithmetic.h:
 
 /usr/include/c++/v1/limits:
@@ -2566,8 +2601,6 @@ client/CMakeFiles/netd_client.dir/src/terminal.cpp.o:
 
 /usr/include/c++/v1/__concepts/equality_comparable.h:
 
-/usr/include/sys/unistd.h:
-
 /usr/include/x86/_stdint.h:
 
 /usr/include/c++/v1/__type_traits/type_list.h:
@@ -2589,12 +2622,6 @@ client/CMakeFiles/netd_client.dir/src/terminal.cpp.o:
 /usr/include/c++/v1/__concepts/arithmetic.h:
 
 /usr/include/c++/v1/__compare/synth_three_way.h:
-
-/usr/lib/libc++.so:
-
-/usr/include/inttypes.h:
-
-/usr/include/c++/v1/__algorithm/count.h:
 
 /usr/include/c++/v1/__compare/ordering.h:
 
@@ -2690,6 +2717,12 @@ client/CMakeFiles/netd_client.dir/src/terminal.cpp.o:
 
 /usr/include/c++/v1/__bit/bit_cast.h:
 
+/usr/include/c++/v1/__memory/uninitialized_algorithms.h:
+
+/usr/include/c++/v1/__fwd/istream.h:
+
+/usr/include/c++/v1/__functional/bind_front.h:
+
 /usr/include/c++/v1/__algorithm/ranges_copy_n.h:
 
 /usr/include/c++/v1/__memory/uses_allocator_construction.h:
@@ -2720,14 +2753,6 @@ client/CMakeFiles/netd_client.dir/src/terminal.cpp.o:
 
 /usr/include/c++/v1/__atomic/atomic_base.h:
 
-/usr/include/c++/v1/__algorithm/iter_swap.h:
-
-/usr/include/c++/v1/__type_traits/is_standard_layout.h:
-
-/usr/include/c++/v1/__charconv/to_chars_floating_point.h:
-
-/usr/include/c++/v1/__split_buffer:
-
 /usr/include/c++/v1/__format/width_estimation_table.h:
 
 /usr/include/c++/v1/__fwd/memory_resource.h:
@@ -2746,6 +2771,20 @@ client/CMakeFiles/netd_client.dir/src/terminal.cpp.o:
 
 /usr/include/c++/v1/__format/formatter.h:
 
+/usr/include/c++/v1/__algorithm/ranges_for_each.h:
+
+/usr/include/c++/v1/__algorithm/reverse.h:
+
+/usr/local/include/libyang/context.h:
+
+/usr/include/c++/v1/__type_traits/negation.h:
+
+/usr/include/c++/v1/__functional/binder2nd.h:
+
+/usr/lib/crtend.o:
+
+/usr/include/c++/v1/__format/formatter_pointer.h:
+
 /usr/include/c++/v1/__type_traits/is_final.h:
 
 /usr/include/c++/v1/__format/format_parse_context.h:
@@ -2760,33 +2799,35 @@ client/CMakeFiles/netd_client.dir/src/terminal.cpp.o:
 
 /usr/include/c++/v1/__bit/rotate.h:
 
-/usr/include/c++/v1/__utility/priority_tag.h:
+/usr/include/c++/v1/__type_traits/is_standard_layout.h:
 
-/usr/include/c++/v1/__functional/boyer_moore_searcher.h:
+/usr/include/c++/v1/__split_buffer:
 
-/usr/include/c++/v1/__type_traits/is_member_function_pointer.h:
-
-/usr/include/c++/v1/iostream:
-
-/usr/include/c++/v1/__algorithm/ranges_transform.h:
+/usr/include/c++/v1/__charconv/to_chars_floating_point.h:
 
 /usr/include/c++/v1/__algorithm/ranges_copy.h:
 
 /usr/include/c++/v1/__algorithm/min.h:
 
-/usr/include/c++/v1/__algorithm/ranges_for_each.h:
-
-/usr/include/c++/v1/__algorithm/reverse.h:
-
 /usr/include/c++/v1/__tuple/tuple_like_ext.h:
 
 /usr/include/c++/v1/__compare/compare_three_way.h:
+
+/home/sq/netd/shared/include/base/serialization.hpp:
 
 /usr/include/c++/v1/__type_traits/is_volatile.h:
 
 /usr/include/c++/v1/__type_traits/is_trivially_constructible.h:
 
 /usr/include/c++/v1/__charconv/chars_format.h:
+
+/usr/include/c++/v1/__fwd/memory.h:
+
+/usr/include/c++/v1/cmath:
+
+/usr/include/c++/v1/__algorithm/lower_bound.h:
+
+/usr/include/c++/v1/__algorithm/iter_swap.h:
 
 /usr/include/c++/v1/__system_error/error_category.h:
 
@@ -2798,21 +2839,81 @@ client/CMakeFiles/netd_client.dir/src/terminal.cpp.o:
 
 /usr/include/c++/v1/__fwd/deque.h:
 
+/usr/include/c++/v1/__algorithm/find_end.h:
+
 /usr/include/c++/v1/__math/trigonometric_functions.h:
 
-/usr/include/c++/v1/__algorithm/find_end.h:
+/usr/include/c++/v1/__algorithm/half_positive.h:
+
+/usr/include/netinet/in.h:
+
+/usr/include/c++/v1/__memory/addressof.h:
+
+/usr/local/include/libyang/tree_schema.h:
+
+/usr/include/c++/v1/__algorithm/is_permutation.h:
+
+/usr/include/c++/v1/compare:
+
+/usr/include/c++/v1/__algorithm/fill.h:
+
+/usr/include/_ctype.h:
+
+/usr/include/c++/v1/__algorithm/comp.h:
+
+/usr/include/c++/v1/__compare/compare_strong_order_fallback.h:
+
+/usr/include/c++/v1/__type_traits/desugars_to.h:
+
+/usr/include/c++/v1/__charconv/traits.h:
+
+/usr/lib/libc_nonshared.a:
+
+/usr/include/c++/v1/__algorithm/move.h:
+
+/usr/include/c++/v1/__ios/fpos.h:
+
+/usr/include/c++/v1/__fwd/queue.h:
+
+/usr/lib/libc++.so:
+
+/usr/include/inttypes.h:
+
+/usr/include/c++/v1/__algorithm/count.h:
+
+/usr/include/c++/v1/__utility/priority_tag.h:
+
+/usr/include/c++/v1/__functional/boyer_moore_searcher.h:
+
+/usr/include/c++/v1/__type_traits/is_member_function_pointer.h:
+
+/usr/include/c++/v1/iostream:
+
+/usr/include/c++/v1/__algorithm/ranges_transform.h:
+
+/usr/include/c++/v1/__algorithm/remove.h:
+
+/usr/include/c++/v1/__algorithm/max_element.h:
+
+/usr/include/c++/v1/__charconv/to_chars_result.h:
+
+/usr/include/c++/v1/__utility/empty.h:
+
+/usr/include/c++/v1/__fwd/functional.h:
 
 /usr/include/c++/v1/string_view:
 
 /usr/include/c++/v1/__type_traits/is_reference_wrapper.h:
-
-/usr/include/sys/un.h:
 
 /usr/include/c++/v1/cstdlib:
 
 /usr/include/c++/v1/__concepts/same_as.h:
 
 /usr/include/c++/v1/__memory_resource/memory_resource.h:
+
+/usr/include/c++/v1/__format/escaped_output_table.h:
+
+/home/sq/netd/shared/include/response.hpp:
 
 /usr/include/c++/v1/__std_mbstate_t.h:
 
@@ -2825,63 +2926,3 @@ client/CMakeFiles/netd_client.dir/src/terminal.cpp.o:
 /usr/include/c++/v1/__compare/compare_partial_order_fallback.h:
 
 /usr/include/c++/v1/__fwd/bit_reference.h:
-
-/usr/include/c++/v1/__charconv/to_chars_result.h:
-
-/usr/include/c++/v1/__algorithm/max_element.h:
-
-/usr/include/netinet/in.h:
-
-/usr/include/c++/v1/__memory/addressof.h:
-
-/usr/local/include/libyang/tree_schema.h:
-
-/usr/include/c++/v1/__algorithm/is_permutation.h:
-
-/usr/include/c++/v1/__utility/pair.h:
-
-/usr/include/c++/v1/__type_traits/is_same.h:
-
-/usr/include/c++/v1/compare:
-
-/usr/include/c++/v1/__algorithm/fill.h:
-
-/usr/include/c++/v1/__type_traits/desugars_to.h:
-
-/usr/include/c++/v1/__charconv/traits.h:
-
-/usr/include/c++/v1/__ios/fpos.h:
-
-/usr/include/c++/v1/__fwd/queue.h:
-
-/usr/lib/libc_nonshared.a:
-
-/usr/include/c++/v1/__algorithm/move.h:
-
-/usr/include/_ctype.h:
-
-/usr/local/include/libyang/context.h:
-
-/usr/include/c++/v1/__type_traits/negation.h:
-
-/usr/include/c++/v1/__functional/binder2nd.h:
-
-/usr/lib/crtend.o:
-
-/usr/include/c++/v1/__format/formatter_pointer.h:
-
-/usr/include/c++/v1/__algorithm/half_positive.h:
-
-/usr/include/c++/v1/ios:
-
-/usr/include/c++/v1/__type_traits/is_scalar.h:
-
-/usr/include/c++/v1/__algorithm/comp.h:
-
-/usr/include/c++/v1/__compare/compare_strong_order_fallback.h:
-
-/usr/include/c++/v1/__algorithm/remove.h:
-
-/usr/include/c++/v1/__utility/empty.h:
-
-/usr/include/c++/v1/__fwd/functional.h:

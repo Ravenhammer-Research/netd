@@ -502,4 +502,30 @@ client/CMakeFiles/netd_client.dir/src/main.cpp.o: \
   /usr/include/c++/v1/__memory/assume_aligned.h \
   /usr/include/c++/v1/__memory/ranges_uninitialized_algorithms.h \
   /usr/include/c++/v1/__memory/uses_allocator_construction.h \
-  /home/sq/netd/client/include/netconf.hpp
+  /home/sq/netd/client/include/netconf.hpp \
+  /home/sq/netd/shared/include/response.hpp \
+  /home/sq/netd/shared/include/base/serialization.hpp \
+  /usr/local/include/libyang/libyang.h \
+  /usr/local/include/libyang/ly_config.h /usr/include/arpa/inet.h \
+  /usr/include/netinet/in.h /usr/include/sys/_sockaddr_storage.h \
+  /usr/include/netinet6/in6.h /usr/include/sys/socket.h \
+  /usr/include/sys/_iovec.h /usr/include/machine/_align.h \
+  /usr/include/x86/_align.h /usr/local/include/libyang/context.h \
+  /usr/local/include/libyang/log.h \
+  /usr/local/include/libyang/parser_schema.h \
+  /usr/local/include/libyang/tree_data.h /usr/local/include/pcre2.h \
+  /usr/include/c++/v1/inttypes.h /usr/include/inttypes.h \
+  /usr/include/machine/_inttypes.h /usr/include/x86/_inttypes.h \
+  /usr/include/sys/stdint.h /usr/include/xlocale/_inttypes.h \
+  /usr/local/include/libyang/tree.h \
+  /usr/local/include/libyang/tree_schema.h \
+  /usr/local/include/libyang/dict.h /usr/local/include/libyang/in.h \
+  /usr/local/include/libyang/metadata.h \
+  /usr/local/include/libyang/plugins_exts.h \
+  /usr/local/include/libyang/parser_data.h \
+  /usr/local/include/libyang/plugins.h \
+  /usr/local/include/libyang/tree_edit.h \
+  /usr/local/include/libyang/out.h \
+  /usr/local/include/libyang/printer_data.h \
+  /usr/local/include/libyang/printer_schema.h \
+  /usr/local/include/libyang/set.h

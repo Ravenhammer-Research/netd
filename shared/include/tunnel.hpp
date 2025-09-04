@@ -32,6 +32,18 @@
 
 namespace netd {
 
+/**
+ * Wrapper class for interface::base::Tunnel
+ * 
+ * This wrapper exists to provide a cleaner namespace structure:
+ * - interface::base::Tunnel is the actual implementation with all the methods
+ * - netd::Tunnel is a simple wrapper that inherits from interface::base::Tunnel
+ * 
+ * This allows interface classes to inherit from "Tunnel" instead of the 
+ * longer "interface::base::Tunnel" name, making the code more readable.
+ * 
+ * The wrapper adds no functionality - it just provides a shorter, cleaner name.
+ */
 class Tunnel : public interface::base::Tunnel {
 public:
     Tunnel() = default;
