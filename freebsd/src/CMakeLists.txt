@@ -21,12 +21,16 @@ add_library(netd_freebsd STATIC
 target_include_directories(netd_freebsd
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/../..
+        ${LIBYANG_INCLUDE_DIRS}
+        ${LIBNETCONF2_INCLUDE_DIRS}
 )
 
 # Link against system libraries
 target_link_libraries(netd_freebsd
     PUBLIC
         netd_shared
+        yang
+        netconf2
 )
 
 # Set compile definitions for FreeBSD

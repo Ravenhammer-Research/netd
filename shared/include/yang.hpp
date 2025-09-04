@@ -50,6 +50,9 @@ public:
     static lyd_node* jsonToYang(ly_ctx* ctx, const std::string& json);
 };
 
+// Factory function to create Yang instance
+std::unique_ptr<Yang> createYang();
+
 } // namespace netd
 
 #endif // NETD_YANG_HPP

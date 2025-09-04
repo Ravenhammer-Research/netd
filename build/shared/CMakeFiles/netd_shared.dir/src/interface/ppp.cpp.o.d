@@ -322,6 +322,12 @@ shared/CMakeFiles/netd_shared.dir/src/interface/ppp.cpp.o: \
   /usr/include/sys/_endian.h /usr/include/sys/_sockaddr_storage.h \
   /usr/include/netinet6/in6.h /usr/include/arpa/inet.h \
   /home/sq/netd/shared/include/base/serialization.hpp \
+  /usr/local/include/libyang/libyang.h \
+  /usr/local/include/libyang/ly_config.h /usr/include/sys/socket.h \
+  /usr/include/sys/_iovec.h /usr/include/sys/_timeval.h \
+  /usr/include/machine/_align.h /usr/include/x86/_align.h \
+  /usr/local/include/libyang/context.h /usr/local/include/libyang/log.h \
+  /usr/local/include/libyang/parser_schema.h \
   /usr/local/include/libyang/tree_data.h /usr/local/include/pcre2.h \
   /usr/include/c++/v1/stdlib.h /usr/include/stdlib.h \
   /usr/include/c++/v1/inttypes.h /usr/include/inttypes.h \
@@ -329,9 +335,86 @@ shared/CMakeFiles/netd_shared.dir/src/interface/ppp.cpp.o: \
   /usr/include/sys/stdint.h /usr/include/time.h \
   /usr/include/sys/_clock_id.h /usr/include/sys/timespec.h \
   /usr/include/sys/_timespec.h /usr/include/xlocale/_time.h \
-  /usr/local/include/libyang/log.h \
-  /usr/local/include/libyang/ly_config.h /usr/include/sys/socket.h \
-  /usr/include/sys/_iovec.h /usr/include/sys/_timeval.h \
-  /usr/include/machine/_align.h /usr/include/x86/_align.h \
   /usr/local/include/libyang/tree.h \
-  /usr/local/include/libyang/tree_schema.h
+  /usr/local/include/libyang/tree_schema.h \
+  /usr/local/include/libyang/dict.h /usr/local/include/libyang/in.h \
+  /usr/local/include/libyang/metadata.h \
+  /usr/local/include/libyang/plugins_exts.h \
+  /usr/local/include/libyang/parser_data.h \
+  /usr/local/include/libyang/plugins.h \
+  /usr/local/include/libyang/tree_edit.h \
+  /usr/local/include/libyang/out.h /usr/include/sys/types.h \
+  /usr/include/sys/_pthreadtypes.h /usr/include/sys/bitcount.h \
+  /usr/include/sys/select.h /usr/include/sys/_sigset.h \
+  /usr/local/include/libyang/printer_data.h \
+  /usr/local/include/libyang/printer_schema.h \
+  /usr/local/include/libyang/set.h \
+  /home/sq/netd/shared/include/interface/base/ether.hpp \
+  /usr/include/c++/v1/vector /usr/include/c++/v1/__algorithm/equal.h \
+  /usr/include/c++/v1/__algorithm/lexicographical_compare.h \
+  /usr/include/c++/v1/__algorithm/lexicographical_compare_three_way.h \
+  /usr/include/c++/v1/__algorithm/three_way_comp_ref_type.h \
+  /usr/include/c++/v1/__algorithm/rotate.h \
+  /usr/include/c++/v1/__algorithm/move_backward.h \
+  /usr/include/c++/v1/__algorithm/swap_ranges.h \
+  /usr/include/c++/v1/__bit_reference \
+  /usr/include/c++/v1/__algorithm/copy_n.h \
+  /usr/include/c++/v1/__bit/popcount.h \
+  /usr/include/c++/v1/__format/formatter.h \
+  /usr/include/c++/v1/__fwd/format.h \
+  /usr/include/c++/v1/__format/formatter_bool.h \
+  /usr/include/c++/v1/__format/concepts.h \
+  /usr/include/c++/v1/__format/format_parse_context.h \
+  /usr/include/c++/v1/__format/format_error.h \
+  /usr/include/c++/v1/__format/formatter_integral.h \
+  /usr/include/c++/v1/__charconv/to_chars_integral.h \
+  /usr/include/c++/v1/__bit/countl.h \
+  /usr/include/c++/v1/__charconv/tables.h \
+  /usr/include/c++/v1/__charconv/to_chars_base_10.h \
+  /usr/include/c++/v1/__charconv/to_chars_result.h \
+  /usr/include/c++/v1/__system_error/errc.h /usr/include/c++/v1/cerrno \
+  /usr/include/c++/v1/errno.h /usr/include/errno.h \
+  /usr/include/c++/v1/__charconv/traits.h \
+  /usr/include/c++/v1/__type_traits/make_32_64_or_128_bit.h \
+  /usr/include/c++/v1/__format/formatter_output.h \
+  /usr/include/c++/v1/__algorithm/ranges_copy.h \
+  /usr/include/c++/v1/__algorithm/ranges_fill_n.h \
+  /usr/include/c++/v1/__algorithm/ranges_transform.h \
+  /usr/include/c++/v1/__algorithm/in_in_out_result.h \
+  /usr/include/c++/v1/__iterator/projected.h \
+  /usr/include/c++/v1/__format/buffer.h \
+  /usr/include/c++/v1/__algorithm/ranges_copy_n.h \
+  /usr/include/c++/v1/__iterator/unreachable_sentinel.h \
+  /usr/include/c++/v1/__algorithm/transform.h \
+  /usr/include/c++/v1/__format/format_to_n_result.h \
+  /usr/include/c++/v1/__iterator/back_insert_iterator.h \
+  /usr/include/c++/v1/__format/parser_std_format_spec.h \
+  /usr/include/c++/v1/__format/format_arg.h \
+  /usr/include/c++/v1/__variant/monostate.h \
+  /usr/include/c++/v1/__format/format_string.h \
+  /usr/include/c++/v1/__format/unicode.h \
+  /usr/include/c++/v1/__format/extended_grapheme_cluster_table.h \
+  /usr/include/c++/v1/__algorithm/ranges_upper_bound.h \
+  /usr/include/c++/v1/__algorithm/lower_bound.h \
+  /usr/include/c++/v1/__algorithm/half_positive.h \
+  /usr/include/c++/v1/__functional/ranges_operations.h \
+  /usr/include/c++/v1/__format/indic_conjunct_break_table.h \
+  /usr/include/c++/v1/__format/width_estimation_table.h \
+  /usr/include/c++/v1/array /usr/include/c++/v1/__utility/empty.h \
+  /usr/include/c++/v1/__locale \
+  /usr/include/c++/v1/__locale_dir/locale_base_api.h \
+  /usr/include/xlocale.h /usr/include/c++/v1/locale.h \
+  /usr/include/locale.h /usr/include/xlocale/_locale.h \
+  /usr/include/xlocale/_inttypes.h /usr/include/xlocale/_stdlib.h \
+  /usr/include/xlocale/_stdio.h /usr/include/c++/v1/__mutex/once_flag.h \
+  /usr/include/c++/v1/__utility/no_destroy.h \
+  /usr/include/c++/v1/__utility/private_constructor_tag.h \
+  /usr/include/c++/v1/clocale /usr/include/c++/v1/cstdlib \
+  /usr/include/c++/v1/__fwd/vector.h \
+  /usr/include/c++/v1/__memory/temp_value.h \
+  /usr/include/c++/v1/__type_traits/aligned_storage.h \
+  /usr/include/c++/v1/__split_buffer \
+  /usr/include/c++/v1/__iterator/move_iterator.h \
+  /usr/include/c++/v1/__iterator/move_sentinel.h \
+  /usr/include/c++/v1/__type_traits/is_trivially_destructible.h \
+  /home/sq/netd/shared/include/yang.hpp

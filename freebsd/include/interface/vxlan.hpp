@@ -33,15 +33,14 @@
 #include <memory>
 #include <vector>
 
-#include <shared/include/tunnel.hpp>
+#include <shared/include/interface/vxlan.hpp>
 #include <shared/include/base/serialization.hpp>
 
 namespace netd {
 namespace freebsd {
 namespace interface {
 
-class VxlanInterface : public netd::Tunnel, 
-                      public netd::base::Serialization<VxlanInterface> {
+class VxlanInterface : public netd::VxlanInterface {
 public:
     VxlanInterface();
     explicit VxlanInterface(const std::string& name);
@@ -69,9 +68,8 @@ public:
     // Statistics and information
     std::string getType() const { return "vxlan"; }
 
-    // Serialization
-    lyd_node* toYang() const override;
-    static VxlanInterface fromYang(const lyd_node* node);
+    // Conversion to shared interface for serialization
+    operator netd::VxlanInterface() const;
 
 private:
     // Interface name

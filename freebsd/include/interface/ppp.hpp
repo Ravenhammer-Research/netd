@@ -33,15 +33,14 @@
 #include <memory>
 #include <vector>
 
-#include <shared/include/ethernet.hpp>
+#include <shared/include/interface/ppp.hpp>
 #include <shared/include/base/serialization.hpp>
 
 namespace netd {
 namespace freebsd {
 namespace interface {
 
-class PppInterface : public netd::Ethernet, 
-                     public netd::base::Serialization<PppInterface> {
+class PppInterface : public netd::PppInterface {
 public:
     PppInterface();
     explicit PppInterface(const std::string& name);
@@ -67,9 +66,8 @@ public:
     // Statistics and information
     std::string getType() const { return "ppp"; }
 
-    // Serialization
-    lyd_node* toYang() const override;
-    static PppInterface fromYang(const lyd_node* node);
+    // Conversion to shared interface for serialization
+    operator netd::PppInterface() const;
 
 private:
     // Interface name

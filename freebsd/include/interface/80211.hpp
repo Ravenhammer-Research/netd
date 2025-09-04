@@ -33,15 +33,14 @@
 #include <memory>
 #include <vector>
 
-#include <shared/include/ethernet.hpp>
+#include <shared/include/interface/80211.hpp>
 #include <shared/include/base/serialization.hpp>
 
 namespace netd {
 namespace freebsd {
 namespace interface {
 
-class WifiInterface : public netd::Ethernet, 
-                      public netd::base::Serialization<WifiInterface> {
+class WifiInterface : public netd::WirelessInterface {
 public:
     WifiInterface();
     explicit WifiInterface(const std::string& name);
@@ -69,9 +68,8 @@ public:
     // Statistics and information
     std::string getType() const { return "80211"; }
 
-    // Serialization
-    lyd_node* toYang() const override;
-    static WifiInterface fromYang(const lyd_node* node);
+    // Conversion to shared interface for serialization
+    operator netd::WirelessInterface() const;
 
 private:
     // Interface name

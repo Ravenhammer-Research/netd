@@ -43,8 +43,7 @@ namespace freebsd {
 namespace interface {
 
 EthernetInterface::EthernetInterface()
-    : netd::Ethernet(),
-      netd::base::Serialization<EthernetInterface>(),
+    : netd::EthernetInterface(),
       name_(""),
       duplex_("auto"),
       speed_(0),
@@ -54,8 +53,7 @@ EthernetInterface::EthernetInterface()
 }
 
 EthernetInterface::EthernetInterface(const std::string& name)
-    : netd::Ethernet(),
-      netd::base::Serialization<EthernetInterface>(),
+    : netd::EthernetInterface(),
       name_(name),
       duplex_("auto"),
       speed_(0),
@@ -184,14 +182,9 @@ bool EthernetInterface::isFlowControlEnabled() const {
     return flowControl_;
 }
 
-lyd_node* EthernetInterface::toYang() const {
-    // TODO: Implement YANG serialization using libyang
-    return nullptr;
-}
-
-EthernetInterface EthernetInterface::fromYang(const lyd_node* node) {
-    // TODO: Implement YANG deserialization using libyang
-    return EthernetInterface();
+EthernetInterface::operator netd::EthernetInterface() const {
+    // Cast to shared interface - we inherit from it so this is safe
+    return static_cast<const netd::EthernetInterface&>(*this);
 }
 
 bool EthernetInterface::openSocket() {

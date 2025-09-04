@@ -26,19 +26,71 @@
  */
 
 #include <shared/include/tunnel.hpp>
+#include <shared/include/interface/base/ether.hpp>
 #include <shared/include/base/serialization.hpp>
+#include <shared/include/yang.hpp>
 #include <libyang/tree_data.h>
 
 namespace netd {
 
-class PppInterface : public Tunnel, public base::Serialization<PppInterface> {
+class PppInterface : public interface::base::Ether, public Tunnel, public base::Serialization<PppInterface> {
 public:
     PppInterface() = default;
     virtual ~PppInterface() = default;
 
     // Implement Serialization methods
-    lyd_node* toYang() const override { return nullptr; }
-    static PppInterface fromYang(const lyd_node* node) { return PppInterface(); }
+    lyd_node* toYang() const override {
+        // Create YANG context and serialize PPP interface
+        auto yang = createYang();
+        ly_ctx* ctx = yang->getContext();
+        
+        if (!ctx) {
+            return nullptr;
+        }
+        
+        // Create interface node using ietf-interfaces schema
+        lyd_node* interfaces = nullptr;
+        lyd_node* interface = nullptr;
+        
+        // Create the interfaces container
+        if (lyd_new_path(nullptr, ctx, "/ietf-interfaces:interfaces", nullptr, 0, &interfaces) != LY_SUCCESS) {
+            return nullptr;
+        }
+        
+        // Create the interface list entry
+        std::string name = getName();
+        std::string path = "/ietf-interfaces:interfaces/interface[name='" + name + "']";
+        if (lyd_new_path(interfaces, ctx, path.c_str(), nullptr, 0, &interface) != LY_SUCCESS) {
+            lyd_free_tree(interfaces);
+            return nullptr;
+        }
+        
+        // Set interface type
+        lyd_node* typeNode = nullptr;
+        std::string typePath = path + "/type";
+        if (lyd_new_path(interface, ctx, typePath.c_str(), "iana-if-type:ppp", 0, &typeNode) != LY_SUCCESS) {
+            lyd_free_tree(interfaces);
+            return nullptr;
+        }
+        
+        // Set interface enabled state
+        lyd_node* enabledNode = nullptr;
+        std::string enabledPath = path + "/enabled";
+        std::string enabled = isUp() ? "true" : "false";
+        if (lyd_new_path(interface, ctx, enabledPath.c_str(), enabled.c_str(), 0, &enabledNode) != LY_SUCCESS) {
+            lyd_free_tree(interfaces);
+            return nullptr;
+        }
+        
+        // TODO: Add PPP-specific YANG extensions (authentication, etc.)
+        
+        return interfaces;
+    }
+    
+    static PppInterface fromYang(const lyd_node* node) {
+        // TODO: Implement YANG deserialization for PPP interfaces
+        return PppInterface();
+    }
 };
 
 } // namespace netd

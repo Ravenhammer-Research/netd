@@ -284,7 +284,38 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: \
   /usr/include/c++/v1/__iterator/reverse_access.h \
   /usr/include/c++/v1/__iterator/size.h \
   /home/sq/netd/freebsd/src/../../shared/include/base/serialization.hpp \
-  /usr/include/c++/v1/vector /usr/include/c++/v1/__algorithm/copy.h \
+  /usr/local/include/libyang/libyang.h \
+  /usr/local/include/libyang/ly_config.h /usr/include/arpa/inet.h \
+  /usr/include/machine/endian.h /usr/include/x86/endian.h \
+  /usr/include/sys/_endian.h /usr/include/netinet/in.h \
+  /usr/include/sys/_sockaddr_storage.h /usr/include/netinet6/in6.h \
+  /usr/include/sys/socket.h /usr/include/sys/_iovec.h \
+  /usr/include/sys/_timeval.h /usr/include/machine/_align.h \
+  /usr/include/x86/_align.h /usr/local/include/libyang/context.h \
+  /usr/local/include/libyang/log.h \
+  /usr/local/include/libyang/parser_schema.h \
+  /usr/local/include/libyang/tree_data.h /usr/local/include/pcre2.h \
+  /usr/include/c++/v1/stdlib.h /usr/include/stdlib.h \
+  /usr/include/c++/v1/inttypes.h /usr/include/inttypes.h \
+  /usr/include/machine/_inttypes.h /usr/include/x86/_inttypes.h \
+  /usr/include/sys/stdint.h /usr/include/time.h \
+  /usr/include/sys/_clock_id.h /usr/include/sys/timespec.h \
+  /usr/include/sys/_timespec.h /usr/include/xlocale/_time.h \
+  /usr/local/include/libyang/tree.h \
+  /usr/local/include/libyang/tree_schema.h \
+  /usr/local/include/libyang/dict.h /usr/local/include/libyang/in.h \
+  /usr/local/include/libyang/metadata.h \
+  /usr/local/include/libyang/plugins_exts.h \
+  /usr/local/include/libyang/parser_data.h \
+  /usr/local/include/libyang/plugins.h \
+  /usr/local/include/libyang/tree_edit.h \
+  /usr/local/include/libyang/out.h /usr/include/sys/types.h \
+  /usr/include/sys/_pthreadtypes.h /usr/include/sys/bitcount.h \
+  /usr/include/sys/select.h /usr/include/sys/_sigset.h \
+  /usr/local/include/libyang/printer_data.h \
+  /usr/local/include/libyang/printer_schema.h \
+  /usr/local/include/libyang/set.h /usr/include/c++/v1/vector \
+  /usr/include/c++/v1/__algorithm/copy.h \
   /usr/include/c++/v1/__algorithm/copy_move_common.h \
   /usr/include/c++/v1/__algorithm/unwrap_range.h \
   /usr/include/c++/v1/__type_traits/is_trivially_assignable.h \
@@ -351,10 +382,10 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: \
   /usr/include/c++/v1/array /usr/include/c++/v1/__utility/empty.h \
   /usr/include/c++/v1/__locale \
   /usr/include/c++/v1/__locale_dir/locale_base_api.h \
-  /usr/include/c++/v1/stdlib.h /usr/include/stdlib.h \
   /usr/include/xlocale.h /usr/include/c++/v1/locale.h \
   /usr/include/locale.h /usr/include/xlocale/_locale.h \
-  /usr/include/xlocale/_stdlib.h /usr/include/xlocale/_stdio.h \
+  /usr/include/xlocale/_inttypes.h /usr/include/xlocale/_stdlib.h \
+  /usr/include/xlocale/_stdio.h \
   /usr/include/c++/v1/__memory/shared_ptr.h \
   /usr/include/c++/v1/__functional/binary_function.h \
   /usr/include/c++/v1/__functional/operations.h \
@@ -432,18 +463,8 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: \
   /usr/include/c++/v1/__functional/perfect_forward.h \
   /usr/include/c++/v1/__functional/bind_back.h \
   /usr/include/c++/v1/__functional/bind_front.h \
-  /usr/include/sys/sysctl.h /usr/include/sys/socket.h \
-  /usr/include/sys/_iovec.h /usr/include/sys/_timeval.h \
-  /usr/include/machine/_align.h /usr/include/x86/_align.h \
-  /usr/include/sys/_sockaddr_storage.h /usr/include/sys/types.h \
-  /usr/include/machine/endian.h /usr/include/x86/endian.h \
-  /usr/include/sys/_endian.h /usr/include/sys/_pthreadtypes.h \
-  /usr/include/sys/bitcount.h /usr/include/sys/select.h \
-  /usr/include/sys/_sigset.h /usr/include/sys/timespec.h \
-  /usr/include/sys/_timespec.h /usr/include/net/route.h \
-  /usr/include/net/vnet.h /usr/include/netinet/in.h \
-  /usr/include/netinet6/in6.h /usr/include/arpa/inet.h \
-  /usr/include/c++/v1/sstream \
+  /usr/include/sys/sysctl.h /usr/include/net/route.h \
+  /usr/include/net/vnet.h /usr/include/c++/v1/sstream \
   /usr/include/c++/v1/__ostream/basic_ostream.h \
   /usr/include/c++/v1/__exception/operations.h \
   /usr/include/c++/v1/__system_error/error_code.h \
@@ -466,8 +487,7 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: \
   /usr/include/c++/v1/__chrono/steady_clock.h \
   /usr/include/c++/v1/__chrono/time_point.h \
   /usr/include/c++/v1/__chrono/system_clock.h /usr/include/c++/v1/ctime \
-  /usr/include/time.h /usr/include/sys/_clock_id.h \
-  /usr/include/xlocale/_time.h /usr/include/c++/v1/__thread/support.h \
+  /usr/include/c++/v1/__thread/support.h \
   /usr/include/c++/v1/__thread/support/pthread.h \
   /usr/include/c++/v1/__chrono/convert_to_timespec.h \
   /usr/include/pthread.h /usr/include/sys/_sigval.h /usr/include/sched.h \

@@ -33,15 +33,14 @@
 #include <memory>
 #include <vector>
 
-#include <shared/include/ethernet.hpp>
+#include <shared/include/interface/vlan.hpp>
 #include <shared/include/base/serialization.hpp>
 
 namespace netd {
 namespace freebsd {
 namespace interface {
 
-class VlanInterface : public netd::Ethernet, 
-                     public netd::base::Serialization<VlanInterface> {
+class VlanInterface : public netd::VlanInterface {
 public:
     VlanInterface();
     explicit VlanInterface(const std::string& name);
@@ -67,9 +66,8 @@ public:
     // Statistics and information
     std::string getType() const { return "vlan"; }
 
-    // Serialization
-    lyd_node* toYang() const override;
-    static VlanInterface fromYang(const lyd_node* node);
+    // Conversion to shared interface for serialization
+    operator netd::VlanInterface() const;
 
 private:
     // Interface name

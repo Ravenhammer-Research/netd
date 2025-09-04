@@ -429,18 +429,15 @@ server/CMakeFiles/netd_server.dir/src/store.cpp.o: \
   /usr/include/c++/v1/__memory/uses_allocator_construction.h \
   /home/sq/netd/shared/include/interface.hpp \
   /home/sq/netd/shared/include/base/serialization.hpp \
-  /home/sq/netd/shared/include/vrf.hpp \
-  /home/sq/netd/shared/include/route.hpp \
-  /home/sq/netd/shared/include/address.hpp /usr/include/netinet/in.h \
-  /usr/include/machine/endian.h /usr/include/x86/endian.h \
-  /usr/include/sys/_endian.h /usr/include/sys/_sockaddr_storage.h \
-  /usr/include/netinet6/in6.h /usr/include/arpa/inet.h \
-  /home/sq/netd/shared/include/yang.hpp \
   /usr/local/include/libyang/libyang.h \
-  /usr/local/include/libyang/ly_config.h /usr/include/sys/socket.h \
-  /usr/include/sys/_iovec.h /usr/include/sys/_timeval.h \
-  /usr/include/machine/_align.h /usr/include/x86/_align.h \
-  /usr/local/include/libyang/context.h /usr/local/include/libyang/log.h \
+  /usr/local/include/libyang/ly_config.h /usr/include/arpa/inet.h \
+  /usr/include/machine/endian.h /usr/include/x86/endian.h \
+  /usr/include/sys/_endian.h /usr/include/netinet/in.h \
+  /usr/include/sys/_sockaddr_storage.h /usr/include/netinet6/in6.h \
+  /usr/include/sys/socket.h /usr/include/sys/_iovec.h \
+  /usr/include/sys/_timeval.h /usr/include/machine/_align.h \
+  /usr/include/x86/_align.h /usr/local/include/libyang/context.h \
+  /usr/local/include/libyang/log.h \
   /usr/local/include/libyang/parser_schema.h \
   /usr/local/include/libyang/tree_data.h /usr/local/include/pcre2.h \
   /usr/include/c++/v1/inttypes.h /usr/include/inttypes.h \
@@ -461,7 +458,10 @@ server/CMakeFiles/netd_server.dir/src/store.cpp.o: \
   /usr/include/sys/select.h /usr/include/sys/_sigset.h \
   /usr/local/include/libyang/printer_data.h \
   /usr/local/include/libyang/printer_schema.h \
-  /usr/local/include/libyang/set.h \
+  /usr/local/include/libyang/set.h /home/sq/netd/shared/include/vrf.hpp \
+  /home/sq/netd/shared/include/route.hpp \
+  /home/sq/netd/shared/include/address.hpp \
+  /home/sq/netd/shared/include/yang.hpp \
   /home/sq/netd/server/include/store.hpp /usr/include/c++/v1/fstream \
   /usr/include/c++/v1/filesystem \
   /usr/include/c++/v1/__filesystem/copy_options.h \

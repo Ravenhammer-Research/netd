@@ -26,6 +26,7 @@
  */
 
 #include <shared/include/interface/base/ether.hpp>
+#include <shared/include/yang.hpp>
 #include <algorithm>
 
 namespace netd {
@@ -98,6 +99,18 @@ uint32_t Ether::getFlags() const {
     return flags_;
 }
 
+std::string Ether::getName() const {
+    return name_;
+}
+
+void Ether::setName(const std::string& name) {
+    name_ = name;
+}
+
+bool Ether::isUp() const {
+    return up_;
+}
+
 bool Ether::up() {
     up_ = true;
     return true;
@@ -108,10 +121,6 @@ bool Ether::down() {
     return true;
 }
 
-bool Ether::isUp() const {
-    return up_;
-}
-
 bool Ether::setVRF(uint32_t vrfId) {
     vrfId_ = vrfId;
     return true;
@@ -120,6 +129,9 @@ bool Ether::setVRF(uint32_t vrfId) {
 uint32_t Ether::getVRF() const {
     return vrfId_;
 }
+
+// YANG serialization methods - placeholder implementation
+// These will be implemented when the YANG schemas are properly integrated
 
 } // namespace base
 } // namespace interface

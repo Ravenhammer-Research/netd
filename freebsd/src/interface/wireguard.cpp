@@ -43,8 +43,7 @@ namespace freebsd {
 namespace interface {
 
 WireguardInterface::WireguardInterface()
-    : netd::Tunnel(),
-      netd::base::Serialization<WireguardInterface>(),
+    : netd::WireguardInterface(),
       name_(""),
       privateKey_(""),
       listenPort_(0),
@@ -53,8 +52,7 @@ WireguardInterface::WireguardInterface()
 }
 
 WireguardInterface::WireguardInterface(const std::string& name)
-    : netd::Tunnel(),
-      netd::base::Serialization<WireguardInterface>(),
+    : netd::WireguardInterface(),
       name_(name),
       privateKey_(""),
       listenPort_(0),
@@ -182,14 +180,9 @@ bool WireguardInterface::removePeer(const std::string& publicKey) {
     return true;
 }
 
-lyd_node* WireguardInterface::toYang() const {
-    // TODO: Implement YANG serialization using libyang
-    return nullptr;
-}
-
-WireguardInterface WireguardInterface::fromYang(const lyd_node* node) {
-    // TODO: Implement YANG deserialization using libyang
-    return WireguardInterface();
+WireguardInterface::operator netd::WireguardInterface() const {
+    // Cast to shared interface - we inherit from it so this is safe
+    return static_cast<const netd::WireguardInterface&>(*this);
 }
 
 bool WireguardInterface::openSocket() {

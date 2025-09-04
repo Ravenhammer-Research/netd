@@ -29,8 +29,7 @@
 #define NETD_BASE_SERIALIZATION_HPP
 
 #include <string>
-// Forward declaration - actual include will be in implementation files
-struct lyd_node;
+#include <libyang/libyang.h>
 
 namespace netd {
 namespace base {

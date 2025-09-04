@@ -33,15 +33,14 @@
 #include <memory>
 #include <vector>
 
-#include <shared/include/tunnel.hpp>
+#include <shared/include/interface/wireguard.hpp>
 #include <shared/include/base/serialization.hpp>
 
 namespace netd {
 namespace freebsd {
 namespace interface {
 
-class WireguardInterface : public netd::Tunnel, 
-                          public netd::base::Serialization<WireguardInterface> {
+class WireguardInterface : public netd::WireguardInterface {
 public:
     WireguardInterface();
     explicit WireguardInterface(const std::string& name);
@@ -67,9 +66,8 @@ public:
     // Statistics and information
     std::string getType() const { return "wireguard"; }
 
-    // Serialization
-    lyd_node* toYang() const override;
-    static WireguardInterface fromYang(const lyd_node* node);
+    // Conversion to shared interface for serialization
+    operator netd::WireguardInterface() const;
 
 private:
     // Interface name

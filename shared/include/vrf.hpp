@@ -34,10 +34,13 @@
 
 namespace netd {
 
-class VRF : public base::Serialization<VRF> {
+// Forward declaration
+class VRF;
+
+class VRFAbstract : public base::Serialization<VRFAbstract> {
 public:
-    VRF() = default;
-    virtual ~VRF() = default;
+    VRFAbstract() = default;
+    virtual ~VRFAbstract() = default;
 
     // Pure virtual methods from Serialization
     lyd_node* toYang() const override = 0;

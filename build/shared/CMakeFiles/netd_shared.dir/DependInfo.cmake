@@ -9,7 +9,6 @@ set(CMAKE_DEPENDS_LANGUAGES
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/home/sq/netd/shared/src/address.cpp" "shared/CMakeFiles/netd_shared.dir/src/address.cpp.o" "gcc" "shared/CMakeFiles/netd_shared.dir/src/address.cpp.o.d"
-  "/home/sq/netd/shared/src/ethernet.cpp" "shared/CMakeFiles/netd_shared.dir/src/ethernet.cpp.o" "gcc" "shared/CMakeFiles/netd_shared.dir/src/ethernet.cpp.o.d"
   "/home/sq/netd/shared/src/exception.cpp" "shared/CMakeFiles/netd_shared.dir/src/exception.cpp.o" "gcc" "shared/CMakeFiles/netd_shared.dir/src/exception.cpp.o.d"
   "/home/sq/netd/shared/src/interface.cpp" "shared/CMakeFiles/netd_shared.dir/src/interface.cpp.o" "gcc" "shared/CMakeFiles/netd_shared.dir/src/interface.cpp.o.d"
   "/home/sq/netd/shared/src/interface/80211.cpp" "shared/CMakeFiles/netd_shared.dir/src/interface/80211.cpp.o" "gcc" "shared/CMakeFiles/netd_shared.dir/src/interface/80211.cpp.o.d"
@@ -27,11 +26,9 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/home/sq/netd/shared/src/interface/vxlan.cpp" "shared/CMakeFiles/netd_shared.dir/src/interface/vxlan.cpp.o" "gcc" "shared/CMakeFiles/netd_shared.dir/src/interface/vxlan.cpp.o.d"
   "/home/sq/netd/shared/src/interface/wireguard.cpp" "shared/CMakeFiles/netd_shared.dir/src/interface/wireguard.cpp.o" "gcc" "shared/CMakeFiles/netd_shared.dir/src/interface/wireguard.cpp.o.d"
   "/home/sq/netd/shared/src/logger.cpp" "shared/CMakeFiles/netd_shared.dir/src/logger.cpp.o" "gcc" "shared/CMakeFiles/netd_shared.dir/src/logger.cpp.o.d"
-  "/home/sq/netd/shared/src/master.cpp" "shared/CMakeFiles/netd_shared.dir/src/master.cpp.o" "gcc" "shared/CMakeFiles/netd_shared.dir/src/master.cpp.o.d"
   "/home/sq/netd/shared/src/request.cpp" "shared/CMakeFiles/netd_shared.dir/src/request.cpp.o" "gcc" "shared/CMakeFiles/netd_shared.dir/src/request.cpp.o.d"
   "/home/sq/netd/shared/src/response.cpp" "shared/CMakeFiles/netd_shared.dir/src/response.cpp.o" "gcc" "shared/CMakeFiles/netd_shared.dir/src/response.cpp.o.d"
   "/home/sq/netd/shared/src/route.cpp" "shared/CMakeFiles/netd_shared.dir/src/route.cpp.o" "gcc" "shared/CMakeFiles/netd_shared.dir/src/route.cpp.o.d"
-  "/home/sq/netd/shared/src/tunnel.cpp" "shared/CMakeFiles/netd_shared.dir/src/tunnel.cpp.o" "gcc" "shared/CMakeFiles/netd_shared.dir/src/tunnel.cpp.o.d"
   "/home/sq/netd/shared/src/vrf.cpp" "shared/CMakeFiles/netd_shared.dir/src/vrf.cpp.o" "gcc" "shared/CMakeFiles/netd_shared.dir/src/vrf.cpp.o.d"
   "/home/sq/netd/shared/src/yang.cpp" "shared/CMakeFiles/netd_shared.dir/src/yang.cpp.o" "gcc" "shared/CMakeFiles/netd_shared.dir/src/yang.cpp.o.d"
   "" "shared/libnetd_shared.so" "gcc" "shared/CMakeFiles/netd_shared.dir/link.d"

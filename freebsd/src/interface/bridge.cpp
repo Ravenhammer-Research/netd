@@ -269,18 +269,8 @@ bool BridgeInterface::applyToSystem() const {
     return true;
 }
 
-lyd_node* BridgeInterface::toYang() const {
-    // TODO: Implement YANG serialization using libyang
-    // This should create a YANG node representing the bridge interface
-    // with all its properties and members
-    return nullptr;
-}
-
-BridgeInterface BridgeInterface::fromYang(const lyd_node* node) {
-    // TODO: Implement YANG deserialization using libyang
-    // This should parse a YANG node and create a BridgeInterface object
-    return BridgeInterface();
-}
+// YANG serialization is inherited from shared::BridgeInterface
+// No need to override - the shared implementation handles it
 
 bool BridgeInterface::openBridgeSocket() {
     if (bridgeSocket_ >= 0) {
@@ -353,6 +343,11 @@ bool BridgeInterface::setBridgeInfo() const {
     // member interfaces, and other bridge-specific configuration
 
     return true;
+}
+
+BridgeInterface::operator netd::BridgeInterface() const {
+    // Cast to shared interface - we inherit from it so this is safe
+    return static_cast<const netd::BridgeInterface&>(*this);
 }
 
 } // namespace interface

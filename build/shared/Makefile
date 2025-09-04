@@ -199,30 +199,6 @@ src/address.cpp.s:
 	cd /home/sq/netd/build && $(MAKE) $(MAKESILENT) -f shared/CMakeFiles/netd_shared.dir/build.make shared/CMakeFiles/netd_shared.dir/src/address.cpp.s
 .PHONY : src/address.cpp.s
 
-src/ethernet.o: src/ethernet.cpp.o
-.PHONY : src/ethernet.o
-
-# target to build an object file
-src/ethernet.cpp.o:
-	cd /home/sq/netd/build && $(MAKE) $(MAKESILENT) -f shared/CMakeFiles/netd_shared.dir/build.make shared/CMakeFiles/netd_shared.dir/src/ethernet.cpp.o
-.PHONY : src/ethernet.cpp.o
-
-src/ethernet.i: src/ethernet.cpp.i
-.PHONY : src/ethernet.i
-
-# target to preprocess a source file
-src/ethernet.cpp.i:
-	cd /home/sq/netd/build && $(MAKE) $(MAKESILENT) -f shared/CMakeFiles/netd_shared.dir/build.make shared/CMakeFiles/netd_shared.dir/src/ethernet.cpp.i
-.PHONY : src/ethernet.cpp.i
-
-src/ethernet.s: src/ethernet.cpp.s
-.PHONY : src/ethernet.s
-
-# target to generate assembly for a file
-src/ethernet.cpp.s:
-	cd /home/sq/netd/build && $(MAKE) $(MAKESILENT) -f shared/CMakeFiles/netd_shared.dir/build.make shared/CMakeFiles/netd_shared.dir/src/ethernet.cpp.s
-.PHONY : src/ethernet.cpp.s
-
 src/exception.o: src/exception.cpp.o
 .PHONY : src/exception.o
 
@@ -631,30 +607,6 @@ src/logger.cpp.s:
 	cd /home/sq/netd/build && $(MAKE) $(MAKESILENT) -f shared/CMakeFiles/netd_shared.dir/build.make shared/CMakeFiles/netd_shared.dir/src/logger.cpp.s
 .PHONY : src/logger.cpp.s
 
-src/master.o: src/master.cpp.o
-.PHONY : src/master.o
-
-# target to build an object file
-src/master.cpp.o:
-	cd /home/sq/netd/build && $(MAKE) $(MAKESILENT) -f shared/CMakeFiles/netd_shared.dir/build.make shared/CMakeFiles/netd_shared.dir/src/master.cpp.o
-.PHONY : src/master.cpp.o
-
-src/master.i: src/master.cpp.i
-.PHONY : src/master.i
-
-# target to preprocess a source file
-src/master.cpp.i:
-	cd /home/sq/netd/build && $(MAKE) $(MAKESILENT) -f shared/CMakeFiles/netd_shared.dir/build.make shared/CMakeFiles/netd_shared.dir/src/master.cpp.i
-.PHONY : src/master.cpp.i
-
-src/master.s: src/master.cpp.s
-.PHONY : src/master.s
-
-# target to generate assembly for a file
-src/master.cpp.s:
-	cd /home/sq/netd/build && $(MAKE) $(MAKESILENT) -f shared/CMakeFiles/netd_shared.dir/build.make shared/CMakeFiles/netd_shared.dir/src/master.cpp.s
-.PHONY : src/master.cpp.s
-
 src/request.o: src/request.cpp.o
 .PHONY : src/request.o
 
@@ -727,30 +679,6 @@ src/route.cpp.s:
 	cd /home/sq/netd/build && $(MAKE) $(MAKESILENT) -f shared/CMakeFiles/netd_shared.dir/build.make shared/CMakeFiles/netd_shared.dir/src/route.cpp.s
 .PHONY : src/route.cpp.s
 
-src/tunnel.o: src/tunnel.cpp.o
-.PHONY : src/tunnel.o
-
-# target to build an object file
-src/tunnel.cpp.o:
-	cd /home/sq/netd/build && $(MAKE) $(MAKESILENT) -f shared/CMakeFiles/netd_shared.dir/build.make shared/CMakeFiles/netd_shared.dir/src/tunnel.cpp.o
-.PHONY : src/tunnel.cpp.o
-
-src/tunnel.i: src/tunnel.cpp.i
-.PHONY : src/tunnel.i
-
-# target to preprocess a source file
-src/tunnel.cpp.i:
-	cd /home/sq/netd/build && $(MAKE) $(MAKESILENT) -f shared/CMakeFiles/netd_shared.dir/build.make shared/CMakeFiles/netd_shared.dir/src/tunnel.cpp.i
-.PHONY : src/tunnel.cpp.i
-
-src/tunnel.s: src/tunnel.cpp.s
-.PHONY : src/tunnel.s
-
-# target to generate assembly for a file
-src/tunnel.cpp.s:
-	cd /home/sq/netd/build && $(MAKE) $(MAKESILENT) -f shared/CMakeFiles/netd_shared.dir/build.make shared/CMakeFiles/netd_shared.dir/src/tunnel.cpp.s
-.PHONY : src/tunnel.cpp.s
-
 src/vrf.o: src/vrf.cpp.o
 .PHONY : src/vrf.o
 
@@ -815,9 +743,6 @@ help:
 	@echo "... src/address.o"
 	@echo "... src/address.i"
 	@echo "... src/address.s"
-	@echo "... src/ethernet.o"
-	@echo "... src/ethernet.i"
-	@echo "... src/ethernet.s"
 	@echo "... src/exception.o"
 	@echo "... src/exception.i"
 	@echo "... src/exception.s"
@@ -869,9 +794,6 @@ help:
 	@echo "... src/logger.o"
 	@echo "... src/logger.i"
 	@echo "... src/logger.s"
-	@echo "... src/master.o"
-	@echo "... src/master.i"
-	@echo "... src/master.s"
 	@echo "... src/request.o"
 	@echo "... src/request.i"
 	@echo "... src/request.s"
@@ -881,9 +803,6 @@ help:
 	@echo "... src/route.o"
 	@echo "... src/route.i"
 	@echo "... src/route.s"
-	@echo "... src/tunnel.o"
-	@echo "... src/tunnel.i"
-	@echo "... src/tunnel.s"
 	@echo "... src/vrf.o"
 	@echo "... src/vrf.i"
 	@echo "... src/vrf.s"

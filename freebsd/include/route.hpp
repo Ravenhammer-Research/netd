@@ -65,9 +65,8 @@ public:
     std::string getInterface() const override;
     uint32_t getVRF() const override;
     
-    // Serialization
-    lyd_node* toYang() const override;
-    static Route fromYang(const lyd_node* node);
+    // Conversion to shared route for serialization
+    operator const netd::Route&() const;
 
 private:
     std::string destination_;

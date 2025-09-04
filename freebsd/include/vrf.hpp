@@ -29,7 +29,6 @@
 #define NETD_FREEBSD_VRF_HPP
 
 #include <shared/include/vrf.hpp>
-#include <shared/include/base/serialization.hpp>
 #include <string>
 #include <vector>
 #include <memory>
@@ -37,7 +36,7 @@
 namespace netd {
 namespace freebsd {
 
-class VRF : public netd::VRF, public netd::base::Serialization<VRF> {
+class VRF : public netd::VRFAbstract {
 public:
     VRF();
     explicit VRF(uint32_t fibId);
@@ -66,9 +65,8 @@ public:
     std::string getName() const override;
     bool isActive() const override;
     
-    // Serialization
-    lyd_node* toYang() const override;
-    static VRF fromYang(const lyd_node* node);
+    // Conversion to shared VRF for serialization
+    operator const netd::VRF&() const;
 
 private:
     std::string name_;
@@ -79,6 +77,8 @@ private:
     bool createFibTable();
     bool destroyFibTable();
     bool setFibTableActive(bool active);
+    int getFibCount() const;
+    bool isFibValid(uint32_t fibId) const;
 };
 
 } // namespace freebsd

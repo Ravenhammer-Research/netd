@@ -33,15 +33,14 @@
 #include <memory>
 #include <vector>
 
-#include <shared/include/ethernet.hpp>
+#include <shared/include/interface/epair.hpp>
 #include <shared/include/base/serialization.hpp>
 
 namespace netd {
 namespace freebsd {
 namespace interface {
 
-class EpairInterface : public netd::Ethernet, 
-                      public netd::base::Serialization<EpairInterface> {
+class EpairInterface : public netd::EpairInterface {
 public:
     EpairInterface();
     explicit EpairInterface(const std::string& name);
@@ -65,9 +64,8 @@ public:
     // Statistics and information
     std::string getType() const { return "epair"; }
 
-    // Serialization
-    lyd_node* toYang() const override;
-    static EpairInterface fromYang(const lyd_node* node);
+    // Conversion to shared interface for serialization
+    operator netd::EpairInterface() const;
 
 private:
     // Interface name

@@ -25,68 +25,36 @@
  * SUCH DAMAGE.
  */
 
-#ifndef NETD_FREEBSD_INTERFACE_TAP_HPP
-#define NETD_FREEBSD_INTERFACE_TAP_HPP
+#ifndef NETD_INTERFACE_VLAN_HPP
+#define NETD_INTERFACE_VLAN_HPP
 
+#include <shared/include/ethernet.hpp>
+#include <shared/include/base/serialization.hpp>
 #include <string>
 #include <cstdint>
 #include <memory>
-#include <vector>
-
-#include <shared/include/interface/tap.hpp>
-#include <shared/include/base/serialization.hpp>
 
 namespace netd {
-namespace freebsd {
-namespace interface {
 
-class TapInterface : public netd::TapInterface {
+class VlanInterface : public Ethernet, public base::Serialization<VlanInterface> {
 public:
-    TapInterface();
-    explicit TapInterface(const std::string& name);
-    virtual ~TapInterface();
+    VlanInterface();
+    explicit VlanInterface(const std::string& name);
+    virtual ~VlanInterface();
 
-    // Interface name
-    std::string getName() const { return name_; }
+    // VLAN-specific configuration
+    virtual bool setVlanId(uint16_t vlanId) { return false; }
+    virtual uint16_t getVlanId() const { return 0; }
+    virtual bool setParentInterface(const std::string& parentInterface) { return false; }
+    virtual std::string getParentInterface() const { return ""; }
+    virtual bool setVlanProtocol(const std::string& protocol) { return false; }
+    virtual std::string getVlanProtocol() const { return "802.1Q"; }
 
-    // FreeBSD-specific operations
-    bool createInterface();
-    bool destroyInterface();
-    bool loadFromSystem();
-    bool applyToSystem();
-
-    // TAP-specific configuration
-    bool setTapUnit(int unit);
-    int getTapUnit() const;
-    bool setTapMode(const std::string& mode);
-    std::string getTapMode() const;
-
-    // Statistics and information
-    std::string getType() const { return "tap"; }
-
-    // Conversion to shared interface for serialization
-    operator netd::TapInterface() const;
-
-private:
-    // Interface name
-    std::string name_;
-    
-    // TAP-specific members
-    int tapUnit_;
-    std::string tapMode_;
-    
-    // FreeBSD system interface
-    int socket_;
-    
-    // Helper methods
-    bool openSocket();
-    void closeSocket();
-    bool getTapInfo();
-    bool setTapInfo() const;
+    // YANG serialization
+    lyd_node* toYang() const override;
+    static VlanInterface fromYang(const lyd_node* node);
 };
 
-} // namespace interface
-} // namespace freebsd
 } // namespace netd
 
-#endif // NETD_FREEBSD_INTERFACE_TAP_HPP
+#endif // NETD_INTERFACE_VLAN_HPP

@@ -43,8 +43,7 @@ namespace freebsd {
 namespace interface {
 
 TunInterface::TunInterface()
-    : netd::Tunnel(),
-      netd::base::Serialization<TunInterface>(),
+    : netd::TunInterface(),
       name_(""),
       tunUnit_(-1),
       tunMode_("tun"),
@@ -52,8 +51,7 @@ TunInterface::TunInterface()
 }
 
 TunInterface::TunInterface(const std::string& name)
-    : netd::Tunnel(),
-      netd::base::Serialization<TunInterface>(),
+    : netd::TunInterface(),
       name_(name),
       tunUnit_(-1),
       tunMode_("tun"),
@@ -162,14 +160,9 @@ std::string TunInterface::getTunMode() const {
     return tunMode_;
 }
 
-lyd_node* TunInterface::toYang() const {
-    // TODO: Implement YANG serialization using libyang
-    return nullptr;
-}
-
-TunInterface TunInterface::fromYang(const lyd_node* node) {
-    // TODO: Implement YANG deserialization using libyang
-    return TunInterface();
+TunInterface::operator netd::TunInterface() const {
+    // Cast to shared interface - we inherit from it so this is safe
+    return static_cast<const netd::TunInterface&>(*this);
 }
 
 bool TunInterface::openSocket() {

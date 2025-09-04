@@ -21,9 +21,6 @@ libnetd_shared.so.1.0.0: \
  CMakeFiles/netd_shared.dir/src/route.cpp.o \
  CMakeFiles/netd_shared.dir/src/vrf.cpp.o \
  CMakeFiles/netd_shared.dir/src/yang.cpp.o \
- CMakeFiles/netd_shared.dir/src/ethernet.cpp.o \
- CMakeFiles/netd_shared.dir/src/master.cpp.o \
- CMakeFiles/netd_shared.dir/src/tunnel.cpp.o \
  CMakeFiles/netd_shared.dir/src/interface/base/ether.cpp.o \
  CMakeFiles/netd_shared.dir/src/interface/base/master.cpp.o \
  CMakeFiles/netd_shared.dir/src/interface/base/tunnel.cpp.o \
@@ -84,12 +81,6 @@ CMakeFiles/netd_shared.dir/src/route.cpp.o:
 CMakeFiles/netd_shared.dir/src/vrf.cpp.o:
 
 CMakeFiles/netd_shared.dir/src/yang.cpp.o:
-
-CMakeFiles/netd_shared.dir/src/ethernet.cpp.o:
-
-CMakeFiles/netd_shared.dir/src/master.cpp.o:
-
-CMakeFiles/netd_shared.dir/src/tunnel.cpp.o:
 
 CMakeFiles/netd_shared.dir/src/interface/base/ether.cpp.o:
 

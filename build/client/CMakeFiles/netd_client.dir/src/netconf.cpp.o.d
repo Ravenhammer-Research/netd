@@ -429,13 +429,35 @@ client/CMakeFiles/netd_client.dir/src/netconf.cpp.o: \
   /usr/include/c++/v1/__memory/uses_allocator_construction.h \
   /home/sq/netd/shared/include/request.hpp \
   /home/sq/netd/shared/include/base/serialization.hpp \
-  /home/sq/netd/shared/include/response.hpp /usr/include/sys/socket.h \
-  /usr/include/sys/_iovec.h /usr/include/sys/_timeval.h \
-  /usr/include/machine/_align.h /usr/include/x86/_align.h \
-  /usr/include/sys/_sockaddr_storage.h /usr/include/sys/un.h \
-  /usr/include/unistd.h /usr/include/sys/types.h \
+  /usr/local/include/libyang/libyang.h \
+  /usr/local/include/libyang/ly_config.h /usr/include/arpa/inet.h \
   /usr/include/machine/endian.h /usr/include/x86/endian.h \
-  /usr/include/sys/_endian.h /usr/include/sys/_pthreadtypes.h \
-  /usr/include/sys/bitcount.h /usr/include/sys/select.h \
-  /usr/include/sys/_sigset.h /usr/include/sys/timespec.h \
-  /usr/include/sys/_timespec.h /usr/include/sys/unistd.h
+  /usr/include/sys/_endian.h /usr/include/netinet/in.h \
+  /usr/include/sys/_sockaddr_storage.h /usr/include/netinet6/in6.h \
+  /usr/include/sys/socket.h /usr/include/sys/_iovec.h \
+  /usr/include/sys/_timeval.h /usr/include/machine/_align.h \
+  /usr/include/x86/_align.h /usr/local/include/libyang/context.h \
+  /usr/local/include/libyang/log.h \
+  /usr/local/include/libyang/parser_schema.h \
+  /usr/local/include/libyang/tree_data.h /usr/local/include/pcre2.h \
+  /usr/include/c++/v1/inttypes.h /usr/include/inttypes.h \
+  /usr/include/machine/_inttypes.h /usr/include/x86/_inttypes.h \
+  /usr/include/sys/stdint.h /usr/include/xlocale/_inttypes.h \
+  /usr/include/time.h /usr/include/sys/_clock_id.h \
+  /usr/include/sys/timespec.h /usr/include/sys/_timespec.h \
+  /usr/include/xlocale/_time.h /usr/local/include/libyang/tree.h \
+  /usr/local/include/libyang/tree_schema.h \
+  /usr/local/include/libyang/dict.h /usr/local/include/libyang/in.h \
+  /usr/local/include/libyang/metadata.h \
+  /usr/local/include/libyang/plugins_exts.h \
+  /usr/local/include/libyang/parser_data.h \
+  /usr/local/include/libyang/plugins.h \
+  /usr/local/include/libyang/tree_edit.h \
+  /usr/local/include/libyang/out.h /usr/include/sys/types.h \
+  /usr/include/sys/_pthreadtypes.h /usr/include/sys/bitcount.h \
+  /usr/include/sys/select.h /usr/include/sys/_sigset.h \
+  /usr/local/include/libyang/printer_data.h \
+  /usr/local/include/libyang/printer_schema.h \
+  /usr/local/include/libyang/set.h \
+  /home/sq/netd/shared/include/response.hpp /usr/include/sys/un.h \
+  /usr/include/unistd.h /usr/include/sys/unistd.h

@@ -26,9 +26,144 @@
  */
 
 #include <shared/include/yang.hpp>
+#include <shared/include/logger.hpp>
+#include <libyang/libyang.h>
+#include <libyang/tree_data.h>
+#include <libyang/printer_data.h>
+#include <libyang/parser_data.h>
+#include <libyang/parser_schema.h>
+#include <fstream>
+#include <sstream>
 
 namespace netd {
 
-// Placeholder implementation
+class YangImpl : public Yang {
+public:
+    YangImpl() : ctx_(nullptr) {
+        // Initialize libyang context
+        ly_ctx_new(nullptr, 0, &ctx_);
+        if (!ctx_) {
+            auto& logger = Logger::getInstance();
+            logger.error("Failed to create libyang context");
+            throw std::runtime_error("Failed to create libyang context");
+        }
+        
+        // Load standard IETF schemas
+        loadStandardSchemas();
+    }
+    
+    virtual ~YangImpl() {
+        if (ctx_) {
+            ly_ctx_destroy(ctx_);
+        }
+    }
+    
+    ly_ctx* getContext() const override {
+        return ctx_;
+    }
+    
+    bool loadSchema(const std::string& schemaPath) override {
+        auto& logger = Logger::getInstance();
+        
+        if (!ctx_) {
+            logger.error("YANG context not initialized");
+            return false;
+        }
+        
+        // Load schema from file
+        struct lys_module* module = nullptr;
+        if (lys_parse_path(ctx_, schemaPath.c_str(), LYS_IN_YANG, &module) != LY_SUCCESS) {
+            logger.error("Failed to load YANG schema: " + schemaPath);
+            return false;
+        }
+        
+        logger.info("Loaded YANG schema: " + schemaPath);
+        return true;
+    }
+
+private:
+    ly_ctx* ctx_;
+    
+    void loadStandardSchemas() {
+        auto& logger = Logger::getInstance();
+        
+        // Load standard IETF schemas that NETD depends on
+        std::vector<std::string> standardSchemas = {
+            "yang/standard/ietf/RFC/ietf-interfaces@2018-02-20.yang",
+            "yang/standard/ietf/RFC/ietf-routing@2018-03-13.yang", 
+            "yang/standard/ietf/RFC/ietf-ip@2018-02-22.yang",
+            "yang/standard/ietf/RFC/ietf-network-instance@2019-01-21.yang",
+            "yang/standard/iana/RFC/iana-if-type@2014-05-08.yang"
+        };
+        
+        for (const auto& schema : standardSchemas) {
+            if (!loadSchema(schema)) {
+                logger.warning("Failed to load standard schema: " + schema);
+            }
+        }
+    }
+};
+
+// Static utility functions
+std::string Yang::yangToXml(const lyd_node* node) {
+    if (!node) {
+        return "";
+    }
+    
+    char* xml_str = nullptr;
+    if (lyd_print_mem(&xml_str, node, LYD_XML, LYD_PRINT_WITHSIBLINGS) != LY_SUCCESS) {
+        return "";
+    }
+    
+    std::string result(xml_str);
+    free(xml_str);
+    return result;
+}
+
+std::string Yang::yangToJson(const lyd_node* node) {
+    if (!node) {
+        return "";
+    }
+    
+    char* json_str = nullptr;
+    if (lyd_print_mem(&json_str, node, LYD_JSON, LYD_PRINT_WITHSIBLINGS) != LY_SUCCESS) {
+        return "";
+    }
+    
+    std::string result(json_str);
+    free(json_str);
+    return result;
+}
+
+lyd_node* Yang::xmlToYang(ly_ctx* ctx, const std::string& xml) {
+    if (!ctx || xml.empty()) {
+        return nullptr;
+    }
+    
+    lyd_node* node = nullptr;
+    if (lyd_parse_data_mem(ctx, xml.c_str(), LYD_XML, LYD_PARSE_STRICT, 0, &node) != LY_SUCCESS) {
+        return nullptr;
+    }
+    
+    return node;
+}
+
+lyd_node* Yang::jsonToYang(ly_ctx* ctx, const std::string& json) {
+    if (!ctx || json.empty()) {
+        return nullptr;
+    }
+    
+    lyd_node* node = nullptr;
+    if (lyd_parse_data_mem(ctx, json.c_str(), LYD_JSON, LYD_PARSE_STRICT, 0, &node) != LY_SUCCESS) {
+        return nullptr;
+    }
+    
+    return node;
+}
+
+// Factory function to create Yang instance
+std::unique_ptr<Yang> createYang() {
+    return std::make_unique<YangImpl>();
+}
 
 } // namespace netd

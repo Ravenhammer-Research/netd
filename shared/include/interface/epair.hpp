@@ -25,11 +25,34 @@
  * SUCH DAMAGE.
  */
 
+#ifndef NETD_INTERFACE_EPAIR_HPP
+#define NETD_INTERFACE_EPAIR_HPP
+
 #include <shared/include/ethernet.hpp>
+#include <shared/include/base/serialization.hpp>
+#include <string>
+#include <cstdint>
+#include <memory>
 
 namespace netd {
 
-// Ethernet class now inherits all functionality from interface::base::Ether
-// No additional implementation needed unless Ethernet-specific behavior is required
+class EpairInterface : public Ethernet, public base::Serialization<EpairInterface> {
+public:
+    EpairInterface();
+    explicit EpairInterface(const std::string& name);
+    virtual ~EpairInterface();
+
+    // Epair-specific configuration
+    virtual bool setPeerEnd(const std::string& peerEnd) { return false; }
+    virtual std::string getPeerEnd() const { return ""; }
+    virtual bool setEpairUnit(int unit) { return false; }
+    virtual int getEpairUnit() const { return -1; }
+
+    // YANG serialization
+    lyd_node* toYang() const override;
+    static EpairInterface fromYang(const lyd_node* node);
+};
 
 } // namespace netd
+
+#endif // NETD_INTERFACE_EPAIR_HPP

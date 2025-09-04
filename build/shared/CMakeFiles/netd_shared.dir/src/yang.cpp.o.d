@@ -346,4 +346,201 @@ shared/CMakeFiles/netd_shared.dir/src/yang.cpp.o: \
   /usr/include/sys/select.h /usr/include/sys/_sigset.h \
   /usr/local/include/libyang/printer_data.h \
   /usr/local/include/libyang/printer_schema.h \
-  /usr/local/include/libyang/set.h
+  /usr/local/include/libyang/set.h \
+  /home/sq/netd/shared/include/logger.hpp /usr/include/c++/v1/functional \
+  /usr/include/c++/v1/__functional/binary_negate.h \
+  /usr/include/c++/v1/__functional/bind.h \
+  /usr/include/c++/v1/__functional/binder1st.h \
+  /usr/include/c++/v1/__functional/binder2nd.h \
+  /usr/include/c++/v1/__functional/mem_fn.h \
+  /usr/include/c++/v1/__functional/mem_fun_ref.h \
+  /usr/include/c++/v1/__functional/pointer_to_binary_function.h \
+  /usr/include/c++/v1/__functional/pointer_to_unary_function.h \
+  /usr/include/c++/v1/__functional/unary_negate.h \
+  /usr/include/c++/v1/__functional/function.h \
+  /usr/include/c++/v1/__memory/builtin_new_allocator.h \
+  /usr/include/c++/v1/__type_traits/aligned_storage.h \
+  /usr/include/c++/v1/__type_traits/is_trivially_destructible.h \
+  /usr/include/c++/v1/__type_traits/strip_signature.h \
+  /usr/include/c++/v1/__functional/boyer_moore_searcher.h \
+  /usr/include/c++/v1/array /usr/include/c++/v1/__algorithm/equal.h \
+  /usr/include/c++/v1/__algorithm/lexicographical_compare.h \
+  /usr/include/c++/v1/__algorithm/lexicographical_compare_three_way.h \
+  /usr/include/c++/v1/__algorithm/three_way_comp_ref_type.h \
+  /usr/include/c++/v1/__algorithm/swap_ranges.h \
+  /usr/include/c++/v1/__utility/empty.h \
+  /usr/include/c++/v1/unordered_map \
+  /usr/include/c++/v1/__algorithm/is_permutation.h \
+  /usr/include/c++/v1/__functional/is_transparent.h \
+  /usr/include/c++/v1/__hash_table /usr/include/c++/v1/__bit/countl.h \
+  /usr/include/c++/v1/__type_traits/can_extract_key.h \
+  /usr/include/c++/v1/__type_traits/remove_const_ref.h \
+  /usr/include/c++/v1/cmath /usr/include/c++/v1/__math/hypot.h \
+  /usr/include/c++/v1/__math/abs.h /usr/include/c++/v1/__math/roots.h \
+  /usr/include/c++/v1/__math/special_functions.h \
+  /usr/include/c++/v1/__math/copysign.h /usr/include/c++/v1/math.h \
+  /usr/include/math.h /usr/include/c++/v1/__math/error_functions.h \
+  /usr/include/c++/v1/__math/fdim.h /usr/include/c++/v1/__math/fma.h \
+  /usr/include/c++/v1/__math/gamma.h \
+  /usr/include/c++/v1/__math/hyperbolic_functions.h \
+  /usr/include/c++/v1/__math/inverse_hyperbolic_functions.h \
+  /usr/include/c++/v1/__math/inverse_trigonometric_functions.h \
+  /usr/include/c++/v1/__math/logarithms.h \
+  /usr/include/c++/v1/__math/min_max.h \
+  /usr/include/c++/v1/__math/modulo.h \
+  /usr/include/c++/v1/__math/remainder.h \
+  /usr/include/c++/v1/__math/rounding_functions.h \
+  /usr/include/c++/v1/__math/trigonometric_functions.h \
+  /usr/include/c++/v1/__iterator/erase_if_container.h \
+  /usr/include/c++/v1/__iterator/ranges_iterator_traits.h \
+  /usr/include/c++/v1/__node_handle /usr/include/c++/v1/optional \
+  /usr/include/c++/v1/__utility/in_place.h /usr/include/c++/v1/vector \
+  /usr/include/c++/v1/__algorithm/rotate.h \
+  /usr/include/c++/v1/__algorithm/move_backward.h \
+  /usr/include/c++/v1/__bit_reference \
+  /usr/include/c++/v1/__algorithm/copy_n.h \
+  /usr/include/c++/v1/__bit/popcount.h \
+  /usr/include/c++/v1/__format/formatter.h \
+  /usr/include/c++/v1/__fwd/format.h \
+  /usr/include/c++/v1/__format/formatter_bool.h \
+  /usr/include/c++/v1/__format/concepts.h \
+  /usr/include/c++/v1/__format/format_parse_context.h \
+  /usr/include/c++/v1/__format/format_error.h \
+  /usr/include/c++/v1/__format/formatter_integral.h \
+  /usr/include/c++/v1/__charconv/to_chars_integral.h \
+  /usr/include/c++/v1/__charconv/tables.h \
+  /usr/include/c++/v1/__charconv/to_chars_base_10.h \
+  /usr/include/c++/v1/__charconv/to_chars_result.h \
+  /usr/include/c++/v1/__system_error/errc.h /usr/include/c++/v1/cerrno \
+  /usr/include/c++/v1/errno.h /usr/include/errno.h \
+  /usr/include/c++/v1/__charconv/traits.h \
+  /usr/include/c++/v1/__type_traits/make_32_64_or_128_bit.h \
+  /usr/include/c++/v1/__format/formatter_output.h \
+  /usr/include/c++/v1/__algorithm/ranges_copy.h \
+  /usr/include/c++/v1/__algorithm/ranges_fill_n.h \
+  /usr/include/c++/v1/__algorithm/ranges_transform.h \
+  /usr/include/c++/v1/__algorithm/in_in_out_result.h \
+  /usr/include/c++/v1/__iterator/projected.h \
+  /usr/include/c++/v1/__format/buffer.h \
+  /usr/include/c++/v1/__algorithm/ranges_copy_n.h \
+  /usr/include/c++/v1/__iterator/unreachable_sentinel.h \
+  /usr/include/c++/v1/__algorithm/transform.h \
+  /usr/include/c++/v1/__format/format_to_n_result.h \
+  /usr/include/c++/v1/__iterator/back_insert_iterator.h \
+  /usr/include/c++/v1/__format/parser_std_format_spec.h \
+  /usr/include/c++/v1/__format/format_arg.h \
+  /usr/include/c++/v1/__variant/monostate.h \
+  /usr/include/c++/v1/__format/format_string.h \
+  /usr/include/c++/v1/__format/unicode.h \
+  /usr/include/c++/v1/__format/extended_grapheme_cluster_table.h \
+  /usr/include/c++/v1/__algorithm/ranges_upper_bound.h \
+  /usr/include/c++/v1/__algorithm/lower_bound.h \
+  /usr/include/c++/v1/__algorithm/half_positive.h \
+  /usr/include/c++/v1/__functional/ranges_operations.h \
+  /usr/include/c++/v1/__format/indic_conjunct_break_table.h \
+  /usr/include/c++/v1/__format/width_estimation_table.h \
+  /usr/include/c++/v1/__locale \
+  /usr/include/c++/v1/__locale_dir/locale_base_api.h \
+  /usr/include/xlocale.h /usr/include/c++/v1/locale.h \
+  /usr/include/locale.h /usr/include/xlocale/_locale.h \
+  /usr/include/xlocale/_inttypes.h /usr/include/xlocale/_stdlib.h \
+  /usr/include/xlocale/_stdio.h /usr/include/c++/v1/__mutex/once_flag.h \
+  /usr/include/c++/v1/__utility/no_destroy.h \
+  /usr/include/c++/v1/__utility/private_constructor_tag.h \
+  /usr/include/c++/v1/clocale /usr/include/c++/v1/cstdlib \
+  /usr/include/c++/v1/__fwd/vector.h \
+  /usr/include/c++/v1/__memory/temp_value.h \
+  /usr/include/c++/v1/__split_buffer \
+  /usr/include/c++/v1/__iterator/move_iterator.h \
+  /usr/include/c++/v1/__iterator/move_sentinel.h \
+  /usr/include/c++/v1/__functional/default_searcher.h \
+  /usr/include/c++/v1/__functional/not_fn.h \
+  /usr/include/c++/v1/__functional/perfect_forward.h \
+  /usr/include/c++/v1/__functional/bind_back.h \
+  /usr/include/c++/v1/__functional/bind_front.h \
+  /usr/include/c++/v1/fstream /usr/include/c++/v1/filesystem \
+  /usr/include/c++/v1/__filesystem/copy_options.h \
+  /usr/include/c++/v1/__filesystem/directory_entry.h \
+  /usr/include/c++/v1/__chrono/time_point.h \
+  /usr/include/c++/v1/__chrono/duration.h /usr/include/c++/v1/ratio \
+  /usr/include/c++/v1/__filesystem/file_status.h \
+  /usr/include/c++/v1/__filesystem/file_type.h \
+  /usr/include/c++/v1/__filesystem/perms.h \
+  /usr/include/c++/v1/__filesystem/file_time_type.h \
+  /usr/include/c++/v1/__chrono/file_clock.h \
+  /usr/include/c++/v1/__chrono/system_clock.h /usr/include/c++/v1/ctime \
+  /usr/include/c++/v1/__filesystem/filesystem_error.h \
+  /usr/include/c++/v1/__filesystem/path.h \
+  /usr/include/c++/v1/__algorithm/replace.h \
+  /usr/include/c++/v1/__algorithm/replace_copy.h \
+  /usr/include/c++/v1/iomanip /usr/include/c++/v1/istream \
+  /usr/include/c++/v1/__iterator/istreambuf_iterator.h \
+  /usr/include/c++/v1/__iterator/default_sentinel.h \
+  /usr/include/c++/v1/__ostream/basic_ostream.h \
+  /usr/include/c++/v1/__exception/operations.h \
+  /usr/include/c++/v1/__system_error/error_code.h \
+  /usr/include/c++/v1/__system_error/error_category.h \
+  /usr/include/c++/v1/__system_error/error_condition.h \
+  /usr/include/c++/v1/bitset /usr/include/c++/v1/__algorithm/count.h \
+  /usr/include/c++/v1/__algorithm/fill.h \
+  /usr/include/c++/v1/__type_traits/is_char_like_type.h \
+  /usr/include/c++/v1/ios \
+  /usr/include/c++/v1/__system_error/system_error.h \
+  /usr/include/c++/v1/__atomic/atomic.h \
+  /usr/include/c++/v1/__atomic/atomic_base.h \
+  /usr/include/c++/v1/__atomic/atomic_sync.h \
+  /usr/include/c++/v1/__atomic/contention_t.h \
+  /usr/include/c++/v1/__atomic/cxx_atomic_impl.h \
+  /usr/include/c++/v1/__atomic/to_gcc_order.h \
+  /usr/include/c++/v1/__thread/poll_with_backoff.h \
+  /usr/include/c++/v1/__chrono/high_resolution_clock.h \
+  /usr/include/c++/v1/__chrono/steady_clock.h \
+  /usr/include/c++/v1/__thread/support.h \
+  /usr/include/c++/v1/__thread/support/pthread.h \
+  /usr/include/c++/v1/__chrono/convert_to_timespec.h \
+  /usr/include/pthread.h /usr/include/sys/_sigval.h /usr/include/sched.h \
+  /usr/include/sys/sched.h /usr/include/sys/cpuset.h \
+  /usr/include/sys/_cpuset.h /usr/include/sys/_bitset.h \
+  /usr/include/sys/bitset.h \
+  /usr/include/c++/v1/__atomic/check_memory_order.h \
+  /usr/include/c++/v1/__atomic/is_always_lock_free.h \
+  /usr/include/c++/v1/locale /usr/include/c++/v1/__algorithm/reverse.h \
+  /usr/include/c++/v1/__iterator/ostreambuf_iterator.h \
+  /usr/include/c++/v1/streambuf /usr/include/nl_types.h \
+  /usr/include/c++/v1/__locale_dir/locale_base_api/bsd_locale_defaults.h \
+  /usr/include/c++/v1/__filesystem/operations.h \
+  /usr/include/c++/v1/__filesystem/perm_options.h \
+  /usr/include/c++/v1/__filesystem/space_info.h \
+  /usr/include/c++/v1/__filesystem/directory_iterator.h \
+  /usr/include/c++/v1/__filesystem/directory_options.h \
+  /usr/include/c++/v1/__filesystem/path_iterator.h \
+  /usr/include/c++/v1/__filesystem/recursive_directory_iterator.h \
+  /usr/include/c++/v1/__filesystem/u8path.h /usr/include/c++/v1/ostream \
+  /usr/include/c++/v1/__ostream/print.h /usr/include/c++/v1/format \
+  /usr/include/c++/v1/__format/container_adaptor.h \
+  /usr/include/c++/v1/__format/range_default_formatter.h \
+  /usr/include/c++/v1/__chrono/statically_widen.h \
+  /usr/include/c++/v1/__format/range_formatter.h \
+  /usr/include/c++/v1/__format/format_context.h \
+  /usr/include/c++/v1/__format/format_arg_store.h \
+  /usr/include/c++/v1/__format/format_args.h \
+  /usr/include/c++/v1/__fwd/queue.h /usr/include/c++/v1/__fwd/deque.h \
+  /usr/include/c++/v1/__fwd/stack.h \
+  /usr/include/c++/v1/__ranges/ref_view.h \
+  /usr/include/c++/v1/__format/escaped_output_table.h \
+  /usr/include/c++/v1/__format/format_functions.h \
+  /usr/include/c++/v1/__algorithm/clamp.h \
+  /usr/include/c++/v1/__format/formatter_char.h \
+  /usr/include/c++/v1/__format/write_escaped.h \
+  /usr/include/c++/v1/__algorithm/ranges_for_each.h \
+  /usr/include/c++/v1/__algorithm/in_fun_result.h \
+  /usr/include/c++/v1/__format/formatter_floating_point.h \
+  /usr/include/c++/v1/__charconv/chars_format.h \
+  /usr/include/c++/v1/__utility/to_underlying.h \
+  /usr/include/c++/v1/__charconv/to_chars_floating_point.h \
+  /usr/include/c++/v1/__format/formatter_integer.h \
+  /usr/include/c++/v1/__format/formatter_pointer.h \
+  /usr/include/c++/v1/__format/formatter_string.h \
+  /usr/include/c++/v1/__format/formatter_tuple.h \
+  /usr/include/c++/v1/print /usr/include/unistd.h \
+  /usr/include/c++/v1/sstream

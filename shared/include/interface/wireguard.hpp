@@ -25,68 +25,38 @@
  * SUCH DAMAGE.
  */
 
-#ifndef NETD_FREEBSD_INTERFACE_TAP_HPP
-#define NETD_FREEBSD_INTERFACE_TAP_HPP
+#ifndef NETD_INTERFACE_WIREGUARD_HPP
+#define NETD_INTERFACE_WIREGUARD_HPP
 
+#include <shared/include/interface/base/ether.hpp>
+#include <shared/include/tunnel.hpp>
+#include <shared/include/base/serialization.hpp>
 #include <string>
 #include <cstdint>
 #include <memory>
 #include <vector>
 
-#include <shared/include/interface/tap.hpp>
-#include <shared/include/base/serialization.hpp>
-
 namespace netd {
-namespace freebsd {
-namespace interface {
 
-class TapInterface : public netd::TapInterface {
+class WireguardInterface : public interface::base::Ether, public Tunnel, public base::Serialization<WireguardInterface> {
 public:
-    TapInterface();
-    explicit TapInterface(const std::string& name);
-    virtual ~TapInterface();
+    WireguardInterface();
+    explicit WireguardInterface(const std::string& name);
+    virtual ~WireguardInterface();
 
-    // Interface name
-    std::string getName() const { return name_; }
+    // WireGuard-specific configuration
+    virtual bool setPrivateKey(const std::string& privateKey) { return false; }
+    virtual std::string getPrivateKey() const { return ""; }
+    virtual bool setListenPort(uint16_t port) { return false; }
+    virtual uint16_t getListenPort() const { return 51820; }
+    virtual bool addPeer(const std::string& publicKey, const std::string& endpoint) { return false; }
+    virtual bool removePeer(const std::string& publicKey) { return false; }
 
-    // FreeBSD-specific operations
-    bool createInterface();
-    bool destroyInterface();
-    bool loadFromSystem();
-    bool applyToSystem();
-
-    // TAP-specific configuration
-    bool setTapUnit(int unit);
-    int getTapUnit() const;
-    bool setTapMode(const std::string& mode);
-    std::string getTapMode() const;
-
-    // Statistics and information
-    std::string getType() const { return "tap"; }
-
-    // Conversion to shared interface for serialization
-    operator netd::TapInterface() const;
-
-private:
-    // Interface name
-    std::string name_;
-    
-    // TAP-specific members
-    int tapUnit_;
-    std::string tapMode_;
-    
-    // FreeBSD system interface
-    int socket_;
-    
-    // Helper methods
-    bool openSocket();
-    void closeSocket();
-    bool getTapInfo();
-    bool setTapInfo() const;
+    // YANG serialization
+    lyd_node* toYang() const override;
+    static WireguardInterface fromYang(const lyd_node* node);
 };
 
-} // namespace interface
-} // namespace freebsd
 } // namespace netd
 
-#endif // NETD_FREEBSD_INTERFACE_TAP_HPP
+#endif // NETD_INTERFACE_WIREGUARD_HPP

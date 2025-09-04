@@ -43,8 +43,7 @@ namespace freebsd {
 namespace interface {
 
 VlanInterface::VlanInterface()
-    : netd::Ethernet(),
-      netd::base::Serialization<VlanInterface>(),
+    : netd::VlanInterface(),
       name_(""),
       vlanId_(0),
       parentInterface_(""),
@@ -53,8 +52,7 @@ VlanInterface::VlanInterface()
 }
 
 VlanInterface::VlanInterface(const std::string& name)
-    : netd::Ethernet(),
-      netd::base::Serialization<VlanInterface>(),
+    : netd::VlanInterface(),
       name_(name),
       vlanId_(0),
       parentInterface_(""),
@@ -178,14 +176,9 @@ std::string VlanInterface::getVlanProtocol() const {
     return vlanProtocol_;
 }
 
-lyd_node* VlanInterface::toYang() const {
-    // TODO: Implement YANG serialization using libyang
-    return nullptr;
-}
-
-VlanInterface VlanInterface::fromYang(const lyd_node* node) {
-    // TODO: Implement YANG deserialization using libyang
-    return VlanInterface();
+VlanInterface::operator netd::VlanInterface() const {
+    // Cast to shared interface - we inherit from it so this is safe
+    return static_cast<const netd::VlanInterface&>(*this);
 }
 
 bool VlanInterface::openSocket() {

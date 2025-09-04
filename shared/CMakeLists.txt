@@ -13,13 +13,6 @@ set_target_properties(netd_shared PROPERTIES
 # Add subdirectories
 add_subdirectory(src)
 
-# Add interface base source files
-target_sources(netd_shared
-    PRIVATE
-        src/ethernet.cpp
-        src/master.cpp
-        src/tunnel.cpp
-)
 
 # Link dependencies
 target_link_libraries(netd_shared

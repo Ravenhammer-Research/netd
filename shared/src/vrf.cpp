@@ -26,9 +26,75 @@
  */
 
 #include <shared/include/vrf.hpp>
+#include <shared/include/yang.hpp>
+#include <libyang/tree_data.h>
 
 namespace netd {
 
-// Placeholder implementation
+// Shared VRF implementation with YANG serialization
+class VRF : public VRFAbstract {
+public:
+    VRF() = default;
+    virtual ~VRF() = default;
+
+    // Implement YANG serialization
+    lyd_node* toYang() const override {
+        // Create YANG context and serialize VRF
+        auto yang = createYang();
+        ly_ctx* ctx = yang->getContext();
+        
+        if (!ctx) {
+            return nullptr;
+        }
+        
+        // Create network-instance node using ietf-network-instance schema
+        lyd_node* networkInstances = nullptr;
+        lyd_node* networkInstance = nullptr;
+        
+        // Create the network-instances container
+        if (lyd_new_path(nullptr, ctx, "/ietf-network-instance:network-instances", nullptr, 0, &networkInstances) != LY_SUCCESS) {
+            return nullptr;
+        }
+        
+        // Create the network-instance list entry
+        std::string name = "default"; // TODO: Get actual VRF name
+        std::string path = "/ietf-network-instance:network-instances/network-instance[name='" + name + "']";
+        if (lyd_new_path(networkInstances, ctx, path.c_str(), nullptr, 0, &networkInstance) != LY_SUCCESS) {
+            lyd_free_tree(networkInstances);
+            return nullptr;
+        }
+        
+        // Set network-instance type
+        lyd_node* typeNode = nullptr;
+        std::string typePath = path + "/type";
+        if (lyd_new_path(networkInstance, ctx, typePath.c_str(), "ietf-network-instance:default-network-instance", 0, &typeNode) != LY_SUCCESS) {
+            lyd_free_tree(networkInstances);
+            return nullptr;
+        }
+        
+        // Set network-instance enabled state
+        lyd_node* enabledNode = nullptr;
+        std::string enabledPath = path + "/enabled";
+        std::string enabled = "true"; // TODO: Get actual VRF state
+        if (lyd_new_path(networkInstance, ctx, enabledPath.c_str(), enabled.c_str(), 0, &enabledNode) != LY_SUCCESS) {
+            lyd_free_tree(networkInstances);
+            return nullptr;
+        }
+        
+        // TODO: Add VRF-specific YANG extensions (interfaces, routing, etc.)
+        
+        return networkInstances;
+    }
+    
+    static VRF fromYang(const lyd_node* node) {
+        // TODO: Implement YANG deserialization for VRF
+        return VRF();
+    }
+
+    // VRF properties
+    uint32_t getId() const override { return 0; } // TODO: Get actual VRF ID
+    std::string getName() const override { return "default"; } // TODO: Get actual VRF name
+    bool isActive() const override { return true; } // TODO: Get actual VRF state
+};
 
 } // namespace netd

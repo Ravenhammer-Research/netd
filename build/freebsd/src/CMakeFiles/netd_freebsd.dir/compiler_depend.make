@@ -6,6 +6,7 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/interface/80211.cpp.o: /home/sq/netd/fre
   /home/sq/netd/shared/include/address.hpp \
   /home/sq/netd/shared/include/base/serialization.hpp \
   /home/sq/netd/shared/include/ethernet.hpp \
+  /home/sq/netd/shared/include/interface/80211.hpp \
   /home/sq/netd/shared/include/interface/base/ether.hpp \
   /home/sq/netd/shared/include/logger.hpp \
   /usr/include/_ctype.h \
@@ -429,6 +430,7 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/interface/80211.cpp.o: /home/sq/netd/fre
   /usr/include/c++/v1/errno.h \
   /usr/include/c++/v1/functional \
   /usr/include/c++/v1/initializer_list \
+  /usr/include/c++/v1/inttypes.h \
   /usr/include/c++/v1/iosfwd \
   /usr/include/c++/v1/limits \
   /usr/include/c++/v1/locale.h \
@@ -453,9 +455,11 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/interface/80211.cpp.o: /home/sq/netd/fre
   /usr/include/c++/v1/wctype.h \
   /usr/include/ctype.h \
   /usr/include/errno.h \
+  /usr/include/inttypes.h \
   /usr/include/limits.h \
   /usr/include/locale.h \
   /usr/include/machine/_align.h \
+  /usr/include/machine/_inttypes.h \
   /usr/include/machine/_limits.h \
   /usr/include/machine/_stdint.h \
   /usr/include/machine/_types.h \
@@ -518,6 +522,7 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/interface/80211.cpp.o: /home/sq/netd/fre
   /usr/include/sys/select.h \
   /usr/include/sys/socket.h \
   /usr/include/sys/sockio.h \
+  /usr/include/sys/stdint.h \
   /usr/include/sys/sx.h \
   /usr/include/sys/sysctl.h \
   /usr/include/sys/syslimits.h \
@@ -531,19 +536,41 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/interface/80211.cpp.o: /home/sq/netd/fre
   /usr/include/wchar.h \
   /usr/include/wctype.h \
   /usr/include/x86/_align.h \
+  /usr/include/x86/_inttypes.h \
   /usr/include/x86/_limits.h \
   /usr/include/x86/_stdint.h \
   /usr/include/x86/_types.h \
   /usr/include/x86/endian.h \
   /usr/include/xlocale.h \
   /usr/include/xlocale/_ctype.h \
+  /usr/include/xlocale/_inttypes.h \
   /usr/include/xlocale/_locale.h \
   /usr/include/xlocale/_stdio.h \
   /usr/include/xlocale/_stdlib.h \
   /usr/include/xlocale/_string.h \
   /usr/include/xlocale/_strings.h \
   /usr/include/xlocale/_time.h \
-  /usr/include/xlocale/_wchar.h
+  /usr/include/xlocale/_wchar.h \
+  /usr/local/include/libyang/context.h \
+  /usr/local/include/libyang/dict.h \
+  /usr/local/include/libyang/in.h \
+  /usr/local/include/libyang/libyang.h \
+  /usr/local/include/libyang/log.h \
+  /usr/local/include/libyang/ly_config.h \
+  /usr/local/include/libyang/metadata.h \
+  /usr/local/include/libyang/out.h \
+  /usr/local/include/libyang/parser_data.h \
+  /usr/local/include/libyang/parser_schema.h \
+  /usr/local/include/libyang/plugins.h \
+  /usr/local/include/libyang/plugins_exts.h \
+  /usr/local/include/libyang/printer_data.h \
+  /usr/local/include/libyang/printer_schema.h \
+  /usr/local/include/libyang/set.h \
+  /usr/local/include/libyang/tree.h \
+  /usr/local/include/libyang/tree_data.h \
+  /usr/local/include/libyang/tree_edit.h \
+  /usr/local/include/libyang/tree_schema.h \
+  /usr/local/include/pcre2.h
 
 freebsd/src/CMakeFiles/netd_freebsd.dir/interface/bridge.cpp.o: /home/sq/netd/freebsd/src/interface/bridge.cpp \
   /home/sq/netd/freebsd/include/interface/bridge.hpp \
@@ -976,6 +1003,7 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/interface/bridge.cpp.o: /home/sq/netd/fr
   /usr/include/c++/v1/errno.h \
   /usr/include/c++/v1/functional \
   /usr/include/c++/v1/initializer_list \
+  /usr/include/c++/v1/inttypes.h \
   /usr/include/c++/v1/iosfwd \
   /usr/include/c++/v1/limits \
   /usr/include/c++/v1/locale.h \
@@ -1000,9 +1028,11 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/interface/bridge.cpp.o: /home/sq/netd/fr
   /usr/include/c++/v1/wctype.h \
   /usr/include/ctype.h \
   /usr/include/errno.h \
+  /usr/include/inttypes.h \
   /usr/include/limits.h \
   /usr/include/locale.h \
   /usr/include/machine/_align.h \
+  /usr/include/machine/_inttypes.h \
   /usr/include/machine/_limits.h \
   /usr/include/machine/_stdint.h \
   /usr/include/machine/_types.h \
@@ -1065,6 +1095,7 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/interface/bridge.cpp.o: /home/sq/netd/fr
   /usr/include/sys/select.h \
   /usr/include/sys/socket.h \
   /usr/include/sys/sockio.h \
+  /usr/include/sys/stdint.h \
   /usr/include/sys/sx.h \
   /usr/include/sys/syslimits.h \
   /usr/include/sys/time.h \
@@ -1077,19 +1108,41 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/interface/bridge.cpp.o: /home/sq/netd/fr
   /usr/include/wchar.h \
   /usr/include/wctype.h \
   /usr/include/x86/_align.h \
+  /usr/include/x86/_inttypes.h \
   /usr/include/x86/_limits.h \
   /usr/include/x86/_stdint.h \
   /usr/include/x86/_types.h \
   /usr/include/x86/endian.h \
   /usr/include/xlocale.h \
   /usr/include/xlocale/_ctype.h \
+  /usr/include/xlocale/_inttypes.h \
   /usr/include/xlocale/_locale.h \
   /usr/include/xlocale/_stdio.h \
   /usr/include/xlocale/_stdlib.h \
   /usr/include/xlocale/_string.h \
   /usr/include/xlocale/_strings.h \
   /usr/include/xlocale/_time.h \
-  /usr/include/xlocale/_wchar.h
+  /usr/include/xlocale/_wchar.h \
+  /usr/local/include/libyang/context.h \
+  /usr/local/include/libyang/dict.h \
+  /usr/local/include/libyang/in.h \
+  /usr/local/include/libyang/libyang.h \
+  /usr/local/include/libyang/log.h \
+  /usr/local/include/libyang/ly_config.h \
+  /usr/local/include/libyang/metadata.h \
+  /usr/local/include/libyang/out.h \
+  /usr/local/include/libyang/parser_data.h \
+  /usr/local/include/libyang/parser_schema.h \
+  /usr/local/include/libyang/plugins.h \
+  /usr/local/include/libyang/plugins_exts.h \
+  /usr/local/include/libyang/printer_data.h \
+  /usr/local/include/libyang/printer_schema.h \
+  /usr/local/include/libyang/set.h \
+  /usr/local/include/libyang/tree.h \
+  /usr/local/include/libyang/tree_data.h \
+  /usr/local/include/libyang/tree_edit.h \
+  /usr/local/include/libyang/tree_schema.h \
+  /usr/local/include/pcre2.h
 
 freebsd/src/CMakeFiles/netd_freebsd.dir/interface/epair.cpp.o: /home/sq/netd/freebsd/src/interface/epair.cpp \
   /home/sq/netd/freebsd/include/interface/epair.hpp \
@@ -1097,6 +1150,7 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/interface/epair.cpp.o: /home/sq/netd/fre
   /home/sq/netd/shared/include/base/serialization.hpp \
   /home/sq/netd/shared/include/ethernet.hpp \
   /home/sq/netd/shared/include/interface/base/ether.hpp \
+  /home/sq/netd/shared/include/interface/epair.hpp \
   /home/sq/netd/shared/include/logger.hpp \
   /usr/include/_ctype.h \
   /usr/include/arpa/inet.h \
@@ -1519,6 +1573,7 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/interface/epair.cpp.o: /home/sq/netd/fre
   /usr/include/c++/v1/errno.h \
   /usr/include/c++/v1/functional \
   /usr/include/c++/v1/initializer_list \
+  /usr/include/c++/v1/inttypes.h \
   /usr/include/c++/v1/iosfwd \
   /usr/include/c++/v1/limits \
   /usr/include/c++/v1/locale.h \
@@ -1543,9 +1598,11 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/interface/epair.cpp.o: /home/sq/netd/fre
   /usr/include/c++/v1/wctype.h \
   /usr/include/ctype.h \
   /usr/include/errno.h \
+  /usr/include/inttypes.h \
   /usr/include/limits.h \
   /usr/include/locale.h \
   /usr/include/machine/_align.h \
+  /usr/include/machine/_inttypes.h \
   /usr/include/machine/_limits.h \
   /usr/include/machine/_stdint.h \
   /usr/include/machine/_types.h \
@@ -1605,6 +1662,7 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/interface/epair.cpp.o: /home/sq/netd/fre
   /usr/include/sys/select.h \
   /usr/include/sys/socket.h \
   /usr/include/sys/sockio.h \
+  /usr/include/sys/stdint.h \
   /usr/include/sys/sx.h \
   /usr/include/sys/sysctl.h \
   /usr/include/sys/syslimits.h \
@@ -1618,19 +1676,41 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/interface/epair.cpp.o: /home/sq/netd/fre
   /usr/include/wchar.h \
   /usr/include/wctype.h \
   /usr/include/x86/_align.h \
+  /usr/include/x86/_inttypes.h \
   /usr/include/x86/_limits.h \
   /usr/include/x86/_stdint.h \
   /usr/include/x86/_types.h \
   /usr/include/x86/endian.h \
   /usr/include/xlocale.h \
   /usr/include/xlocale/_ctype.h \
+  /usr/include/xlocale/_inttypes.h \
   /usr/include/xlocale/_locale.h \
   /usr/include/xlocale/_stdio.h \
   /usr/include/xlocale/_stdlib.h \
   /usr/include/xlocale/_string.h \
   /usr/include/xlocale/_strings.h \
   /usr/include/xlocale/_time.h \
-  /usr/include/xlocale/_wchar.h
+  /usr/include/xlocale/_wchar.h \
+  /usr/local/include/libyang/context.h \
+  /usr/local/include/libyang/dict.h \
+  /usr/local/include/libyang/in.h \
+  /usr/local/include/libyang/libyang.h \
+  /usr/local/include/libyang/log.h \
+  /usr/local/include/libyang/ly_config.h \
+  /usr/local/include/libyang/metadata.h \
+  /usr/local/include/libyang/out.h \
+  /usr/local/include/libyang/parser_data.h \
+  /usr/local/include/libyang/parser_schema.h \
+  /usr/local/include/libyang/plugins.h \
+  /usr/local/include/libyang/plugins_exts.h \
+  /usr/local/include/libyang/printer_data.h \
+  /usr/local/include/libyang/printer_schema.h \
+  /usr/local/include/libyang/set.h \
+  /usr/local/include/libyang/tree.h \
+  /usr/local/include/libyang/tree_data.h \
+  /usr/local/include/libyang/tree_edit.h \
+  /usr/local/include/libyang/tree_schema.h \
+  /usr/local/include/pcre2.h
 
 freebsd/src/CMakeFiles/netd_freebsd.dir/interface/ethernet.cpp.o: /home/sq/netd/freebsd/src/interface/ethernet.cpp \
   /home/sq/netd/freebsd/include/interface/ethernet.hpp \
@@ -1638,6 +1718,7 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/interface/ethernet.cpp.o: /home/sq/netd/
   /home/sq/netd/shared/include/base/serialization.hpp \
   /home/sq/netd/shared/include/ethernet.hpp \
   /home/sq/netd/shared/include/interface/base/ether.hpp \
+  /home/sq/netd/shared/include/interface/ethernet.hpp \
   /home/sq/netd/shared/include/logger.hpp \
   /usr/include/_ctype.h \
   /usr/include/arpa/inet.h \
@@ -2060,6 +2141,7 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/interface/ethernet.cpp.o: /home/sq/netd/
   /usr/include/c++/v1/errno.h \
   /usr/include/c++/v1/functional \
   /usr/include/c++/v1/initializer_list \
+  /usr/include/c++/v1/inttypes.h \
   /usr/include/c++/v1/iosfwd \
   /usr/include/c++/v1/limits \
   /usr/include/c++/v1/locale.h \
@@ -2084,9 +2166,11 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/interface/ethernet.cpp.o: /home/sq/netd/
   /usr/include/c++/v1/wctype.h \
   /usr/include/ctype.h \
   /usr/include/errno.h \
+  /usr/include/inttypes.h \
   /usr/include/limits.h \
   /usr/include/locale.h \
   /usr/include/machine/_align.h \
+  /usr/include/machine/_inttypes.h \
   /usr/include/machine/_limits.h \
   /usr/include/machine/_stdint.h \
   /usr/include/machine/_types.h \
@@ -2148,6 +2232,7 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/interface/ethernet.cpp.o: /home/sq/netd/
   /usr/include/sys/select.h \
   /usr/include/sys/socket.h \
   /usr/include/sys/sockio.h \
+  /usr/include/sys/stdint.h \
   /usr/include/sys/sx.h \
   /usr/include/sys/sysctl.h \
   /usr/include/sys/syslimits.h \
@@ -2161,27 +2246,53 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/interface/ethernet.cpp.o: /home/sq/netd/
   /usr/include/wchar.h \
   /usr/include/wctype.h \
   /usr/include/x86/_align.h \
+  /usr/include/x86/_inttypes.h \
   /usr/include/x86/_limits.h \
   /usr/include/x86/_stdint.h \
   /usr/include/x86/_types.h \
   /usr/include/x86/endian.h \
   /usr/include/xlocale.h \
   /usr/include/xlocale/_ctype.h \
+  /usr/include/xlocale/_inttypes.h \
   /usr/include/xlocale/_locale.h \
   /usr/include/xlocale/_stdio.h \
   /usr/include/xlocale/_stdlib.h \
   /usr/include/xlocale/_string.h \
   /usr/include/xlocale/_strings.h \
   /usr/include/xlocale/_time.h \
-  /usr/include/xlocale/_wchar.h
+  /usr/include/xlocale/_wchar.h \
+  /usr/local/include/libyang/context.h \
+  /usr/local/include/libyang/dict.h \
+  /usr/local/include/libyang/in.h \
+  /usr/local/include/libyang/libyang.h \
+  /usr/local/include/libyang/log.h \
+  /usr/local/include/libyang/ly_config.h \
+  /usr/local/include/libyang/metadata.h \
+  /usr/local/include/libyang/out.h \
+  /usr/local/include/libyang/parser_data.h \
+  /usr/local/include/libyang/parser_schema.h \
+  /usr/local/include/libyang/plugins.h \
+  /usr/local/include/libyang/plugins_exts.h \
+  /usr/local/include/libyang/printer_data.h \
+  /usr/local/include/libyang/printer_schema.h \
+  /usr/local/include/libyang/set.h \
+  /usr/local/include/libyang/tree.h \
+  /usr/local/include/libyang/tree_data.h \
+  /usr/local/include/libyang/tree_edit.h \
+  /usr/local/include/libyang/tree_schema.h \
+  /usr/local/include/pcre2.h
 
 freebsd/src/CMakeFiles/netd_freebsd.dir/interface/lagg.cpp.o: /home/sq/netd/freebsd/src/interface/lagg.cpp \
   /home/sq/netd/freebsd/include/interface/lagg.hpp \
+  /home/sq/netd/shared/include/address.hpp \
   /home/sq/netd/shared/include/base/serialization.hpp \
+  /home/sq/netd/shared/include/interface/base/ether.hpp \
   /home/sq/netd/shared/include/interface/base/master.hpp \
+  /home/sq/netd/shared/include/interface/lagg.hpp \
   /home/sq/netd/shared/include/logger.hpp \
   /home/sq/netd/shared/include/master.hpp \
   /usr/include/_ctype.h \
+  /usr/include/arpa/inet.h \
   /usr/include/c++/v1/__algorithm/adjacent_find.h \
   /usr/include/c++/v1/__algorithm/all_of.h \
   /usr/include/c++/v1/__algorithm/any_of.h \
@@ -2776,6 +2887,7 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/interface/lagg.cpp.o: /home/sq/netd/free
   /usr/include/c++/v1/errno.h \
   /usr/include/c++/v1/functional \
   /usr/include/c++/v1/initializer_list \
+  /usr/include/c++/v1/inttypes.h \
   /usr/include/c++/v1/iosfwd \
   /usr/include/c++/v1/limits \
   /usr/include/c++/v1/locale.h \
@@ -2800,9 +2912,11 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/interface/lagg.cpp.o: /home/sq/netd/free
   /usr/include/c++/v1/wctype.h \
   /usr/include/ctype.h \
   /usr/include/errno.h \
+  /usr/include/inttypes.h \
   /usr/include/limits.h \
   /usr/include/locale.h \
   /usr/include/machine/_align.h \
+  /usr/include/machine/_inttypes.h \
   /usr/include/machine/_limits.h \
   /usr/include/machine/_stdint.h \
   /usr/include/machine/_types.h \
@@ -2816,6 +2930,8 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/interface/lagg.cpp.o: /home/sq/netd/free
   /usr/include/net/if_private.h \
   /usr/include/net/if_var.h \
   /usr/include/net/ifq.h \
+  /usr/include/netinet/in.h \
+  /usr/include/netinet6/in6.h \
   /usr/include/runetype.h \
   /usr/include/stddef.h \
   /usr/include/stdint.h \
@@ -2861,6 +2977,7 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/interface/lagg.cpp.o: /home/sq/netd/free
   /usr/include/sys/select.h \
   /usr/include/sys/socket.h \
   /usr/include/sys/sockio.h \
+  /usr/include/sys/stdint.h \
   /usr/include/sys/sx.h \
   /usr/include/sys/sysctl.h \
   /usr/include/sys/syslimits.h \
@@ -2874,26 +2991,49 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/interface/lagg.cpp.o: /home/sq/netd/free
   /usr/include/wchar.h \
   /usr/include/wctype.h \
   /usr/include/x86/_align.h \
+  /usr/include/x86/_inttypes.h \
   /usr/include/x86/_limits.h \
   /usr/include/x86/_stdint.h \
   /usr/include/x86/_types.h \
   /usr/include/x86/endian.h \
   /usr/include/xlocale.h \
   /usr/include/xlocale/_ctype.h \
+  /usr/include/xlocale/_inttypes.h \
   /usr/include/xlocale/_locale.h \
   /usr/include/xlocale/_stdio.h \
   /usr/include/xlocale/_stdlib.h \
   /usr/include/xlocale/_string.h \
   /usr/include/xlocale/_strings.h \
   /usr/include/xlocale/_time.h \
-  /usr/include/xlocale/_wchar.h
+  /usr/include/xlocale/_wchar.h \
+  /usr/local/include/libyang/context.h \
+  /usr/local/include/libyang/dict.h \
+  /usr/local/include/libyang/in.h \
+  /usr/local/include/libyang/libyang.h \
+  /usr/local/include/libyang/log.h \
+  /usr/local/include/libyang/ly_config.h \
+  /usr/local/include/libyang/metadata.h \
+  /usr/local/include/libyang/out.h \
+  /usr/local/include/libyang/parser_data.h \
+  /usr/local/include/libyang/parser_schema.h \
+  /usr/local/include/libyang/plugins.h \
+  /usr/local/include/libyang/plugins_exts.h \
+  /usr/local/include/libyang/printer_data.h \
+  /usr/local/include/libyang/printer_schema.h \
+  /usr/local/include/libyang/set.h \
+  /usr/local/include/libyang/tree.h \
+  /usr/local/include/libyang/tree_data.h \
+  /usr/local/include/libyang/tree_edit.h \
+  /usr/local/include/libyang/tree_schema.h \
+  /usr/local/include/pcre2.h
 
 freebsd/src/CMakeFiles/netd_freebsd.dir/interface/ppp.cpp.o: /home/sq/netd/freebsd/src/interface/ppp.cpp \
   /home/sq/netd/freebsd/include/interface/ppp.hpp \
   /home/sq/netd/shared/include/address.hpp \
   /home/sq/netd/shared/include/base/serialization.hpp \
-  /home/sq/netd/shared/include/ethernet.hpp \
   /home/sq/netd/shared/include/interface/base/ether.hpp \
+  /home/sq/netd/shared/include/interface/base/tunnel.hpp \
+  /home/sq/netd/shared/include/interface/ppp.hpp \
   /home/sq/netd/shared/include/logger.hpp \
   /usr/include/_ctype.h \
   /usr/include/arpa/inet.h \
@@ -3316,6 +3456,7 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/interface/ppp.cpp.o: /home/sq/netd/freeb
   /usr/include/c++/v1/errno.h \
   /usr/include/c++/v1/functional \
   /usr/include/c++/v1/initializer_list \
+  /usr/include/c++/v1/inttypes.h \
   /usr/include/c++/v1/iosfwd \
   /usr/include/c++/v1/limits \
   /usr/include/c++/v1/locale.h \
@@ -3340,9 +3481,11 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/interface/ppp.cpp.o: /home/sq/netd/freeb
   /usr/include/c++/v1/wctype.h \
   /usr/include/ctype.h \
   /usr/include/errno.h \
+  /usr/include/inttypes.h \
   /usr/include/limits.h \
   /usr/include/locale.h \
   /usr/include/machine/_align.h \
+  /usr/include/machine/_inttypes.h \
   /usr/include/machine/_limits.h \
   /usr/include/machine/_stdint.h \
   /usr/include/machine/_types.h \
@@ -3402,6 +3545,7 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/interface/ppp.cpp.o: /home/sq/netd/freeb
   /usr/include/sys/select.h \
   /usr/include/sys/socket.h \
   /usr/include/sys/sockio.h \
+  /usr/include/sys/stdint.h \
   /usr/include/sys/sx.h \
   /usr/include/sys/sysctl.h \
   /usr/include/sys/syslimits.h \
@@ -3415,26 +3559,48 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/interface/ppp.cpp.o: /home/sq/netd/freeb
   /usr/include/wchar.h \
   /usr/include/wctype.h \
   /usr/include/x86/_align.h \
+  /usr/include/x86/_inttypes.h \
   /usr/include/x86/_limits.h \
   /usr/include/x86/_stdint.h \
   /usr/include/x86/_types.h \
   /usr/include/x86/endian.h \
   /usr/include/xlocale.h \
   /usr/include/xlocale/_ctype.h \
+  /usr/include/xlocale/_inttypes.h \
   /usr/include/xlocale/_locale.h \
   /usr/include/xlocale/_stdio.h \
   /usr/include/xlocale/_stdlib.h \
   /usr/include/xlocale/_string.h \
   /usr/include/xlocale/_strings.h \
   /usr/include/xlocale/_time.h \
-  /usr/include/xlocale/_wchar.h
+  /usr/include/xlocale/_wchar.h \
+  /usr/local/include/libyang/context.h \
+  /usr/local/include/libyang/dict.h \
+  /usr/local/include/libyang/in.h \
+  /usr/local/include/libyang/libyang.h \
+  /usr/local/include/libyang/log.h \
+  /usr/local/include/libyang/ly_config.h \
+  /usr/local/include/libyang/metadata.h \
+  /usr/local/include/libyang/out.h \
+  /usr/local/include/libyang/parser_data.h \
+  /usr/local/include/libyang/parser_schema.h \
+  /usr/local/include/libyang/plugins.h \
+  /usr/local/include/libyang/plugins_exts.h \
+  /usr/local/include/libyang/printer_data.h \
+  /usr/local/include/libyang/printer_schema.h \
+  /usr/local/include/libyang/set.h \
+  /usr/local/include/libyang/tree.h \
+  /usr/local/include/libyang/tree_data.h \
+  /usr/local/include/libyang/tree_edit.h \
+  /usr/local/include/libyang/tree_schema.h \
+  /usr/local/include/pcre2.h
 
 freebsd/src/CMakeFiles/netd_freebsd.dir/interface/tap.cpp.o: /home/sq/netd/freebsd/src/interface/tap.cpp \
   /home/sq/netd/freebsd/include/interface/tap.hpp \
   /home/sq/netd/shared/include/address.hpp \
   /home/sq/netd/shared/include/base/serialization.hpp \
-  /home/sq/netd/shared/include/ethernet.hpp \
   /home/sq/netd/shared/include/interface/base/ether.hpp \
+  /home/sq/netd/shared/include/interface/tap.hpp \
   /home/sq/netd/shared/include/logger.hpp \
   /usr/include/_ctype.h \
   /usr/include/arpa/inet.h \
@@ -3857,6 +4023,7 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/interface/tap.cpp.o: /home/sq/netd/freeb
   /usr/include/c++/v1/errno.h \
   /usr/include/c++/v1/functional \
   /usr/include/c++/v1/initializer_list \
+  /usr/include/c++/v1/inttypes.h \
   /usr/include/c++/v1/iosfwd \
   /usr/include/c++/v1/limits \
   /usr/include/c++/v1/locale.h \
@@ -3881,9 +4048,11 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/interface/tap.cpp.o: /home/sq/netd/freeb
   /usr/include/c++/v1/wctype.h \
   /usr/include/ctype.h \
   /usr/include/errno.h \
+  /usr/include/inttypes.h \
   /usr/include/limits.h \
   /usr/include/locale.h \
   /usr/include/machine/_align.h \
+  /usr/include/machine/_inttypes.h \
   /usr/include/machine/_limits.h \
   /usr/include/machine/_stdint.h \
   /usr/include/machine/_types.h \
@@ -3944,6 +4113,7 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/interface/tap.cpp.o: /home/sq/netd/freeb
   /usr/include/sys/select.h \
   /usr/include/sys/socket.h \
   /usr/include/sys/sockio.h \
+  /usr/include/sys/stdint.h \
   /usr/include/sys/sx.h \
   /usr/include/sys/sysctl.h \
   /usr/include/sys/syslimits.h \
@@ -3957,27 +4127,49 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/interface/tap.cpp.o: /home/sq/netd/freeb
   /usr/include/wchar.h \
   /usr/include/wctype.h \
   /usr/include/x86/_align.h \
+  /usr/include/x86/_inttypes.h \
   /usr/include/x86/_limits.h \
   /usr/include/x86/_stdint.h \
   /usr/include/x86/_types.h \
   /usr/include/x86/endian.h \
   /usr/include/xlocale.h \
   /usr/include/xlocale/_ctype.h \
+  /usr/include/xlocale/_inttypes.h \
   /usr/include/xlocale/_locale.h \
   /usr/include/xlocale/_stdio.h \
   /usr/include/xlocale/_stdlib.h \
   /usr/include/xlocale/_string.h \
   /usr/include/xlocale/_strings.h \
   /usr/include/xlocale/_time.h \
-  /usr/include/xlocale/_wchar.h
+  /usr/include/xlocale/_wchar.h \
+  /usr/local/include/libyang/context.h \
+  /usr/local/include/libyang/dict.h \
+  /usr/local/include/libyang/in.h \
+  /usr/local/include/libyang/libyang.h \
+  /usr/local/include/libyang/log.h \
+  /usr/local/include/libyang/ly_config.h \
+  /usr/local/include/libyang/metadata.h \
+  /usr/local/include/libyang/out.h \
+  /usr/local/include/libyang/parser_data.h \
+  /usr/local/include/libyang/parser_schema.h \
+  /usr/local/include/libyang/plugins.h \
+  /usr/local/include/libyang/plugins_exts.h \
+  /usr/local/include/libyang/printer_data.h \
+  /usr/local/include/libyang/printer_schema.h \
+  /usr/local/include/libyang/set.h \
+  /usr/local/include/libyang/tree.h \
+  /usr/local/include/libyang/tree_data.h \
+  /usr/local/include/libyang/tree_edit.h \
+  /usr/local/include/libyang/tree_schema.h \
+  /usr/local/include/pcre2.h
 
 freebsd/src/CMakeFiles/netd_freebsd.dir/interface/tun.cpp.o: /home/sq/netd/freebsd/src/interface/tun.cpp \
   /home/sq/netd/freebsd/include/interface/tun.hpp \
   /home/sq/netd/shared/include/address.hpp \
   /home/sq/netd/shared/include/base/serialization.hpp \
-  /home/sq/netd/shared/include/interface/base/tunnel.hpp \
+  /home/sq/netd/shared/include/interface/base/ether.hpp \
+  /home/sq/netd/shared/include/interface/tun.hpp \
   /home/sq/netd/shared/include/logger.hpp \
-  /home/sq/netd/shared/include/tunnel.hpp \
   /usr/include/_ctype.h \
   /usr/include/arpa/inet.h \
   /usr/include/c++/v1/__algorithm/comp.h \
@@ -4399,6 +4591,7 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/interface/tun.cpp.o: /home/sq/netd/freeb
   /usr/include/c++/v1/errno.h \
   /usr/include/c++/v1/functional \
   /usr/include/c++/v1/initializer_list \
+  /usr/include/c++/v1/inttypes.h \
   /usr/include/c++/v1/iosfwd \
   /usr/include/c++/v1/limits \
   /usr/include/c++/v1/locale.h \
@@ -4423,9 +4616,11 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/interface/tun.cpp.o: /home/sq/netd/freeb
   /usr/include/c++/v1/wctype.h \
   /usr/include/ctype.h \
   /usr/include/errno.h \
+  /usr/include/inttypes.h \
   /usr/include/limits.h \
   /usr/include/locale.h \
   /usr/include/machine/_align.h \
+  /usr/include/machine/_inttypes.h \
   /usr/include/machine/_limits.h \
   /usr/include/machine/_stdint.h \
   /usr/include/machine/_types.h \
@@ -4485,6 +4680,7 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/interface/tun.cpp.o: /home/sq/netd/freeb
   /usr/include/sys/select.h \
   /usr/include/sys/socket.h \
   /usr/include/sys/sockio.h \
+  /usr/include/sys/stdint.h \
   /usr/include/sys/sx.h \
   /usr/include/sys/sysctl.h \
   /usr/include/sys/syslimits.h \
@@ -4498,19 +4694,41 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/interface/tun.cpp.o: /home/sq/netd/freeb
   /usr/include/wchar.h \
   /usr/include/wctype.h \
   /usr/include/x86/_align.h \
+  /usr/include/x86/_inttypes.h \
   /usr/include/x86/_limits.h \
   /usr/include/x86/_stdint.h \
   /usr/include/x86/_types.h \
   /usr/include/x86/endian.h \
   /usr/include/xlocale.h \
   /usr/include/xlocale/_ctype.h \
+  /usr/include/xlocale/_inttypes.h \
   /usr/include/xlocale/_locale.h \
   /usr/include/xlocale/_stdio.h \
   /usr/include/xlocale/_stdlib.h \
   /usr/include/xlocale/_string.h \
   /usr/include/xlocale/_strings.h \
   /usr/include/xlocale/_time.h \
-  /usr/include/xlocale/_wchar.h
+  /usr/include/xlocale/_wchar.h \
+  /usr/local/include/libyang/context.h \
+  /usr/local/include/libyang/dict.h \
+  /usr/local/include/libyang/in.h \
+  /usr/local/include/libyang/libyang.h \
+  /usr/local/include/libyang/log.h \
+  /usr/local/include/libyang/ly_config.h \
+  /usr/local/include/libyang/metadata.h \
+  /usr/local/include/libyang/out.h \
+  /usr/local/include/libyang/parser_data.h \
+  /usr/local/include/libyang/parser_schema.h \
+  /usr/local/include/libyang/plugins.h \
+  /usr/local/include/libyang/plugins_exts.h \
+  /usr/local/include/libyang/printer_data.h \
+  /usr/local/include/libyang/printer_schema.h \
+  /usr/local/include/libyang/set.h \
+  /usr/local/include/libyang/tree.h \
+  /usr/local/include/libyang/tree_data.h \
+  /usr/local/include/libyang/tree_edit.h \
+  /usr/local/include/libyang/tree_schema.h \
+  /usr/local/include/pcre2.h
 
 freebsd/src/CMakeFiles/netd_freebsd.dir/interface/vlan.cpp.o: /home/sq/netd/freebsd/src/interface/vlan.cpp \
   /home/sq/netd/freebsd/include/interface/vlan.hpp \
@@ -4518,6 +4736,7 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/interface/vlan.cpp.o: /home/sq/netd/free
   /home/sq/netd/shared/include/base/serialization.hpp \
   /home/sq/netd/shared/include/ethernet.hpp \
   /home/sq/netd/shared/include/interface/base/ether.hpp \
+  /home/sq/netd/shared/include/interface/vlan.hpp \
   /home/sq/netd/shared/include/logger.hpp \
   /usr/include/_ctype.h \
   /usr/include/arpa/inet.h \
@@ -4940,6 +5159,7 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/interface/vlan.cpp.o: /home/sq/netd/free
   /usr/include/c++/v1/errno.h \
   /usr/include/c++/v1/functional \
   /usr/include/c++/v1/initializer_list \
+  /usr/include/c++/v1/inttypes.h \
   /usr/include/c++/v1/iosfwd \
   /usr/include/c++/v1/limits \
   /usr/include/c++/v1/locale.h \
@@ -4964,9 +5184,11 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/interface/vlan.cpp.o: /home/sq/netd/free
   /usr/include/c++/v1/wctype.h \
   /usr/include/ctype.h \
   /usr/include/errno.h \
+  /usr/include/inttypes.h \
   /usr/include/limits.h \
   /usr/include/locale.h \
   /usr/include/machine/_align.h \
+  /usr/include/machine/_inttypes.h \
   /usr/include/machine/_limits.h \
   /usr/include/machine/_stdint.h \
   /usr/include/machine/_types.h \
@@ -5027,6 +5249,7 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/interface/vlan.cpp.o: /home/sq/netd/free
   /usr/include/sys/select.h \
   /usr/include/sys/socket.h \
   /usr/include/sys/sockio.h \
+  /usr/include/sys/stdint.h \
   /usr/include/sys/sx.h \
   /usr/include/sys/sysctl.h \
   /usr/include/sys/syslimits.h \
@@ -5040,25 +5263,49 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/interface/vlan.cpp.o: /home/sq/netd/free
   /usr/include/wchar.h \
   /usr/include/wctype.h \
   /usr/include/x86/_align.h \
+  /usr/include/x86/_inttypes.h \
   /usr/include/x86/_limits.h \
   /usr/include/x86/_stdint.h \
   /usr/include/x86/_types.h \
   /usr/include/x86/endian.h \
   /usr/include/xlocale.h \
   /usr/include/xlocale/_ctype.h \
+  /usr/include/xlocale/_inttypes.h \
   /usr/include/xlocale/_locale.h \
   /usr/include/xlocale/_stdio.h \
   /usr/include/xlocale/_stdlib.h \
   /usr/include/xlocale/_string.h \
   /usr/include/xlocale/_strings.h \
   /usr/include/xlocale/_time.h \
-  /usr/include/xlocale/_wchar.h
+  /usr/include/xlocale/_wchar.h \
+  /usr/local/include/libyang/context.h \
+  /usr/local/include/libyang/dict.h \
+  /usr/local/include/libyang/in.h \
+  /usr/local/include/libyang/libyang.h \
+  /usr/local/include/libyang/log.h \
+  /usr/local/include/libyang/ly_config.h \
+  /usr/local/include/libyang/metadata.h \
+  /usr/local/include/libyang/out.h \
+  /usr/local/include/libyang/parser_data.h \
+  /usr/local/include/libyang/parser_schema.h \
+  /usr/local/include/libyang/plugins.h \
+  /usr/local/include/libyang/plugins_exts.h \
+  /usr/local/include/libyang/printer_data.h \
+  /usr/local/include/libyang/printer_schema.h \
+  /usr/local/include/libyang/set.h \
+  /usr/local/include/libyang/tree.h \
+  /usr/local/include/libyang/tree_data.h \
+  /usr/local/include/libyang/tree_edit.h \
+  /usr/local/include/libyang/tree_schema.h \
+  /usr/local/include/pcre2.h
 
 freebsd/src/CMakeFiles/netd_freebsd.dir/interface/vxlan.cpp.o: /home/sq/netd/freebsd/src/interface/vxlan.cpp \
   /home/sq/netd/freebsd/include/interface/vxlan.hpp \
   /home/sq/netd/shared/include/address.hpp \
   /home/sq/netd/shared/include/base/serialization.hpp \
+  /home/sq/netd/shared/include/interface/base/ether.hpp \
   /home/sq/netd/shared/include/interface/base/tunnel.hpp \
+  /home/sq/netd/shared/include/interface/vxlan.hpp \
   /home/sq/netd/shared/include/logger.hpp \
   /home/sq/netd/shared/include/tunnel.hpp \
   /usr/include/_ctype.h \
@@ -5482,6 +5729,7 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/interface/vxlan.cpp.o: /home/sq/netd/fre
   /usr/include/c++/v1/errno.h \
   /usr/include/c++/v1/functional \
   /usr/include/c++/v1/initializer_list \
+  /usr/include/c++/v1/inttypes.h \
   /usr/include/c++/v1/iosfwd \
   /usr/include/c++/v1/limits \
   /usr/include/c++/v1/locale.h \
@@ -5506,9 +5754,11 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/interface/vxlan.cpp.o: /home/sq/netd/fre
   /usr/include/c++/v1/wctype.h \
   /usr/include/ctype.h \
   /usr/include/errno.h \
+  /usr/include/inttypes.h \
   /usr/include/limits.h \
   /usr/include/locale.h \
   /usr/include/machine/_align.h \
+  /usr/include/machine/_inttypes.h \
   /usr/include/machine/_limits.h \
   /usr/include/machine/_stdint.h \
   /usr/include/machine/_types.h \
@@ -5567,6 +5817,7 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/interface/vxlan.cpp.o: /home/sq/netd/fre
   /usr/include/sys/select.h \
   /usr/include/sys/socket.h \
   /usr/include/sys/sockio.h \
+  /usr/include/sys/stdint.h \
   /usr/include/sys/sx.h \
   /usr/include/sys/sysctl.h \
   /usr/include/sys/syslimits.h \
@@ -5580,25 +5831,49 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/interface/vxlan.cpp.o: /home/sq/netd/fre
   /usr/include/wchar.h \
   /usr/include/wctype.h \
   /usr/include/x86/_align.h \
+  /usr/include/x86/_inttypes.h \
   /usr/include/x86/_limits.h \
   /usr/include/x86/_stdint.h \
   /usr/include/x86/_types.h \
   /usr/include/x86/endian.h \
   /usr/include/xlocale.h \
   /usr/include/xlocale/_ctype.h \
+  /usr/include/xlocale/_inttypes.h \
   /usr/include/xlocale/_locale.h \
   /usr/include/xlocale/_stdio.h \
   /usr/include/xlocale/_stdlib.h \
   /usr/include/xlocale/_string.h \
   /usr/include/xlocale/_strings.h \
   /usr/include/xlocale/_time.h \
-  /usr/include/xlocale/_wchar.h
+  /usr/include/xlocale/_wchar.h \
+  /usr/local/include/libyang/context.h \
+  /usr/local/include/libyang/dict.h \
+  /usr/local/include/libyang/in.h \
+  /usr/local/include/libyang/libyang.h \
+  /usr/local/include/libyang/log.h \
+  /usr/local/include/libyang/ly_config.h \
+  /usr/local/include/libyang/metadata.h \
+  /usr/local/include/libyang/out.h \
+  /usr/local/include/libyang/parser_data.h \
+  /usr/local/include/libyang/parser_schema.h \
+  /usr/local/include/libyang/plugins.h \
+  /usr/local/include/libyang/plugins_exts.h \
+  /usr/local/include/libyang/printer_data.h \
+  /usr/local/include/libyang/printer_schema.h \
+  /usr/local/include/libyang/set.h \
+  /usr/local/include/libyang/tree.h \
+  /usr/local/include/libyang/tree_data.h \
+  /usr/local/include/libyang/tree_edit.h \
+  /usr/local/include/libyang/tree_schema.h \
+  /usr/local/include/pcre2.h
 
 freebsd/src/CMakeFiles/netd_freebsd.dir/interface/wireguard.cpp.o: /home/sq/netd/freebsd/src/interface/wireguard.cpp \
   /home/sq/netd/freebsd/include/interface/wireguard.hpp \
   /home/sq/netd/shared/include/address.hpp \
   /home/sq/netd/shared/include/base/serialization.hpp \
+  /home/sq/netd/shared/include/interface/base/ether.hpp \
   /home/sq/netd/shared/include/interface/base/tunnel.hpp \
+  /home/sq/netd/shared/include/interface/wireguard.hpp \
   /home/sq/netd/shared/include/logger.hpp \
   /home/sq/netd/shared/include/tunnel.hpp \
   /usr/include/_ctype.h \
@@ -6197,6 +6472,7 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/interface/wireguard.cpp.o: /home/sq/netd
   /usr/include/c++/v1/errno.h \
   /usr/include/c++/v1/functional \
   /usr/include/c++/v1/initializer_list \
+  /usr/include/c++/v1/inttypes.h \
   /usr/include/c++/v1/iosfwd \
   /usr/include/c++/v1/limits \
   /usr/include/c++/v1/locale.h \
@@ -6221,9 +6497,11 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/interface/wireguard.cpp.o: /home/sq/netd
   /usr/include/c++/v1/wctype.h \
   /usr/include/ctype.h \
   /usr/include/errno.h \
+  /usr/include/inttypes.h \
   /usr/include/limits.h \
   /usr/include/locale.h \
   /usr/include/machine/_align.h \
+  /usr/include/machine/_inttypes.h \
   /usr/include/machine/_limits.h \
   /usr/include/machine/_stdint.h \
   /usr/include/machine/_types.h \
@@ -6282,6 +6560,7 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/interface/wireguard.cpp.o: /home/sq/netd
   /usr/include/sys/select.h \
   /usr/include/sys/socket.h \
   /usr/include/sys/sockio.h \
+  /usr/include/sys/stdint.h \
   /usr/include/sys/sx.h \
   /usr/include/sys/sysctl.h \
   /usr/include/sys/syslimits.h \
@@ -6295,19 +6574,41 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/interface/wireguard.cpp.o: /home/sq/netd
   /usr/include/wchar.h \
   /usr/include/wctype.h \
   /usr/include/x86/_align.h \
+  /usr/include/x86/_inttypes.h \
   /usr/include/x86/_limits.h \
   /usr/include/x86/_stdint.h \
   /usr/include/x86/_types.h \
   /usr/include/x86/endian.h \
   /usr/include/xlocale.h \
   /usr/include/xlocale/_ctype.h \
+  /usr/include/xlocale/_inttypes.h \
   /usr/include/xlocale/_locale.h \
   /usr/include/xlocale/_stdio.h \
   /usr/include/xlocale/_stdlib.h \
   /usr/include/xlocale/_string.h \
   /usr/include/xlocale/_strings.h \
   /usr/include/xlocale/_time.h \
-  /usr/include/xlocale/_wchar.h
+  /usr/include/xlocale/_wchar.h \
+  /usr/local/include/libyang/context.h \
+  /usr/local/include/libyang/dict.h \
+  /usr/local/include/libyang/in.h \
+  /usr/local/include/libyang/libyang.h \
+  /usr/local/include/libyang/log.h \
+  /usr/local/include/libyang/ly_config.h \
+  /usr/local/include/libyang/metadata.h \
+  /usr/local/include/libyang/out.h \
+  /usr/local/include/libyang/parser_data.h \
+  /usr/local/include/libyang/parser_schema.h \
+  /usr/local/include/libyang/plugins.h \
+  /usr/local/include/libyang/plugins_exts.h \
+  /usr/local/include/libyang/printer_data.h \
+  /usr/local/include/libyang/printer_schema.h \
+  /usr/local/include/libyang/set.h \
+  /usr/local/include/libyang/tree.h \
+  /usr/local/include/libyang/tree_data.h \
+  /usr/local/include/libyang/tree_edit.h \
+  /usr/local/include/libyang/tree_schema.h \
+  /usr/local/include/pcre2.h
 
 freebsd/src/CMakeFiles/netd_freebsd.dir/route.cpp.o: /home/sq/netd/freebsd/src/route.cpp \
   /home/sq/netd/freebsd/include/route.hpp \
@@ -6769,6 +7070,7 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/route.cpp.o: /home/sq/netd/freebsd/src/r
   /usr/include/c++/v1/errno.h \
   /usr/include/c++/v1/functional \
   /usr/include/c++/v1/initializer_list \
+  /usr/include/c++/v1/inttypes.h \
   /usr/include/c++/v1/ios \
   /usr/include/c++/v1/iosfwd \
   /usr/include/c++/v1/istream \
@@ -6799,9 +7101,11 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/route.cpp.o: /home/sq/netd/freebsd/src/r
   /usr/include/c++/v1/wctype.h \
   /usr/include/ctype.h \
   /usr/include/errno.h \
+  /usr/include/inttypes.h \
   /usr/include/limits.h \
   /usr/include/locale.h \
   /usr/include/machine/_align.h \
+  /usr/include/machine/_inttypes.h \
   /usr/include/machine/_limits.h \
   /usr/include/machine/_stdint.h \
   /usr/include/machine/_types.h \
@@ -6843,6 +7147,7 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/route.cpp.o: /home/sq/netd/freebsd/src/r
   /usr/include/sys/sched.h \
   /usr/include/sys/select.h \
   /usr/include/sys/socket.h \
+  /usr/include/sys/stdint.h \
   /usr/include/sys/syslimits.h \
   /usr/include/sys/timespec.h \
   /usr/include/sys/types.h \
@@ -6850,19 +7155,41 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/route.cpp.o: /home/sq/netd/freebsd/src/r
   /usr/include/wchar.h \
   /usr/include/wctype.h \
   /usr/include/x86/_align.h \
+  /usr/include/x86/_inttypes.h \
   /usr/include/x86/_limits.h \
   /usr/include/x86/_stdint.h \
   /usr/include/x86/_types.h \
   /usr/include/x86/endian.h \
   /usr/include/xlocale.h \
   /usr/include/xlocale/_ctype.h \
+  /usr/include/xlocale/_inttypes.h \
   /usr/include/xlocale/_locale.h \
   /usr/include/xlocale/_stdio.h \
   /usr/include/xlocale/_stdlib.h \
   /usr/include/xlocale/_string.h \
   /usr/include/xlocale/_strings.h \
   /usr/include/xlocale/_time.h \
-  /usr/include/xlocale/_wchar.h
+  /usr/include/xlocale/_wchar.h \
+  /usr/local/include/libyang/context.h \
+  /usr/local/include/libyang/dict.h \
+  /usr/local/include/libyang/in.h \
+  /usr/local/include/libyang/libyang.h \
+  /usr/local/include/libyang/log.h \
+  /usr/local/include/libyang/ly_config.h \
+  /usr/local/include/libyang/metadata.h \
+  /usr/local/include/libyang/out.h \
+  /usr/local/include/libyang/parser_data.h \
+  /usr/local/include/libyang/parser_schema.h \
+  /usr/local/include/libyang/plugins.h \
+  /usr/local/include/libyang/plugins_exts.h \
+  /usr/local/include/libyang/printer_data.h \
+  /usr/local/include/libyang/printer_schema.h \
+  /usr/local/include/libyang/set.h \
+  /usr/local/include/libyang/tree.h \
+  /usr/local/include/libyang/tree_data.h \
+  /usr/local/include/libyang/tree_edit.h \
+  /usr/local/include/libyang/tree_schema.h \
+  /usr/local/include/pcre2.h
 
 freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf.cpp \
   /home/sq/netd/freebsd/include/vrf.hpp \
@@ -7323,6 +7650,7 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf
   /usr/include/c++/v1/errno.h \
   /usr/include/c++/v1/functional \
   /usr/include/c++/v1/initializer_list \
+  /usr/include/c++/v1/inttypes.h \
   /usr/include/c++/v1/ios \
   /usr/include/c++/v1/iosfwd \
   /usr/include/c++/v1/istream \
@@ -7353,9 +7681,11 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf
   /usr/include/c++/v1/wctype.h \
   /usr/include/ctype.h \
   /usr/include/errno.h \
+  /usr/include/inttypes.h \
   /usr/include/limits.h \
   /usr/include/locale.h \
   /usr/include/machine/_align.h \
+  /usr/include/machine/_inttypes.h \
   /usr/include/machine/_limits.h \
   /usr/include/machine/_stdint.h \
   /usr/include/machine/_types.h \
@@ -7397,6 +7727,7 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf
   /usr/include/sys/sched.h \
   /usr/include/sys/select.h \
   /usr/include/sys/socket.h \
+  /usr/include/sys/stdint.h \
   /usr/include/sys/sysctl.h \
   /usr/include/sys/syslimits.h \
   /usr/include/sys/timespec.h \
@@ -7405,19 +7736,41 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf
   /usr/include/wchar.h \
   /usr/include/wctype.h \
   /usr/include/x86/_align.h \
+  /usr/include/x86/_inttypes.h \
   /usr/include/x86/_limits.h \
   /usr/include/x86/_stdint.h \
   /usr/include/x86/_types.h \
   /usr/include/x86/endian.h \
   /usr/include/xlocale.h \
   /usr/include/xlocale/_ctype.h \
+  /usr/include/xlocale/_inttypes.h \
   /usr/include/xlocale/_locale.h \
   /usr/include/xlocale/_stdio.h \
   /usr/include/xlocale/_stdlib.h \
   /usr/include/xlocale/_string.h \
   /usr/include/xlocale/_strings.h \
   /usr/include/xlocale/_time.h \
-  /usr/include/xlocale/_wchar.h
+  /usr/include/xlocale/_wchar.h \
+  /usr/local/include/libyang/context.h \
+  /usr/local/include/libyang/dict.h \
+  /usr/local/include/libyang/in.h \
+  /usr/local/include/libyang/libyang.h \
+  /usr/local/include/libyang/log.h \
+  /usr/local/include/libyang/ly_config.h \
+  /usr/local/include/libyang/metadata.h \
+  /usr/local/include/libyang/out.h \
+  /usr/local/include/libyang/parser_data.h \
+  /usr/local/include/libyang/parser_schema.h \
+  /usr/local/include/libyang/plugins.h \
+  /usr/local/include/libyang/plugins_exts.h \
+  /usr/local/include/libyang/printer_data.h \
+  /usr/local/include/libyang/printer_schema.h \
+  /usr/local/include/libyang/set.h \
+  /usr/local/include/libyang/tree.h \
+  /usr/local/include/libyang/tree_data.h \
+  /usr/local/include/libyang/tree_edit.h \
+  /usr/local/include/libyang/tree_schema.h \
+  /usr/local/include/pcre2.h
 
 
 /home/sq/netd/shared/include/vrf.hpp:
@@ -7436,51 +7789,47 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf
 
 /usr/include/net/vnet.h:
 
-/usr/include/c++/v1/__tuple/sfinae_helpers.h:
+/usr/include/net/route.h:
 
-/usr/include/c++/v1/ctime:
+/usr/include/c++/v1/sstream:
+
+/usr/include/c++/v1/istream:
 
 /usr/include/c++/v1/__type_traits/is_char_like_type.h:
 
 /usr/include/c++/v1/__thread/support/pthread.h:
 
-/usr/include/c++/v1/__iterator/erase_if_container.h:
-
-/usr/include/c++/v1/__thread/support.h:
-
 /usr/include/c++/v1/__thread/poll_with_backoff.h:
-
-/usr/include/c++/v1/__memory/allocator_destructor.h:
-
-/usr/include/c++/v1/__functional/function.h:
-
-/usr/include/c++/v1/__type_traits/lazy.h:
-
-/usr/include/c++/v1/__system_error/error_code.h:
 
 /usr/include/c++/v1/__system_error/error_category.h:
 
-/usr/include/c++/v1/__exception/operations.h:
+/usr/include/c++/v1/__ostream/basic_ostream.h:
 
-/usr/include/c++/v1/__algorithm/ranges_upper_bound.h:
+/usr/include/c++/v1/__locale_dir/locale_base_api/bsd_locale_defaults.h:
 
-/usr/include/c++/v1/__chrono/time_point.h:
+/usr/include/c++/v1/__iterator/ostreambuf_iterator.h:
+
+/usr/include/c++/v1/__iterator/istreambuf_iterator.h:
+
+/usr/include/c++/v1/__iterator/default_sentinel.h:
 
 /usr/include/c++/v1/__chrono/system_clock.h:
 
-/usr/include/c++/v1/compare:
+/usr/include/c++/v1/__chrono/steady_clock.h:
 
-/usr/include/c++/v1/__atomic/to_gcc_order.h:
+/usr/include/c++/v1/__chrono/high_resolution_clock.h:
 
-/usr/include/c++/v1/__algorithm/make_heap.h:
+/usr/include/c++/v1/__chrono/duration.h:
 
-/usr/include/c++/v1/__atomic/is_always_lock_free.h:
+/usr/include/c++/v1/__chrono/convert_to_timespec.h:
 
-/usr/include/c++/v1/__algorithm/ranges_sort.h:
+/usr/include/c++/v1/__atomic/check_memory_order.h:
 
-/usr/include/c++/v1/__atomic/contention_t.h:
+/usr/include/c++/v1/__atomic/atomic_sync.h:
 
 /usr/include/c++/v1/__atomic/atomic_base.h:
+
+/home/sq/netd/shared/include/tunnel.hpp:
 
 /usr/include/c++/v1/__math/abs.h:
 
@@ -7490,9 +7839,13 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf
 
 /home/sq/netd/freebsd/src/interface/vxlan.cpp:
 
+/home/sq/netd/shared/include/interface/vlan.hpp:
+
 /home/sq/netd/freebsd/src/interface/vlan.cpp:
 
-/home/sq/netd/shared/include/tunnel.hpp:
+/home/sq/netd/shared/include/interface/tun.hpp:
+
+/usr/include/x86/_inttypes.h:
 
 /home/sq/netd/freebsd/include/interface/tun.hpp:
 
@@ -7501,10 +7854,6 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf
 /home/sq/netd/freebsd/src/interface/tap.cpp:
 
 /usr/include/net/ppp_defs.h:
-
-/usr/include/c++/v1/__type_traits/remove_cv.h:
-
-/usr/include/c++/v1/ratio:
 
 /usr/include/net/if_lagg.h:
 
@@ -7624,8 +7973,6 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf
 
 /usr/include/c++/v1/__algorithm/ranges_partition_point.h:
 
-/usr/include/c++/v1/__algorithm/ranges_partition_copy.h:
-
 /usr/include/c++/v1/__algorithm/ranges_partition.h:
 
 /usr/include/c++/v1/__algorithm/ranges_partial_sort.h:
@@ -7674,13 +8021,13 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf
 
 /usr/include/c++/v1/cstdlib:
 
+/home/sq/netd/shared/include/interface/ppp.hpp:
+
 /usr/include/c++/v1/__concepts/boolean_testable.h:
 
 /usr/include/c++/v1/__algorithm/push_heap.h:
 
 /usr/include/c++/v1/__algorithm/pstl.h:
-
-/usr/include/c++/v1/__algorithm/partition_point.h:
 
 /usr/include/c++/v1/__algorithm/ranges_for_each_n.h:
 
@@ -7716,6 +8063,10 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf
 
 /usr/include/c++/v1/__algorithm/merge.h:
 
+/usr/include/c++/v1/__atomic/is_always_lock_free.h:
+
+/usr/include/c++/v1/__algorithm/make_heap.h:
+
 /usr/include/sys/ck.h:
 
 /usr/include/c++/v1/__algorithm/ranges_count.h:
@@ -7734,9 +8085,11 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf
 
 /usr/include/c++/v1/__algorithm/inplace_merge.h:
 
-/usr/include/c++/v1/__algorithm/includes.h:
+/usr/include/c++/v1/__format/buffer.h:
 
-/usr/include/c++/v1/__atomic/check_memory_order.h:
+/home/sq/netd/shared/include/interface/tap.hpp:
+
+/usr/include/c++/v1/__algorithm/includes.h:
 
 /usr/include/pthread.h:
 
@@ -7748,15 +8101,7 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf
 
 /usr/include/c++/v1/__algorithm/for_each_n.h:
 
-/usr/include/c++/v1/__math/fma.h:
-
-/usr/include/c++/v1/__system_error/error_condition.h:
-
 /usr/include/c++/v1/__algorithm/count_if.h:
-
-/usr/include/c++/v1/__charconv/to_chars_base_10.h:
-
-/usr/include/c++/v1/__algorithm/count.h:
 
 /usr/include/c++/v1/__algorithm/copy_if.h:
 
@@ -7780,6 +8125,10 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf
 
 /usr/include/netinet/if_ether.h:
 
+/home/sq/netd/shared/include/interface/ethernet.hpp:
+
+/home/sq/netd/shared/include/interface/epair.hpp:
+
 /home/sq/netd/freebsd/include/interface/80211.hpp:
 
 /home/sq/netd/freebsd/src/interface/epair.cpp:
@@ -7802,21 +8151,53 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf
 
 /home/sq/netd/shared/include/master.hpp:
 
+/usr/local/include/libyang/context.h:
+
 /usr/include/c++/v1/__algorithm/ranges_reverse_copy.h:
 
 /home/sq/netd/freebsd/include/interface/bridge.hpp:
 
 /home/sq/netd/freebsd/src/interface/bridge.cpp:
 
+/usr/include/c++/v1/__algorithm/ranges_partition_copy.h:
+
+/usr/include/c++/v1/__utility/piecewise_construct.h:
+
+/usr/local/include/libyang/tree_data.h:
+
+/usr/local/include/libyang/set.h:
+
+/usr/local/include/libyang/in.h:
+
+/usr/local/include/libyang/printer_data.h:
+
+/usr/local/include/libyang/plugins_exts.h:
+
+/usr/include/c++/v1/__fwd/sstream.h:
+
+/usr/local/include/libyang/plugins.h:
+
+/usr/local/include/libyang/parser_data.h:
+
+/usr/include/c++/v1/__algorithm/partition_point.h:
+
+/usr/local/include/libyang/ly_config.h:
+
 /usr/include/xlocale/_wchar.h:
 
-/usr/include/xlocale/_strings.h:
+/usr/local/include/libyang/tree_edit.h:
 
-/usr/include/c++/v1/__iterator/ostreambuf_iterator.h:
+/home/sq/netd/shared/include/interface/wireguard.hpp:
+
+/usr/include/xlocale/_strings.h:
 
 /usr/include/xlocale/_string.h:
 
 /usr/include/xlocale/_locale.h:
+
+/usr/include/xlocale/_inttypes.h:
+
+/usr/local/include/libyang/dict.h:
 
 /usr/include/x86/endian.h:
 
@@ -7832,6 +8213,10 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf
 
 /usr/include/c++/v1/__algorithm/next_permutation.h:
 
+/usr/include/c++/v1/__exception/operations.h:
+
+/home/sq/netd/shared/include/interface/lagg.hpp:
+
 /usr/include/unistd.h:
 
 /usr/include/sys/ttycom.h:
@@ -7841,6 +8226,8 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf
 /usr/include/sys/syslimits.h:
 
 /usr/include/sys/sx.h:
+
+/usr/include/sys/stdint.h:
 
 /usr/include/c++/v1/__algorithm/ranges_all_of.h:
 
@@ -7872,6 +8259,10 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf
 
 /usr/include/sys/epoch.h:
 
+/usr/include/net80211/ieee80211_crypto.h:
+
+/usr/local/include/libyang/tree.h:
+
 /usr/include/c++/v1/__algorithm/shift_left.h:
 
 /usr/include/c++/v1/__algorithm/ranges_search_n.h:
@@ -7897,8 +8288,6 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf
 /usr/include/sys/_mutex.h:
 
 /usr/include/sys/_iovec.h:
-
-/usr/include/c++/v1/__ostream/basic_ostream.h:
 
 /usr/include/sys/_endian.h:
 
@@ -7942,8 +8331,6 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf
 
 /usr/include/c++/v1/__algorithm/ranges_is_permutation.h:
 
-/usr/include/net80211/ieee80211_crypto.h:
-
 /usr/include/net/if_var.h:
 
 /usr/include/c++/v1/__algorithm/replace_copy_if.h:
@@ -7968,11 +8355,15 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf
 
 /usr/include/machine/_align.h:
 
+/usr/include/c++/v1/__charconv/to_chars_base_10.h:
+
+/usr/include/c++/v1/__algorithm/count.h:
+
+/usr/include/inttypes.h:
+
 /usr/include/time.h:
 
 /usr/include/errno.h:
-
-/usr/include/c++/v1/istream:
 
 /usr/include/net/if_bridgevar.h:
 
@@ -8016,6 +8407,10 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf
 
 /usr/include/c++/v1/optional:
 
+/usr/include/c++/v1/__locale:
+
+/home/sq/netd/shared/include/interface/vxlan.hpp:
+
 /usr/include/c++/v1/__utility/exchange.h:
 
 /usr/include/net80211/_ieee80211.h:
@@ -8058,6 +8453,10 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf
 
 /usr/include/c++/v1/__algorithm/fill.h:
 
+/usr/include/c++/v1/__atomic/to_gcc_order.h:
+
+/usr/include/c++/v1/compare:
+
 /usr/include/c++/v1/clocale:
 
 /usr/include/c++/v1/climits:
@@ -8085,8 +8484,6 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf
 /usr/include/stdio.h:
 
 /usr/include/c++/v1/__utility/private_constructor_tag.h:
-
-/usr/include/c++/v1/__utility/piecewise_construct.h:
 
 /usr/include/c++/v1/__utility/is_valid_range.h:
 
@@ -8146,6 +8543,10 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf
 
 /usr/include/c++/v1/__memory/assume_aligned.h:
 
+/usr/include/c++/v1/ratio:
+
+/usr/include/c++/v1/__type_traits/remove_cv.h:
+
 /usr/include/c++/v1/__type_traits/remove_const_ref.h:
 
 /usr/include/sys/counter.h:
@@ -8174,12 +8575,6 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf
 
 /usr/include/c++/v1/__type_traits/make_const_lvalue_ref.h:
 
-/usr/include/net/route.h:
-
-/usr/include/c++/v1/__ios/fpos.h:
-
-/usr/include/c++/v1/__atomic/cxx_atomic_impl.h:
-
 /usr/include/c++/v1/__concepts/movable.h:
 
 /usr/include/c++/v1/__string/extern_template_lists.h:
@@ -8190,17 +8585,19 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf
 
 /usr/include/c++/v1/__type_traits/make_32_64_or_128_bit.h:
 
-/usr/include/c++/v1/__string/char_traits.h:
-
-/usr/include/c++/v1/locale:
-
 /usr/include/c++/v1/__atomic/atomic.h:
 
 /usr/include/c++/v1/__algorithm/three_way_comp_ref_type.h:
 
 /usr/include/c++/v1/__format/formatter_integral.h:
 
-/usr/include/c++/v1/__iterator/istreambuf_iterator.h:
+/usr/include/c++/v1/__system_error/error_code.h:
+
+/usr/include/c++/v1/__memory/allocator_destructor.h:
+
+/usr/include/c++/v1/__functional/function.h:
+
+/usr/include/c++/v1/__type_traits/lazy.h:
 
 /usr/include/c++/v1/__type_traits/is_union.h:
 
@@ -8252,6 +8649,8 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf
 
 /usr/include/c++/v1/__tuple/tuple_size.h:
 
+/usr/local/include/libyang/printer_schema.h:
+
 /usr/include/c++/v1/__algorithm/lexicographical_compare.h:
 
 /usr/include/c++/v1/__concepts/semiregular.h:
@@ -8267,6 +8666,10 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf
 /usr/include/c++/v1/__type_traits/is_pointer.h:
 
 /usr/include/c++/v1/__type_traits/is_object.h:
+
+/usr/include/c++/v1/__tuple/tuple_indices.h:
+
+/usr/local/include/pcre2.h:
 
 /usr/include/c++/v1/__tuple/make_tuple_types.h:
 
@@ -8285,6 +8688,10 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf
 /usr/include/c++/v1/__type_traits/is_floating_point.h:
 
 /home/sq/netd/freebsd/src/interface/ethernet.cpp:
+
+/usr/include/c++/v1/__functional/identity.h:
+
+/usr/local/include/libyang/metadata.h:
 
 /usr/include/c++/v1/__type_traits/is_enum.h:
 
@@ -8310,6 +8717,12 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf
 
 /usr/include/c++/v1/__type_traits/is_always_bitcastable.h:
 
+/usr/include/c++/v1/__thread/support.h:
+
+/usr/include/c++/v1/__iterator/erase_if_container.h:
+
+/usr/local/include/libyang/log.h:
+
 /usr/include/c++/v1/__type_traits/is_allocator.h:
 
 /usr/include/c++/v1/bitset:
@@ -8328,6 +8741,8 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf
 
 /usr/include/c++/v1/__compare/compare_three_way.h:
 
+/usr/include/machine/_inttypes.h:
+
 /usr/include/c++/v1/__type_traits/enable_if.h:
 
 /usr/include/ctype.h:
@@ -8343,8 +8758,6 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf
 /usr/include/c++/v1/__memory/allocation_guard.h:
 
 /usr/include/c++/v1/__type_traits/copy_cv.h:
-
-/usr/include/c++/v1/__atomic/atomic_sync.h:
 
 /usr/include/xlocale/_stdlib.h:
 
@@ -8398,11 +8811,13 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf
 
 /usr/include/machine/endian.h:
 
-/usr/include/c++/v1/__tuple/tuple_indices.h:
-
 /usr/include/c++/v1/__tuple/tuple_element.h:
 
 /usr/include/c++/v1/__ranges/enable_borrowed_range.h:
+
+/usr/include/c++/v1/ctime:
+
+/usr/include/c++/v1/__tuple/sfinae_helpers.h:
 
 /usr/include/c++/v1/__tuple/find_index.h:
 
@@ -8462,6 +8877,10 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf
 
 /usr/include/c++/v1/__fwd/pair.h:
 
+/usr/include/c++/v1/locale:
+
+/usr/include/c++/v1/__string/char_traits.h:
+
 /usr/include/c++/v1/__memory/raw_storage_iterator.h:
 
 /usr/include/c++/v1/__type_traits/is_null_pointer.h:
@@ -8486,10 +8905,6 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf
 
 /usr/include/c++/v1/__memory/concepts.h:
 
-/usr/include/net/if_clone.h:
-
-/usr/include/c++/v1/streambuf:
-
 /usr/include/c++/v1/__algorithm/ranges_move_backward.h:
 
 /usr/include/c++/v1/__math/fdim.h:
@@ -8509,6 +8924,10 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf
 /usr/include/c++/v1/__functional/bind_back.h:
 
 /usr/include/c++/v1/__memory/ranges_uninitialized_algorithms.h:
+
+/usr/include/c++/v1/__atomic/contention_t.h:
+
+/usr/include/c++/v1/__algorithm/ranges_sort.h:
 
 /usr/include/c++/v1/__algorithm/ranges_mismatch.h:
 
@@ -8530,6 +8949,8 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf
 
 /usr/include/c++/v1/__math/remainder.h:
 
+/usr/include/c++/v1/inttypes.h:
+
 /usr/include/c++/v1/__math/min_max.h:
 
 /usr/include/c++/v1/__algorithm/fold.h:
@@ -8538,6 +8959,10 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf
 
 /usr/include/c++/v1/__math/hypot.h:
 
+/usr/include/c++/v1/__system_error/error_condition.h:
+
+/usr/include/c++/v1/__math/fma.h:
+
 /usr/include/c++/v1/__math/copysign.h:
 
 /usr/include/c++/v1/__algorithm/make_projected.h:
@@ -8545,6 +8970,10 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf
 /usr/include/c++/v1/__type_traits/is_callable.h:
 
 /usr/include/c++/v1/__locale_dir/locale_base_api.h:
+
+/usr/include/c++/v1/__algorithm/generate.h:
+
+/usr/include/c++/v1/__type_traits/disjunction.h:
 
 /usr/include/c++/v1/__memory/compressed_pair.h:
 
@@ -8596,6 +9025,10 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf
 
 /usr/include/c++/v1/__type_traits/invoke.h:
 
+/usr/include/c++/v1/__atomic/cxx_atomic_impl.h:
+
+/usr/include/c++/v1/__ios/fpos.h:
+
 /usr/include/c++/v1/__memory/allocator_traits.h:
 
 /usr/include/wctype.h:
@@ -8604,13 +9037,13 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf
 
 /usr/include/c++/v1/__algorithm/all_of.h:
 
+/usr/include/c++/v1/streambuf:
+
+/usr/include/net/if_clone.h:
+
 /usr/include/c++/v1/__math/inverse_hyperbolic_functions.h:
 
 /usr/include/c++/v1/__fwd/subrange.h:
-
-/usr/include/c++/v1/__algorithm/ranges_clamp.h:
-
-/usr/include/c++/v1/ios:
 
 /usr/include/c++/v1/__algorithm/ranges_includes.h:
 
@@ -8662,6 +9095,8 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf
 
 /usr/include/c++/v1/__algorithm/partition.h:
 
+/usr/local/include/libyang/parser_schema.h:
+
 /usr/include/c++/v1/__type_traits/common_type.h:
 
 /usr/include/c++/v1/cstdint:
@@ -8675,8 +9110,6 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf
 /usr/include/c++/v1/__iterator/iterator_traits.h:
 
 /usr/include/c++/v1/__memory/allocate_at_least.h:
-
-/usr/include/c++/v1/__locale_dir/locale_base_api/bsd_locale_defaults.h:
 
 /usr/include/c++/v1/__algorithm/shuffle.h:
 
@@ -8760,6 +9193,8 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf
 
 /usr/include/c++/v1/__iterator/concepts.h:
 
+/usr/local/include/libyang/out.h:
+
 /usr/include/c++/v1/__format/format_arg.h:
 
 /usr/include/c++/v1/__format/unicode.h:
@@ -8774,13 +9209,7 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf
 
 /usr/include/c++/v1/__algorithm/ranges_minmax_element.h:
 
-/usr/include/c++/v1/__algorithm/generate.h:
-
-/usr/include/c++/v1/__type_traits/disjunction.h:
-
 /usr/include/c++/v1/__functional/binary_negate.h:
-
-/usr/include/c++/v1/sstream:
 
 /usr/include/c++/v1/cwctype:
 
@@ -8790,9 +9219,9 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf
 
 /usr/include/c++/v1/__configuration/platform.h:
 
-/usr/include/c++/v1/__iterator/default_sentinel.h:
+/usr/include/c++/v1/ios:
 
-/usr/include/c++/v1/__format/buffer.h:
+/usr/include/c++/v1/__algorithm/ranges_clamp.h:
 
 /usr/include/c++/v1/__configuration/abi.h:
 
@@ -8825,6 +9254,8 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf
 /usr/include/c++/v1/__type_traits/is_reference_wrapper.h:
 
 /usr/include/c++/v1/__concepts/same_as.h:
+
+/home/sq/netd/shared/include/interface/80211.hpp:
 
 /usr/include/c++/v1/__algorithm/find_if_not.h:
 
@@ -8892,8 +9323,6 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf
 
 /usr/include/c++/v1/__type_traits/remove_reference.h:
 
-/usr/include/c++/v1/__functional/identity.h:
-
 /usr/include/c++/v1/__algorithm/ranges_equal.h:
 
 /usr/include/c++/v1/__bit/countl.h:
@@ -8908,9 +9337,9 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf
 
 /usr/include/c++/v1/__algorithm/iter_swap.h:
 
-/usr/include/c++/v1/__chrono/high_resolution_clock.h:
-
 /usr/include/c++/v1/__compare/three_way_comparable.h:
+
+/usr/include/c++/v1/__algorithm/ranges_ends_with.h:
 
 /usr/include/c++/v1/__type_traits/is_final.h:
 
@@ -8920,7 +9349,9 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf
 
 /usr/include/c++/v1/__format/format_parse_context.h:
 
-/usr/include/c++/v1/__fwd/sstream.h:
+/usr/include/c++/v1/__chrono/time_point.h:
+
+/usr/include/c++/v1/__algorithm/ranges_upper_bound.h:
 
 /usr/include/c++/v1/__concepts/assignable.h:
 
@@ -8939,8 +9370,6 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf
 /usr/include/c++/v1/__algorithm/find_end.h:
 
 /usr/include/c++/v1/__math/trigonometric_functions.h:
-
-/usr/include/c++/v1/__chrono/duration.h:
 
 /usr/include/c++/v1/__functional/hash.h:
 
@@ -8964,13 +9393,13 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf
 
 /usr/include/c++/v1/__algorithm/for_each.h:
 
+/usr/local/include/libyang/libyang.h:
+
 /usr/include/c++/v1/__concepts/regular.h:
 
 /usr/include/c++/v1/__type_traits/desugars_to.h:
 
 /usr/include/c++/v1/__charconv/traits.h:
-
-/usr/include/c++/v1/__chrono/steady_clock.h:
 
 /usr/include/c++/v1/__algorithm/is_sorted.h:
 
@@ -8982,15 +9411,11 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf
 
 /usr/include/c++/v1/__memory/addressof.h:
 
+/usr/local/include/libyang/tree_schema.h:
+
 /usr/include/c++/v1/__algorithm/is_permutation.h:
 
-/usr/include/c++/v1/__algorithm/ranges_ends_with.h:
-
 /usr/include/c++/v1/__algorithm/fill_n.h:
-
-/usr/include/c++/v1/__chrono/convert_to_timespec.h:
-
-/usr/include/c++/v1/__locale:
 
 /usr/include/c++/v1/__algorithm/for_each_segment.h:
 
@@ -9018,6 +9443,8 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf
 
 /usr/include/c++/v1/__algorithm/swap_ranges.h:
 
+/usr/include/c++/v1/__fwd/string_view.h:
+
 /usr/include/c++/v1/__std_mbstate_t.h:
 
 /usr/include/c++/v1/__algorithm/lexicographical_compare_three_way.h:
@@ -9037,5 +9464,3 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/vrf.cpp.o: /home/sq/netd/freebsd/src/vrf
 /usr/include/c++/v1/__algorithm/ranges_transform.h:
 
 /home/sq/netd/shared/include/base/serialization.hpp:
-
-/usr/include/c++/v1/__fwd/string_view.h:

@@ -639,6 +639,7 @@ server/CMakeFiles/netd_server.dir/src/netconf.cpp.o: /home/sq/netd/server/src/ne
   /home/sq/netd/shared/include/request.hpp \
   /home/sq/netd/shared/include/response.hpp \
   /usr/include/_ctype.h \
+  /usr/include/arpa/inet.h \
   /usr/include/c++/v1/__algorithm/comp.h \
   /usr/include/c++/v1/__algorithm/comp_ref_type.h \
   /usr/include/c++/v1/__algorithm/copy.h \
@@ -1116,6 +1117,7 @@ server/CMakeFiles/netd_server.dir/src/netconf.cpp.o: /home/sq/netd/server/src/ne
   /usr/include/c++/v1/errno.h \
   /usr/include/c++/v1/functional \
   /usr/include/c++/v1/initializer_list \
+  /usr/include/c++/v1/inttypes.h \
   /usr/include/c++/v1/ios \
   /usr/include/c++/v1/iosfwd \
   /usr/include/c++/v1/istream \
@@ -1147,14 +1149,18 @@ server/CMakeFiles/netd_server.dir/src/netconf.cpp.o: /home/sq/netd/server/src/ne
   /usr/include/c++/v1/wctype.h \
   /usr/include/ctype.h \
   /usr/include/errno.h \
+  /usr/include/inttypes.h \
   /usr/include/limits.h \
   /usr/include/locale.h \
   /usr/include/machine/_align.h \
+  /usr/include/machine/_inttypes.h \
   /usr/include/machine/_limits.h \
   /usr/include/machine/_stdint.h \
   /usr/include/machine/_types.h \
   /usr/include/machine/endian.h \
   /usr/include/math.h \
+  /usr/include/netinet/in.h \
+  /usr/include/netinet6/in6.h \
   /usr/include/nl_types.h \
   /usr/include/pthread.h \
   /usr/include/runetype.h \
@@ -1187,6 +1193,7 @@ server/CMakeFiles/netd_server.dir/src/netconf.cpp.o: /home/sq/netd/server/src/ne
   /usr/include/sys/sched.h \
   /usr/include/sys/select.h \
   /usr/include/sys/socket.h \
+  /usr/include/sys/stdint.h \
   /usr/include/sys/syslimits.h \
   /usr/include/sys/timespec.h \
   /usr/include/sys/types.h \
@@ -1197,19 +1204,41 @@ server/CMakeFiles/netd_server.dir/src/netconf.cpp.o: /home/sq/netd/server/src/ne
   /usr/include/wchar.h \
   /usr/include/wctype.h \
   /usr/include/x86/_align.h \
+  /usr/include/x86/_inttypes.h \
   /usr/include/x86/_limits.h \
   /usr/include/x86/_stdint.h \
   /usr/include/x86/_types.h \
   /usr/include/x86/endian.h \
   /usr/include/xlocale.h \
   /usr/include/xlocale/_ctype.h \
+  /usr/include/xlocale/_inttypes.h \
   /usr/include/xlocale/_locale.h \
   /usr/include/xlocale/_stdio.h \
   /usr/include/xlocale/_stdlib.h \
   /usr/include/xlocale/_string.h \
   /usr/include/xlocale/_strings.h \
   /usr/include/xlocale/_time.h \
-  /usr/include/xlocale/_wchar.h
+  /usr/include/xlocale/_wchar.h \
+  /usr/local/include/libyang/context.h \
+  /usr/local/include/libyang/dict.h \
+  /usr/local/include/libyang/in.h \
+  /usr/local/include/libyang/libyang.h \
+  /usr/local/include/libyang/log.h \
+  /usr/local/include/libyang/ly_config.h \
+  /usr/local/include/libyang/metadata.h \
+  /usr/local/include/libyang/out.h \
+  /usr/local/include/libyang/parser_data.h \
+  /usr/local/include/libyang/parser_schema.h \
+  /usr/local/include/libyang/plugins.h \
+  /usr/local/include/libyang/plugins_exts.h \
+  /usr/local/include/libyang/printer_data.h \
+  /usr/local/include/libyang/printer_schema.h \
+  /usr/local/include/libyang/set.h \
+  /usr/local/include/libyang/tree.h \
+  /usr/local/include/libyang/tree_data.h \
+  /usr/local/include/libyang/tree_edit.h \
+  /usr/local/include/libyang/tree_schema.h \
+  /usr/local/include/pcre2.h
 
 server/CMakeFiles/netd_server.dir/src/store.cpp.o: /home/sq/netd/server/src/store.cpp \
   /home/sq/netd/server/include/store.hpp \
@@ -1892,22 +1921,6 @@ shared/libnetd_shared.so.1.0.0:
 
 freebsd/src/libnetd_freebsd.a:
 
-/usr/local/include/libyang/tree_data.h:
-
-/usr/local/include/libyang/tree.h:
-
-/usr/local/include/libyang/plugins.h:
-
-/usr/local/include/libyang/ly_config.h:
-
-/usr/local/include/libyang/in.h:
-
-/usr/include/xlocale/_inttypes.h:
-
-/usr/include/sys/stdint.h:
-
-/usr/include/netinet6/in6.h:
-
 /usr/include/c++/v1/map:
 
 /usr/include/c++/v1/__tree:
@@ -1930,9 +1943,25 @@ freebsd/src/libnetd_freebsd.a:
 
 /home/sq/netd/shared/include/address.hpp:
 
+/usr/local/include/libyang/tree_data.h:
+
+/usr/local/include/libyang/tree.h:
+
+/usr/local/include/libyang/plugins.h:
+
+/usr/local/include/libyang/ly_config.h:
+
+/usr/local/include/libyang/in.h:
+
+/usr/include/xlocale/_inttypes.h:
+
+/usr/include/sys/stdint.h:
+
 /usr/include/sys/_sockaddr_storage.h:
 
 /usr/include/sys/_iovec.h:
+
+/usr/include/netinet6/in6.h:
 
 /usr/include/machine/_align.h:
 
@@ -2770,9 +2799,9 @@ server/CMakeFiles/netd_server.dir/src/main.cpp.o:
 
 /usr/include/c++/v1/__condition_variable/condition_variable.h:
 
-/usr/local/include/libyang/printer_schema.h:
-
 /home/sq/netd/shared/include/interface.hpp:
+
+/usr/local/include/libyang/printer_schema.h:
 
 /usr/include/c++/v1/atomic:
 

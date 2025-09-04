@@ -25,49 +25,22 @@
  * SUCH DAMAGE.
  */
 
-#ifndef NETD_INTERFACE_BASE_ETHER_HPP
-#define NETD_INTERFACE_BASE_ETHER_HPP
+#ifndef NETD_INTERFACE_ETHERNET_HPP
+#define NETD_INTERFACE_ETHERNET_HPP
 
-#include <vector>
+#include <shared/include/ethernet.hpp>
+#include <shared/include/base/serialization.hpp>
 #include <string>
-#include <memory>
 #include <cstdint>
-#include <shared/include/address.hpp>
+#include <memory>
 
 namespace netd {
-namespace interface {
-namespace base {
 
-class Ether {
+class EthernetInterface : public Ethernet, public base::Serialization<EthernetInterface> {
 public:
-    virtual ~Ether() = default;
-
-    // Address management
-    virtual bool addAddress(const std::shared_ptr<netd::Address>& address);
-    virtual bool removeAddress(const std::shared_ptr<netd::Address>& address);
-    virtual std::vector<std::shared_ptr<netd::Address>> getAddresses() const;
-
-    // Group management
-    virtual bool addGroup(const std::string& group);
-    virtual bool removeGroup(const std::string& group);
-    virtual std::vector<std::string> getGroups() const;
-
-    // Interface configuration
-    virtual bool setMTU(uint16_t mtu);
-    virtual uint16_t getMTU() const;
-    virtual bool setFlags(uint32_t flags);
-    virtual uint32_t getFlags() const;
-    virtual bool up();
-    virtual bool down();
-    virtual bool isUp() const;
-
-    // VRF/FIB management
-    virtual bool setVRF(uint32_t vrfId);
-    virtual uint32_t getVRF() const;
-
-    // Basic interface operations
-    virtual bool create() { return false; }
-    virtual bool destroy() { return false; }
+    EthernetInterface();
+    explicit EthernetInterface(const std::string& name);
+    virtual ~EthernetInterface();
 
     // Ethernet-specific configuration
     virtual bool setDuplex(const std::string& duplex) { return false; }
@@ -79,23 +52,11 @@ public:
     virtual bool setFlowControl(bool enabled) { return false; }
     virtual bool isFlowControlEnabled() const { return false; }
 
-    // Statistics and information
-    virtual std::string getName() const;
-    virtual std::string getType() const { return "ethernet"; }
-    void setName(const std::string& name);
-
-protected:
-    std::vector<std::shared_ptr<netd::Address>> addresses_;
-    std::vector<std::string> groups_;
-    uint16_t mtu_{1500};
-    uint32_t flags_{0};
-    std::string name_;
-    bool up_{false};
-    uint32_t vrfId_{0};
+    // YANG serialization
+    lyd_node* toYang() const override;
+    static EthernetInterface fromYang(const lyd_node* node);
 };
 
-} // namespace base
-} // namespace interface
 } // namespace netd
 
-#endif // NETD_INTERFACE_BASE_ETHER_HPP
+#endif // NETD_INTERFACE_ETHERNET_HPP

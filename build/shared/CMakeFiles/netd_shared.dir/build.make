@@ -352,52 +352,10 @@ shared/CMakeFiles/netd_shared.dir/src/yang.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/netd_shared.dir/src/yang.cpp.s"
 	cd /home/sq/netd/build/shared && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/sq/netd/shared/src/yang.cpp -o CMakeFiles/netd_shared.dir/src/yang.cpp.s
 
-shared/CMakeFiles/netd_shared.dir/src/ethernet.cpp.o: shared/CMakeFiles/netd_shared.dir/flags.make
-shared/CMakeFiles/netd_shared.dir/src/ethernet.cpp.o: /home/sq/netd/shared/src/ethernet.cpp
-shared/CMakeFiles/netd_shared.dir/src/ethernet.cpp.o: shared/CMakeFiles/netd_shared.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/sq/netd/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_21) "Building CXX object shared/CMakeFiles/netd_shared.dir/src/ethernet.cpp.o"
-	cd /home/sq/netd/build/shared && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT shared/CMakeFiles/netd_shared.dir/src/ethernet.cpp.o -MF CMakeFiles/netd_shared.dir/src/ethernet.cpp.o.d -o CMakeFiles/netd_shared.dir/src/ethernet.cpp.o -c /home/sq/netd/shared/src/ethernet.cpp
-
-shared/CMakeFiles/netd_shared.dir/src/ethernet.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/netd_shared.dir/src/ethernet.cpp.i"
-	cd /home/sq/netd/build/shared && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/sq/netd/shared/src/ethernet.cpp > CMakeFiles/netd_shared.dir/src/ethernet.cpp.i
-
-shared/CMakeFiles/netd_shared.dir/src/ethernet.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/netd_shared.dir/src/ethernet.cpp.s"
-	cd /home/sq/netd/build/shared && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/sq/netd/shared/src/ethernet.cpp -o CMakeFiles/netd_shared.dir/src/ethernet.cpp.s
-
-shared/CMakeFiles/netd_shared.dir/src/master.cpp.o: shared/CMakeFiles/netd_shared.dir/flags.make
-shared/CMakeFiles/netd_shared.dir/src/master.cpp.o: /home/sq/netd/shared/src/master.cpp
-shared/CMakeFiles/netd_shared.dir/src/master.cpp.o: shared/CMakeFiles/netd_shared.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/sq/netd/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_22) "Building CXX object shared/CMakeFiles/netd_shared.dir/src/master.cpp.o"
-	cd /home/sq/netd/build/shared && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT shared/CMakeFiles/netd_shared.dir/src/master.cpp.o -MF CMakeFiles/netd_shared.dir/src/master.cpp.o.d -o CMakeFiles/netd_shared.dir/src/master.cpp.o -c /home/sq/netd/shared/src/master.cpp
-
-shared/CMakeFiles/netd_shared.dir/src/master.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/netd_shared.dir/src/master.cpp.i"
-	cd /home/sq/netd/build/shared && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/sq/netd/shared/src/master.cpp > CMakeFiles/netd_shared.dir/src/master.cpp.i
-
-shared/CMakeFiles/netd_shared.dir/src/master.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/netd_shared.dir/src/master.cpp.s"
-	cd /home/sq/netd/build/shared && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/sq/netd/shared/src/master.cpp -o CMakeFiles/netd_shared.dir/src/master.cpp.s
-
-shared/CMakeFiles/netd_shared.dir/src/tunnel.cpp.o: shared/CMakeFiles/netd_shared.dir/flags.make
-shared/CMakeFiles/netd_shared.dir/src/tunnel.cpp.o: /home/sq/netd/shared/src/tunnel.cpp
-shared/CMakeFiles/netd_shared.dir/src/tunnel.cpp.o: shared/CMakeFiles/netd_shared.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/sq/netd/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_23) "Building CXX object shared/CMakeFiles/netd_shared.dir/src/tunnel.cpp.o"
-	cd /home/sq/netd/build/shared && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT shared/CMakeFiles/netd_shared.dir/src/tunnel.cpp.o -MF CMakeFiles/netd_shared.dir/src/tunnel.cpp.o.d -o CMakeFiles/netd_shared.dir/src/tunnel.cpp.o -c /home/sq/netd/shared/src/tunnel.cpp
-
-shared/CMakeFiles/netd_shared.dir/src/tunnel.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/netd_shared.dir/src/tunnel.cpp.i"
-	cd /home/sq/netd/build/shared && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/sq/netd/shared/src/tunnel.cpp > CMakeFiles/netd_shared.dir/src/tunnel.cpp.i
-
-shared/CMakeFiles/netd_shared.dir/src/tunnel.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/netd_shared.dir/src/tunnel.cpp.s"
-	cd /home/sq/netd/build/shared && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/sq/netd/shared/src/tunnel.cpp -o CMakeFiles/netd_shared.dir/src/tunnel.cpp.s
-
 shared/CMakeFiles/netd_shared.dir/src/interface/base/ether.cpp.o: shared/CMakeFiles/netd_shared.dir/flags.make
 shared/CMakeFiles/netd_shared.dir/src/interface/base/ether.cpp.o: /home/sq/netd/shared/src/interface/base/ether.cpp
 shared/CMakeFiles/netd_shared.dir/src/interface/base/ether.cpp.o: shared/CMakeFiles/netd_shared.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/sq/netd/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_24) "Building CXX object shared/CMakeFiles/netd_shared.dir/src/interface/base/ether.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/sq/netd/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_21) "Building CXX object shared/CMakeFiles/netd_shared.dir/src/interface/base/ether.cpp.o"
 	cd /home/sq/netd/build/shared && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT shared/CMakeFiles/netd_shared.dir/src/interface/base/ether.cpp.o -MF CMakeFiles/netd_shared.dir/src/interface/base/ether.cpp.o.d -o CMakeFiles/netd_shared.dir/src/interface/base/ether.cpp.o -c /home/sq/netd/shared/src/interface/base/ether.cpp
 
 shared/CMakeFiles/netd_shared.dir/src/interface/base/ether.cpp.i: cmake_force
@@ -411,7 +369,7 @@ shared/CMakeFiles/netd_shared.dir/src/interface/base/ether.cpp.s: cmake_force
 shared/CMakeFiles/netd_shared.dir/src/interface/base/master.cpp.o: shared/CMakeFiles/netd_shared.dir/flags.make
 shared/CMakeFiles/netd_shared.dir/src/interface/base/master.cpp.o: /home/sq/netd/shared/src/interface/base/master.cpp
 shared/CMakeFiles/netd_shared.dir/src/interface/base/master.cpp.o: shared/CMakeFiles/netd_shared.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/sq/netd/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_25) "Building CXX object shared/CMakeFiles/netd_shared.dir/src/interface/base/master.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/sq/netd/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_22) "Building CXX object shared/CMakeFiles/netd_shared.dir/src/interface/base/master.cpp.o"
 	cd /home/sq/netd/build/shared && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT shared/CMakeFiles/netd_shared.dir/src/interface/base/master.cpp.o -MF CMakeFiles/netd_shared.dir/src/interface/base/master.cpp.o.d -o CMakeFiles/netd_shared.dir/src/interface/base/master.cpp.o -c /home/sq/netd/shared/src/interface/base/master.cpp
 
 shared/CMakeFiles/netd_shared.dir/src/interface/base/master.cpp.i: cmake_force
@@ -425,7 +383,7 @@ shared/CMakeFiles/netd_shared.dir/src/interface/base/master.cpp.s: cmake_force
 shared/CMakeFiles/netd_shared.dir/src/interface/base/tunnel.cpp.o: shared/CMakeFiles/netd_shared.dir/flags.make
 shared/CMakeFiles/netd_shared.dir/src/interface/base/tunnel.cpp.o: /home/sq/netd/shared/src/interface/base/tunnel.cpp
 shared/CMakeFiles/netd_shared.dir/src/interface/base/tunnel.cpp.o: shared/CMakeFiles/netd_shared.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/sq/netd/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_26) "Building CXX object shared/CMakeFiles/netd_shared.dir/src/interface/base/tunnel.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/sq/netd/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_23) "Building CXX object shared/CMakeFiles/netd_shared.dir/src/interface/base/tunnel.cpp.o"
 	cd /home/sq/netd/build/shared && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT shared/CMakeFiles/netd_shared.dir/src/interface/base/tunnel.cpp.o -MF CMakeFiles/netd_shared.dir/src/interface/base/tunnel.cpp.o.d -o CMakeFiles/netd_shared.dir/src/interface/base/tunnel.cpp.o -c /home/sq/netd/shared/src/interface/base/tunnel.cpp
 
 shared/CMakeFiles/netd_shared.dir/src/interface/base/tunnel.cpp.i: cmake_force
@@ -458,9 +416,6 @@ netd_shared_OBJECTS = \
 "CMakeFiles/netd_shared.dir/src/route.cpp.o" \
 "CMakeFiles/netd_shared.dir/src/vrf.cpp.o" \
 "CMakeFiles/netd_shared.dir/src/yang.cpp.o" \
-"CMakeFiles/netd_shared.dir/src/ethernet.cpp.o" \
-"CMakeFiles/netd_shared.dir/src/master.cpp.o" \
-"CMakeFiles/netd_shared.dir/src/tunnel.cpp.o" \
 "CMakeFiles/netd_shared.dir/src/interface/base/ether.cpp.o" \
 "CMakeFiles/netd_shared.dir/src/interface/base/master.cpp.o" \
 "CMakeFiles/netd_shared.dir/src/interface/base/tunnel.cpp.o"
@@ -488,16 +443,13 @@ shared/libnetd_shared.so.1.0.0: shared/CMakeFiles/netd_shared.dir/src/response.c
 shared/libnetd_shared.so.1.0.0: shared/CMakeFiles/netd_shared.dir/src/route.cpp.o
 shared/libnetd_shared.so.1.0.0: shared/CMakeFiles/netd_shared.dir/src/vrf.cpp.o
 shared/libnetd_shared.so.1.0.0: shared/CMakeFiles/netd_shared.dir/src/yang.cpp.o
-shared/libnetd_shared.so.1.0.0: shared/CMakeFiles/netd_shared.dir/src/ethernet.cpp.o
-shared/libnetd_shared.so.1.0.0: shared/CMakeFiles/netd_shared.dir/src/master.cpp.o
-shared/libnetd_shared.so.1.0.0: shared/CMakeFiles/netd_shared.dir/src/tunnel.cpp.o
 shared/libnetd_shared.so.1.0.0: shared/CMakeFiles/netd_shared.dir/src/interface/base/ether.cpp.o
 shared/libnetd_shared.so.1.0.0: shared/CMakeFiles/netd_shared.dir/src/interface/base/master.cpp.o
 shared/libnetd_shared.so.1.0.0: shared/CMakeFiles/netd_shared.dir/src/interface/base/tunnel.cpp.o
 shared/libnetd_shared.so.1.0.0: shared/CMakeFiles/netd_shared.dir/build.make
 shared/libnetd_shared.so.1.0.0: shared/CMakeFiles/netd_shared.dir/compiler_depend.ts
 shared/libnetd_shared.so.1.0.0: shared/CMakeFiles/netd_shared.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/sq/netd/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_27) "Linking CXX shared library libnetd_shared.so"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/sq/netd/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_24) "Linking CXX shared library libnetd_shared.so"
 	cd /home/sq/netd/build/shared && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/netd_shared.dir/link.txt --verbose=$(VERBOSE)
 	cd /home/sq/netd/build/shared && $(CMAKE_COMMAND) -E cmake_symlink_library libnetd_shared.so.1.0.0 libnetd_shared.so.1 libnetd_shared.so
 

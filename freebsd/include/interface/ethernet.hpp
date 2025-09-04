@@ -33,15 +33,14 @@
 #include <memory>
 #include <vector>
 
-#include <shared/include/ethernet.hpp>
+#include <shared/include/interface/ethernet.hpp>
 #include <shared/include/base/serialization.hpp>
 
 namespace netd {
 namespace freebsd {
 namespace interface {
 
-class EthernetInterface : public netd::Ethernet, 
-                         public netd::base::Serialization<EthernetInterface> {
+class EthernetInterface : public netd::EthernetInterface {
 public:
     EthernetInterface();
     explicit EthernetInterface(const std::string& name);
@@ -69,9 +68,8 @@ public:
     // Statistics and information
     std::string getType() const { return "ethernet"; }
 
-    // Serialization
-    lyd_node* toYang() const override;
-    static EthernetInterface fromYang(const lyd_node* node);
+    // Conversion to shared interface for serialization
+    operator netd::EthernetInterface() const;
 
 private:
     // Interface name

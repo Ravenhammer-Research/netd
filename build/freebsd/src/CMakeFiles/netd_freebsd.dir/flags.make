@@ -4,7 +4,7 @@
 # compile CXX with /usr/bin/c++
 CXX_DEFINES = -D_FREEBSD -D__FreeBSD__
 
-CXX_INCLUDES = -I/home/sq/netd/freebsd/src/../..
+CXX_INCLUDES = -I/home/sq/netd/freebsd/src/../.. -I/usr/local/include
 
 CXX_FLAGS = -O3 -DNDEBUG -std=c++23
 

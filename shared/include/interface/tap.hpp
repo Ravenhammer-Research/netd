@@ -25,68 +25,34 @@
  * SUCH DAMAGE.
  */
 
-#ifndef NETD_FREEBSD_INTERFACE_TAP_HPP
-#define NETD_FREEBSD_INTERFACE_TAP_HPP
+#ifndef NETD_INTERFACE_TAP_HPP
+#define NETD_INTERFACE_TAP_HPP
 
+#include <shared/include/interface/base/ether.hpp>
+#include <shared/include/base/serialization.hpp>
 #include <string>
 #include <cstdint>
 #include <memory>
-#include <vector>
-
-#include <shared/include/interface/tap.hpp>
-#include <shared/include/base/serialization.hpp>
 
 namespace netd {
-namespace freebsd {
-namespace interface {
 
-class TapInterface : public netd::TapInterface {
+class TapInterface : public interface::base::Ether, public base::Serialization<TapInterface> {
 public:
     TapInterface();
     explicit TapInterface(const std::string& name);
     virtual ~TapInterface();
 
-    // Interface name
-    std::string getName() const { return name_; }
-
-    // FreeBSD-specific operations
-    bool createInterface();
-    bool destroyInterface();
-    bool loadFromSystem();
-    bool applyToSystem();
-
     // TAP-specific configuration
-    bool setTapUnit(int unit);
-    int getTapUnit() const;
-    bool setTapMode(const std::string& mode);
-    std::string getTapMode() const;
+    virtual bool setTapUnit(int unit) { return false; }
+    virtual int getTapUnit() const { return -1; }
+    virtual bool setTapMode(const std::string& mode) { return false; }
+    virtual std::string getTapMode() const { return "tap"; }
 
-    // Statistics and information
-    std::string getType() const { return "tap"; }
-
-    // Conversion to shared interface for serialization
-    operator netd::TapInterface() const;
-
-private:
-    // Interface name
-    std::string name_;
-    
-    // TAP-specific members
-    int tapUnit_;
-    std::string tapMode_;
-    
-    // FreeBSD system interface
-    int socket_;
-    
-    // Helper methods
-    bool openSocket();
-    void closeSocket();
-    bool getTapInfo();
-    bool setTapInfo() const;
+    // YANG serialization
+    lyd_node* toYang() const override;
+    static TapInterface fromYang(const lyd_node* node);
 };
 
-} // namespace interface
-} // namespace freebsd
 } // namespace netd
 
-#endif // NETD_FREEBSD_INTERFACE_TAP_HPP
+#endif // NETD_INTERFACE_TAP_HPP

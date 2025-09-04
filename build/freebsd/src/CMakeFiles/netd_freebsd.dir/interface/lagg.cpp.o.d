@@ -384,9 +384,42 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/interface/lagg.cpp.o: \
   /usr/include/c++/v1/__iterator/move_iterator.h \
   /usr/include/c++/v1/__iterator/move_sentinel.h \
   /usr/include/c++/v1/__type_traits/is_trivially_destructible.h \
+  /home/sq/netd/freebsd/src/../../shared/include/interface/lagg.hpp \
+  /home/sq/netd/freebsd/src/../../shared/include/interface/base/ether.hpp \
+  /home/sq/netd/freebsd/src/../../shared/include/address.hpp \
+  /usr/include/netinet/in.h /usr/include/machine/endian.h \
+  /usr/include/x86/endian.h /usr/include/sys/_endian.h \
+  /usr/include/sys/_sockaddr_storage.h /usr/include/netinet6/in6.h \
+  /usr/include/arpa/inet.h \
+  /home/sq/netd/freebsd/src/../../shared/include/base/serialization.hpp \
+  /usr/local/include/libyang/libyang.h \
+  /usr/local/include/libyang/ly_config.h /usr/include/sys/socket.h \
+  /usr/include/sys/_iovec.h /usr/include/sys/_timeval.h \
+  /usr/include/machine/_align.h /usr/include/x86/_align.h \
+  /usr/local/include/libyang/context.h /usr/local/include/libyang/log.h \
+  /usr/local/include/libyang/parser_schema.h \
+  /usr/local/include/libyang/tree_data.h /usr/local/include/pcre2.h \
+  /usr/include/c++/v1/inttypes.h /usr/include/inttypes.h \
+  /usr/include/machine/_inttypes.h /usr/include/x86/_inttypes.h \
+  /usr/include/sys/stdint.h /usr/include/xlocale/_inttypes.h \
+  /usr/include/time.h /usr/include/sys/_clock_id.h \
+  /usr/include/sys/timespec.h /usr/include/sys/_timespec.h \
+  /usr/include/xlocale/_time.h /usr/local/include/libyang/tree.h \
+  /usr/local/include/libyang/tree_schema.h \
+  /usr/local/include/libyang/dict.h /usr/local/include/libyang/in.h \
+  /usr/local/include/libyang/metadata.h \
+  /usr/local/include/libyang/plugins_exts.h \
+  /usr/local/include/libyang/parser_data.h \
+  /usr/local/include/libyang/plugins.h \
+  /usr/local/include/libyang/tree_edit.h \
+  /usr/local/include/libyang/out.h /usr/include/sys/types.h \
+  /usr/include/sys/_pthreadtypes.h /usr/include/sys/bitcount.h \
+  /usr/include/sys/select.h /usr/include/sys/_sigset.h \
+  /usr/local/include/libyang/printer_data.h \
+  /usr/local/include/libyang/printer_schema.h \
+  /usr/local/include/libyang/set.h \
   /home/sq/netd/freebsd/src/../../shared/include/master.hpp \
   /home/sq/netd/freebsd/src/../../shared/include/interface/base/master.hpp \
-  /home/sq/netd/freebsd/src/../../shared/include/base/serialization.hpp \
   /home/sq/netd/freebsd/src/../../shared/include/logger.hpp \
   /usr/include/c++/v1/functional \
   /usr/include/c++/v1/__functional/binary_negate.h \
@@ -433,25 +466,15 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/interface/lagg.cpp.o: \
   /usr/include/c++/v1/__functional/perfect_forward.h \
   /usr/include/c++/v1/__functional/bind_back.h \
   /usr/include/c++/v1/__functional/bind_front.h /usr/include/net/if.h \
-  /usr/include/sys/time.h /usr/include/sys/_timeval.h \
-  /usr/include/sys/types.h /usr/include/machine/endian.h \
-  /usr/include/x86/endian.h /usr/include/sys/_endian.h \
-  /usr/include/sys/_pthreadtypes.h /usr/include/sys/bitcount.h \
-  /usr/include/sys/select.h /usr/include/sys/_sigset.h \
-  /usr/include/sys/timespec.h /usr/include/sys/_timespec.h \
-  /usr/include/sys/_clock_id.h /usr/include/time.h \
-  /usr/include/xlocale/_time.h /usr/include/sys/socket.h \
-  /usr/include/sys/_iovec.h /usr/include/machine/_align.h \
-  /usr/include/x86/_align.h /usr/include/sys/_sockaddr_storage.h \
-  /usr/include/net/if_var.h /usr/include/sys/ck.h \
-  /usr/include/sys/queue.h /usr/include/sys/counter.h \
-  /usr/include/sys/epoch.h /usr/include/sys/lock.h \
-  /usr/include/sys/_lock.h /usr/include/sys/ktr_class.h \
-  /usr/include/sys/mutex.h /usr/include/sys/_mutex.h \
-  /usr/include/machine/param.h /usr/include/sys/rwlock.h \
-  /usr/include/sys/_rwlock.h /usr/include/sys/lock_profile.h \
-  /usr/include/sys/lockstat.h /usr/include/sys/sx.h \
-  /usr/include/sys/_sx.h /usr/include/sys/_task.h \
+  /usr/include/sys/time.h /usr/include/net/if_var.h \
+  /usr/include/sys/ck.h /usr/include/sys/queue.h \
+  /usr/include/sys/counter.h /usr/include/sys/epoch.h \
+  /usr/include/sys/lock.h /usr/include/sys/_lock.h \
+  /usr/include/sys/ktr_class.h /usr/include/sys/mutex.h \
+  /usr/include/sys/_mutex.h /usr/include/machine/param.h \
+  /usr/include/sys/rwlock.h /usr/include/sys/_rwlock.h \
+  /usr/include/sys/lock_profile.h /usr/include/sys/lockstat.h \
+  /usr/include/sys/sx.h /usr/include/sys/_sx.h /usr/include/sys/_task.h \
   /usr/include/sys/_callout.h /usr/include/net/altq/if_altq.h \
   /usr/include/sys/event.h /usr/include/net/if_private.h \
   /usr/include/net/ifq.h /usr/include/net/ethernet.h \

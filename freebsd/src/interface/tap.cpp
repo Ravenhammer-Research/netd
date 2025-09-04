@@ -43,8 +43,7 @@ namespace freebsd {
 namespace interface {
 
 TapInterface::TapInterface()
-    : netd::Ethernet(),
-      netd::base::Serialization<TapInterface>(),
+    : netd::TapInterface(),
       name_(""),
       tapUnit_(-1),
       tapMode_("tap"),
@@ -52,8 +51,7 @@ TapInterface::TapInterface()
 }
 
 TapInterface::TapInterface(const std::string& name)
-    : netd::Ethernet(),
-      netd::base::Serialization<TapInterface>(),
+    : netd::TapInterface(),
       name_(name),
       tapUnit_(-1),
       tapMode_("tap"),
@@ -162,14 +160,9 @@ std::string TapInterface::getTapMode() const {
     return tapMode_;
 }
 
-lyd_node* TapInterface::toYang() const {
-    // TODO: Implement YANG serialization using libyang
-    return nullptr;
-}
-
-TapInterface TapInterface::fromYang(const lyd_node* node) {
-    // TODO: Implement YANG deserialization using libyang
-    return TapInterface();
+TapInterface::operator netd::TapInterface() const {
+    // Cast to shared interface - we inherit from it so this is safe
+    return static_cast<const netd::TapInterface&>(*this);
 }
 
 bool TapInterface::openSocket() {

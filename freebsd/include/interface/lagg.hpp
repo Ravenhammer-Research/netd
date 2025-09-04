@@ -33,15 +33,14 @@
 #include <memory>
 #include <vector>
 
-#include <shared/include/master.hpp>
+#include <shared/include/interface/lagg.hpp>
 #include <shared/include/base/serialization.hpp>
 
 namespace netd {
 namespace freebsd {
 namespace interface {
 
-class LagInterface : public netd::Master, 
-                    public netd::base::Serialization<LagInterface> {
+class LagInterface : public netd::LagInterface {
 public:
     LagInterface();
     explicit LagInterface(const std::string& name);
@@ -66,9 +65,8 @@ public:
     // Statistics and information
     std::string getType() const { return "lagg"; }
 
-    // Serialization
-    lyd_node* toYang() const override;
-    static LagInterface fromYang(const lyd_node* node);
+    // Conversion to shared interface for serialization
+    operator netd::LagInterface() const;
 
 private:
     // Interface name

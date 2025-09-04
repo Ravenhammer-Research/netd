@@ -41,24 +41,21 @@ namespace netd {
 namespace freebsd {
 
 VRF::VRF()
-    : netd::VRF(),
-      netd::base::Serialization<VRF>(),
+    : netd::VRFAbstract(),
       name_(""),
       fibTable_(0),
       active_(false) {
 }
 
 VRF::VRF(uint32_t fibId)
-    : netd::VRF(),
-      netd::base::Serialization<VRF>(),
+    : netd::VRFAbstract(),
       name_("vrf" + std::to_string(fibId)),
       fibTable_(fibId),
       active_(false) {
 }
 
 VRF::VRF(const std::string& name, uint32_t fibId)
-    : netd::VRF(),
-      netd::base::Serialization<VRF>(),
+    : netd::VRFAbstract(),
       name_(name),
       fibTable_(fibId),
       active_(false) {
@@ -214,18 +211,6 @@ std::vector<std::string> VRF::getRoutes() const {
     return routes;
 }
 
-lyd_node* VRF::toYang() const {
-    // TODO: Implement YANG serialization using libyang
-    // This should create a YANG node representing the VRF
-    // with its FIB table and routing information
-    return nullptr;
-}
-
-VRF VRF::fromYang(const lyd_node* node) {
-    // TODO: Implement YANG deserialization using libyang
-    // This should parse a YANG node and create a VRF object
-    return VRF();
-}
 
 bool VRF::createFibTable() {
     auto& logger = Logger::getInstance();
@@ -287,6 +272,11 @@ std::string VRF::getName() const {
 
 bool VRF::isActive() const {
     return active_;
+}
+
+VRF::operator const netd::VRF&() const {
+    // Cast to shared VRF - we inherit from VRFAbstract so this is safe
+    return static_cast<const netd::VRF&>(*this);
 }
 
 } // namespace freebsd

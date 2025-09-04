@@ -43,8 +43,7 @@ namespace freebsd {
 namespace interface {
 
 WifiInterface::WifiInterface()
-    : netd::Ethernet(),
-      netd::base::Serialization<WifiInterface>(),
+    : netd::WirelessInterface(),
       name_(""),
       ssid_(""),
       channel_(0),
@@ -54,8 +53,7 @@ WifiInterface::WifiInterface()
 }
 
 WifiInterface::WifiInterface(const std::string& name)
-    : netd::Ethernet(),
-      netd::base::Serialization<WifiInterface>(),
+    : netd::WirelessInterface(),
       name_(name),
       ssid_(""),
       channel_(0),
@@ -184,14 +182,9 @@ std::string WifiInterface::getSecurity() const {
     return security_;
 }
 
-lyd_node* WifiInterface::toYang() const {
-    // TODO: Implement YANG serialization using libyang
-    return nullptr;
-}
-
-WifiInterface WifiInterface::fromYang(const lyd_node* node) {
-    // TODO: Implement YANG deserialization using libyang
-    return WifiInterface();
+WifiInterface::operator netd::WirelessInterface() const {
+    // Cast to shared interface - we inherit from it so this is safe
+    return static_cast<const netd::WirelessInterface&>(*this);
 }
 
 bool WifiInterface::openSocket() {

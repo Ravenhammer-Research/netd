@@ -27,6 +27,7 @@
 
 #include <shared/include/ethernet.hpp>
 #include <shared/include/base/serialization.hpp>
+#include <shared/include/yang.hpp>
 #include <libyang/tree_data.h>
 
 namespace netd {
@@ -37,8 +38,58 @@ public:
     virtual ~EthernetInterface() = default;
 
     // Implement Serialization methods
-    lyd_node* toYang() const override { return nullptr; }
-    static EthernetInterface fromYang(const lyd_node* node) { return EthernetInterface(); }
+    lyd_node* toYang() const override {
+        // Create YANG context and serialize ethernet interface
+        auto yang = createYang();
+        ly_ctx* ctx = yang->getContext();
+        
+        if (!ctx) {
+            return nullptr;
+        }
+        
+        // Create interface node using ietf-interfaces schema
+        lyd_node* interfaces = nullptr;
+        lyd_node* interface = nullptr;
+        
+        // Create the interfaces container
+        if (lyd_new_path(nullptr, ctx, "/ietf-interfaces:interfaces", nullptr, 0, &interfaces) != LY_SUCCESS) {
+            return nullptr;
+        }
+        
+        // Create the interface list entry
+        std::string name = getName();
+        std::string path = "/ietf-interfaces:interfaces/interface[name='" + name + "']";
+        if (lyd_new_path(interfaces, ctx, path.c_str(), nullptr, 0, &interface) != LY_SUCCESS) {
+            lyd_free_tree(interfaces);
+            return nullptr;
+        }
+        
+        // Set interface type
+        lyd_node* typeNode = nullptr;
+        std::string typePath = path + "/type";
+        if (lyd_new_path(interface, ctx, typePath.c_str(), "iana-if-type:ethernetCsmacd", 0, &typeNode) != LY_SUCCESS) {
+            lyd_free_tree(interfaces);
+            return nullptr;
+        }
+        
+        // Set interface enabled state
+        lyd_node* enabledNode = nullptr;
+        std::string enabledPath = path + "/enabled";
+        std::string enabled = isUp() ? "true" : "false";
+        if (lyd_new_path(interface, ctx, enabledPath.c_str(), enabled.c_str(), 0, &enabledNode) != LY_SUCCESS) {
+            lyd_free_tree(interfaces);
+            return nullptr;
+        }
+        
+        // TODO: Add ethernet-specific YANG extensions (speed, duplex, etc.)
+        
+        return interfaces;
+    }
+    
+    static EthernetInterface fromYang(const lyd_node* node) {
+        // TODO: Implement YANG deserialization for ethernet interfaces
+        return EthernetInterface();
+    }
 };
 
 } // namespace netd

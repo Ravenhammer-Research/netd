@@ -42,8 +42,7 @@ namespace freebsd {
 namespace interface {
 
 VxlanInterface::VxlanInterface()
-    : netd::Tunnel(),
-      netd::base::Serialization<VxlanInterface>(),
+    : netd::VxlanInterface(),
       name_(""),
       vni_(0),
       localEndpoint_(""),
@@ -53,8 +52,7 @@ VxlanInterface::VxlanInterface()
 }
 
 VxlanInterface::VxlanInterface(const std::string& name)
-    : netd::Tunnel(),
-      netd::base::Serialization<VxlanInterface>(),
+    : netd::VxlanInterface(),
       name_(name),
       vni_(0),
       localEndpoint_(""),
@@ -183,14 +181,9 @@ uint16_t VxlanInterface::getUdpPort() const {
     return udpPort_;
 }
 
-lyd_node* VxlanInterface::toYang() const {
-    // TODO: Implement YANG serialization using libyang
-    return nullptr;
-}
-
-VxlanInterface VxlanInterface::fromYang(const lyd_node* node) {
-    // TODO: Implement YANG deserialization using libyang
-    return VxlanInterface();
+VxlanInterface::operator netd::VxlanInterface() const {
+    // Cast to shared interface - we inherit from it so this is safe
+    return static_cast<const netd::VxlanInterface&>(*this);
 }
 
 bool VxlanInterface::openSocket() {

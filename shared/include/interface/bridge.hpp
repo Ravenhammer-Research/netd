@@ -29,11 +29,12 @@
 #define NETD_INTERFACE_BRIDGE_HPP
 
 #include <shared/include/master.hpp>
+#include <shared/include/interface/base/ether.hpp>
 #include <shared/include/base/serialization.hpp>
 
 namespace netd {
 
-class BridgeInterface : public Master, public base::Serialization<BridgeInterface> {
+class BridgeInterface : public interface::base::Ether, public Master, public base::Serialization<BridgeInterface> {
 public:
     BridgeInterface() = default;
     virtual ~BridgeInterface() = default;

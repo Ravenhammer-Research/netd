@@ -74,9 +74,8 @@ public:
     bool loadFromSystem();
     bool applyToSystem() const;
 
-    // Serialization
-    lyd_node* toYang() const override;
-    static BridgeInterface fromYang(const lyd_node* node);
+    // Conversion to shared interface for serialization
+    operator netd::BridgeInterface() const;
 
 private:
     // Interface name

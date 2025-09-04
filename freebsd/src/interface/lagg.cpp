@@ -50,8 +50,7 @@ namespace freebsd {
 namespace interface {
 
 LagInterface::LagInterface()
-    : netd::Master(),
-      netd::base::Serialization<LagInterface>(),
+    : netd::LagInterface(),
       name_(""),
       laggProtocol_("failover"),
       laggPorts_(),
@@ -59,8 +58,7 @@ LagInterface::LagInterface()
 }
 
 LagInterface::LagInterface(const std::string& name)
-    : netd::Master(),
-      netd::base::Serialization<LagInterface>(),
+    : netd::LagInterface(),
       name_(name),
       laggProtocol_("failover"),
       laggPorts_(),
@@ -215,14 +213,9 @@ std::vector<std::string> LagInterface::getLaggPorts() const {
     return laggPorts_;
 }
 
-lyd_node* LagInterface::toYang() const {
-    // TODO: Implement YANG serialization using libyang
-    return nullptr;
-}
-
-LagInterface LagInterface::fromYang(const lyd_node* node) {
-    // TODO: Implement YANG deserialization using libyang
-    return LagInterface();
+LagInterface::operator netd::LagInterface() const {
+    // Cast to shared interface - we inherit from it so this is safe
+    return static_cast<const netd::LagInterface&>(*this);
 }
 
 bool LagInterface::openSocket() {

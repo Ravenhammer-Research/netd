@@ -15,9 +15,6 @@ target_sources(netd_shared
         route.cpp
         vrf.cpp
         yang.cpp
-        ethernet.cpp
-        master.cpp
-        tunnel.cpp
         interface/base/ether.cpp
         interface/base/master.cpp
         interface/base/tunnel.cpp

@@ -25,20 +25,71 @@
  * SUCH DAMAGE.
  */
 
-#include <shared/include/tunnel.hpp>
+#include <shared/include/interface/base/ether.hpp>
 #include <shared/include/base/serialization.hpp>
+#include <shared/include/yang.hpp>
 #include <libyang/tree_data.h>
 
 namespace netd {
 
-class TapInterface : public Tunnel, public base::Serialization<TapInterface> {
+class TapInterface : public interface::base::Ether, public base::Serialization<TapInterface> {
 public:
     TapInterface() = default;
     virtual ~TapInterface() = default;
 
     // Implement Serialization methods
-    lyd_node* toYang() const override { return nullptr; }
-    static TapInterface fromYang(const lyd_node* node) { return TapInterface(); }
+    lyd_node* toYang() const override {
+        // Create YANG context and serialize TAP interface
+        auto yang = createYang();
+        ly_ctx* ctx = yang->getContext();
+        
+        if (!ctx) {
+            return nullptr;
+        }
+        
+        // Create interface node using ietf-interfaces schema
+        lyd_node* interfaces = nullptr;
+        lyd_node* interface = nullptr;
+        
+        // Create the interfaces container
+        if (lyd_new_path(nullptr, ctx, "/ietf-interfaces:interfaces", nullptr, 0, &interfaces) != LY_SUCCESS) {
+            return nullptr;
+        }
+        
+        // Create the interface list entry
+        std::string name = getName();
+        std::string path = "/ietf-interfaces:interfaces/interface[name='" + name + "']";
+        if (lyd_new_path(interfaces, ctx, path.c_str(), nullptr, 0, &interface) != LY_SUCCESS) {
+            lyd_free_tree(interfaces);
+            return nullptr;
+        }
+        
+        // Set interface type
+        lyd_node* typeNode = nullptr;
+        std::string typePath = path + "/type";
+        if (lyd_new_path(interface, ctx, typePath.c_str(), "iana-if-type:tunnel", 0, &typeNode) != LY_SUCCESS) {
+            lyd_free_tree(interfaces);
+            return nullptr;
+        }
+        
+        // Set interface enabled state
+        lyd_node* enabledNode = nullptr;
+        std::string enabledPath = path + "/enabled";
+        std::string enabled = isUp() ? "true" : "false";
+        if (lyd_new_path(interface, ctx, enabledPath.c_str(), enabled.c_str(), 0, &enabledNode) != LY_SUCCESS) {
+            lyd_free_tree(interfaces);
+            return nullptr;
+        }
+        
+        // TODO: Add tunnel-specific YANG extensions (local/remote addresses, etc.)
+        
+        return interfaces;
+    }
+    
+    static TapInterface fromYang(const lyd_node* node) {
+        // TODO: Implement YANG deserialization for TAP interfaces
+        return TapInterface();
+    }
 };
 
 } // namespace netd

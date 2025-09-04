@@ -43,8 +43,7 @@ namespace freebsd {
 namespace interface {
 
 EpairInterface::EpairInterface()
-    : netd::Ethernet(),
-      netd::base::Serialization<EpairInterface>(),
+    : netd::EpairInterface(),
       name_(""),
       peerEnd_(""),
       epairUnit_(-1),
@@ -52,8 +51,7 @@ EpairInterface::EpairInterface()
 }
 
 EpairInterface::EpairInterface(const std::string& name)
-    : netd::Ethernet(),
-      netd::base::Serialization<EpairInterface>(),
+    : netd::EpairInterface(),
       name_(name),
       peerEnd_(""),
       epairUnit_(-1),
@@ -162,14 +160,9 @@ int EpairInterface::getEpairUnit() const {
     return epairUnit_;
 }
 
-lyd_node* EpairInterface::toYang() const {
-    // TODO: Implement YANG serialization using libyang
-    return nullptr;
-}
-
-EpairInterface EpairInterface::fromYang(const lyd_node* node) {
-    // TODO: Implement YANG deserialization using libyang
-    return EpairInterface();
+EpairInterface::operator netd::EpairInterface() const {
+    // Cast to shared interface - we inherit from it so this is safe
+    return static_cast<const netd::EpairInterface&>(*this);
 }
 
 bool EpairInterface::openSocket() {

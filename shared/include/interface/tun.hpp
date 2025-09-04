@@ -25,11 +25,34 @@
  * SUCH DAMAGE.
  */
 
-#include <shared/include/tunnel.hpp>
+#ifndef NETD_INTERFACE_TUN_HPP
+#define NETD_INTERFACE_TUN_HPP
+
+#include <shared/include/interface/base/ether.hpp>
+#include <shared/include/base/serialization.hpp>
+#include <string>
+#include <cstdint>
+#include <memory>
 
 namespace netd {
 
-// Tunnel class now inherits all functionality from interface::base::Tunnel
-// No additional implementation needed unless Tunnel-specific behavior is required
+class TunInterface : public interface::base::Ether, public base::Serialization<TunInterface> {
+public:
+    TunInterface();
+    explicit TunInterface(const std::string& name);
+    virtual ~TunInterface();
+
+    // TUN-specific configuration
+    virtual bool setTunUnit(int unit) { return false; }
+    virtual int getTunUnit() const { return -1; }
+    virtual bool setTunMode(const std::string& mode) { return false; }
+    virtual std::string getTunMode() const { return "tun"; }
+
+    // YANG serialization
+    lyd_node* toYang() const override;
+    static TunInterface fromYang(const lyd_node* node);
+};
 
 } // namespace netd
+
+#endif // NETD_INTERFACE_TUN_HPP

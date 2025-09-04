@@ -281,4 +281,69 @@ shared/CMakeFiles/netd_shared.dir/src/vrf.cpp.o: \
   /usr/include/c++/v1/__iterator/empty.h \
   /usr/include/c++/v1/__iterator/reverse_access.h \
   /usr/include/c++/v1/__iterator/size.h \
-  /home/sq/netd/shared/include/base/serialization.hpp
+  /home/sq/netd/shared/include/base/serialization.hpp \
+  /usr/local/include/libyang/libyang.h \
+  /usr/local/include/libyang/ly_config.h /usr/include/arpa/inet.h \
+  /usr/include/machine/endian.h /usr/include/x86/endian.h \
+  /usr/include/sys/_endian.h /usr/include/netinet/in.h \
+  /usr/include/sys/_sockaddr_storage.h /usr/include/netinet6/in6.h \
+  /usr/include/sys/socket.h /usr/include/sys/_iovec.h \
+  /usr/include/sys/_timeval.h /usr/include/machine/_align.h \
+  /usr/include/x86/_align.h /usr/local/include/libyang/context.h \
+  /usr/local/include/libyang/log.h \
+  /usr/local/include/libyang/parser_schema.h \
+  /usr/local/include/libyang/tree_data.h /usr/local/include/pcre2.h \
+  /usr/include/c++/v1/stdlib.h /usr/include/stdlib.h \
+  /usr/include/c++/v1/inttypes.h /usr/include/inttypes.h \
+  /usr/include/machine/_inttypes.h /usr/include/x86/_inttypes.h \
+  /usr/include/sys/stdint.h /usr/include/time.h \
+  /usr/include/sys/_clock_id.h /usr/include/sys/timespec.h \
+  /usr/include/sys/_timespec.h /usr/include/xlocale/_time.h \
+  /usr/local/include/libyang/tree.h \
+  /usr/local/include/libyang/tree_schema.h \
+  /usr/local/include/libyang/dict.h /usr/local/include/libyang/in.h \
+  /usr/local/include/libyang/metadata.h \
+  /usr/local/include/libyang/plugins_exts.h \
+  /usr/local/include/libyang/parser_data.h \
+  /usr/local/include/libyang/plugins.h \
+  /usr/local/include/libyang/tree_edit.h \
+  /usr/local/include/libyang/out.h /usr/include/sys/types.h \
+  /usr/include/sys/_pthreadtypes.h /usr/include/sys/bitcount.h \
+  /usr/include/sys/select.h /usr/include/sys/_sigset.h \
+  /usr/local/include/libyang/printer_data.h \
+  /usr/local/include/libyang/printer_schema.h \
+  /usr/local/include/libyang/set.h /home/sq/netd/shared/include/yang.hpp \
+  /usr/include/c++/v1/memory /usr/include/c++/v1/__memory/align.h \
+  /usr/include/c++/v1/__memory/auto_ptr.h \
+  /usr/include/c++/v1/__memory/inout_ptr.h \
+  /usr/include/c++/v1/__memory/shared_ptr.h \
+  /usr/include/c++/v1/__functional/binary_function.h \
+  /usr/include/c++/v1/__functional/operations.h \
+  /usr/include/c++/v1/__functional/reference_wrapper.h \
+  /usr/include/c++/v1/__functional/weak_result_type.h \
+  /usr/include/c++/v1/__memory/allocation_guard.h \
+  /usr/include/c++/v1/__memory/allocator_destructor.h \
+  /usr/include/c++/v1/__memory/uninitialized_algorithms.h \
+  /usr/include/c++/v1/__algorithm/copy.h \
+  /usr/include/c++/v1/__algorithm/copy_move_common.h \
+  /usr/include/c++/v1/__algorithm/unwrap_range.h \
+  /usr/include/c++/v1/__type_traits/is_trivially_assignable.h \
+  /usr/include/c++/v1/__type_traits/add_const.h \
+  /usr/include/c++/v1/__algorithm/for_each_segment.h \
+  /usr/include/c++/v1/__algorithm/move.h \
+  /usr/include/c++/v1/__type_traits/is_trivially_constructible.h \
+  /usr/include/c++/v1/__type_traits/is_unbounded_array.h \
+  /usr/include/c++/v1/__memory/unique_ptr.h \
+  /usr/include/c++/v1/__type_traits/is_bounded_array.h \
+  /usr/include/c++/v1/typeinfo \
+  /usr/include/c++/v1/__atomic/memory_order.h \
+  /usr/include/c++/v1/__type_traits/is_specialization.h \
+  /usr/include/c++/v1/__memory/out_ptr.h \
+  /usr/include/c++/v1/__memory/raw_storage_iterator.h \
+  /usr/include/c++/v1/__memory/temporary_buffer.h \
+  /usr/include/c++/v1/__memory/assume_aligned.h \
+  /usr/include/c++/v1/__memory/concepts.h \
+  /usr/include/c++/v1/__memory/ranges_construct_at.h \
+  /usr/include/c++/v1/__memory/ranges_uninitialized_algorithms.h \
+  /usr/include/c++/v1/__algorithm/in_out_result.h \
+  /usr/include/c++/v1/__memory/uses_allocator_construction.h

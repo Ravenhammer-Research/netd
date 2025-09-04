@@ -39,8 +39,8 @@ events:
     checks:
       - "Detecting CXX compiler ABI info"
     directories:
-      source: "/home/sq/netd/build/CMakeFiles/CMakeScratch/TryCompile-S9PSsS"
-      binary: "/home/sq/netd/build/CMakeFiles/CMakeScratch/TryCompile-S9PSsS"
+      source: "/home/sq/netd/build/CMakeFiles/CMakeScratch/TryCompile-v58Ucw"
+      binary: "/home/sq/netd/build/CMakeFiles/CMakeScratch/TryCompile-v58Ucw"
     cmakeVariables:
       CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/usr/local/bin/clang-scan-deps19"
       CMAKE_CXX_FLAGS: ""
@@ -51,19 +51,19 @@ events:
       variable: "CMAKE_CXX_ABI_COMPILED"
       cached: true
       stdout: |
-        Change Dir: '/home/sq/netd/build/CMakeFiles/CMakeScratch/TryCompile-S9PSsS'
+        Change Dir: '/home/sq/netd/build/CMakeFiles/CMakeScratch/TryCompile-v58Ucw'
         
-        Run Build Command(s): /usr/local/bin/cmake -E env VERBOSE=1 /usr/local/bin/gmake -f Makefile cmTC_14afc/fast
-        /usr/local/bin/gmake  -f CMakeFiles/cmTC_14afc.dir/build.make CMakeFiles/cmTC_14afc.dir/build
-        gmake[1]: Entering directory '/home/sq/netd/build/CMakeFiles/CMakeScratch/TryCompile-S9PSsS'
-        Building CXX object CMakeFiles/cmTC_14afc.dir/CMakeCXXCompilerABI.cpp.o
-        /usr/bin/c++   -v -MD -MT CMakeFiles/cmTC_14afc.dir/CMakeCXXCompilerABI.cpp.o -MF CMakeFiles/cmTC_14afc.dir/CMakeCXXCompilerABI.cpp.o.d -o CMakeFiles/cmTC_14afc.dir/CMakeCXXCompilerABI.cpp.o -c /usr/local/share/cmake/Modules/CMakeCXXCompilerABI.cpp
+        Run Build Command(s): /usr/local/bin/cmake -E env VERBOSE=1 /usr/local/bin/gmake -f Makefile cmTC_0f2e2/fast
+        /usr/local/bin/gmake  -f CMakeFiles/cmTC_0f2e2.dir/build.make CMakeFiles/cmTC_0f2e2.dir/build
+        gmake[1]: Entering directory '/home/sq/netd/build/CMakeFiles/CMakeScratch/TryCompile-v58Ucw'
+        Building CXX object CMakeFiles/cmTC_0f2e2.dir/CMakeCXXCompilerABI.cpp.o
+        /usr/bin/c++   -v -MD -MT CMakeFiles/cmTC_0f2e2.dir/CMakeCXXCompilerABI.cpp.o -MF CMakeFiles/cmTC_0f2e2.dir/CMakeCXXCompilerABI.cpp.o.d -o CMakeFiles/cmTC_0f2e2.dir/CMakeCXXCompilerABI.cpp.o -c /usr/local/share/cmake/Modules/CMakeCXXCompilerABI.cpp
         FreeBSD clang version 19.1.7 (https://github.com/llvm/llvm-project.git llvmorg-19.1.7-0-gcd708029e0b2)
         Target: x86_64-unknown-freebsd14.3
         Thread model: posix
         InstalledDir: /usr/bin
          (in-process)
-         "/usr/bin/c++" -cc1 -triple x86_64-unknown-freebsd14.3 -emit-obj -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model static -mframe-pointer=all -ffp-contract=on -fno-rounding-math -mconstructor-aliases -funwind-tables=2 -target-cpu x86-64 -tune-cpu generic -debugger-tuning=gdb -fdebug-compilation-dir=/home/sq/netd/build/CMakeFiles/CMakeScratch/TryCompile-S9PSsS -v -fcoverage-compilation-dir=/home/sq/netd/build/CMakeFiles/CMakeScratch/TryCompile-S9PSsS -resource-dir /usr/lib/clang/19 -dependency-file CMakeFiles/cmTC_14afc.dir/CMakeCXXCompilerABI.cpp.o.d -MT CMakeFiles/cmTC_14afc.dir/CMakeCXXCompilerABI.cpp.o -sys-header-deps -internal-isystem /usr/include/c++/v1 -internal-isystem /usr/lib/clang/19/include -internal-externc-isystem /usr/include -fdeprecated-macro -ferror-limit 19 -fgnuc-version=4.2.1 -fskip-odr-check-in-gmf -fcxx-exceptions -fexceptions -faddrsig -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_14afc.dir/CMakeCXXCompilerABI.cpp.o -x c++ /usr/local/share/cmake/Modules/CMakeCXXCompilerABI.cpp
+         "/usr/bin/c++" -cc1 -triple x86_64-unknown-freebsd14.3 -emit-obj -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model static -mframe-pointer=all -ffp-contract=on -fno-rounding-math -mconstructor-aliases -funwind-tables=2 -target-cpu x86-64 -tune-cpu generic -debugger-tuning=gdb -fdebug-compilation-dir=/home/sq/netd/build/CMakeFiles/CMakeScratch/TryCompile-v58Ucw -v -fcoverage-compilation-dir=/home/sq/netd/build/CMakeFiles/CMakeScratch/TryCompile-v58Ucw -resource-dir /usr/lib/clang/19 -dependency-file CMakeFiles/cmTC_0f2e2.dir/CMakeCXXCompilerABI.cpp.o.d -MT CMakeFiles/cmTC_0f2e2.dir/CMakeCXXCompilerABI.cpp.o -sys-header-deps -internal-isystem /usr/include/c++/v1 -internal-isystem /usr/lib/clang/19/include -internal-externc-isystem /usr/include -fdeprecated-macro -ferror-limit 19 -fgnuc-version=4.2.1 -fskip-odr-check-in-gmf -fcxx-exceptions -fexceptions -faddrsig -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_0f2e2.dir/CMakeCXXCompilerABI.cpp.o -x c++ /usr/local/share/cmake/Modules/CMakeCXXCompilerABI.cpp
         clang -cc1 version 19.1.7 based upon LLVM 19.1.7 default target x86_64-unknown-freebsd14.3
         #include "..." search starts here:
         #include <...> search starts here:
@@ -71,15 +71,15 @@ events:
          /usr/lib/clang/19/include
          /usr/include
         End of search list.
-        Linking CXX executable cmTC_14afc
-        /usr/local/bin/cmake -E cmake_link_script CMakeFiles/cmTC_14afc.dir/link.txt --verbose=1
+        Linking CXX executable cmTC_0f2e2
+        /usr/local/bin/cmake -E cmake_link_script CMakeFiles/cmTC_0f2e2.dir/link.txt --verbose=1
         FreeBSD clang version 19.1.7 (https://github.com/llvm/llvm-project.git llvmorg-19.1.7-0-gcd708029e0b2)
         Target: x86_64-unknown-freebsd14.3
         Thread model: posix
         InstalledDir: /usr/bin
-         "/usr/bin/ld" --eh-frame-hdr -dynamic-linker /libexec/ld-elf.so.1 --hash-style=both --enable-new-dtags -o cmTC_14afc /usr/lib/crt1.o /usr/lib/crti.o /usr/lib/crtbegin.o -L/usr/lib CMakeFiles/cmTC_14afc.dir/CMakeCXXCompilerABI.cpp.o -lc++ -lm -lgcc --as-needed -lgcc_s --no-as-needed -lc -lgcc --as-needed -lgcc_s --no-as-needed /usr/lib/crtend.o /usr/lib/crtn.o
-        /usr/bin/c++  -v CMakeFiles/cmTC_14afc.dir/CMakeCXXCompilerABI.cpp.o -o cmTC_14afc
-        gmake[1]: Leaving directory '/home/sq/netd/build/CMakeFiles/CMakeScratch/TryCompile-S9PSsS'
+         "/usr/bin/ld" --eh-frame-hdr -dynamic-linker /libexec/ld-elf.so.1 --hash-style=both --enable-new-dtags -o cmTC_0f2e2 /usr/lib/crt1.o /usr/lib/crti.o /usr/lib/crtbegin.o -L/usr/lib CMakeFiles/cmTC_0f2e2.dir/CMakeCXXCompilerABI.cpp.o -lc++ -lm -lgcc --as-needed -lgcc_s --no-as-needed -lc -lgcc --as-needed -lgcc_s --no-as-needed /usr/lib/crtend.o /usr/lib/crtn.o
+        /usr/bin/c++  -v CMakeFiles/cmTC_0f2e2.dir/CMakeCXXCompilerABI.cpp.o -o cmTC_0f2e2
+        gmake[1]: Leaving directory '/home/sq/netd/build/CMakeFiles/CMakeScratch/TryCompile-v58Ucw'
         
       exitCode: 0
   -
@@ -112,19 +112,19 @@ events:
       Parsed CXX implicit link information:
         link line regex: [^( *|.*[/\\])(ld[0-9]*(\\.[a-z]+)?|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\\]+-)?ld|collect2)[^/\\]*( |$)]
         linker tool regex: [^[ 	]*(->|")?[ 	]*(([^"]*[/\\])?(ld[0-9]*(\\.[a-z]+)?))("|,| |$)]
-        ignore line: [Change Dir: '/home/sq/netd/build/CMakeFiles/CMakeScratch/TryCompile-S9PSsS']
+        ignore line: [Change Dir: '/home/sq/netd/build/CMakeFiles/CMakeScratch/TryCompile-v58Ucw']
         ignore line: []
-        ignore line: [Run Build Command(s): /usr/local/bin/cmake -E env VERBOSE=1 /usr/local/bin/gmake -f Makefile cmTC_14afc/fast]
-        ignore line: [/usr/local/bin/gmake  -f CMakeFiles/cmTC_14afc.dir/build.make CMakeFiles/cmTC_14afc.dir/build]
-        ignore line: [gmake[1]: Entering directory '/home/sq/netd/build/CMakeFiles/CMakeScratch/TryCompile-S9PSsS']
-        ignore line: [Building CXX object CMakeFiles/cmTC_14afc.dir/CMakeCXXCompilerABI.cpp.o]
-        ignore line: [/usr/bin/c++   -v -MD -MT CMakeFiles/cmTC_14afc.dir/CMakeCXXCompilerABI.cpp.o -MF CMakeFiles/cmTC_14afc.dir/CMakeCXXCompilerABI.cpp.o.d -o CMakeFiles/cmTC_14afc.dir/CMakeCXXCompilerABI.cpp.o -c /usr/local/share/cmake/Modules/CMakeCXXCompilerABI.cpp]
+        ignore line: [Run Build Command(s): /usr/local/bin/cmake -E env VERBOSE=1 /usr/local/bin/gmake -f Makefile cmTC_0f2e2/fast]
+        ignore line: [/usr/local/bin/gmake  -f CMakeFiles/cmTC_0f2e2.dir/build.make CMakeFiles/cmTC_0f2e2.dir/build]
+        ignore line: [gmake[1]: Entering directory '/home/sq/netd/build/CMakeFiles/CMakeScratch/TryCompile-v58Ucw']
+        ignore line: [Building CXX object CMakeFiles/cmTC_0f2e2.dir/CMakeCXXCompilerABI.cpp.o]
+        ignore line: [/usr/bin/c++   -v -MD -MT CMakeFiles/cmTC_0f2e2.dir/CMakeCXXCompilerABI.cpp.o -MF CMakeFiles/cmTC_0f2e2.dir/CMakeCXXCompilerABI.cpp.o.d -o CMakeFiles/cmTC_0f2e2.dir/CMakeCXXCompilerABI.cpp.o -c /usr/local/share/cmake/Modules/CMakeCXXCompilerABI.cpp]
         ignore line: [FreeBSD clang version 19.1.7 (https://github.com/llvm/llvm-project.git llvmorg-19.1.7-0-gcd708029e0b2)]
         ignore line: [Target: x86_64-unknown-freebsd14.3]
         ignore line: [Thread model: posix]
         ignore line: [InstalledDir: /usr/bin]
         ignore line: [ (in-process)]
-        ignore line: [ "/usr/bin/c++" -cc1 -triple x86_64-unknown-freebsd14.3 -emit-obj -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model static -mframe-pointer=all -ffp-contract=on -fno-rounding-math -mconstructor-aliases -funwind-tables=2 -target-cpu x86-64 -tune-cpu generic -debugger-tuning=gdb -fdebug-compilation-dir=/home/sq/netd/build/CMakeFiles/CMakeScratch/TryCompile-S9PSsS -v -fcoverage-compilation-dir=/home/sq/netd/build/CMakeFiles/CMakeScratch/TryCompile-S9PSsS -resource-dir /usr/lib/clang/19 -dependency-file CMakeFiles/cmTC_14afc.dir/CMakeCXXCompilerABI.cpp.o.d -MT CMakeFiles/cmTC_14afc.dir/CMakeCXXCompilerABI.cpp.o -sys-header-deps -internal-isystem /usr/include/c++/v1 -internal-isystem /usr/lib/clang/19/include -internal-externc-isystem /usr/include -fdeprecated-macro -ferror-limit 19 -fgnuc-version=4.2.1 -fskip-odr-check-in-gmf -fcxx-exceptions -fexceptions -faddrsig -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_14afc.dir/CMakeCXXCompilerABI.cpp.o -x c++ /usr/local/share/cmake/Modules/CMakeCXXCompilerABI.cpp]
+        ignore line: [ "/usr/bin/c++" -cc1 -triple x86_64-unknown-freebsd14.3 -emit-obj -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model static -mframe-pointer=all -ffp-contract=on -fno-rounding-math -mconstructor-aliases -funwind-tables=2 -target-cpu x86-64 -tune-cpu generic -debugger-tuning=gdb -fdebug-compilation-dir=/home/sq/netd/build/CMakeFiles/CMakeScratch/TryCompile-v58Ucw -v -fcoverage-compilation-dir=/home/sq/netd/build/CMakeFiles/CMakeScratch/TryCompile-v58Ucw -resource-dir /usr/lib/clang/19 -dependency-file CMakeFiles/cmTC_0f2e2.dir/CMakeCXXCompilerABI.cpp.o.d -MT CMakeFiles/cmTC_0f2e2.dir/CMakeCXXCompilerABI.cpp.o -sys-header-deps -internal-isystem /usr/include/c++/v1 -internal-isystem /usr/lib/clang/19/include -internal-externc-isystem /usr/include -fdeprecated-macro -ferror-limit 19 -fgnuc-version=4.2.1 -fskip-odr-check-in-gmf -fcxx-exceptions -fexceptions -faddrsig -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_0f2e2.dir/CMakeCXXCompilerABI.cpp.o -x c++ /usr/local/share/cmake/Modules/CMakeCXXCompilerABI.cpp]
         ignore line: [clang -cc1 version 19.1.7 based upon LLVM 19.1.7 default target x86_64-unknown-freebsd14.3]
         ignore line: [#include "..." search starts here:]
         ignore line: [#include <...> search starts here:]
@@ -132,13 +132,13 @@ events:
         ignore line: [ /usr/lib/clang/19/include]
         ignore line: [ /usr/include]
         ignore line: [End of search list.]
-        ignore line: [Linking CXX executable cmTC_14afc]
-        ignore line: [/usr/local/bin/cmake -E cmake_link_script CMakeFiles/cmTC_14afc.dir/link.txt --verbose=1]
+        ignore line: [Linking CXX executable cmTC_0f2e2]
+        ignore line: [/usr/local/bin/cmake -E cmake_link_script CMakeFiles/cmTC_0f2e2.dir/link.txt --verbose=1]
         ignore line: [FreeBSD clang version 19.1.7 (https://github.com/llvm/llvm-project.git llvmorg-19.1.7-0-gcd708029e0b2)]
         ignore line: [Target: x86_64-unknown-freebsd14.3]
         ignore line: [Thread model: posix]
         ignore line: [InstalledDir: /usr/bin]
-        link line: [ "/usr/bin/ld" --eh-frame-hdr -dynamic-linker /libexec/ld-elf.so.1 --hash-style=both --enable-new-dtags -o cmTC_14afc /usr/lib/crt1.o /usr/lib/crti.o /usr/lib/crtbegin.o -L/usr/lib CMakeFiles/cmTC_14afc.dir/CMakeCXXCompilerABI.cpp.o -lc++ -lm -lgcc --as-needed -lgcc_s --no-as-needed -lc -lgcc --as-needed -lgcc_s --no-as-needed /usr/lib/crtend.o /usr/lib/crtn.o]
+        link line: [ "/usr/bin/ld" --eh-frame-hdr -dynamic-linker /libexec/ld-elf.so.1 --hash-style=both --enable-new-dtags -o cmTC_0f2e2 /usr/lib/crt1.o /usr/lib/crti.o /usr/lib/crtbegin.o -L/usr/lib CMakeFiles/cmTC_0f2e2.dir/CMakeCXXCompilerABI.cpp.o -lc++ -lm -lgcc --as-needed -lgcc_s --no-as-needed -lc -lgcc --as-needed -lgcc_s --no-as-needed /usr/lib/crtend.o /usr/lib/crtn.o]
           arg [/usr/bin/ld] ==> ignore
           arg [--eh-frame-hdr] ==> ignore
           arg [-dynamic-linker] ==> ignore
@@ -146,12 +146,12 @@ events:
           arg [--hash-style=both] ==> ignore
           arg [--enable-new-dtags] ==> ignore
           arg [-o] ==> ignore
-          arg [cmTC_14afc] ==> ignore
+          arg [cmTC_0f2e2] ==> ignore
           arg [/usr/lib/crt1.o] ==> obj [/usr/lib/crt1.o]
           arg [/usr/lib/crti.o] ==> obj [/usr/lib/crti.o]
           arg [/usr/lib/crtbegin.o] ==> obj [/usr/lib/crtbegin.o]
           arg [-L/usr/lib] ==> dir [/usr/lib]
-          arg [CMakeFiles/cmTC_14afc.dir/CMakeCXXCompilerABI.cpp.o] ==> ignore
+          arg [CMakeFiles/cmTC_0f2e2.dir/CMakeCXXCompilerABI.cpp.o] ==> ignore
           arg [-lc++] ==> lib [c++]
           arg [-lm] ==> lib [m]
           arg [-lgcc] ==> lib [gcc]

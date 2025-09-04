@@ -43,8 +43,7 @@ namespace freebsd {
 namespace interface {
 
 PppInterface::PppInterface()
-    : netd::Ethernet(),
-      netd::base::Serialization<PppInterface>(),
+    : netd::PppInterface(),
       name_(""),
       pppUnit_(-1),
       pppMode_("ppp"),
@@ -53,8 +52,7 @@ PppInterface::PppInterface()
 }
 
 PppInterface::PppInterface(const std::string& name)
-    : netd::Ethernet(),
-      netd::base::Serialization<PppInterface>(),
+    : netd::PppInterface(),
       name_(name),
       pppUnit_(-1),
       pppMode_("ppp"),
@@ -173,14 +171,9 @@ std::string PppInterface::getPppProtocol() const {
     return pppProtocol_;
 }
 
-lyd_node* PppInterface::toYang() const {
-    // TODO: Implement YANG serialization using libyang
-    return nullptr;
-}
-
-PppInterface PppInterface::fromYang(const lyd_node* node) {
-    // TODO: Implement YANG deserialization using libyang
-    return PppInterface();
+PppInterface::operator netd::PppInterface() const {
+    // Cast to shared interface - we inherit from it so this is safe
+    return static_cast<const netd::PppInterface&>(*this);
 }
 
 bool PppInterface::openSocket() {

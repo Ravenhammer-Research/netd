@@ -300,12 +300,12 @@ shared/src/interface/clean:
 shared/CMakeFiles/netd_shared.dir/all:
 	$(MAKE) $(MAKESILENT) -f shared/CMakeFiles/netd_shared.dir/build.make shared/CMakeFiles/netd_shared.dir/depend
 	$(MAKE) $(MAKESILENT) -f shared/CMakeFiles/netd_shared.dir/build.make shared/CMakeFiles/netd_shared.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/sq/netd/build/CMakeFiles --progress-num=23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49 "Built target netd_shared"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/sq/netd/build/CMakeFiles --progress-num=23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46 "Built target netd_shared"
 .PHONY : shared/CMakeFiles/netd_shared.dir/all
 
 # Build rule for subdir invocation for target.
 shared/CMakeFiles/netd_shared.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/sq/netd/build/CMakeFiles 27
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/sq/netd/build/CMakeFiles 24
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 shared/CMakeFiles/netd_shared.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/sq/netd/build/CMakeFiles 0
 .PHONY : shared/CMakeFiles/netd_shared.dir/rule
@@ -317,7 +317,7 @@ netd_shared: shared/CMakeFiles/netd_shared.dir/rule
 # codegen rule for target.
 shared/CMakeFiles/netd_shared.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f shared/CMakeFiles/netd_shared.dir/build.make shared/CMakeFiles/netd_shared.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/sq/netd/build/CMakeFiles --progress-num=23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49 "Finished codegen for target netd_shared"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/sq/netd/build/CMakeFiles --progress-num=23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46 "Finished codegen for target netd_shared"
 .PHONY : shared/CMakeFiles/netd_shared.dir/codegen
 
 # clean rule for target.
@@ -337,7 +337,7 @@ freebsd/src/CMakeFiles/netd_freebsd.dir/all: shared/CMakeFiles/netd_shared.dir/a
 
 # Build rule for subdir invocation for target.
 freebsd/src/CMakeFiles/netd_freebsd.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/sq/netd/build/CMakeFiles 41
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/sq/netd/build/CMakeFiles 38
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 freebsd/src/CMakeFiles/netd_freebsd.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/sq/netd/build/CMakeFiles 0
 .PHONY : freebsd/src/CMakeFiles/netd_freebsd.dir/rule
@@ -370,7 +370,7 @@ server/CMakeFiles/netd_server.dir/all: freebsd/src/CMakeFiles/netd_freebsd.dir/a
 
 # Build rule for subdir invocation for target.
 server/CMakeFiles/netd_server.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/sq/netd/build/CMakeFiles 45
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/sq/netd/build/CMakeFiles 42
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 server/CMakeFiles/netd_server.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/sq/netd/build/CMakeFiles 0
 .PHONY : server/CMakeFiles/netd_server.dir/rule
@@ -402,7 +402,7 @@ client/CMakeFiles/netd_client.dir/all: shared/CMakeFiles/netd_shared.dir/all
 
 # Build rule for subdir invocation for target.
 client/CMakeFiles/netd_client.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/sq/netd/build/CMakeFiles 31
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/sq/netd/build/CMakeFiles 28
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 client/CMakeFiles/netd_client.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/sq/netd/build/CMakeFiles 0
 .PHONY : client/CMakeFiles/netd_client.dir/rule

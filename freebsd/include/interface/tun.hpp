@@ -33,15 +33,14 @@
 #include <memory>
 #include <vector>
 
-#include <shared/include/tunnel.hpp>
+#include <shared/include/interface/tun.hpp>
 #include <shared/include/base/serialization.hpp>
 
 namespace netd {
 namespace freebsd {
 namespace interface {
 
-class TunInterface : public netd::Tunnel, 
-                    public netd::base::Serialization<TunInterface> {
+class TunInterface : public netd::TunInterface {
 public:
     TunInterface();
     explicit TunInterface(const std::string& name);
@@ -65,9 +64,8 @@ public:
     // Statistics and information
     std::string getType() const { return "tun"; }
 
-    // Serialization
-    lyd_node* toYang() const override;
-    static TunInterface fromYang(const lyd_node* node);
+    // Conversion to shared interface for serialization
+    operator netd::TunInterface() const;
 
 private:
     // Interface name

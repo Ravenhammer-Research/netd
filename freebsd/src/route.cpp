@@ -41,7 +41,6 @@ namespace freebsd {
 
 Route::Route()
     : netd::Route(),
-      netd::base::Serialization<Route>(),
       destination_(""),
       gateway_(""),
       interface_(""),
@@ -52,7 +51,6 @@ Route::Route()
 
 Route::Route(const std::string& destination, const std::string& gateway, const std::string& interface)
     : netd::Route(),
-      netd::base::Serialization<Route>(),
       destination_(destination),
       gateway_(gateway),
       interface_(interface),
@@ -181,17 +179,9 @@ uint32_t Route::getFibTable() const {
     return fibTable_;
 }
 
-lyd_node* Route::toYang() const {
-    // TODO: Implement YANG serialization using libyang
-    // This should create a YANG node representing the route
-    // with destination, gateway, interface, and other properties
-    return nullptr;
-}
-
-Route Route::fromYang(const lyd_node* node) {
-    // TODO: Implement YANG deserialization using libyang
-    // This should parse a YANG node and create a Route object
-    return Route();
+Route::operator const netd::Route&() const {
+    // Cast to shared Route - we inherit from it so this is safe
+    return static_cast<const netd::Route&>(*this);
 }
 
 bool Route::parseRouteString(const std::string& routeStr) {
