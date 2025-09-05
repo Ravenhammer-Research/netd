@@ -80,18 +80,21 @@ namespace netd::server::netconf::handlers {
       response->setData(std::move(interfaceData));
 
       // Convert response to YANG and return
-      auto yangResponse = response->toYang(nc_session_get_ctx(session));
+      auto yangResponse =
+          response->toYang(const_cast<ly_ctx *>(nc_session_get_ctx(session)));
       if (yangResponse) {
-        return nc_server_reply_data(yangResponse);
+        return nc_server_reply_data(yangResponse, NC_WD_ALL, NC_PARAMTYPE_FREE);
       } else {
         logger.error("Failed to convert response to YANG");
-        return nc_server_reply_err(
-            nc_err(NC_ERR_OP_FAILED, "Failed to generate response"));
+        return nc_server_reply_err(nc_err(nc_session_get_ctx(session),
+                                          NC_ERR_OP_FAILED,
+                                          "Failed to generate response"));
       }
 
     } catch (const std::exception &e) {
       logger.error("Exception in get-config handler: " + std::string(e.what()));
-      return nc_server_reply_err(nc_err(NC_ERR_OP_FAILED, e.what()));
+      return nc_server_reply_err(
+          nc_err(nc_session_get_ctx(session), NC_ERR_OP_FAILED, e.what()));
     }
   }
 

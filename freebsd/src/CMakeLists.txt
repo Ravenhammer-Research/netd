@@ -2,6 +2,7 @@
 
 # Create the FreeBSD implementation library
 add_library(netd_freebsd STATIC
+    interface/base.cpp
     interface/bridge.cpp
     interface/epair.cpp
     interface/ethernet.cpp

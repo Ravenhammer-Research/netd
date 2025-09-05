@@ -25,6 +25,7 @@
  * SUCH DAMAGE.
  */
 
+#include <freebsd/include/interface/base.hpp>
 #include <libnetconf2/messages_server.h>
 #include <libnetconf2/netconf.h>
 #include <libyang/libyang.h>
@@ -36,11 +37,11 @@
 namespace netd::server::netconf::handlers {
 
   // Helper function to get all interface names from the system
-  std::vector<std::string> getAllInterfaceNames() {
+  std::vector<std::string> RpcHandler::getAllInterfaceNames() {
     std::vector<std::string> interfaceNames;
 
-    // Use base Ether interface discovery to get all interfaces as Ether objects
-    auto interfaces = netd::shared::interface::base::Ether::getAllInterfaces();
+    // Use FreeBSD interface discovery to get all interfaces as Ether objects
+    auto interfaces = netd::freebsd::interface::Interface::getAllInterfaces();
 
     for (const auto &iface : interfaces) {
       if (iface) {
@@ -53,9 +54,9 @@ namespace netd::server::netconf::handlers {
 
   // Helper function to get interface information based on name
   std::unique_ptr<netd::shared::interface::base::Ether>
-  getInterfaceInfo(const std::string &ifName) {
-    // Use base Ether interface discovery to get all interfaces
-    auto interfaces = netd::shared::interface::base::Ether::getAllInterfaces();
+  RpcHandler::getInterfaceInfo(const std::string &ifName) {
+    // Use FreeBSD interface discovery to get all interfaces
+    auto interfaces = netd::freebsd::interface::Interface::getAllInterfaces();
 
     // Find the interface with the matching name
     for (auto &iface : interfaces) {
@@ -69,16 +70,16 @@ namespace netd::server::netconf::handlers {
   }
 
   // Function to handle interface-specific requests
-  struct nc_server_reply *handleInterfaceRequest(struct nc_session *session,
-                                                 struct lyd_node *rpc) {
+  struct nc_server_reply *
+  handleInterfaceRequest(struct nc_session *session,
+                         [[maybe_unused]] struct lyd_node *rpc) {
     auto &logger = netd::shared::Logger::getInstance();
     logger.info("Handling interface request");
 
     try {
-      // Get all network interfaces from the system using base Ether interface
+      // Get all network interfaces from the system using FreeBSD interface
       // discovery
-      auto interfaces =
-          netd::shared::interface::base::Ether::getAllInterfaces();
+      auto interfaces = netd::freebsd::interface::Interface::getAllInterfaces();
       logger.info("Found " + std::to_string(interfaces.size()) + " interfaces");
 
       // Process each interface
@@ -99,7 +100,8 @@ namespace netd::server::netconf::handlers {
 
     } catch (const std::exception &e) {
       logger.error("Exception in interface handler: " + std::string(e.what()));
-      return nc_server_reply_err(nc_err(NC_ERR_OP_FAILED, e.what()));
+      return nc_server_reply_err(
+          nc_err(nc_session_get_ctx(session), NC_ERR_OP_FAILED, e.what()));
     }
   }
 

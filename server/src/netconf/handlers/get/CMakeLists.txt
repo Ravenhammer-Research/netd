@@ -12,6 +12,10 @@ add_library(netd_get_handlers STATIC ${GET_HANDLERS_SOURCES})
 target_link_libraries(netd_get_handlers
     yang
     netconf2
+    netd_shared
+    netd_freebsd
+    netd_get_request
+    netd_get_response
 )
 
 # Set include directories
