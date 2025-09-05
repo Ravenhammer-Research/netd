@@ -33,41 +33,37 @@
 #include <cstdint>
 #include <shared/include/address.hpp>
 
-namespace netd {
-namespace interface {
-namespace base {
+namespace netd::shared::interface::base {
 
-class Tunnel {
-public:
-    virtual ~Tunnel() = default;
+    class Tunnel {
+    public:
+        virtual ~Tunnel() = default;
 
-    // Tunnel endpoint management
-    virtual bool setLocalAddr(const std::shared_ptr<netd::Address>& localAddr);
-    virtual std::shared_ptr<netd::Address> getLocalAddr() const;
-    virtual bool setRemoteAddr(const std::shared_ptr<netd::Address>& remoteAddr);
-    virtual std::shared_ptr<netd::Address> getRemoteAddr() const;
+        // Tunnel endpoint management
+        virtual bool setLocalAddr(const std::shared_ptr<netd::shared::Address>& localAddr);
+        virtual std::shared_ptr<netd::shared::Address> getLocalAddr() const;
+        virtual bool setRemoteAddr(const std::shared_ptr<netd::shared::Address>& remoteAddr);
+        virtual std::shared_ptr<netd::shared::Address> getRemoteAddr() const;
 
-    // Tunnel-specific configuration
-    virtual bool setTunnelVRF(uint32_t vrfId);
-    virtual uint32_t getTunnelVRF() const;
-    virtual bool setTunnelMTU(uint16_t mtu);
-    virtual uint16_t getTunnelMTU() const;
+        // Tunnel-specific configuration
+        virtual bool setTunnelVRF(uint32_t vrfId);
+        virtual uint32_t getTunnelVRF() const;
+        virtual bool setTunnelMTU(uint16_t mtu);
+        virtual uint16_t getTunnelMTU() const;
 
-    // Tunnel state
-    virtual bool isTunnelEstablished() const;
-    virtual bool establishTunnel();
-    virtual bool teardownTunnel();
+        // Tunnel state
+        virtual bool isTunnelEstablished() const;
+        virtual bool establishTunnel();
+        virtual bool teardownTunnel();
 
-protected:
-    std::shared_ptr<netd::Address> localAddr_;
-    std::shared_ptr<netd::Address> remoteAddr_;
-    uint32_t tunnelVrfId_{0};
-    uint16_t tunnelMtu_{1500};
-    bool tunnelEstablished_{false};
-};
+    protected:
+        std::shared_ptr<netd::shared::Address> localAddr_;
+        std::shared_ptr<netd::shared::Address> remoteAddr_;
+        uint32_t tunnelVrfId_{0};
+        uint16_t tunnelMtu_{1500};
+        bool tunnelEstablished_{false};
+    };
 
-} // namespace base
-} // namespace interface
-} // namespace netd
+} // namespace netd::shared::interface::base
 
 #endif // NETD_INTERFACE_BASE_TUNNEL_HPP

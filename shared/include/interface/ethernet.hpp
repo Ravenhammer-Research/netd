@@ -28,35 +28,36 @@
 #ifndef NETD_INTERFACE_ETHERNET_HPP
 #define NETD_INTERFACE_ETHERNET_HPP
 
-#include <shared/include/ethernet.hpp>
+#include <shared/include/interface/base/ether.hpp>
 #include <shared/include/base/serialization.hpp>
 #include <string>
 #include <cstdint>
 #include <memory>
 
-namespace netd {
+namespace netd::shared::interface {
 
-class EthernetInterface : public Ethernet, public base::Serialization<EthernetInterface> {
+    class EthernetInterface : public netd::shared::interface::base::Ether, 
+        public netd::shared::base::Serialization<EthernetInterface> {
 public:
-    EthernetInterface();
-    explicit EthernetInterface(const std::string& name);
-    virtual ~EthernetInterface();
+        EthernetInterface();
+        explicit EthernetInterface(const std::string& name);
+        virtual ~EthernetInterface();
 
-    // Ethernet-specific configuration
-    virtual bool setDuplex(const std::string& duplex) { return false; }
-    virtual std::string getDuplex() const { return "auto"; }
-    virtual bool setSpeed(uint32_t speed) { return false; }
-    virtual uint32_t getSpeed() const { return 0; }
-    virtual bool setAutoNegotiation(bool enabled) { return false; }
-    virtual bool isAutoNegotiationEnabled() const { return true; }
-    virtual bool setFlowControl(bool enabled) { return false; }
-    virtual bool isFlowControlEnabled() const { return false; }
+        // Ethernet-specific configuration
+        virtual bool setDuplex(const std::string& duplex) { return false; }
+        virtual std::string getDuplex() const { return "auto"; }
+        virtual bool setSpeed(uint32_t speed) { return false; }
+        virtual uint32_t getSpeed() const { return 0; }
+        virtual bool setAutoNegotiation(bool enabled) { return false; }
+        virtual bool isAutoNegotiationEnabled() const { return true; }
+        virtual bool setFlowControl(bool enabled) { return false; }
+        virtual bool isFlowControlEnabled() const { return false; }
 
-    // YANG serialization
-    lyd_node* toYang(ly_ctx* ctx) const override;
-    static EthernetInterface fromYang(const ly_ctx* ctx, const lyd_node* node);
-};
+        // YANG serialization
+        lyd_node* toYang(ly_ctx* ctx) const override;
+        static EthernetInterface fromYang(const ly_ctx* ctx, const lyd_node* node);
+    };
 
-} // namespace netd
+} // namespace netd::shared::interface
 
 #endif // NETD_INTERFACE_ETHERNET_HPP

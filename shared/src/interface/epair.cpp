@@ -25,21 +25,23 @@
  * SUCH DAMAGE.
  */
 
-#include <shared/include/ethernet.hpp>
-#include <shared/include/base/serialization.hpp>
+#include <shared/include/interface/epair.hpp>
 #include <shared/include/yang.hpp>
 #include <libyang/tree_data.h>
 
-namespace netd {
+namespace netd::shared::interface {
 
-class EpairInterface : public Ethernet, public base::Serialization<EpairInterface> {
-public:
-    EpairInterface() = default;
-    virtual ~EpairInterface() = default;
+    EpairInterface::EpairInterface() {
+    }
 
-    // Implement Serialization methods
-    lyd_node* toYang(ly_ctx* ctx) const override {
+    EpairInterface::EpairInterface(const std::string& name) {
+        setName(name);
+    }
+
+    EpairInterface::~EpairInterface() {
+    }
         
+    lyd_node* EpairInterface::toYang(ly_ctx* ctx) const {
         if (!ctx) {
             return nullptr;
         }
@@ -82,11 +84,10 @@ public:
         
         return interfaces;
     }
-    
-    static EpairInterface fromYang(const ly_ctx* ctx, const lyd_node* node) {
+
+    EpairInterface EpairInterface::fromYang(const ly_ctx* ctx, const lyd_node* node) {
         // TODO: Implement YANG deserialization for epair interfaces
         return EpairInterface();
     }
-};
 
-} // namespace netd
+} // namespace netd::shared::interface

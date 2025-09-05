@@ -2,16 +2,15 @@
 
 # Add subdirectories
 add_subdirectory(interface)
+add_subdirectory(request)
+add_subdirectory(response)
 
 # Add source files to the shared library
 target_sources(netd_shared
     PRIVATE
         address.cpp
         exception.cpp
-        interface.cpp
         logger.cpp
-        request.cpp
-        response.cpp
         route.cpp
         vrf.cpp
         yang.cpp

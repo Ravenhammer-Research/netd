@@ -33,55 +33,48 @@
 #include <vector>
 #include <memory>
 
-namespace netd {
-namespace freebsd {
+namespace netd::freebsd {
 
-class VRF : public netd::VRFAbstract {
-public:
-    VRF();
-    explicit VRF(uint32_t fibId);
-    explicit VRF(const std::string& name, uint32_t fibId);
-    virtual ~VRF();
+    class VRF : public netd::shared::VRF {
+    public:
+        VRF();
+        explicit VRF(uint32_t fibId);
+        explicit VRF(const std::string& name, uint32_t fibId);
+        virtual ~VRF();
 
-    // VRF management
-    bool create();
-    bool destroy();
-    bool activate();
-    bool deactivate();
-    
-    // FreeBSD-specific operations
-    bool loadFromSystem();
-    bool applyToSystem() const;
-    
-    // FIB table management
-    bool setFibTable(uint32_t tableNumber);
-    uint32_t getFibTable() const;
-    bool addRoute(const std::string& destination, const std::string& gateway, const std::string& interface = "");
-    bool removeRoute(const std::string& destination, const std::string& gateway = "");
-    std::vector<std::string> getRoutes() const;
+        // VRF management
+        bool create();
+        bool destroy();
+        bool activate();
+        bool deactivate();
+        
+        // FreeBSD-specific operations
+        bool loadFromSystem();
+        bool applyToSystem() const;
+        
+        // FIB table management
+        bool setFibTable(uint32_t tableNumber);
+        uint32_t getFibTable() const;
+        bool addRoute(const std::string& destination, const std::string& gateway, const std::string& interface = "");
+        bool removeRoute(const std::string& destination, const std::string& gateway = "");
+        std::vector<std::string> getRoutes() const;
 
-    // Implement abstract methods from shared VRF
-    uint32_t getId() const override;
-    std::string getName() const override;
-    bool isActive() const override;
-    
-    // Conversion to shared VRF for serialization
-    operator const netd::VRF&() const;
+        // Conversion to shared VRF for serialization
+        operator const netd::shared::VRF&() const;
 
-private:
-    std::string name_;
-    uint32_t fibTable_;
-    bool active_;
-    
-    // Helper methods
-    bool createFibTable();
-    bool destroyFibTable();
-    bool setFibTableActive(bool active);
-    int getFibCount() const;
-    bool isFibValid(uint32_t fibId) const;
-};
+    private:
+        std::string name_;
+        uint32_t fibTable_;
+        bool active_;
+        
+        // Helper methods
+        bool createFibTable();
+        bool destroyFibTable();
+        bool setFibTableActive(bool active);
+        int getFibCount() const;
+        bool isFibValid(uint32_t fibId) const;
+    };
 
-} // namespace freebsd
-} // namespace netd
+} // namespace netd::freebsd
 
 #endif // NETD_FREEBSD_VRF_HPP

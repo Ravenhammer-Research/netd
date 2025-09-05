@@ -27,8 +27,8 @@
 
 #include <shared/include/exception.hpp>
 
-namespace netd {
+namespace netd::shared {
 
 // Exception classes are implemented inline in the header
 
-} // namespace netd
+} // namespace netd::shared

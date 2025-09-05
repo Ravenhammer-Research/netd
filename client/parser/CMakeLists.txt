@@ -1,21 +1,17 @@
 # Client parser CMakeLists.txt
 
-# For now, we'll use placeholder parser files
-# TODO: Implement proper Yacc/Lex processing
+# Include custom Yacc and Lex processing modules
+include(${CMAKE_SOURCE_DIR}/cmake/Yacc.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/Lex.cmake)
 
-# Create placeholder parser files
-file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/get.c "// Placeholder for get.c\n")
-file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/set.c "// Placeholder for set.c\n")
-file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/commit.c "// Placeholder for commit.c\n")
-file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/delete.c "// Placeholder for delete.c\n")
+# Process Yacc files to generate parsers
+add_yacc_source(netd_client get.y)
+add_yacc_source(netd_client set.y)
+add_yacc_source(netd_client commit.y)
+add_yacc_source(netd_client delete.y)
 
-# Add generated files to target sources
-target_sources(netd_client PRIVATE
-    ${CMAKE_CURRENT_BINARY_DIR}/get.c
-    ${CMAKE_CURRENT_BINARY_DIR}/set.c
-    ${CMAKE_CURRENT_BINARY_DIR}/commit.c
-    ${CMAKE_CURRENT_BINARY_DIR}/delete.c
-)
-
-# Set include directories to find generated headers
-target_include_directories(netd_client PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+# Process Lex files to generate lexers
+add_lex_source(netd_client get.l)
+add_lex_source(netd_client set.l)
+add_lex_source(netd_client commit.l)
+add_lex_source(netd_client delete.l)

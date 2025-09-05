@@ -7,4 +7,5 @@ target_sources(netd_client
         netconf.cpp
         terminal.cpp
         table.cpp
+        parser.cpp
 )

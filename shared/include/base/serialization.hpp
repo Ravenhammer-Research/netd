@@ -31,20 +31,18 @@
 #include <string>
 #include <libyang/libyang.h>
 
-namespace netd {
-namespace base {
+namespace netd::shared::base {
 
-template<typename T>
-class Serialization {
-public:
-    virtual ~Serialization() = default;
+	template<typename T>
+	class Serialization {
+	public:
+		virtual ~Serialization() = default;
 
-    // YANG serialization
-    virtual lyd_node* toYang(ly_ctx* ctx) const = 0;
-    static T fromYang(const ly_ctx* ctx, const lyd_node* node);
-};
+		// YANG serialization
+		virtual lyd_node* toYang(ly_ctx* ctx) const = 0;
+		static T fromYang(const ly_ctx* ctx, const lyd_node* node);
+	};
 
-} // namespace base
-} // namespace netd
+} // namespace netd::shared::base
 
 #endif // NETD_BASE_SERIALIZATION_HPP

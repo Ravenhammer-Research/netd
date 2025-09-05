@@ -31,18 +31,18 @@
 #include <stdexcept>
 #include <string>
 
-namespace netd {
+namespace netd::shared {
 
-class NetdException : public std::runtime_error {
+    class NetdException : public std::runtime_error {
 public:
-    explicit NetdException(const std::string& message) : std::runtime_error(message) {}
-};
+        explicit NetdException(const std::string& message) : std::runtime_error(message) {}
+    };
 
-class NotImplementedError : public NetdException {
+    class NotImplementedError : public NetdException {
 public:
-    explicit NotImplementedError(const std::string& message) : NetdException(message) {}
-};
+        explicit NotImplementedError(const std::string& message) : NetdException(message) {}
+    };
 
-} // namespace netd
+} // namespace netd::shared
 
 #endif // NETD_EXCEPTION_HPP

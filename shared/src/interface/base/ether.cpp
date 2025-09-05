@@ -29,110 +29,106 @@
 #include <shared/include/yang.hpp>
 #include <algorithm>
 
-namespace netd {
-namespace interface {
-namespace base {
+namespace netd::shared::interface::base {
 
-// Provide implementations for pure virtual methods to avoid linker errors
-// These are placeholder implementations that should be overridden by derived classes
+    // Provide implementations for pure virtual methods to avoid linker errors
+    // These are placeholder implementations that should be overridden by derived classes
 
-bool Ether::addAddress(const std::shared_ptr<netd::Address>& address) {
-    if (address && address->isValid()) {
-        addresses_.push_back(address);
+    bool Ether::addAddress(const std::shared_ptr<netd::shared::Address>& address) {
+        if (address && address->isValid()) {
+            addresses_.push_back(address);
+            return true;
+        }
+        return false;
+    }
+
+    bool Ether::removeAddress(const std::shared_ptr<netd::shared::Address>& address) {
+        auto it = std::find(addresses_.begin(), addresses_.end(), address);
+        if (it != addresses_.end()) {
+            addresses_.erase(it);
+            return true;
+        }
+        return false;
+    }
+
+    std::vector<std::shared_ptr<netd::shared::Address>> Ether::getAddresses() const {
+        return addresses_;
+    }
+
+    bool Ether::addGroup(const std::string& group) {
+        if (!group.empty()) {
+            groups_.push_back(group);
+            return true;
+        }
+        return false;
+    }
+
+    bool Ether::removeGroup(const std::string& group) {
+        auto it = std::find(groups_.begin(), groups_.end(), group);
+        if (it != groups_.end()) {
+            groups_.erase(it);
+            return true;
+        }
+        return false;
+    }
+
+    std::vector<std::string> Ether::getGroups() const {
+        return groups_;
+    }
+
+    bool Ether::setMTU(uint16_t mtu) {
+        if (mtu >= 68 && mtu <= 9000) { // Reasonable MTU range
+            mtu_ = mtu;
+            return true;
+        }
+        return false;
+    }
+
+    uint16_t Ether::getMTU() const {
+        return mtu_;
+    }
+
+    bool Ether::setFlags(uint32_t flags) {
+        flags_ = flags;
         return true;
     }
-    return false;
-}
 
-bool Ether::removeAddress(const std::shared_ptr<netd::Address>& address) {
-    auto it = std::find(addresses_.begin(), addresses_.end(), address);
-    if (it != addresses_.end()) {
-        addresses_.erase(it);
+    uint32_t Ether::getFlags() const {
+        return flags_;
+    }
+
+    std::string Ether::getName() const {
+        return name_;
+    }
+
+    void Ether::setName(const std::string& name) {
+        name_ = name;
+    }
+
+    bool Ether::isUp() const {
+        return up_;
+    }
+
+    bool Ether::up() {
+        up_ = true;
         return true;
     }
-    return false;
-}
 
-std::vector<std::shared_ptr<netd::Address>> Ether::getAddresses() const {
-    return addresses_;
-}
-
-bool Ether::addGroup(const std::string& group) {
-    if (!group.empty()) {
-        groups_.push_back(group);
+    bool Ether::down() {
+        up_ = false;
         return true;
     }
-    return false;
-}
 
-bool Ether::removeGroup(const std::string& group) {
-    auto it = std::find(groups_.begin(), groups_.end(), group);
-    if (it != groups_.end()) {
-        groups_.erase(it);
+    bool Ether::setVRF(uint32_t vrfId) {
+        vrfId_ = vrfId;
         return true;
     }
-    return false;
-}
 
-std::vector<std::string> Ether::getGroups() const {
-    return groups_;
-}
-
-bool Ether::setMTU(uint16_t mtu) {
-    if (mtu >= 68 && mtu <= 9000) { // Reasonable MTU range
-        mtu_ = mtu;
-        return true;
+    uint32_t Ether::getVRF() const {
+        return vrfId_;
     }
-    return false;
-}
 
-uint16_t Ether::getMTU() const {
-    return mtu_;
-}
+    // YANG serialization methods - placeholder implementation
+    // These will be implemented when the YANG schemas are properly integrated
 
-bool Ether::setFlags(uint32_t flags) {
-    flags_ = flags;
-    return true;
-}
-
-uint32_t Ether::getFlags() const {
-    return flags_;
-}
-
-std::string Ether::getName() const {
-    return name_;
-}
-
-void Ether::setName(const std::string& name) {
-    name_ = name;
-}
-
-bool Ether::isUp() const {
-    return up_;
-}
-
-bool Ether::up() {
-    up_ = true;
-    return true;
-}
-
-bool Ether::down() {
-    up_ = false;
-    return true;
-}
-
-bool Ether::setVRF(uint32_t vrfId) {
-    vrfId_ = vrfId;
-    return true;
-}
-
-uint32_t Ether::getVRF() const {
-    return vrfId_;
-}
-
-// YANG serialization methods - placeholder implementation
-// These will be implemented when the YANG schemas are properly integrated
-
-} // namespace base
-} // namespace interface
-} // namespace netd
+} // namespace netd::interface::base

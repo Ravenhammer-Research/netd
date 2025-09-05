@@ -33,55 +33,47 @@
 #include <string>
 #include <memory>
 
-namespace netd {
-namespace freebsd {
+namespace netd::freebsd {
 
-class Route : public netd::Route, public netd::base::Serialization<Route> {
-public:
-    Route();
-    explicit Route(const std::string& destination, const std::string& gateway = "", const std::string& interface = "");
-    virtual ~Route();
+    class Route : public netd::shared::Route {
+    public:
+        Route();
+        explicit Route(const std::string& destination, const std::string& gateway = "", const std::string& interface = "");
+        virtual ~Route();
 
-    // Route management
-    bool add();
-    bool remove();
-    bool modify();
-    
-    // FreeBSD-specific operations
-    bool loadFromSystem();
-    bool applyToSystem() const;
-    
-    // Route properties
-    bool setMetric(uint32_t metric);
-    uint32_t getMetric() const;
-    bool setFlags(uint32_t flags);
-    uint32_t getFlags() const;
-    bool setFibTable(uint32_t fibTable);
-    uint32_t getFibTable() const;
+        // Route management
+        bool add();
+        bool remove();
+        bool modify();
+        
+        // FreeBSD-specific operations
+        bool loadFromSystem();
+        bool applyToSystem() const;
+        
+        // Route properties
+        bool setMetric(uint32_t metric);
+        uint32_t getMetric() const;
+        bool setFlags(uint32_t flags);
+        uint32_t getFlags() const;
+        bool setFibTable(uint32_t fibTable);
+        uint32_t getFibTable() const;
 
-    // Implement abstract methods from shared Route
-    std::shared_ptr<netd::Address> getDestination() const override;
-    std::shared_ptr<netd::Address> getGateway() const override;
-    std::string getInterface() const override;
-    uint32_t getVRF() const override;
-    
-    // Conversion to shared route for serialization
-    operator const netd::Route&() const;
+        // Conversion to shared route for serialization
+        operator const netd::shared::Route&() const;
 
-private:
-    std::string destination_;
-    std::string gateway_;
-    std::string interface_;
-    uint32_t metric_;
-    uint32_t flags_;
-    uint32_t fibTable_;
-    
-    // Helper methods
-    bool parseRouteString(const std::string& routeStr);
-    std::string formatRouteString() const;
-};
+    private:
+        std::string destination_;
+        std::string gateway_;
+        std::string interface_;
+        uint32_t metric_;
+        uint32_t flags_;
+        uint32_t fibTable_;
+        
+        // Helper methods
+        bool parseRouteString(const std::string& routeStr);
+        std::string formatRouteString() const;
+    };
 
-} // namespace freebsd
-} // namespace netd
+} // namespace netd::freebsd
 
 #endif // NETD_FREEBSD_ROUTE_HPP

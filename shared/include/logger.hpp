@@ -32,38 +32,38 @@
 #include <functional>
 #include <memory>
 
-namespace netd {
+namespace netd::shared {
 
-enum class LogLevel {
-    DEBUG,
-    INFO,
-    WARNING,
-    ERROR
-};
+    enum class LogLevel {
+        DEBUG,
+        INFO,
+        WARNING,
+        ERROR
+    };
 
-class Logger {
+    class Logger {
 public:
-    using Callback = std::function<void(LogLevel, const std::string&)>;
+        using Callback = std::function<void(LogLevel, const std::string&)>;
 
-    static Logger& getInstance();
-    
-    void setCallback(Callback callback);
-    void log(LogLevel level, const std::string& message);
-    
-    void debug(const std::string& message);
-    void info(const std::string& message);
-    void warning(const std::string& message);
-    void error(const std::string& message);
+        static Logger& getInstance();
+        
+        void setCallback(Callback callback);
+        void log(LogLevel level, const std::string& message);
+        
+        void debug(const std::string& message);
+        void info(const std::string& message);
+        void warning(const std::string& message);
+        void error(const std::string& message);
 
 private:
-    Logger() = default;
-    ~Logger() = default;
-    Logger(const Logger&) = delete;
-    Logger& operator=(const Logger&) = delete;
+        Logger() = default;
+        ~Logger() = default;
+        Logger(const Logger&) = delete;
+        Logger& operator=(const Logger&) = delete;
 
-    Callback callback_;
-};
+        Callback callback_;
+    };
 
-} // namespace netd
+} // namespace netd::shared
 
 #endif // NETD_LOGGER_HPP

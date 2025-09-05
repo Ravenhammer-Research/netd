@@ -34,25 +34,26 @@
 #include <cstdint>
 #include <memory>
 
-namespace netd {
+namespace netd::shared::interface {
 
-class TapInterface : public interface::base::Ether, public base::Serialization<TapInterface> {
-public:
-    TapInterface();
-    explicit TapInterface(const std::string& name);
-    virtual ~TapInterface();
+    class TapInterface : public netd::shared::interface::base::Ether, 
+        public netd::shared::base::Serialization<TapInterface> {
+    public:
+        TapInterface();
+        explicit TapInterface(const std::string& name);
+        virtual ~TapInterface();
 
-    // TAP-specific configuration
-    virtual bool setTapUnit(int unit) { return false; }
-    virtual int getTapUnit() const { return -1; }
-    virtual bool setTapMode(const std::string& mode) { return false; }
-    virtual std::string getTapMode() const { return "tap"; }
+        // TAP-specific configuration
+        virtual bool setTapUnit(int unit) { return false; }
+        virtual int getTapUnit() const { return -1; }
+        virtual bool setTapMode(const std::string& mode) { return false; }
+        virtual std::string getTapMode() const { return "tap"; }
 
-    // YANG serialization
-    lyd_node* toYang(ly_ctx* ctx) const override;
-    static TapInterface fromYang(const ly_ctx* ctx, const lyd_node* node);
-};
+        // YANG serialization
+        lyd_node* toYang(ly_ctx* ctx) const override;
+        static TapInterface fromYang(const ly_ctx* ctx, const lyd_node* node);
+    };
 
-} // namespace netd
+} // namespace netd::shared::interface
 
 #endif // NETD_INTERFACE_TAP_HPP

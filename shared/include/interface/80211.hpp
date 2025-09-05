@@ -28,23 +28,24 @@
 #ifndef NETD_INTERFACE_80211_HPP
 #define NETD_INTERFACE_80211_HPP
 
-#include <shared/include/ethernet.hpp>
+#include <shared/include/interface/base/ether.hpp>
 #include <shared/include/base/serialization.hpp>
 
-namespace netd {
+namespace netd::shared::interface {
 
-class Ieee80211Interface : public Ethernet, public base::Serialization<Ieee80211Interface> {
-public:
-    Ieee80211Interface() = default;
-    virtual ~Ieee80211Interface() = default;
+    class Ieee80211Interface : public netd::shared::interface::base::Ether,
+        public netd::shared::base::Serialization<Ieee80211Interface> {
+    public:
+        Ieee80211Interface() = default;
+        virtual ~Ieee80211Interface() = default;
 
-    // Implement Serialization methods
-    lyd_node* toYang(ly_ctx* ctx) const override;
-    static Ieee80211Interface fromYang(const ly_ctx* ctx, const lyd_node* node);
+        // Implement Serialization methods
+        lyd_node* toYang(ly_ctx* ctx) const override;
+        static Ieee80211Interface fromYang(const ly_ctx* ctx, const lyd_node* node);
 
-    // Wireless-specific functionality can be added here
-};
+        // Wireless-specific functionality can be added here
+    };
 
-} // namespace netd
+} // namespace netd::shared::interface
 
 #endif // NETD_INTERFACE_80211_HPP

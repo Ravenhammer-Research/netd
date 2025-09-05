@@ -32,75 +32,67 @@
 #include <shared/include/interface/base/master.hpp>
 #include <shared/include/interface/base/ether.hpp>
 #include <shared/include/base/serialization.hpp>
-#include <shared/include/interface.hpp>
 #include <string>
 #include <vector>
 #include <memory>
 
-namespace netd {
-namespace freebsd {
-namespace interface {
+namespace netd::freebsd::interface {
 
-class BridgeInterface : public netd::BridgeInterface,
-                       public netd::interface::base::Master,
-                       public netd::interface::base::Ether,
-                       public netd::base::Serialization<BridgeInterface> {
-public:
-    BridgeInterface();
-    explicit BridgeInterface(const std::string& name);
-    virtual ~BridgeInterface();
+    class BridgeInterface : public netd::shared::interface::BridgeInterface {
+    public:
+        BridgeInterface();
+        explicit BridgeInterface(const std::string& name);
+        virtual ~BridgeInterface();
 
-    // Interface name
-    std::string getName() const { return name_; }
-    
-    // Bridge-specific operations
-    bool addMember(const std::string& memberName);
-    bool removeMember(const std::string& memberName);
-    std::vector<std::string> getMembers() const;
-    
-    // Bridge configuration
-    bool setStpEnabled(bool enabled);
-    bool isStpEnabled() const;
-    bool setMaxAge(uint16_t maxAge);
-    uint16_t getMaxAge() const;
-    bool setHelloTime(uint16_t helloTime);
-    uint16_t getHelloTime() const;
-    bool setForwardDelay(uint16_t forwardDelay);
-    uint16_t getForwardDelay() const;
+        // Interface name
+        std::string getName() const { return name_; }
+        
+        // Bridge-specific operations
+        bool addMember(const std::string& memberName);
+        bool removeMember(const std::string& memberName);
+        std::vector<std::string> getMembers() const;
+        
+        // Bridge configuration
+        bool setStpEnabled(bool enabled);
+        bool isStpEnabled() const;
+        bool setMaxAge(uint16_t maxAge);
+        uint16_t getMaxAge() const;
+        bool setHelloTime(uint16_t helloTime);
+        uint16_t getHelloTime() const;
+        bool setForwardDelay(uint16_t forwardDelay);
+        uint16_t getForwardDelay() const;
 
-    // FreeBSD-specific operations
-    bool createInterface();
-    bool destroyInterface();
-    bool loadFromSystem();
-    bool applyToSystem() const;
+        // FreeBSD-specific operations
+        bool createInterface();
+        bool destroyInterface();
+        bool loadFromSystem();
+        bool applyToSystem() const;
 
-    // Conversion to shared interface for serialization
-    operator netd::BridgeInterface() const;
+        // Conversion to shared interface for serialization
+        operator netd::shared::interface::BridgeInterface() const;
 
-private:
-    // Interface name
-    std::string name_;
-    
-    // FreeBSD bridge-specific members
-    bool stpEnabled_;
-    uint16_t maxAge_;
-    uint16_t helloTime_;
-    uint16_t forwardDelay_;
-    std::vector<std::string> members_;
-    
-    // FreeBSD system interface
-    int bridgeSocket_;
-    
-    // Helper methods
-    bool openBridgeSocket();
-    void closeBridgeSocket();
-    bool getBridgeInfo();
-    bool setBridgeInfo() const;
-    bool openBridgeSocket() const;
-};
+    private:
+        // Interface name
+        std::string name_;
+        
+        // FreeBSD bridge-specific members
+        bool stpEnabled_;
+        uint16_t maxAge_;
+        uint16_t helloTime_;
+        uint16_t forwardDelay_;
+        std::vector<std::string> members_;
+        
+        // FreeBSD system interface
+        int bridgeSocket_;
+        
+        // Helper methods
+        bool openBridgeSocket();
+        void closeBridgeSocket();
+        bool getBridgeInfo();
+        bool setBridgeInfo() const;
+        bool openBridgeSocket() const;
+    };
 
-} // namespace interface
-} // namespace freebsd
-} // namespace netd
+} // namespace netd::freebsd::interface
 
 #endif // NETD_FREEBSD_INTERFACE_BRIDGE_HPP

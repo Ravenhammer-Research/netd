@@ -35,27 +35,29 @@
 #include <cstdint>
 #include <memory>
 
-namespace netd {
+namespace netd::shared::interface {
 
-class PppInterface : public interface::base::Ether, public interface::base::Tunnel, public base::Serialization<PppInterface> {
-public:
-    PppInterface();
-    explicit PppInterface(const std::string& name);
-    virtual ~PppInterface();
+    class PppInterface : public netd::shared::interface::base::Ether, 
+        public netd::shared::interface::base::Tunnel, 
+        public netd::shared::base::Serialization<PppInterface> {
+    public:
+        PppInterface();
+        explicit PppInterface(const std::string& name);
+        virtual ~PppInterface();
 
-    // PPP-specific configuration
-    virtual bool setPppUnit(int unit) { return false; }
-    virtual int getPppUnit() const { return -1; }
-    virtual bool setPppMode(const std::string& mode) { return false; }
-    virtual std::string getPppMode() const { return "ppp"; }
-    virtual bool setPppProtocol(const std::string& protocol) { return false; }
-    virtual std::string getPppProtocol() const { return "ppp"; }
+        // PPP-specific configuration
+        virtual bool setPppUnit(int unit) { return false; }
+        virtual int getPppUnit() const { return -1; }
+        virtual bool setPppMode(const std::string& mode) { return false; }
+        virtual std::string getPppMode() const { return "ppp"; }
+        virtual bool setPppProtocol(const std::string& protocol) { return false; }
+        virtual std::string getPppProtocol() const { return "ppp"; }
 
-    // YANG serialization
-    lyd_node* toYang(ly_ctx* ctx) const override;
-    static PppInterface fromYang(const ly_ctx* ctx, const lyd_node* node);
-};
+        // YANG serialization
+        lyd_node* toYang(ly_ctx* ctx) const override;
+        static PppInterface fromYang(const ly_ctx* ctx, const lyd_node* node);
+    };
 
-} // namespace netd
+} // namespace netd::shared::interface
 
 #endif // NETD_INTERFACE_PPP_HPP

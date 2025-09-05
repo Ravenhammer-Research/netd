@@ -37,217 +37,213 @@
 #include <cstring>
 #include <cstdlib>
 
-namespace netd {
-namespace freebsd {
-namespace interface {
+namespace netd::freebsd::interface {
 
-VxlanInterface::VxlanInterface()
-    : netd::VxlanInterface(),
-      name_(""),
-      vni_(0),
-      localEndpoint_(""),
-      remoteEndpoint_(""),
-      udpPort_(4789),
-      socket_(-1) {
-}
-
-VxlanInterface::VxlanInterface(const std::string& name)
-    : netd::VxlanInterface(),
-      name_(name),
-      vni_(0),
-      localEndpoint_(""),
-      remoteEndpoint_(""),
-      udpPort_(4789),
-      socket_(-1) {
-}
-
-VxlanInterface::~VxlanInterface() {
-    closeSocket();
-}
-
-bool VxlanInterface::createInterface() {
-    auto& logger = Logger::getInstance();
-    
-    if (!openSocket()) {
-        logger.error("Failed to open socket for creating VXLAN interface");
-        return false;
+    VxlanInterface::VxlanInterface()
+        : netd::shared::interface::VxlanInterface(),
+        name_(""),
+        vni_(0),
+        localEndpoint_(""),
+        remoteEndpoint_(""),
+        udpPort_(4789),
+        socket_(-1) {
     }
-    
-    // Use SIOCIFCREATE to create VXLAN interface
-    struct ifreq ifr;
-    std::memset(&ifr, 0, sizeof(ifr));
-    std::strncpy(ifr.ifr_name, name_.c_str(), IFNAMSIZ - 1);
-    
-    if (ioctl(socket_, SIOCIFCREATE, &ifr) < 0) {
-        logger.error("Failed to create VXLAN interface " + name_ + ": " + std::strerror(errno));
+
+    VxlanInterface::VxlanInterface(const std::string& name)
+        : netd::shared::interface::VxlanInterface(),
+        name_(name),
+        vni_(0),
+        localEndpoint_(""),
+        remoteEndpoint_(""),
+        udpPort_(4789),
+        socket_(-1) {
+    }
+
+    VxlanInterface::~VxlanInterface() {
         closeSocket();
-        return false;
     }
-    
-    logger.info("Created VXLAN interface " + name_);
-    return true;
-}
 
-bool VxlanInterface::destroyInterface() {
-    auto& logger = Logger::getInstance();
-    
-    if (!openSocket()) {
-        logger.error("Failed to open socket for destroying VXLAN interface");
-        return false;
+    bool VxlanInterface::createInterface() {
+        auto& logger = shared::Logger::getInstance();
+        
+        if (!openSocket()) {
+            logger.error("Failed to open socket for creating VXLAN interface");
+            return false;
+        }
+        
+        // Use SIOCIFCREATE to create VXLAN interface
+        struct ifreq ifr;
+        std::memset(&ifr, 0, sizeof(ifr));
+        std::strncpy(ifr.ifr_name, name_.c_str(), IFNAMSIZ - 1);
+        
+        if (ioctl(socket_, SIOCIFCREATE, &ifr) < 0) {
+            logger.error("Failed to create VXLAN interface " + name_ + ": " + std::strerror(errno));
+            closeSocket();
+            return false;
+        }
+        
+        logger.info("Created VXLAN interface " + name_);
+        return true;
     }
-    
-    // Use SIOCIFDESTROY to destroy VXLAN interface
-    struct ifreq ifr;
-    std::memset(&ifr, 0, sizeof(ifr));
-    std::strncpy(ifr.ifr_name, name_.c_str(), IFNAMSIZ - 1);
-    
-    if (ioctl(socket_, SIOCIFDESTROY, &ifr) < 0) {
-        logger.error("Failed to destroy VXLAN interface " + name_ + ": " + std::strerror(errno));
+
+    bool VxlanInterface::destroyInterface() {
+        auto& logger = shared::Logger::getInstance();
+        
+        if (!openSocket()) {
+            logger.error("Failed to open socket for destroying VXLAN interface");
+            return false;
+        }
+        
+        // Use SIOCIFDESTROY to destroy VXLAN interface
+        struct ifreq ifr;
+        std::memset(&ifr, 0, sizeof(ifr));
+        std::strncpy(ifr.ifr_name, name_.c_str(), IFNAMSIZ - 1);
+        
+        if (ioctl(socket_, SIOCIFDESTROY, &ifr) < 0) {
+            logger.error("Failed to destroy VXLAN interface " + name_ + ": " + std::strerror(errno));
+            closeSocket();
+            return false;
+        }
+        
+        logger.info("Destroyed VXLAN interface " + name_);
+        return true;
+    }
+
+    bool VxlanInterface::loadFromSystem() {
+        auto& logger = shared::Logger::getInstance();
+        
+        if (!openSocket()) {
+            return false;
+        }
+        
+        if (!getVxlanInfo()) {
+            closeSocket();
+            return false;
+        }
+        
         closeSocket();
-        return false;
+        logger.info("Loaded VXLAN interface information from system: " + name_);
+        return true;
     }
-    
-    logger.info("Destroyed VXLAN interface " + name_);
-    return true;
-}
 
-bool VxlanInterface::loadFromSystem() {
-    auto& logger = Logger::getInstance();
-    
-    if (!openSocket()) {
-        return false;
-    }
-    
-    if (!getVxlanInfo()) {
+    bool VxlanInterface::applyToSystem() {
+        auto& logger = shared::Logger::getInstance();
+        
+        if (!openSocket()) {
+            return false;
+        }
+        
+        if (!setVxlanInfo()) {
+            closeSocket();
+            return false;
+        }
+        
         closeSocket();
-        return false;
-    }
-    
-    closeSocket();
-    logger.info("Loaded VXLAN interface information from system: " + name_);
-    return true;
-}
-
-bool VxlanInterface::applyToSystem() {
-    auto& logger = Logger::getInstance();
-    
-    if (!openSocket()) {
-        return false;
-    }
-    
-    if (!setVxlanInfo()) {
-        closeSocket();
-        return false;
-    }
-    
-    closeSocket();
-    logger.info("Applied VXLAN interface configuration to system: " + name_);
-    return true;
-}
-
-bool VxlanInterface::setVni(uint32_t vni) {
-    vni_ = vni;
-    return true;
-}
-
-uint32_t VxlanInterface::getVni() const {
-    return vni_;
-}
-
-bool VxlanInterface::setLocalEndpoint(const std::string& endpoint) {
-    localEndpoint_ = endpoint;
-    return true;
-}
-
-std::string VxlanInterface::getLocalEndpoint() const {
-    return localEndpoint_;
-}
-
-bool VxlanInterface::setRemoteEndpoint(const std::string& endpoint) {
-    remoteEndpoint_ = endpoint;
-    return true;
-}
-
-std::string VxlanInterface::getRemoteEndpoint() const {
-    return remoteEndpoint_;
-}
-
-bool VxlanInterface::setUdpPort(uint16_t port) {
-    udpPort_ = port;
-    return true;
-}
-
-uint16_t VxlanInterface::getUdpPort() const {
-    return udpPort_;
-}
-
-VxlanInterface::operator netd::VxlanInterface() const {
-    // Cast to shared interface - we inherit from it so this is safe
-    return static_cast<const netd::VxlanInterface&>(*this);
-}
-
-bool VxlanInterface::openSocket() {
-    if (socket_ >= 0) {
-        return true; // Already open
+        logger.info("Applied VXLAN interface configuration to system: " + name_);
+        return true;
     }
 
-    socket_ = socket(AF_INET, SOCK_DGRAM, 0);
-    if (socket_ < 0) {
-        return false;
+    bool VxlanInterface::setVni(uint32_t vni) {
+        vni_ = vni;
+        return true;
     }
 
-    return true;
-}
-
-void VxlanInterface::closeSocket() {
-    if (socket_ >= 0) {
-        close(socket_);
-        socket_ = -1;
-    }
-}
-
-bool VxlanInterface::getVxlanInfo() {
-    struct ifreq ifr;
-    std::memset(&ifr, 0, sizeof(ifr));
-    std::strncpy(ifr.ifr_name, name_.c_str(), IFNAMSIZ - 1);
-
-    // Get interface flags
-    if (ioctl(socket_, SIOCGIFFLAGS, &ifr) < 0) {
-        return false;
+    uint32_t VxlanInterface::getVni() const {
+        return vni_;
     }
 
-    // Get interface MTU
-    if (ioctl(socket_, SIOCGIFMTU, &ifr) < 0) {
-        return false;
+    bool VxlanInterface::setLocalEndpoint(const std::string& endpoint) {
+        localEndpoint_ = endpoint;
+        return true;
     }
 
-    // Get VXLAN-specific information
-    // TODO: Use VXLAN-specific ioctls to get VXLAN details
-
-    return true;
-}
-
-bool VxlanInterface::setVxlanInfo() const {
-    struct ifreq ifr;
-    std::memset(&ifr, 0, sizeof(ifr));
-    std::strncpy(ifr.ifr_name, name_.c_str(), IFNAMSIZ - 1);
-
-    // Set interface flags
-    if (ioctl(socket_, SIOCSIFFLAGS, &ifr) < 0) {
-        return false;
+    std::string VxlanInterface::getLocalEndpoint() const {
+        return localEndpoint_;
     }
 
-    // Set interface MTU
-    if (ioctl(socket_, SIOCSIFMTU, &ifr) < 0) {
-        return false;
+    bool VxlanInterface::setRemoteEndpoint(const std::string& endpoint) {
+        remoteEndpoint_ = endpoint;
+        return true;
     }
 
-    // Set VXLAN-specific information
-    // TODO: Use VXLAN-specific ioctls to set VXLAN details
+    std::string VxlanInterface::getRemoteEndpoint() const {
+        return remoteEndpoint_;
+    }
 
-    return true;
-}
+    bool VxlanInterface::setUdpPort(uint16_t port) {
+        udpPort_ = port;
+        return true;
+    }
 
-} // namespace interface
-} // namespace freebsd
-} // namespace netd
+    uint16_t VxlanInterface::getUdpPort() const {
+        return udpPort_;
+    }
+
+    VxlanInterface::operator netd::shared::interface::VxlanInterface() const {
+        // Cast to shared interface - we inherit from it so this is safe
+        return static_cast<const netd::shared::interface::VxlanInterface&>(*this);
+    }
+
+    bool VxlanInterface::openSocket() {
+        if (socket_ >= 0) {
+            return true; // Already open
+        }
+
+        socket_ = socket(AF_INET, SOCK_DGRAM, 0);
+        if (socket_ < 0) {
+            return false;
+        }
+
+        return true;
+    }
+
+    void VxlanInterface::closeSocket() {
+        if (socket_ >= 0) {
+            close(socket_);
+            socket_ = -1;
+        }
+    }
+
+    bool VxlanInterface::getVxlanInfo() {
+        struct ifreq ifr;
+        std::memset(&ifr, 0, sizeof(ifr));
+        std::strncpy(ifr.ifr_name, name_.c_str(), IFNAMSIZ - 1);
+
+        // Get interface flags
+        if (ioctl(socket_, SIOCGIFFLAGS, &ifr) < 0) {
+            return false;
+        }
+
+        // Get interface MTU
+        if (ioctl(socket_, SIOCGIFMTU, &ifr) < 0) {
+            return false;
+        }
+
+        // Get VXLAN-specific information
+        // TODO: Use VXLAN-specific ioctls to get VXLAN details
+
+        return true;
+    }
+
+    bool VxlanInterface::setVxlanInfo() const {
+        struct ifreq ifr;
+        std::memset(&ifr, 0, sizeof(ifr));
+        std::strncpy(ifr.ifr_name, name_.c_str(), IFNAMSIZ - 1);
+
+        // Set interface flags
+        if (ioctl(socket_, SIOCSIFFLAGS, &ifr) < 0) {
+            return false;
+        }
+
+        // Set interface MTU
+        if (ioctl(socket_, SIOCSIFMTU, &ifr) < 0) {
+            return false;
+        }
+
+        // Set VXLAN-specific information
+        // TODO: Use VXLAN-specific ioctls to set VXLAN details
+
+        return true;
+    }
+
+} // namespace netd::freebsd::interface

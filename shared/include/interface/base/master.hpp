@@ -33,47 +33,43 @@
 #include <memory>
 #include <cstdint>
 
-namespace netd {
-namespace interface {
-namespace base {
+namespace netd::shared::interface::base {
 
-class Master {
-public:
-    virtual ~Master() = default;
+    class Master {
+    public:
+        virtual ~Master() = default;
 
-    // Slave interface management
-    virtual bool addSlave(const std::string& slaveName, uint32_t priority = 0);
-    virtual bool removeSlave(const std::string& slaveName);
-    virtual std::vector<std::string> getSlaves() const;
-    virtual bool hasSlave(const std::string& slaveName) const;
+        // Slave interface management
+        virtual bool addSlave(const std::string& slaveName, uint32_t priority = 0);
+        virtual bool removeSlave(const std::string& slaveName);
+        virtual std::vector<std::string> getSlaves() const;
+        virtual bool hasSlave(const std::string& slaveName) const;
 
-    // Slave configuration
-    virtual bool setSlavePriority(const std::string& slaveName, uint32_t priority);
-    virtual uint32_t getSlavePriority(const std::string& slaveName) const;
-    virtual bool setSlaveEnabled(const std::string& slaveName, bool enabled);
-    virtual bool isSlaveEnabled(const std::string& slaveName) const;
+        // Slave configuration
+        virtual bool setSlavePriority(const std::string& slaveName, uint32_t priority);
+        virtual uint32_t getSlavePriority(const std::string& slaveName) const;
+        virtual bool setSlaveEnabled(const std::string& slaveName, bool enabled);
+        virtual bool isSlaveEnabled(const std::string& slaveName) const;
 
-    // Master interface state
-    virtual bool isMaster() const;
-    virtual uint32_t getSlaveCount() const;
-    virtual bool validateSlaveConfiguration() const;
+        // Master interface state
+        virtual bool isMaster() const;
+        virtual uint32_t getSlaveCount() const;
+        virtual bool validateSlaveConfiguration() const;
 
-protected:
-    struct SlaveInfo {
-        std::string name;
-        uint32_t priority{0};
-        bool enabled{true};
-        
-        SlaveInfo(const std::string& n, uint32_t p = 0, bool e = true)
-            : name(n), priority(p), enabled(e) {}
+    protected:
+        struct SlaveInfo {
+            std::string name;
+            uint32_t priority{0};
+            bool enabled{true};
+            
+            SlaveInfo(const std::string& n, uint32_t p = 0, bool e = true)
+                : name(n), priority(p), enabled(e) {}
+        };
+
+        std::vector<SlaveInfo> slaves_;
+        bool isMaster_{true};
     };
 
-    std::vector<SlaveInfo> slaves_;
-    bool isMaster_{true};
-};
-
-} // namespace base
-} // namespace interface
-} // namespace netd
+} // namespace netd::shared::interface::base
 
 #endif // NETD_INTERFACE_BASE_MASTER_HPP

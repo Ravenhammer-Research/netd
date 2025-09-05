@@ -29,21 +29,23 @@
 #define NETD_CLIENT_NETCONF_HPP
 
 #include <string>
-#include <shared/include/response.hpp>
+#include <shared/include/request/config.hpp>
+#include <shared/include/request/get.hpp>
+#include <shared/include/request/edit.hpp>
 
-namespace netd {
+namespace netd::client {
 
-// Connection management
-bool connectToServer(const std::string& socketPath = "/var/run/netd.sock");
-void disconnectFromServer();
-bool isConnectedToServer();
+	// Connection management
+	bool connectToServer(const std::string& socketPath = "/var/run/netd.sock");
+	void disconnectFromServer();
+	bool isConnectedToServer();
 
-// NETCONF operations
-std::string sendNetconfRequest(const std::string& request);
-Response getConfig(const std::string& source = "running");
-Response editConfig(const std::string& target = "candidate", const std::string& config = "");
-Response commit();
+	// NETCONF operations
+	std::string sendNetconfRequest(const std::string& request);
+	std::string getConfig(const std::string& source = "running");
+	std::string get(const std::string& filter = "");
+	std::string editConfig(const std::string& target = "candidate", const std::string& config = "");
 
-} // namespace netd
+} // namespace netd::client
 
 #endif // NETD_CLIENT_NETCONF_HPP

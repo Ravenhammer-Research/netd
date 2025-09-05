@@ -38,195 +38,191 @@
 #include <cstring>
 #include <cstdlib>
 
-namespace netd {
-namespace freebsd {
-namespace interface {
+namespace netd::freebsd::interface {
 
-TapInterface::TapInterface()
-    : netd::TapInterface(),
-      name_(""),
-      tapUnit_(-1),
-      tapMode_("tap"),
-      socket_(-1) {
-}
-
-TapInterface::TapInterface(const std::string& name)
-    : netd::TapInterface(),
-      name_(name),
-      tapUnit_(-1),
-      tapMode_("tap"),
-      socket_(-1) {
-}
-
-TapInterface::~TapInterface() {
-    closeSocket();
-}
-
-bool TapInterface::createInterface() {
-    auto& logger = Logger::getInstance();
-    
-    if (!openSocket()) {
-        logger.error("Failed to open socket for creating TAP interface");
-        return false;
+    TapInterface::TapInterface()
+        : netd::shared::interface::TapInterface(),
+        name_(""),
+        tapUnit_(-1),
+        tapMode_("tap"),
+        socket_(-1) {
     }
-    
-    // Use SIOCIFCREATE to create TAP interface
-    struct ifreq ifr;
-    std::memset(&ifr, 0, sizeof(ifr));
-    std::strncpy(ifr.ifr_name, name_.c_str(), IFNAMSIZ - 1);
-    
-    if (ioctl(socket_, SIOCIFCREATE, &ifr) < 0) {
-        logger.error("Failed to create TAP interface " + name_ + ": " + std::strerror(errno));
+
+    TapInterface::TapInterface(const std::string& name)
+        : netd::shared::interface::TapInterface(),
+        name_(name),
+        tapUnit_(-1),
+        tapMode_("tap"),
+        socket_(-1) {
+    }
+
+    TapInterface::~TapInterface() {
         closeSocket();
-        return false;
     }
-    
-    logger.info("Created TAP interface " + name_);
-    return true;
-}
 
-bool TapInterface::destroyInterface() {
-    auto& logger = Logger::getInstance();
-    
-    if (!openSocket()) {
-        logger.error("Failed to open socket for destroying TAP interface");
-        return false;
+    bool TapInterface::createInterface() {
+        auto& logger = shared::Logger::getInstance();
+        
+        if (!openSocket()) {
+            logger.error("Failed to open socket for creating TAP interface");
+            return false;
+        }
+        
+        // Use SIOCIFCREATE to create TAP interface
+        struct ifreq ifr;
+        std::memset(&ifr, 0, sizeof(ifr));
+        std::strncpy(ifr.ifr_name, name_.c_str(), IFNAMSIZ - 1);
+        
+        if (ioctl(socket_, SIOCIFCREATE, &ifr) < 0) {
+            logger.error("Failed to create TAP interface " + name_ + ": " + std::strerror(errno));
+            closeSocket();
+            return false;
+        }
+        
+        logger.info("Created TAP interface " + name_);
+        return true;
     }
-    
-    // Use SIOCIFDESTROY to destroy TAP interface
-    struct ifreq ifr;
-    std::memset(&ifr, 0, sizeof(ifr));
-    std::strncpy(ifr.ifr_name, name_.c_str(), IFNAMSIZ - 1);
-    
-    if (ioctl(socket_, SIOCIFDESTROY, &ifr) < 0) {
-        logger.error("Failed to destroy TAP interface " + name_ + ": " + std::strerror(errno));
+
+    bool TapInterface::destroyInterface() {
+        auto& logger = shared::Logger::getInstance();
+        
+        if (!openSocket()) {
+            logger.error("Failed to open socket for destroying TAP interface");
+            return false;
+        }
+        
+        // Use SIOCIFDESTROY to destroy TAP interface
+        struct ifreq ifr;
+        std::memset(&ifr, 0, sizeof(ifr));
+        std::strncpy(ifr.ifr_name, name_.c_str(), IFNAMSIZ - 1);
+        
+        if (ioctl(socket_, SIOCIFDESTROY, &ifr) < 0) {
+            logger.error("Failed to destroy TAP interface " + name_ + ": " + std::strerror(errno));
+            closeSocket();
+            return false;
+        }
+        
+        logger.info("Destroyed TAP interface " + name_);
+        return true;
+    }
+
+    bool TapInterface::loadFromSystem() {
+        auto& logger = shared::Logger::getInstance();
+        
+        if (!openSocket()) {
+            return false;
+        }
+        
+        if (!getTapInfo()) {
+            closeSocket();
+            return false;
+        }
+        
         closeSocket();
-        return false;
+        logger.info("Loaded TAP interface information from system: " + name_);
+        return true;
     }
-    
-    logger.info("Destroyed TAP interface " + name_);
-    return true;
-}
 
-bool TapInterface::loadFromSystem() {
-    auto& logger = Logger::getInstance();
-    
-    if (!openSocket()) {
-        return false;
-    }
-    
-    if (!getTapInfo()) {
+    bool TapInterface::applyToSystem() {
+        auto& logger = shared::Logger::getInstance();
+        
+        if (!openSocket()) {
+            return false;
+        }
+        
+        if (!setTapInfo()) {
+            closeSocket();
+            return false;
+        }
+        
         closeSocket();
-        return false;
-    }
-    
-    closeSocket();
-    logger.info("Loaded TAP interface information from system: " + name_);
-    return true;
-}
-
-bool TapInterface::applyToSystem() {
-    auto& logger = Logger::getInstance();
-    
-    if (!openSocket()) {
-        return false;
-    }
-    
-    if (!setTapInfo()) {
-        closeSocket();
-        return false;
-    }
-    
-    closeSocket();
-    logger.info("Applied TAP interface configuration to system: " + name_);
-    return true;
-}
-
-bool TapInterface::setTapUnit(int unit) {
-    tapUnit_ = unit;
-    return true;
-}
-
-int TapInterface::getTapUnit() const {
-    return tapUnit_;
-}
-
-bool TapInterface::setTapMode(const std::string& mode) {
-    tapMode_ = mode;
-    return true;
-}
-
-std::string TapInterface::getTapMode() const {
-    return tapMode_;
-}
-
-TapInterface::operator netd::TapInterface() const {
-    // Cast to shared interface - we inherit from it so this is safe
-    return static_cast<const netd::TapInterface&>(*this);
-}
-
-bool TapInterface::openSocket() {
-    if (socket_ >= 0) {
-        return true; // Already open
+        logger.info("Applied TAP interface configuration to system: " + name_);
+        return true;
     }
 
-    socket_ = socket(AF_INET, SOCK_DGRAM, 0);
-    if (socket_ < 0) {
-        return false;
+    bool TapInterface::setTapUnit(int unit) {
+        tapUnit_ = unit;
+        return true;
     }
 
-    return true;
-}
-
-void TapInterface::closeSocket() {
-    if (socket_ >= 0) {
-        close(socket_);
-        socket_ = -1;
-    }
-}
-
-bool TapInterface::getTapInfo() {
-    struct ifreq ifr;
-    std::memset(&ifr, 0, sizeof(ifr));
-    std::strncpy(ifr.ifr_name, name_.c_str(), IFNAMSIZ - 1);
-
-    // Get interface flags
-    if (ioctl(socket_, SIOCGIFFLAGS, &ifr) < 0) {
-        return false;
+    int TapInterface::getTapUnit() const {
+        return tapUnit_;
     }
 
-    // Get interface MTU
-    if (ioctl(socket_, SIOCGIFMTU, &ifr) < 0) {
-        return false;
+    bool TapInterface::setTapMode(const std::string& mode) {
+        tapMode_ = mode;
+        return true;
     }
 
-    // Get TAP-specific information
-    // TODO: Use TAP-specific ioctls to get TAP details
-
-    return true;
-}
-
-bool TapInterface::setTapInfo() const {
-    struct ifreq ifr;
-    std::memset(&ifr, 0, sizeof(ifr));
-    std::strncpy(ifr.ifr_name, name_.c_str(), IFNAMSIZ - 1);
-
-    // Set interface flags
-    if (ioctl(socket_, SIOCSIFFLAGS, &ifr) < 0) {
-        return false;
+    std::string TapInterface::getTapMode() const {
+        return tapMode_;
     }
 
-    // Set interface MTU
-    if (ioctl(socket_, SIOCSIFMTU, &ifr) < 0) {
-        return false;
+    TapInterface::operator netd::shared::interface::TapInterface() const {
+        // Cast to shared interface - we inherit from it so this is safe
+        return static_cast<const netd::shared::interface::TapInterface&>(*this);
     }
 
-    // Set TAP-specific information
-    // TODO: Use TAP-specific ioctls to set TAP details
+    bool TapInterface::openSocket() {
+        if (socket_ >= 0) {
+            return true; // Already open
+        }
 
-    return true;
-}
+        socket_ = socket(AF_INET, SOCK_DGRAM, 0);
+        if (socket_ < 0) {
+            return false;
+        }
 
-} // namespace interface
-} // namespace freebsd
-} // namespace netd
+        return true;
+    }
+
+    void TapInterface::closeSocket() {
+        if (socket_ >= 0) {
+            close(socket_);
+            socket_ = -1;
+        }
+    }
+
+    bool TapInterface::getTapInfo() {
+        struct ifreq ifr;
+        std::memset(&ifr, 0, sizeof(ifr));
+        std::strncpy(ifr.ifr_name, name_.c_str(), IFNAMSIZ - 1);
+
+        // Get interface flags
+        if (ioctl(socket_, SIOCGIFFLAGS, &ifr) < 0) {
+            return false;
+        }
+
+        // Get interface MTU
+        if (ioctl(socket_, SIOCGIFMTU, &ifr) < 0) {
+            return false;
+        }
+
+        // Get TAP-specific information
+        // TODO: Use TAP-specific ioctls to get TAP details
+
+        return true;
+    }
+
+    bool TapInterface::setTapInfo() const {
+        struct ifreq ifr;
+        std::memset(&ifr, 0, sizeof(ifr));
+        std::strncpy(ifr.ifr_name, name_.c_str(), IFNAMSIZ - 1);
+
+        // Set interface flags
+        if (ioctl(socket_, SIOCSIFFLAGS, &ifr) < 0) {
+            return false;
+        }
+
+        // Set interface MTU
+        if (ioctl(socket_, SIOCSIFMTU, &ifr) < 0) {
+            return false;
+        }
+
+        // Set TAP-specific information
+        // TODO: Use TAP-specific ioctls to set TAP details
+
+        return true;
+    }
+
+} // namespace netd::freebsd::interface

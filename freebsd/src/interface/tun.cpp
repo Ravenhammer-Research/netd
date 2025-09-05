@@ -38,195 +38,191 @@
 #include <cstring>
 #include <cstdlib>
 
-namespace netd {
-namespace freebsd {
-namespace interface {
+namespace netd::freebsd::interface {
 
-TunInterface::TunInterface()
-    : netd::TunInterface(),
-      name_(""),
-      tunUnit_(-1),
-      tunMode_("tun"),
-      socket_(-1) {
-}
-
-TunInterface::TunInterface(const std::string& name)
-    : netd::TunInterface(),
-      name_(name),
-      tunUnit_(-1),
-      tunMode_("tun"),
-      socket_(-1) {
-}
-
-TunInterface::~TunInterface() {
-    closeSocket();
-}
-
-bool TunInterface::createInterface() {
-    auto& logger = Logger::getInstance();
-    
-    if (!openSocket()) {
-        logger.error("Failed to open socket for creating TUN interface");
-        return false;
+    TunInterface::TunInterface()
+        : netd::shared::interface::TunInterface(),
+        name_(""),
+        tunUnit_(-1),
+        tunMode_("tun"),
+        socket_(-1) {
     }
-    
-    // Use SIOCIFCREATE to create TUN interface
-    struct ifreq ifr;
-    std::memset(&ifr, 0, sizeof(ifr));
-    std::strncpy(ifr.ifr_name, name_.c_str(), IFNAMSIZ - 1);
-    
-    if (ioctl(socket_, SIOCIFCREATE, &ifr) < 0) {
-        logger.error("Failed to create TUN interface " + name_ + ": " + std::strerror(errno));
+
+    TunInterface::TunInterface(const std::string& name)
+        : netd::shared::interface::TunInterface(),
+        name_(name),
+        tunUnit_(-1),
+        tunMode_("tun"),
+        socket_(-1) {
+    }
+
+    TunInterface::~TunInterface() {
         closeSocket();
-        return false;
     }
-    
-    logger.info("Created TUN interface " + name_);
-    return true;
-}
 
-bool TunInterface::destroyInterface() {
-    auto& logger = Logger::getInstance();
-    
-    if (!openSocket()) {
-        logger.error("Failed to open socket for destroying TUN interface");
-        return false;
+    bool TunInterface::createInterface() {
+        auto& logger = shared::Logger::getInstance();
+        
+        if (!openSocket()) {
+            logger.error("Failed to open socket for creating TUN interface");
+            return false;
+        }
+        
+        // Use SIOCIFCREATE to create TUN interface
+        struct ifreq ifr;
+        std::memset(&ifr, 0, sizeof(ifr));
+        std::strncpy(ifr.ifr_name, name_.c_str(), IFNAMSIZ - 1);
+        
+        if (ioctl(socket_, SIOCIFCREATE, &ifr) < 0) {
+            logger.error("Failed to create TUN interface " + name_ + ": " + std::strerror(errno));
+            closeSocket();
+            return false;
+        }
+        
+        logger.info("Created TUN interface " + name_);
+        return true;
     }
-    
-    // Use SIOCIFDESTROY to destroy TUN interface
-    struct ifreq ifr;
-    std::memset(&ifr, 0, sizeof(ifr));
-    std::strncpy(ifr.ifr_name, name_.c_str(), IFNAMSIZ - 1);
-    
-    if (ioctl(socket_, SIOCIFDESTROY, &ifr) < 0) {
-        logger.error("Failed to destroy TUN interface " + name_ + ": " + std::strerror(errno));
+
+    bool TunInterface::destroyInterface() {
+        auto& logger = shared::Logger::getInstance();
+        
+        if (!openSocket()) {
+            logger.error("Failed to open socket for destroying TUN interface");
+            return false;
+        }
+        
+        // Use SIOCIFDESTROY to destroy TUN interface
+        struct ifreq ifr;
+        std::memset(&ifr, 0, sizeof(ifr));
+        std::strncpy(ifr.ifr_name, name_.c_str(), IFNAMSIZ - 1);
+        
+        if (ioctl(socket_, SIOCIFDESTROY, &ifr) < 0) {
+            logger.error("Failed to destroy TUN interface " + name_ + ": " + std::strerror(errno));
+            closeSocket();
+            return false;
+        }
+        
+        logger.info("Destroyed TUN interface " + name_);
+        return true;
+    }
+
+    bool TunInterface::loadFromSystem() {
+        auto& logger = shared::Logger::getInstance();
+        
+        if (!openSocket()) {
+            return false;
+        }
+        
+        if (!getTunInfo()) {
+            closeSocket();
+            return false;
+        }
+        
         closeSocket();
-        return false;
+        logger.info("Loaded TUN interface information from system: " + name_);
+        return true;
     }
-    
-    logger.info("Destroyed TUN interface " + name_);
-    return true;
-}
 
-bool TunInterface::loadFromSystem() {
-    auto& logger = Logger::getInstance();
-    
-    if (!openSocket()) {
-        return false;
-    }
-    
-    if (!getTunInfo()) {
+    bool TunInterface::applyToSystem() {
+        auto& logger = shared::Logger::getInstance();
+        
+        if (!openSocket()) {
+            return false;
+        }
+        
+        if (!setTunInfo()) {
+            closeSocket();
+            return false;
+        }
+        
         closeSocket();
-        return false;
-    }
-    
-    closeSocket();
-    logger.info("Loaded TUN interface information from system: " + name_);
-    return true;
-}
-
-bool TunInterface::applyToSystem() {
-    auto& logger = Logger::getInstance();
-    
-    if (!openSocket()) {
-        return false;
-    }
-    
-    if (!setTunInfo()) {
-        closeSocket();
-        return false;
-    }
-    
-    closeSocket();
-    logger.info("Applied TUN interface configuration to system: " + name_);
-    return true;
-}
-
-bool TunInterface::setTunUnit(int unit) {
-    tunUnit_ = unit;
-    return true;
-}
-
-int TunInterface::getTunUnit() const {
-    return tunUnit_;
-}
-
-bool TunInterface::setTunMode(const std::string& mode) {
-    tunMode_ = mode;
-    return true;
-}
-
-std::string TunInterface::getTunMode() const {
-    return tunMode_;
-}
-
-TunInterface::operator netd::TunInterface() const {
-    // Cast to shared interface - we inherit from it so this is safe
-    return static_cast<const netd::TunInterface&>(*this);
-}
-
-bool TunInterface::openSocket() {
-    if (socket_ >= 0) {
-        return true; // Already open
+        logger.info("Applied TUN interface configuration to system: " + name_);
+        return true;
     }
 
-    socket_ = socket(AF_INET, SOCK_DGRAM, 0);
-    if (socket_ < 0) {
-        return false;
+    bool TunInterface::setTunUnit(int unit) {
+        tunUnit_ = unit;
+        return true;
     }
 
-    return true;
-}
-
-void TunInterface::closeSocket() {
-    if (socket_ >= 0) {
-        close(socket_);
-        socket_ = -1;
-    }
-}
-
-bool TunInterface::getTunInfo() {
-    struct ifreq ifr;
-    std::memset(&ifr, 0, sizeof(ifr));
-    std::strncpy(ifr.ifr_name, name_.c_str(), IFNAMSIZ - 1);
-
-    // Get interface flags
-    if (ioctl(socket_, SIOCGIFFLAGS, &ifr) < 0) {
-        return false;
+    int TunInterface::getTunUnit() const {
+        return tunUnit_;
     }
 
-    // Get interface MTU
-    if (ioctl(socket_, SIOCGIFMTU, &ifr) < 0) {
-        return false;
+    bool TunInterface::setTunMode(const std::string& mode) {
+        tunMode_ = mode;
+        return true;
     }
 
-    // Get TUN-specific information
-    // TODO: Use TUN-specific ioctls to get TUN details
-
-    return true;
-}
-
-bool TunInterface::setTunInfo() const {
-    struct ifreq ifr;
-    std::memset(&ifr, 0, sizeof(ifr));
-    std::strncpy(ifr.ifr_name, name_.c_str(), IFNAMSIZ - 1);
-
-    // Set interface flags
-    if (ioctl(socket_, SIOCSIFFLAGS, &ifr) < 0) {
-        return false;
+    std::string TunInterface::getTunMode() const {
+        return tunMode_;
     }
 
-    // Set interface MTU
-    if (ioctl(socket_, SIOCSIFMTU, &ifr) < 0) {
-        return false;
+    TunInterface::operator netd::shared::interface::TunInterface() const {
+        // Cast to shared interface - we inherit from it so this is safe
+        return static_cast<const netd::shared::interface::TunInterface&>(*this);
     }
 
-    // Set TUN-specific information
-    // TODO: Use TUN-specific ioctls to set TUN details
+    bool TunInterface::openSocket() {
+        if (socket_ >= 0) {
+            return true; // Already open
+        }
 
-    return true;
-}
+        socket_ = socket(AF_INET, SOCK_DGRAM, 0);
+        if (socket_ < 0) {
+            return false;
+        }
 
-} // namespace interface
-} // namespace freebsd
-} // namespace netd
+        return true;
+    }
+
+    void TunInterface::closeSocket() {
+        if (socket_ >= 0) {
+            close(socket_);
+            socket_ = -1;
+        }
+    }
+
+    bool TunInterface::getTunInfo() {
+        struct ifreq ifr;
+        std::memset(&ifr, 0, sizeof(ifr));
+        std::strncpy(ifr.ifr_name, name_.c_str(), IFNAMSIZ - 1);
+
+        // Get interface flags
+        if (ioctl(socket_, SIOCGIFFLAGS, &ifr) < 0) {
+            return false;
+        }
+
+        // Get interface MTU
+        if (ioctl(socket_, SIOCGIFMTU, &ifr) < 0) {
+            return false;
+        }
+
+        // Get TUN-specific information
+        // TODO: Use TUN-specific ioctls to get TUN details
+
+        return true;
+    }
+
+    bool TunInterface::setTunInfo() const {
+        struct ifreq ifr;
+        std::memset(&ifr, 0, sizeof(ifr));
+        std::strncpy(ifr.ifr_name, name_.c_str(), IFNAMSIZ - 1);
+
+        // Set interface flags
+        if (ioctl(socket_, SIOCSIFFLAGS, &ifr) < 0) {
+            return false;
+        }
+
+        // Set interface MTU
+        if (ioctl(socket_, SIOCSIFMTU, &ifr) < 0) {
+            return false;
+        }
+
+        // Set TUN-specific information
+        // TODO: Use TUN-specific ioctls to set TUN details
+
+        return true;
+    }
+
+} // namespace netd::freebsd::interface

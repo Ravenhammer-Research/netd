@@ -34,24 +34,38 @@
 #include <shared/include/address.hpp>
 #include <shared/include/base/serialization.hpp>
 
-namespace netd {
+namespace netd::shared {
 
-class Route : public base::Serialization<Route> {
+    class Route : public base::Serialization<Route> {
 public:
-    Route() = default;
-    virtual ~Route() = default;
+        Route() = default;
+        Route(std::shared_ptr<Address> destination, std::shared_ptr<Address> gateway, 
+              const std::string& interface, uint32_t vrf);
+        virtual ~Route() = default;
 
-    // Pure virtual methods from Serialization
-    lyd_node* toYang(ly_ctx* ctx) const override = 0;
-    static Route fromYang(const ly_ctx* ctx, const lyd_node* node);
+        // Serialization methods
+        lyd_node* toYang(ly_ctx* ctx) const override;
+        static Route fromYang(const ly_ctx* ctx, const lyd_node* node);
 
-    // Route properties
-    virtual std::shared_ptr<Address> getDestination() const = 0;
-    virtual std::shared_ptr<Address> getGateway() const = 0;
-    virtual std::string getInterface() const = 0;
-    virtual uint32_t getVRF() const = 0;
-};
+        // Route properties
+        std::shared_ptr<Address> getDestination() const;
+        std::shared_ptr<Address> getGateway() const;
+        std::string getInterface() const;
+        uint32_t getVRF() const;
 
-} // namespace netd
+        // Setters
+        void setDestination(std::shared_ptr<Address> destination);
+        void setGateway(std::shared_ptr<Address> gateway);
+        void setInterface(const std::string& interface);
+        void setVRF(uint32_t vrf);
+
+private:
+        std::shared_ptr<Address> destination_;
+        std::shared_ptr<Address> gateway_;
+        std::string interface_;
+        uint32_t vrf_;
+    };
+
+} // namespace netd::shared
 
 #endif // NETD_ROUTE_HPP

@@ -36,11 +36,9 @@
 #include <shared/include/interface/vxlan.hpp>
 #include <shared/include/base/serialization.hpp>
 
-namespace netd {
-namespace freebsd {
-namespace interface {
+namespace netd::freebsd::interface {
 
-class VxlanInterface : public netd::VxlanInterface {
+    class VxlanInterface : public netd::shared::interface::VxlanInterface {
 public:
     VxlanInterface();
     explicit VxlanInterface(const std::string& name);
@@ -68,8 +66,8 @@ public:
     // Statistics and information
     std::string getType() const { return "vxlan"; }
 
-    // Conversion to shared interface for serialization
-    operator netd::VxlanInterface() const;
+        // Conversion to shared interface for serialization
+        operator netd::shared::interface::VxlanInterface() const;
 
 private:
     // Interface name
@@ -91,8 +89,6 @@ private:
     bool setVxlanInfo() const;
 };
 
-} // namespace interface
-} // namespace freebsd
-} // namespace netd
+} // namespace netd::freebsd::interface
 
 #endif // NETD_FREEBSD_INTERFACE_VXLAN_HPP

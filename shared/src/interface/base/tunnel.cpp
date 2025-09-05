@@ -27,76 +27,72 @@
 
 #include <shared/include/interface/base/tunnel.hpp>
 
-namespace netd {
-namespace interface {
-namespace base {
+namespace netd::shared::interface::base {
 
-// Provide implementations for pure virtual methods to avoid linker errors
-// These are placeholder implementations that should be overridden by derived classes
+    // Provide implementations for pure virtual methods to avoid linker errors
+    // These are placeholder implementations that should be overridden by derived classes
 
-bool Tunnel::setLocalAddr(const std::shared_ptr<netd::Address>& localAddr) {
-    if (localAddr && localAddr->isValid()) {
-        localAddr_ = localAddr;
+    bool Tunnel::setLocalAddr(const std::shared_ptr<netd::shared::Address>& localAddr) {
+        if (localAddr && localAddr->isValid()) {
+            localAddr_ = localAddr;
+            return true;
+        }
+        return false;
+    }
+
+    std::shared_ptr<netd::shared::Address> Tunnel::getLocalAddr() const {
+        return localAddr_;
+    }
+
+    bool Tunnel::setRemoteAddr(const std::shared_ptr<netd::shared::Address>& remoteAddr) {
+        if (remoteAddr && remoteAddr->isValid()) {
+            remoteAddr_ = remoteAddr;
+            return true;
+        }
+        return false;
+    }
+
+    std::shared_ptr<netd::shared::Address> Tunnel::getRemoteAddr() const {
+        return remoteAddr_;
+    }
+
+    bool Tunnel::setTunnelVRF(uint32_t vrfId) {
+        tunnelVrfId_ = vrfId;
         return true;
     }
-    return false;
-}
 
-std::shared_ptr<netd::Address> Tunnel::getLocalAddr() const {
-    return localAddr_;
-}
+    uint32_t Tunnel::getTunnelVRF() const {
+        return tunnelVrfId_;
+    }
 
-bool Tunnel::setRemoteAddr(const std::shared_ptr<netd::Address>& remoteAddr) {
-    if (remoteAddr && remoteAddr->isValid()) {
-        remoteAddr_ = remoteAddr;
+    bool Tunnel::setTunnelMTU(uint16_t mtu) {
+        if (mtu >= 68 && mtu <= 9000) { // Reasonable MTU range
+            tunnelMtu_ = mtu;
+            return true;
+        }
+        return false;
+    }
+
+    uint16_t Tunnel::getTunnelMTU() const {
+        return tunnelMtu_;
+    }
+
+    bool Tunnel::isTunnelEstablished() const {
+        return tunnelEstablished_;
+    }
+
+    bool Tunnel::establishTunnel() {
+        // Basic validation that both addresses are set
+        if (localAddr_ && remoteAddr_) {
+            tunnelEstablished_ = true;
+            return true;
+        }
+        return false;
+    }
+
+    bool Tunnel::teardownTunnel() {
+        tunnelEstablished_ = false;
         return true;
     }
-    return false;
-}
 
-std::shared_ptr<netd::Address> Tunnel::getRemoteAddr() const {
-    return remoteAddr_;
-}
-
-bool Tunnel::setTunnelVRF(uint32_t vrfId) {
-    tunnelVrfId_ = vrfId;
-    return true;
-}
-
-uint32_t Tunnel::getTunnelVRF() const {
-    return tunnelVrfId_;
-}
-
-bool Tunnel::setTunnelMTU(uint16_t mtu) {
-    if (mtu >= 68 && mtu <= 9000) { // Reasonable MTU range
-        tunnelMtu_ = mtu;
-        return true;
-    }
-    return false;
-}
-
-uint16_t Tunnel::getTunnelMTU() const {
-    return tunnelMtu_;
-}
-
-bool Tunnel::isTunnelEstablished() const {
-    return tunnelEstablished_;
-}
-
-bool Tunnel::establishTunnel() {
-    // Basic validation that both addresses are set
-    if (localAddr_ && remoteAddr_) {
-        tunnelEstablished_ = true;
-        return true;
-    }
-    return false;
-}
-
-bool Tunnel::teardownTunnel() {
-    tunnelEstablished_ = false;
-    return true;
-}
-
-} // namespace base
-} // namespace interface
-} // namespace netd
+} // namespace netd::interface::base

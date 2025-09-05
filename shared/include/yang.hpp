@@ -32,28 +32,38 @@
 #include <memory>
 #include <libyang/libyang.h>
 
-namespace netd {
+namespace netd::shared {
 
-class YangAbstract {
+    class Yang {
 public:
-    YangAbstract() = default;
-    virtual ~YangAbstract() = default;
+        // Singleton access
+        static Yang& getInstance();
+        
+        // Delete copy constructor and assignment operator
+        Yang(const Yang&) = delete;
+        Yang& operator=(const Yang&) = delete;
 
-    // YANG context management
-    virtual ly_ctx* getContext() const = 0;
-    virtual bool loadSchema(const std::string& schemaPath) = 0;
-    virtual bool loadSchemaByName(const std::string& name, const std::string& revision = "") = 0;
-    
-    // Utility functions for YANG data conversion
-    static std::string yangToXml(const lyd_node* node);
-    static std::string yangToJson(const lyd_node* node);
-    static lyd_node* xmlToYang(ly_ctx* ctx, const std::string& xml);
-    static lyd_node* jsonToYang(ly_ctx* ctx, const std::string& json);
-};
+        // YANG context management
+        ly_ctx* getContext() const;
+        bool loadSchema(const std::string& schemaPath);
+        bool loadSchemaByName(const std::string& name, const std::string& revision = "");
+        
+        // Utility functions for YANG data conversion
+        static std::string yangToXml(const lyd_node* node);
+        static std::string yangToJson(const lyd_node* node);
+        static lyd_node* xmlToYang(ly_ctx* ctx, const std::string& xml);
+        static lyd_node* jsonToYang(ly_ctx* ctx, const std::string& json);
 
-// Factory function to create Yang instance
-std::unique_ptr<YangAbstract> createYang();
+protected:
+        // Protected constructor for singleton
+        Yang();
+        virtual ~Yang();
 
-} // namespace netd
+private:
+        ly_ctx* ctx_;
+        void loadStandardSchemas();
+    };
+
+} // namespace netd::shared
 
 #endif // NETD_YANG_HPP

@@ -32,26 +32,34 @@
 #include <cstdint>
 #include <shared/include/base/serialization.hpp>
 
-namespace netd {
+namespace netd::shared {
 
-// Forward declaration
-class VRF;
-
-class VRFAbstract : public base::Serialization<VRFAbstract> {
+    class VRF : public base::Serialization<VRF> {
 public:
-    VRFAbstract() = default;
-    virtual ~VRFAbstract() = default;
+        VRF() = default;
+        VRF(uint32_t id, const std::string& name, bool active = false);
+        virtual ~VRF() = default;
 
-    // Pure virtual methods from Serialization
-    lyd_node* toYang(ly_ctx* ctx) const override = 0;
-    static VRF fromYang(const ly_ctx* ctx, const lyd_node* node);
+        // Serialization methods
+        lyd_node* toYang(ly_ctx* ctx) const override;
+        static VRF fromYang(const ly_ctx* ctx, const lyd_node* node);
 
-    // VRF properties
-    virtual uint32_t getId() const = 0;
-    virtual std::string getName() const = 0;
-    virtual bool isActive() const = 0;
-};
+        // VRF properties
+        uint32_t getId() const;
+        std::string getName() const;
+        bool isActive() const;
 
-} // namespace netd
+        // Setters
+        void setId(uint32_t id);
+        void setName(const std::string& name);
+        void setActive(bool active);
+
+private:
+        uint32_t id_;
+        std::string name_;
+        bool active_;
+    };
+
+} // namespace netd::shared
 
 #endif // NETD_VRF_HPP

@@ -34,68 +34,64 @@
 #include <cstdint>
 #include <shared/include/address.hpp>
 
-namespace netd {
-namespace interface {
-namespace base {
+namespace netd::shared::interface::base {
 
-class Ether {
-public:
-    virtual ~Ether() = default;
+    class Ether {
+    public:
+        virtual ~Ether() = default;
 
-    // Address management
-    virtual bool addAddress(const std::shared_ptr<netd::Address>& address);
-    virtual bool removeAddress(const std::shared_ptr<netd::Address>& address);
-    virtual std::vector<std::shared_ptr<netd::Address>> getAddresses() const;
+        // Address management
+        virtual bool addAddress(const std::shared_ptr<netd::shared::Address>& address);
+        virtual bool removeAddress(const std::shared_ptr<netd::shared::Address>& address);
+        virtual std::vector<std::shared_ptr<netd::shared::Address>> getAddresses() const;
 
-    // Group management
-    virtual bool addGroup(const std::string& group);
-    virtual bool removeGroup(const std::string& group);
-    virtual std::vector<std::string> getGroups() const;
+        // Group management
+        virtual bool addGroup(const std::string& group);
+        virtual bool removeGroup(const std::string& group);
+        virtual std::vector<std::string> getGroups() const;
 
-    // Interface configuration
-    virtual bool setMTU(uint16_t mtu);
-    virtual uint16_t getMTU() const;
-    virtual bool setFlags(uint32_t flags);
-    virtual uint32_t getFlags() const;
-    virtual bool up();
-    virtual bool down();
-    virtual bool isUp() const;
+        // Interface configuration
+        virtual bool setMTU(uint16_t mtu);
+        virtual uint16_t getMTU() const;
+        virtual bool setFlags(uint32_t flags);
+        virtual uint32_t getFlags() const;
+        virtual bool up();
+        virtual bool down();
+        virtual bool isUp() const;
 
-    // VRF/FIB management
-    virtual bool setVRF(uint32_t vrfId);
-    virtual uint32_t getVRF() const;
+        // VRF/FIB management
+        virtual bool setVRF(uint32_t vrfId);
+        virtual uint32_t getVRF() const;
 
-    // Basic interface operations
-    virtual bool create() { return false; }
-    virtual bool destroy() { return false; }
+        // Basic interface operations
+        virtual bool create() { return false; }
+        virtual bool destroy() { return false; }
 
-    // Ethernet-specific configuration
-    virtual bool setDuplex(const std::string& duplex) { return false; }
-    virtual std::string getDuplex() const { return "auto"; }
-    virtual bool setSpeed(uint32_t speed) { return false; }
-    virtual uint32_t getSpeed() const { return 0; }
-    virtual bool setAutoNegotiation(bool enabled) { return false; }
-    virtual bool isAutoNegotiationEnabled() const { return true; }
-    virtual bool setFlowControl(bool enabled) { return false; }
-    virtual bool isFlowControlEnabled() const { return false; }
+        // Ethernet-specific configuration
+        virtual bool setDuplex(const std::string& duplex) { return false; }
+        virtual std::string getDuplex() const { return "auto"; }
+        virtual bool setSpeed(uint32_t speed) { return false; }
+        virtual uint32_t getSpeed() const { return 0; }
+        virtual bool setAutoNegotiation(bool enabled) { return false; }
+        virtual bool isAutoNegotiationEnabled() const { return true; }
+        virtual bool setFlowControl(bool enabled) { return false; }
+        virtual bool isFlowControlEnabled() const { return false; }
 
-    // Statistics and information
-    virtual std::string getName() const;
-    virtual std::string getType() const { return "ethernet"; }
-    void setName(const std::string& name);
+        // Statistics and information
+        virtual std::string getName() const;
+        virtual std::string getType() const { return "ethernet"; }
+        void setName(const std::string& name);
 
-protected:
-    std::vector<std::shared_ptr<netd::Address>> addresses_;
-    std::vector<std::string> groups_;
-    uint16_t mtu_{1500};
-    uint32_t flags_{0};
-    std::string name_;
-    bool up_{false};
-    uint32_t vrfId_{0};
-};
+    protected:
+        std::vector<std::shared_ptr<netd::shared::Address>> addresses_;
+        std::vector<std::string> groups_;
+        uint16_t mtu_{1500};
+        uint32_t flags_{0};
+        std::string name_;
+        bool up_{false};
+        uint32_t vrfId_{0};
+    };
 
-} // namespace base
-} // namespace interface
-} // namespace netd
+} // namespace netd::shared::interface::base
 
 #endif // NETD_INTERFACE_BASE_ETHER_HPP

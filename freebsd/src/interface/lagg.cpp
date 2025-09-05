@@ -45,241 +45,237 @@
 #define ETHER_ADDR_LEN 6
 #endif
 
-namespace netd {
-namespace freebsd {
-namespace interface {
+namespace netd::freebsd::interface {
 
-LagInterface::LagInterface()
-    : netd::LagInterface(),
-      name_(""),
-      laggProtocol_("failover"),
-      laggPorts_(),
-      socket_(-1) {
-}
-
-LagInterface::LagInterface(const std::string& name)
-    : netd::LagInterface(),
-      name_(name),
-      laggProtocol_("failover"),
-      laggPorts_(),
-      socket_(-1) {
-}
-
-LagInterface::~LagInterface() {
-    closeSocket();
-}
-
-bool LagInterface::createInterface() {
-    auto& logger = Logger::getInstance();
-    
-    if (!openSocket()) {
-        logger.error("Failed to open socket for creating LAGG interface");
-        return false;
+    LagInterface::LagInterface()
+        : netd::shared::interface::LagInterface(),
+        name_(""),
+        laggProtocol_("failover"),
+        laggPorts_(),
+        socket_(-1) {
     }
-    
-    // Use SIOCIFCREATE to create LAGG interface
-    struct ifreq ifr;
-    std::memset(&ifr, 0, sizeof(ifr));
-    std::strncpy(ifr.ifr_name, name_.c_str(), IFNAMSIZ - 1);
-    
-    if (ioctl(socket_, SIOCIFCREATE, &ifr) < 0) {
-        logger.error("Failed to create LAGG interface " + name_ + ": " + std::strerror(errno));
+
+    LagInterface::LagInterface(const std::string& name)
+        : netd::shared::interface::LagInterface(),
+        name_(name),
+        laggProtocol_("failover"),
+        laggPorts_(),
+        socket_(-1) {
+    }
+
+    LagInterface::~LagInterface() {
         closeSocket();
-        return false;
     }
-    
-    logger.info("Created LAGG interface " + name_ + " with protocol " + laggProtocol_);
-    return true;
-}
 
-bool LagInterface::destroyInterface() {
-    auto& logger = Logger::getInstance();
-    
-    if (!openSocket()) {
-        logger.error("Failed to open socket for destroying LAGG interface");
-        return false;
+    bool LagInterface::createInterface() {
+        auto& logger = shared::Logger::getInstance();
+        
+        if (!openSocket()) {
+            logger.error("Failed to open socket for creating LAGG interface");
+            return false;
+        }
+        
+        // Use SIOCIFCREATE to create LAGG interface
+        struct ifreq ifr;
+        std::memset(&ifr, 0, sizeof(ifr));
+        std::strncpy(ifr.ifr_name, name_.c_str(), IFNAMSIZ - 1);
+        
+        if (ioctl(socket_, SIOCIFCREATE, &ifr) < 0) {
+            logger.error("Failed to create LAGG interface " + name_ + ": " + std::strerror(errno));
+            closeSocket();
+            return false;
+        }
+        
+        logger.info("Created LAGG interface " + name_ + " with protocol " + laggProtocol_);
+        return true;
     }
-    
-    // Use SIOCIFDESTROY to destroy LAGG interface
-    struct ifreq ifr;
-    std::memset(&ifr, 0, sizeof(ifr));
-    std::strncpy(ifr.ifr_name, name_.c_str(), IFNAMSIZ - 1);
-    
-    if (ioctl(socket_, SIOCIFDESTROY, &ifr) < 0) {
-        logger.error("Failed to destroy LAGG interface " + name_ + ": " + std::strerror(errno));
+
+    bool LagInterface::destroyInterface() {
+        auto& logger = shared::Logger::getInstance();
+        
+        if (!openSocket()) {
+            logger.error("Failed to open socket for destroying LAGG interface");
+            return false;
+        }
+        
+        // Use SIOCIFDESTROY to destroy LAGG interface
+        struct ifreq ifr;
+        std::memset(&ifr, 0, sizeof(ifr));
+        std::strncpy(ifr.ifr_name, name_.c_str(), IFNAMSIZ - 1);
+        
+        if (ioctl(socket_, SIOCIFDESTROY, &ifr) < 0) {
+            logger.error("Failed to destroy LAGG interface " + name_ + ": " + std::strerror(errno));
+            closeSocket();
+            return false;
+        }
+        
+        logger.info("Destroyed LAGG interface " + name_);
+        return true;
+    }
+
+    bool LagInterface::loadFromSystem() {
+        auto& logger = shared::Logger::getInstance();
+        
+        if (!openSocket()) {
+            return false;
+        }
+        
+        if (!getLaggInfo()) {
+            closeSocket();
+            return false;
+        }
+        
         closeSocket();
-        return false;
+        logger.info("Loaded LAGG interface information from system: " + name_);
+        return true;
     }
-    
-    logger.info("Destroyed LAGG interface " + name_);
-    return true;
-}
 
-bool LagInterface::loadFromSystem() {
-    auto& logger = Logger::getInstance();
-    
-    if (!openSocket()) {
-        return false;
-    }
-    
-    if (!getLaggInfo()) {
+    bool LagInterface::applyToSystem() {
+        auto& logger = shared::Logger::getInstance();
+        
+        if (!openSocket()) {
+            return false;
+        }
+        
+        if (!setLaggInfo()) {
+            closeSocket();
+            return false;
+        }
+        
         closeSocket();
-        return false;
-    }
-    
-    closeSocket();
-    logger.info("Loaded LAGG interface information from system: " + name_);
-    return true;
-}
-
-bool LagInterface::applyToSystem() {
-    auto& logger = Logger::getInstance();
-    
-    if (!openSocket()) {
-        return false;
-    }
-    
-    if (!setLaggInfo()) {
-        closeSocket();
-        return false;
-    }
-    
-    closeSocket();
-    logger.info("Applied LAGG interface configuration to system: " + name_);
-    return true;
-}
-
-bool LagInterface::setLaggProtocol(const std::string& protocol) {
-    laggProtocol_ = protocol;
-    return true;
-}
-
-std::string LagInterface::getLaggProtocol() const {
-    return laggProtocol_;
-}
-
-bool LagInterface::addLaggPort(const std::string& portName) {
-    auto& logger = Logger::getInstance();
-    
-    if (!openSocket()) {
-        logger.error("Failed to open socket for adding LAGG port");
-        return false;
-    }
-    
-    // Use SIOCSLAGGPORT to add port to LAGG
-    struct ifreq ifr;
-    std::memset(&ifr, 0, sizeof(ifr));
-    std::strncpy(ifr.ifr_name, name_.c_str(), IFNAMSIZ - 1);
-    std::strncpy(ifr.ifr_data, portName.c_str(), IFNAMSIZ - 1);
-    
-    if (ioctl(socket_, SIOCSLAGGPORT, &ifr) < 0) {
-        logger.error("Failed to add port " + portName + " to LAGG interface " + name_ + ": " + std::strerror(errno));
-        closeSocket();
-        return false;
-    }
-    
-    laggPorts_.push_back(portName);
-    logger.info("Added port " + portName + " to LAGG interface " + name_);
-    return true;
-}
-
-bool LagInterface::removeLaggPort(const std::string& portName) {
-    auto& logger = Logger::getInstance();
-    
-    if (!openSocket()) {
-        logger.error("Failed to open socket for removing LAGG port");
-        return false;
-    }
-    
-    // Use SIOCSLAGGPORT with negative flag to remove port from LAGG
-    struct ifreq ifr;
-    std::memset(&ifr, 0, sizeof(ifr));
-    std::strncpy(ifr.ifr_name, name_.c_str(), IFNAMSIZ - 1);
-    std::strncpy(ifr.ifr_data, portName.c_str(), IFNAMSIZ - 1);
-    
-    if (ioctl(socket_, SIOCSLAGGPORT, &ifr) < 0) {
-        logger.error("Failed to remove port " + portName + " from LAGG interface " + name_ + ": " + std::strerror(errno));
-        closeSocket();
-        return false;
-    }
-    
-    // Remove from local list
-    laggPorts_.erase(std::remove(laggPorts_.begin(), laggPorts_.end(), portName), laggPorts_.end());
-    logger.info("Removed port " + portName + " from LAGG interface " + name_);
-    return true;
-}
-
-std::vector<std::string> LagInterface::getLaggPorts() const {
-    return laggPorts_;
-}
-
-LagInterface::operator netd::LagInterface() const {
-    // Cast to shared interface - we inherit from it so this is safe
-    return static_cast<const netd::LagInterface&>(*this);
-}
-
-bool LagInterface::openSocket() {
-    if (socket_ >= 0) {
-        return true; // Already open
+        logger.info("Applied LAGG interface configuration to system: " + name_);
+        return true;
     }
 
-    socket_ = socket(AF_INET, SOCK_DGRAM, 0);
-    if (socket_ < 0) {
-        return false;
+    bool LagInterface::setLaggProtocol(const std::string& protocol) {
+        laggProtocol_ = protocol;
+        return true;
     }
 
-    return true;
-}
-
-void LagInterface::closeSocket() {
-    if (socket_ >= 0) {
-        close(socket_);
-        socket_ = -1;
-    }
-}
-
-bool LagInterface::getLaggInfo() {
-    struct ifreq ifr;
-    std::memset(&ifr, 0, sizeof(ifr));
-    std::strncpy(ifr.ifr_name, name_.c_str(), IFNAMSIZ - 1);
-
-    // Get interface flags
-    if (ioctl(socket_, SIOCGIFFLAGS, &ifr) < 0) {
-        return false;
+    std::string LagInterface::getLaggProtocol() const {
+        return laggProtocol_;
     }
 
-    // Get interface MTU
-    if (ioctl(socket_, SIOCGIFMTU, &ifr) < 0) {
-        return false;
+    bool LagInterface::addLaggPort(const std::string& portName) {
+        auto& logger = shared::Logger::getInstance();
+        
+        if (!openSocket()) {
+            logger.error("Failed to open socket for adding LAGG port");
+            return false;
+        }
+        
+        // Use SIOCSLAGGPORT to add port to LAGG
+        struct ifreq ifr;
+        std::memset(&ifr, 0, sizeof(ifr));
+        std::strncpy(ifr.ifr_name, name_.c_str(), IFNAMSIZ - 1);
+        std::strncpy(ifr.ifr_data, portName.c_str(), IFNAMSIZ - 1);
+        
+        if (ioctl(socket_, SIOCSLAGGPORT, &ifr) < 0) {
+            logger.error("Failed to add port " + portName + " to LAGG interface " + name_ + ": " + std::strerror(errno));
+            closeSocket();
+            return false;
+        }
+        
+        laggPorts_.push_back(portName);
+        logger.info("Added port " + portName + " to LAGG interface " + name_);
+        return true;
     }
 
-    // Get LAGG-specific information
-    // TODO: Use SIOCGLAGG to get LAGG details
-
-    return true;
-}
-
-bool LagInterface::setLaggInfo() const {
-    struct ifreq ifr;
-    std::memset(&ifr, 0, sizeof(ifr));
-    std::strncpy(ifr.ifr_name, name_.c_str(), IFNAMSIZ - 1);
-
-    // Set interface flags
-    if (ioctl(socket_, SIOCSIFFLAGS, &ifr) < 0) {
-        return false;
+    bool LagInterface::removeLaggPort(const std::string& portName) {
+        auto& logger = shared::Logger::getInstance();
+        
+        if (!openSocket()) {
+            logger.error("Failed to open socket for removing LAGG port");
+            return false;
+        }
+        
+        // Use SIOCSLAGGPORT with negative flag to remove port from LAGG
+        struct ifreq ifr;
+        std::memset(&ifr, 0, sizeof(ifr));
+        std::strncpy(ifr.ifr_name, name_.c_str(), IFNAMSIZ - 1);
+        std::strncpy(ifr.ifr_data, portName.c_str(), IFNAMSIZ - 1);
+        
+        if (ioctl(socket_, SIOCSLAGGPORT, &ifr) < 0) {
+            logger.error("Failed to remove port " + portName + " from LAGG interface " + name_ + ": " + std::strerror(errno));
+            closeSocket();
+            return false;
+        }
+        
+        // Remove from local list
+        laggPorts_.erase(std::remove(laggPorts_.begin(), laggPorts_.end(), portName), laggPorts_.end());
+        logger.info("Removed port " + portName + " from LAGG interface " + name_);
+        return true;
     }
 
-    // Set interface MTU
-    if (ioctl(socket_, SIOCSIFMTU, &ifr) < 0) {
-        return false;
+    std::vector<std::string> LagInterface::getLaggPorts() const {
+        return laggPorts_;
     }
 
-    // Set LAGG-specific information
-    // TODO: Use SIOCSLAGG to set LAGG details
+    LagInterface::operator netd::shared::interface::LagInterface() const {
+        // Cast to shared interface - we inherit from it so this is safe
+        return static_cast<const netd::shared::interface::LagInterface&>(*this);
+    }
 
-    return true;
-}
+    bool LagInterface::openSocket() {
+        if (socket_ >= 0) {
+            return true; // Already open
+        }
 
-} // namespace interface
-} // namespace freebsd
-} // namespace netd
+        socket_ = socket(AF_INET, SOCK_DGRAM, 0);
+        if (socket_ < 0) {
+            return false;
+        }
+
+        return true;
+    }
+
+    void LagInterface::closeSocket() {
+        if (socket_ >= 0) {
+            close(socket_);
+            socket_ = -1;
+        }
+    }
+
+    bool LagInterface::getLaggInfo() {
+        struct ifreq ifr;
+        std::memset(&ifr, 0, sizeof(ifr));
+        std::strncpy(ifr.ifr_name, name_.c_str(), IFNAMSIZ - 1);
+
+        // Get interface flags
+        if (ioctl(socket_, SIOCGIFFLAGS, &ifr) < 0) {
+            return false;
+        }
+
+        // Get interface MTU
+        if (ioctl(socket_, SIOCGIFMTU, &ifr) < 0) {
+            return false;
+        }
+
+        // Get LAGG-specific information
+        // TODO: Use SIOCGLAGG to get LAGG details
+
+        return true;
+    }
+
+    bool LagInterface::setLaggInfo() const {
+        struct ifreq ifr;
+        std::memset(&ifr, 0, sizeof(ifr));
+        std::strncpy(ifr.ifr_name, name_.c_str(), IFNAMSIZ - 1);
+
+        // Set interface flags
+        if (ioctl(socket_, SIOCSIFFLAGS, &ifr) < 0) {
+            return false;
+        }
+
+        // Set interface MTU
+        if (ioctl(socket_, SIOCSIFMTU, &ifr) < 0) {
+            return false;
+        }
+
+        // Set LAGG-specific information
+        // TODO: Use SIOCSLAGG to set LAGG details
+
+        return true;
+    }
+
+} // namespace netd::freebsd::interface

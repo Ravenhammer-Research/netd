@@ -36,11 +36,9 @@
 #include <shared/include/interface/tun.hpp>
 #include <shared/include/base/serialization.hpp>
 
-namespace netd {
-namespace freebsd {
-namespace interface {
+namespace netd::freebsd::interface {
 
-class TunInterface : public netd::TunInterface {
+    class TunInterface : public netd::shared::interface::TunInterface {
 public:
     TunInterface();
     explicit TunInterface(const std::string& name);
@@ -64,8 +62,8 @@ public:
     // Statistics and information
     std::string getType() const { return "tun"; }
 
-    // Conversion to shared interface for serialization
-    operator netd::TunInterface() const;
+        // Conversion to shared interface for serialization
+        operator netd::shared::interface::TunInterface() const;
 
 private:
     // Interface name
@@ -85,8 +83,6 @@ private:
     bool setTunInfo() const;
 };
 
-} // namespace interface
-} // namespace freebsd
-} // namespace netd
+} // namespace netd::freebsd::interface
 
 #endif // NETD_FREEBSD_INTERFACE_TUN_HPP

@@ -38,195 +38,191 @@
 #include <cstring>
 #include <cstdlib>
 
-namespace netd {
-namespace freebsd {
-namespace interface {
+namespace netd::freebsd::interface {
 
-EpairInterface::EpairInterface()
-    : netd::EpairInterface(),
-      name_(""),
-      peerEnd_(""),
-      epairUnit_(-1),
-      socket_(-1) {
-}
-
-EpairInterface::EpairInterface(const std::string& name)
-    : netd::EpairInterface(),
-      name_(name),
-      peerEnd_(""),
-      epairUnit_(-1),
-      socket_(-1) {
-}
-
-EpairInterface::~EpairInterface() {
-    closeSocket();
-}
-
-bool EpairInterface::createInterface() {
-    auto& logger = Logger::getInstance();
-    
-    if (!openSocket()) {
-        logger.error("Failed to open socket for creating epair interface");
-        return false;
+    EpairInterface::EpairInterface()
+        : netd::shared::interface::EpairInterface(),
+        name_(""),
+        peerEnd_(""),
+        epairUnit_(-1),
+        socket_(-1) {
     }
-    
-    // Use SIOCIFCREATE to create epair interface
-    struct ifreq ifr;
-    std::memset(&ifr, 0, sizeof(ifr));
-    std::strncpy(ifr.ifr_name, name_.c_str(), IFNAMSIZ - 1);
-    
-    if (ioctl(socket_, SIOCIFCREATE, &ifr) < 0) {
-        logger.error("Failed to create epair interface " + name_ + ": " + std::strerror(errno));
+
+    EpairInterface::EpairInterface(const std::string& name)
+        : netd::shared::interface::EpairInterface(),
+        name_(name),
+        peerEnd_(""),
+        epairUnit_(-1),
+        socket_(-1) {
+    }
+
+    EpairInterface::~EpairInterface() {
         closeSocket();
-        return false;
     }
-    
-    logger.info("Created epair interface " + name_);
-    return true;
-}
 
-bool EpairInterface::destroyInterface() {
-    auto& logger = Logger::getInstance();
-    
-    if (!openSocket()) {
-        logger.error("Failed to open socket for destroying epair interface");
-        return false;
+    bool EpairInterface::createInterface() {
+        auto& logger = shared::Logger::getInstance();
+        
+        if (!openSocket()) {
+            logger.error("Failed to open socket for creating epair interface");
+            return false;
+        }
+        
+        // Use SIOCIFCREATE to create epair interface
+        struct ifreq ifr;
+        std::memset(&ifr, 0, sizeof(ifr));
+        std::strncpy(ifr.ifr_name, name_.c_str(), IFNAMSIZ - 1);
+        
+        if (ioctl(socket_, SIOCIFCREATE, &ifr) < 0) {
+            logger.error("Failed to create epair interface " + name_ + ": " + std::strerror(errno));
+            closeSocket();
+            return false;
+        }
+        
+        logger.info("Created epair interface " + name_);
+        return true;
     }
-    
-    // Use SIOCIFDESTROY to destroy epair interface
-    struct ifreq ifr;
-    std::memset(&ifr, 0, sizeof(ifr));
-    std::strncpy(ifr.ifr_name, name_.c_str(), IFNAMSIZ - 1);
-    
-    if (ioctl(socket_, SIOCIFDESTROY, &ifr) < 0) {
-        logger.error("Failed to destroy epair interface " + name_ + ": " + std::strerror(errno));
+
+    bool EpairInterface::destroyInterface() {
+        auto& logger = shared::Logger::getInstance();
+        
+        if (!openSocket()) {
+            logger.error("Failed to open socket for destroying epair interface");
+            return false;
+        }
+        
+        // Use SIOCIFDESTROY to destroy epair interface
+        struct ifreq ifr;
+        std::memset(&ifr, 0, sizeof(ifr));
+        std::strncpy(ifr.ifr_name, name_.c_str(), IFNAMSIZ - 1);
+        
+        if (ioctl(socket_, SIOCIFDESTROY, &ifr) < 0) {
+            logger.error("Failed to destroy epair interface " + name_ + ": " + std::strerror(errno));
+            closeSocket();
+            return false;
+        }
+        
+        logger.info("Destroyed epair interface " + name_);
+        return true;
+    }
+
+    bool EpairInterface::loadFromSystem() {
+        auto& logger = shared::Logger::getInstance();
+        
+        if (!openSocket()) {
+            return false;
+        }
+        
+        if (!getEpairInfo()) {
+            closeSocket();
+            return false;
+        }
+        
         closeSocket();
-        return false;
+        logger.info("Loaded epair interface information from system: " + name_);
+        return true;
     }
-    
-    logger.info("Destroyed epair interface " + name_);
-    return true;
-}
 
-bool EpairInterface::loadFromSystem() {
-    auto& logger = Logger::getInstance();
-    
-    if (!openSocket()) {
-        return false;
-    }
-    
-    if (!getEpairInfo()) {
+    bool EpairInterface::applyToSystem() {
+        auto& logger = shared::Logger::getInstance();
+        
+        if (!openSocket()) {
+            return false;
+        }
+        
+        if (!setEpairInfo()) {
+            closeSocket();
+            return false;
+        }
+        
         closeSocket();
-        return false;
-    }
-    
-    closeSocket();
-    logger.info("Loaded epair interface information from system: " + name_);
-    return true;
-}
-
-bool EpairInterface::applyToSystem() {
-    auto& logger = Logger::getInstance();
-    
-    if (!openSocket()) {
-        return false;
-    }
-    
-    if (!setEpairInfo()) {
-        closeSocket();
-        return false;
-    }
-    
-    closeSocket();
-    logger.info("Applied epair interface configuration to system: " + name_);
-    return true;
-}
-
-bool EpairInterface::setPeerEnd(const std::string& peerEnd) {
-    peerEnd_ = peerEnd;
-    return true;
-}
-
-std::string EpairInterface::getPeerEnd() const {
-    return peerEnd_;
-}
-
-bool EpairInterface::setEpairUnit(int unit) {
-    epairUnit_ = unit;
-    return true;
-}
-
-int EpairInterface::getEpairUnit() const {
-    return epairUnit_;
-}
-
-EpairInterface::operator netd::EpairInterface() const {
-    // Cast to shared interface - we inherit from it so this is safe
-    return static_cast<const netd::EpairInterface&>(*this);
-}
-
-bool EpairInterface::openSocket() {
-    if (socket_ >= 0) {
-        return true; // Already open
+        logger.info("Applied epair interface configuration to system: " + name_);
+        return true;
     }
 
-    socket_ = socket(AF_INET, SOCK_DGRAM, 0);
-    if (socket_ < 0) {
-        return false;
+    bool EpairInterface::setPeerEnd(const std::string& peerEnd) {
+        peerEnd_ = peerEnd;
+        return true;
     }
 
-    return true;
+    std::string EpairInterface::getPeerEnd() const {
+        return peerEnd_;
+    }
+
+    bool EpairInterface::setEpairUnit(int unit) {
+        epairUnit_ = unit;
+        return true;
+    }
+
+    int EpairInterface::getEpairUnit() const {
+        return epairUnit_;
+    }
+
+    EpairInterface::operator netd::shared::interface::EpairInterface() const {
+        // Cast to shared interface - we inherit from it so this is safe
+        return static_cast<const netd::shared::interface::EpairInterface&>(*this);
+    }
+
+    bool EpairInterface::openSocket() {
+        if (socket_ >= 0) {
+            return true; // Already open
+        }
+
+        socket_ = socket(AF_INET, SOCK_DGRAM, 0);
+        if (socket_ < 0) {
+            return false;
+        }
+
+        return true;
+    }
+
+    void EpairInterface::closeSocket() {
+        if (socket_ >= 0) {
+            close(socket_);
+            socket_ = -1;
+        }
+    }
+
+    bool EpairInterface::getEpairInfo() {
+        struct ifreq ifr;
+        std::memset(&ifr, 0, sizeof(ifr));
+        std::strncpy(ifr.ifr_name, name_.c_str(), IFNAMSIZ - 1);
+
+        // Get interface flags
+        if (ioctl(socket_, SIOCGIFFLAGS, &ifr) < 0) {
+            return false;
+        }
+
+        // Get interface MTU
+        if (ioctl(socket_, SIOCGIFMTU, &ifr) < 0) {
+            return false;
+        }
+
+        // Get epair-specific information
+        // TODO: Use epair-specific ioctls to get epair details
+
+        return true;
+    }
+
+    bool EpairInterface::setEpairInfo() const {
+        struct ifreq ifr;
+        std::memset(&ifr, 0, sizeof(ifr));
+        std::strncpy(ifr.ifr_name, name_.c_str(), IFNAMSIZ - 1);
+
+        // Set interface flags
+        if (ioctl(socket_, SIOCSIFFLAGS, &ifr) < 0) {
+            return false;
+        }
+
+        // Set interface MTU
+        if (ioctl(socket_, SIOCSIFMTU, &ifr) < 0) {
+            return false;
+        }
+
+        // Set epair-specific information
+        // TODO: Use epair-specific ioctls to set epair details
+
+        return true;
 }
 
-void EpairInterface::closeSocket() {
-    if (socket_ >= 0) {
-        close(socket_);
-        socket_ = -1;
-    }
-}
-
-bool EpairInterface::getEpairInfo() {
-    struct ifreq ifr;
-    std::memset(&ifr, 0, sizeof(ifr));
-    std::strncpy(ifr.ifr_name, name_.c_str(), IFNAMSIZ - 1);
-
-    // Get interface flags
-    if (ioctl(socket_, SIOCGIFFLAGS, &ifr) < 0) {
-        return false;
-    }
-
-    // Get interface MTU
-    if (ioctl(socket_, SIOCGIFMTU, &ifr) < 0) {
-        return false;
-    }
-
-    // Get epair-specific information
-    // TODO: Use epair-specific ioctls to get epair details
-
-    return true;
-}
-
-bool EpairInterface::setEpairInfo() const {
-    struct ifreq ifr;
-    std::memset(&ifr, 0, sizeof(ifr));
-    std::strncpy(ifr.ifr_name, name_.c_str(), IFNAMSIZ - 1);
-
-    // Set interface flags
-    if (ioctl(socket_, SIOCSIFFLAGS, &ifr) < 0) {
-        return false;
-    }
-
-    // Set interface MTU
-    if (ioctl(socket_, SIOCSIFMTU, &ifr) < 0) {
-        return false;
-    }
-
-    // Set epair-specific information
-    // TODO: Use epair-specific ioctls to set epair details
-
-    return true;
-}
-
-} // namespace interface
-} // namespace freebsd
-} // namespace netd
+} // namespace netd::freebsd::interface

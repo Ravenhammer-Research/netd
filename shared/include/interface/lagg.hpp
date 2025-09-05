@@ -29,33 +29,35 @@
 #define NETD_INTERFACE_LAGG_HPP
 
 #include <shared/include/interface/base/ether.hpp>
-#include <shared/include/master.hpp>
+#include <shared/include/interface/base/master.hpp>
 #include <shared/include/base/serialization.hpp>
 #include <string>
 #include <cstdint>
 #include <memory>
 #include <vector>
 
-namespace netd {
+namespace netd::shared::interface {
 
-class LagInterface : public interface::base::Ether, public Master, public base::Serialization<LagInterface> {
+    class LagInterface : public netd::shared::interface::base::Ether, 
+        public netd::shared::interface::base::Master, 
+        public netd::shared::base::Serialization<LagInterface> {
 public:
-    LagInterface();
-    explicit LagInterface(const std::string& name);
-    virtual ~LagInterface();
+        LagInterface();
+        explicit LagInterface(const std::string& name);
+        virtual ~LagInterface();
 
-    // LAGG-specific configuration
-    virtual bool setLaggProtocol(const std::string& protocol) { return false; }
-    virtual std::string getLaggProtocol() const { return "failover"; }
-    virtual bool addLaggPort(const std::string& portName) { return false; }
-    virtual bool removeLaggPort(const std::string& portName) { return false; }
-    virtual std::vector<std::string> getLaggPorts() const { return {}; }
+        // LAGG-specific configuration
+        virtual bool setLaggProtocol(const std::string& protocol) { return false; }
+        virtual std::string getLaggProtocol() const { return "failover"; }
+        virtual bool addLaggPort(const std::string& portName) { return false; }
+        virtual bool removeLaggPort(const std::string& portName) { return false; }
+        virtual std::vector<std::string> getLaggPorts() const { return {}; }
 
-    // YANG serialization
-    lyd_node* toYang(ly_ctx* ctx) const override;
-    static LagInterface fromYang(const ly_ctx* ctx, const lyd_node* node);
-};
+        // YANG serialization
+        lyd_node* toYang(ly_ctx* ctx) const override;
+        static LagInterface fromYang(const ly_ctx* ctx, const lyd_node* node);
+    };
 
-} // namespace netd
+} // namespace netd::shared::interface
 
 #endif // NETD_INTERFACE_LAGG_HPP

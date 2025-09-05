@@ -36,204 +36,182 @@
 #include <cstdlib>
 #include <sstream>
 
-namespace netd {
-namespace freebsd {
+namespace netd::freebsd {
 
-Route::Route()
-    : netd::Route(),
-      destination_(""),
-      gateway_(""),
-      interface_(""),
-      metric_(0),
-      flags_(0),
-      fibTable_(0) {
-}
-
-Route::Route(const std::string& destination, const std::string& gateway, const std::string& interface)
-    : netd::Route(),
-      destination_(destination),
-      gateway_(gateway),
-      interface_(interface),
-      metric_(0),
-      flags_(0),
-      fibTable_(0) {
-}
-
-Route::~Route() {
-    // Cleanup if needed
-}
-
-bool Route::add() {
-    auto& logger = Logger::getInstance();
-    
-    // Use route command to add route
-    std::string cmd = "route add " + destination_;
-    if (!gateway_.empty()) {
-        cmd += " " + gateway_;
-    }
-    if (!interface_.empty()) {
-        cmd += " -iface " + interface_;
-    }
-    if (fibTable_ > 0) {
-        cmd += " -T " + std::to_string(fibTable_);
-    }
-    if (metric_ > 0) {
-        cmd += " -hopcount " + std::to_string(metric_);
-    }
-    
-    // TODO: Replace with proper FreeBSD routing socket calls
-    // For now, we'll use a placeholder that doesn't use std::system
-    logger.info("Route addition would be: " + cmd);
-    return true;
-
-    logger.info("Added route: " + destination_);
-    return true;
-}
-
-bool Route::remove() {
-    auto& logger = Logger::getInstance();
-    
-    // Use route command to remove route
-    std::string cmd = "route delete " + destination_;
-    if (!gateway_.empty()) {
-        cmd += " " + gateway_;
-    }
-    if (fibTable_ > 0) {
-        cmd += " -T " + std::to_string(fibTable_);
-    }
-    
-    // TODO: Replace with proper FreeBSD routing socket calls
-    // For now, we'll use a placeholder that doesn't use std::system
-    logger.info("Route removal would be: " + cmd);
-    return true;
-
-    logger.info("Removed route: " + destination_);
-    return true;
-}
-
-bool Route::modify() {
-    auto& logger = Logger::getInstance();
-    
-    // Remove existing route and add modified one
-    if (!remove()) {
-        return false;
-    }
-    
-    if (!add()) {
-        return false;
+    Route::Route()
+        : netd::shared::Route(),
+        destination_(""),
+        gateway_(""),
+        interface_(""),
+        metric_(0),
+        flags_(0),
+        fibTable_(0) {
     }
 
-    logger.info("Modified route: " + destination_);
-    return true;
-}
-
-bool Route::loadFromSystem() {
-    auto& logger = Logger::getInstance();
-    
-    // TODO: Implement route loading from system
-    // This would involve parsing the output of "route show" command
-    // or using routing socket APIs to get route information
-    
-    logger.info("Loaded route information from system: " + destination_);
-    return true;
-}
-
-bool Route::applyToSystem() const {
-    auto& logger = Logger::getInstance();
-    
-    // Apply route configuration to system
-    // This would involve using routing socket APIs or route command
-    
-    logger.info("Applied route configuration to system: " + destination_);
-    return true;
-}
-
-bool Route::setMetric(uint32_t metric) {
-    metric_ = metric;
-    return true;
-}
-
-uint32_t Route::getMetric() const {
-    return metric_;
-}
-
-bool Route::setFlags(uint32_t flags) {
-    flags_ = flags;
-    return true;
-}
-
-uint32_t Route::getFlags() const {
-    return flags_;
-}
-
-bool Route::setFibTable(uint32_t fibTable) {
-    if (fibTable > 255) { // FreeBSD FIB table limit
-        return false;
+    Route::Route(const std::string& destination, const std::string& gateway, const std::string& interface)
+        : netd::shared::Route(),
+        destination_(destination),
+        gateway_(gateway),
+        interface_(interface),
+        metric_(0),
+        flags_(0),
+        fibTable_(0) {
     }
-    
-    fibTable_ = fibTable;
-    return true;
-}
 
-uint32_t Route::getFibTable() const {
-    return fibTable_;
-}
-
-Route::operator const netd::Route&() const {
-    // Cast to shared Route - we inherit from it so this is safe
-    return static_cast<const netd::Route&>(*this);
-}
-
-bool Route::parseRouteString(const std::string& routeStr) {
-    // TODO: Implement route string parsing
-    // This would parse route strings like "192.168.1.0/24 192.168.1.1 em0"
-    
-    return true;
-}
-
-std::string Route::formatRouteString() const {
-    std::ostringstream oss;
-    oss << destination_;
-    
-    if (!gateway_.empty()) {
-        oss << " " << gateway_;
+    Route::~Route() {
+        // Cleanup if needed
     }
-    
-    if (!interface_.empty()) {
-        oss << " " << interface_;
+
+    bool Route::add() {
+        auto& logger = shared::Logger::getInstance();
+        
+        // Use route command to add route
+        std::string cmd = "route add " + destination_;
+        if (!gateway_.empty()) {
+            cmd += " " + gateway_;
+        }
+        if (!interface_.empty()) {
+            cmd += " -iface " + interface_;
+        }
+        if (fibTable_ > 0) {
+            cmd += " -T " + std::to_string(fibTable_);
+        }
+        if (metric_ > 0) {
+            cmd += " -hopcount " + std::to_string(metric_);
+        }
+        
+        // TODO: Replace with proper FreeBSD routing socket calls
+        // For now, we'll use a placeholder that doesn't use std::system
+        logger.info("Route addition would be: " + cmd);
+        return true;
+
+        logger.info("Added route: " + destination_);
+        return true;
     }
-    
-    if (fibTable_ > 0) {
-        oss << " (FIB " << fibTable_ << ")";
+
+    bool Route::remove() {
+        auto& logger = shared::Logger::getInstance();
+        
+        // Use route command to remove route
+        std::string cmd = "route delete " + destination_;
+        if (!gateway_.empty()) {
+            cmd += " " + gateway_;
+        }
+        if (fibTable_ > 0) {
+            cmd += " -T " + std::to_string(fibTable_);
+        }
+        
+        // TODO: Replace with proper FreeBSD routing socket calls
+        // For now, we'll use a placeholder that doesn't use std::system
+        logger.info("Route removal would be: " + cmd);
+        return true;
+
+        logger.info("Removed route: " + destination_);
+        return true;
     }
-    
-    if (metric_ > 0) {
-        oss << " metric " << metric_;
+
+    bool Route::modify() {
+        auto& logger = shared::Logger::getInstance();
+        
+        // Remove existing route and add modified one
+        if (!remove()) {
+            return false;
+        }
+        
+        if (!add()) {
+            return false;
+        }
+
+        logger.info("Modified route: " + destination_);
+        return true;
     }
-    
-    return oss.str();
-}
 
-// Implement abstract methods from shared Route
-std::shared_ptr<netd::Address> Route::getDestination() const {
-    // TODO: Create proper Address object from destination string
-    // For now, return nullptr
-    return nullptr;
-}
+    bool Route::loadFromSystem() {
+        auto& logger = shared::Logger::getInstance();
+        
+        // TODO: Implement route loading from system
+        // This would involve parsing the output of "route show" command
+        // or using routing socket APIs to get route information
+        
+        logger.info("Loaded route information from system: " + destination_);
+        return true;
+    }
 
-std::shared_ptr<netd::Address> Route::getGateway() const {
-    // TODO: Create proper Address object from gateway string
-    // For now, return nullptr
-    return nullptr;
-}
+    bool Route::applyToSystem() const {
+        auto& logger = shared::Logger::getInstance();
+        
+        // Apply route configuration to system
+        // This would involve using routing socket APIs or route command
+        
+        logger.info("Applied route configuration to system: " + destination_);
+        return true;
+    }
 
-std::string Route::getInterface() const {
-    return interface_;
-}
+    bool Route::setMetric(uint32_t metric) {
+        metric_ = metric;
+        return true;
+    }
 
-uint32_t Route::getVRF() const {
-    return fibTable_;
-}
+    uint32_t Route::getMetric() const {
+        return metric_;
+    }
 
-} // namespace freebsd
-} // namespace netd
+    bool Route::setFlags(uint32_t flags) {
+        flags_ = flags;
+        return true;
+    }
+
+    uint32_t Route::getFlags() const {
+        return flags_;
+    }
+
+    bool Route::setFibTable(uint32_t fibTable) {
+        if (fibTable > 255) { // FreeBSD FIB table limit
+            return false;
+        }
+        
+        fibTable_ = fibTable;
+        return true;
+    }
+
+    uint32_t Route::getFibTable() const {
+        return fibTable_;
+    }
+
+    Route::operator const netd::shared::Route&() const {
+        // Cast to shared Route - we inherit from it so this is safe
+        return static_cast<const netd::shared::Route&>(*this);
+    }
+
+    bool Route::parseRouteString(const std::string& routeStr) {
+        // TODO: Implement route string parsing
+        // This would parse route strings like "192.168.1.0/24 192.168.1.1 em0"
+        
+        return true;
+    }
+
+    std::string Route::formatRouteString() const {
+        std::ostringstream oss;
+        oss << destination_;
+        
+        if (!gateway_.empty()) {
+            oss << " " << gateway_;
+        }
+        
+        if (!interface_.empty()) {
+            oss << " " << interface_;
+        }
+        
+        if (fibTable_ > 0) {
+            oss << " (FIB " << fibTable_ << ")";
+        }
+        
+        if (metric_ > 0) {
+            oss << " metric " << metric_;
+        }
+        
+        return oss.str();
+    }
+
+
+} // namespace netd::freebsd

@@ -29,34 +29,36 @@
 #define NETD_INTERFACE_WIREGUARD_HPP
 
 #include <shared/include/interface/base/ether.hpp>
-#include <shared/include/tunnel.hpp>
+#include <shared/include/interface/base/tunnel.hpp>
 #include <shared/include/base/serialization.hpp>
 #include <string>
 #include <cstdint>
 #include <memory>
 #include <vector>
 
-namespace netd {
+namespace netd::shared::interface {
 
-class WireguardInterface : public interface::base::Ether, public Tunnel, public base::Serialization<WireguardInterface> {
-public:
-    WireguardInterface();
-    explicit WireguardInterface(const std::string& name);
-    virtual ~WireguardInterface();
+    class WireguardInterface : public netd::shared::interface::base::Ether, 
+        public netd::shared::interface::base::Tunnel, 
+        public netd::shared::base::Serialization<WireguardInterface> {
+    public:
+        WireguardInterface();
+        explicit WireguardInterface(const std::string& name);
+        virtual ~WireguardInterface();
 
-    // WireGuard-specific configuration
-    virtual bool setPrivateKey(const std::string& privateKey) { return false; }
-    virtual std::string getPrivateKey() const { return ""; }
-    virtual bool setListenPort(uint16_t port) { return false; }
-    virtual uint16_t getListenPort() const { return 51820; }
-    virtual bool addPeer(const std::string& publicKey, const std::string& endpoint) { return false; }
-    virtual bool removePeer(const std::string& publicKey) { return false; }
+        // WireGuard-specific configuration
+        virtual bool setPrivateKey(const std::string& privateKey) { return false; }
+        virtual std::string getPrivateKey() const { return ""; }
+        virtual bool setListenPort(uint16_t port) { return false; }
+        virtual uint16_t getListenPort() const { return 51820; }
+        virtual bool addPeer(const std::string& publicKey, const std::string& endpoint) { return false; }
+        virtual bool removePeer(const std::string& publicKey) { return false; }
 
-    // YANG serialization
-    lyd_node* toYang(ly_ctx* ctx) const override;
-    static WireguardInterface fromYang(const ly_ctx* ctx, const lyd_node* node);
-};
+        // YANG serialization
+        lyd_node* toYang(ly_ctx* ctx) const override;
+        static WireguardInterface fromYang(const ly_ctx* ctx, const lyd_node* node);
+    };
 
-} // namespace netd
+} // namespace netd::shared::interface
 
 #endif // NETD_INTERFACE_WIREGUARD_HPP

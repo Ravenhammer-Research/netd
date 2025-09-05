@@ -18,6 +18,8 @@ add_subdirectory(src)
 target_link_libraries(netd_shared
     yang
     netconf2
+    netd_request
+    netd_response
 )
 
 # Set library directories
@@ -44,7 +46,7 @@ target_compile_definitions(netd_shared
 )
 
 # Install rules
-install(TARGETS netd_shared
+install(TARGETS netd_shared netd_request netd_response
     EXPORT netd_sharedTargets
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib

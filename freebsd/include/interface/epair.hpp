@@ -36,57 +36,53 @@
 #include <shared/include/interface/epair.hpp>
 #include <shared/include/base/serialization.hpp>
 
-namespace netd {
-namespace freebsd {
-namespace interface {
+namespace netd::freebsd::interface {
 
-class EpairInterface : public netd::EpairInterface {
-public:
-    EpairInterface();
-    explicit EpairInterface(const std::string& name);
-    virtual ~EpairInterface();
+    class EpairInterface : public netd::shared::interface::EpairInterface {
+    public:
+        EpairInterface();
+        explicit EpairInterface(const std::string& name);
+        virtual ~EpairInterface();
 
-    // Interface name
-    std::string getName() const { return name_; }
+        // Interface name
+        std::string getName() const { return name_; }
 
-    // FreeBSD-specific operations
-    bool createInterface();
-    bool destroyInterface();
-    bool loadFromSystem();
-    bool applyToSystem();
+        // FreeBSD-specific operations
+        bool createInterface();
+        bool destroyInterface();
+        bool loadFromSystem();
+        bool applyToSystem();
 
-    // Epair-specific configuration
-    bool setPeerEnd(const std::string& peerEnd);
-    std::string getPeerEnd() const;
-    bool setEpairUnit(int unit);
-    int getEpairUnit() const;
+        // Epair-specific configuration
+        bool setPeerEnd(const std::string& peerEnd);
+        std::string getPeerEnd() const;
+        bool setEpairUnit(int unit);
+        int getEpairUnit() const;
 
-    // Statistics and information
-    std::string getType() const { return "epair"; }
+        // Statistics and information
+        std::string getType() const { return "epair"; }
 
-    // Conversion to shared interface for serialization
-    operator netd::EpairInterface() const;
+        // Conversion to shared interface for serialization
+        operator netd::shared::interface::EpairInterface() const;
 
-private:
-    // Interface name
-    std::string name_;
-    
-    // Epair-specific members
-    std::string peerEnd_;
-    int epairUnit_;
-    
-    // FreeBSD system interface
-    int socket_;
-    
-    // Helper methods
-    bool openSocket();
-    void closeSocket();
-    bool getEpairInfo();
-    bool setEpairInfo() const;
-};
+    private:
+        // Interface name
+        std::string name_;
+        
+        // Epair-specific members
+        std::string peerEnd_;
+        int epairUnit_;
+        
+        // FreeBSD system interface
+        int socket_;
+        
+        // Helper methods
+        bool openSocket();
+        void closeSocket();
+        bool getEpairInfo();
+        bool setEpairInfo() const;
+    };
 
-} // namespace interface
-} // namespace freebsd
-} // namespace netd
+} // namespace netd::freebsd::interface
 
 #endif // NETD_FREEBSD_INTERFACE_EPAIR_HPP

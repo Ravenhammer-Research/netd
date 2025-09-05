@@ -26,8 +26,9 @@
  */
 
 #include <shared/include/logger.hpp>
-#include <shared/include/request.hpp>
-#include <shared/include/response.hpp>
+#include <shared/include/request/config.hpp>
+#include <shared/include/request/get.hpp>
+#include <shared/include/request/edit.hpp>
 #include <shared/include/yang.hpp>
 #include <libnetconf2/session_client.h>
 #include <libnetconf2/messages_client.h>
@@ -35,239 +36,130 @@
 #include <cstring>
 #include <stdexcept>
 
-namespace netd {
+namespace netd::client {
+    using netd::shared::Logger;
+    using netd::shared::Yang;
 
-class NetconfClient {
-public:
-    NetconfClient() : session_(nullptr), connected_(false) {
-        yang_ = createYang();
-    }
-    
-    ~NetconfClient() {
-        if (connected_) {
-            disconnect();
+    class NetconfClient {
+    public:
+        NetconfClient() : session_(nullptr), connected_(false) {
+            Yang::getInstance();
         }
-    }
-
-    bool connect(const std::string& socketPath = "/tmp/netd.sock") {
-        auto& logger = Logger::getInstance();
         
-        // Use the shared YANG context
-        struct ly_ctx* ctx = yang_->getContext();
-
-        // Connect to NETCONF server via Unix socket
-        session_ = nc_connect_unix(socketPath.c_str(), ctx);
-        if (!session_) {
-            logger.error("Failed to connect to NETD server at " + socketPath);
-            return false;
+        ~NetconfClient() {
+            if (connected_) {
+                disconnect();
+            }
         }
 
-        connected_ = true;
-        logger.info("Connected to NETD server at " + socketPath);
-        return true;
+        bool connect(const std::string& socketPath = "/tmp/netd.sock") {
+            auto& logger = Logger::getInstance();
+            
+            // Use the shared YANG context
+            struct ly_ctx* ctx = Yang::getInstance().getContext();
+
+            // Connect to NETCONF server via Unix socket
+            session_ = nc_connect_unix(socketPath.c_str(), ctx);
+            if (!session_) {
+                logger.error("Failed to connect to NETD server at " + socketPath);
+                return false;
+            }
+
+            connected_ = true;
+            logger.info("Connected to NETD server at " + socketPath);
+            return true;
+        }
+
+        void disconnect() {
+            if (session_) {
+                nc_session_free(session_, nullptr);
+                session_ = nullptr;
+            }
+            connected_ = false;
+        }
+
+        bool isConnected() const {
+            return connected_;
+        }
+
+        // Send a NETCONF request and receive response
+        std::string sendRequest(const std::string& request) {
+            if (!connected_) {
+                throw std::runtime_error("Not connected to server");
+            }
+
+            auto& logger = Logger::getInstance();
+            
+            // TODO: Parse request string to nc_rpc and send via nc_send_rpc
+            // For now, return a placeholder response
+            logger.debug("Sending request: " + request);
+            return "NETCONF response placeholder";
+        }
+
+        // Convenience methods for common NETCONF operations
+        std::string getConfig(const std::string& source = "running") {
+            if (!connected_) {
+                throw std::runtime_error("Not connected to server");
+            }
+
+            // TODO: Implement actual get-config request
+            return "get-config response placeholder";
+        }
+
+        std::string get(const std::string& filter = "") {
+            if (!connected_) {
+                throw std::runtime_error("Not connected to server");
+            }
+
+            // TODO: Implement actual get request
+            return "get response placeholder";
+        }
+
+        std::string editConfig(const std::string& target = "candidate", const std::string& config = "") {
+            if (!connected_) {
+                throw std::runtime_error("Not connected to server");
+            }
+
+            // TODO: Implement actual edit-config request
+            return "edit-config response placeholder";
+        }
+
+    private:
+        struct nc_session* session_;
+        bool connected_;
+    };
+
+    // Global NETCONF client instance
+    static NetconfClient g_netconfClient;
+
+    // Public interface functions
+    bool connectToServer(const std::string& socketPath) {
+        return g_netconfClient.connect(socketPath);
     }
 
-    void disconnect() {
-        if (session_) {
-            nc_session_free(session_, nullptr);
-            session_ = nullptr;
-        }
-        connected_ = false;
+    void disconnectFromServer() {
+        g_netconfClient.disconnect();
     }
 
-    bool isConnected() const {
-        return connected_;
+    bool isConnectedToServer() {
+        return g_netconfClient.isConnected();
     }
 
-    // Send a NETCONF request and receive response
-    std::string sendRequest(const std::string& request) {
-        if (!connected_) {
-            throw std::runtime_error("Not connected to server");
-        }
-
-        auto& logger = Logger::getInstance();
-        
-        // TODO: Parse request string to nc_rpc and send via nc_send_rpc
-        // For now, return a placeholder response
-        logger.debug("Sending request: " + request);
-        return "NETCONF response placeholder";
+    std::string sendNetconfRequest(const std::string& request) {
+        return g_netconfClient.sendRequest(request);
     }
 
-    // Convenience methods for common NETCONF operations
-    netd::Response getConfig(const std::string& source = "running") {
-        if (!connected_) {
-            throw std::runtime_error("Not connected to server");
-        }
-
-        // Convert source string to NC_DATASTORE
-        NC_DATASTORE ncSource = NC_DATASTORE_RUNNING;
-        if (source == "candidate") {
-            ncSource = NC_DATASTORE_CANDIDATE;
-        } else if (source == "startup") {
-            ncSource = NC_DATASTORE_STARTUP;
-        }
-
-        // Create get-config RPC
-        struct nc_rpc* rpc = nc_rpc_getconfig(ncSource, nullptr, NC_WD_UNKNOWN, NC_PARAMTYPE_CONST);
-        if (!rpc) {
-            return netd::Response("1", "Failed to create get-config RPC", false);
-        }
-
-        // Send RPC and get message ID
-        uint64_t msgid;
-        NC_MSG_TYPE msgtype = nc_send_rpc(session_, rpc, 1000, &msgid);
-        if (msgtype != NC_MSG_RPC) {
-            nc_rpc_free(rpc);
-            return netd::Response("1", "Failed to send get-config RPC", false);
-        }
-
-        // Receive reply
-        struct lyd_node* envp = nullptr;
-        struct lyd_node* op = nullptr;
-        msgtype = nc_recv_reply(session_, rpc, msgid, 1000, &envp, &op);
-        
-        nc_rpc_free(rpc);
-        
-        if (msgtype == NC_MSG_REPLY) {
-            // Success - extract data from op
-            std::string data = op ? "Configuration data" : "";
-            lyd_free_tree(envp);
-            lyd_free_tree(op);
-            return netd::Response(std::to_string(msgid), data, true);
-        } else {
-            // Error
-            lyd_free_tree(envp);
-            lyd_free_tree(op);
-            return netd::Response(std::to_string(msgid), "get-config failed", false);
-        }
+    std::string getConfig(const std::string& source) {
+        return g_netconfClient.getConfig(source);
     }
 
-    netd::Response editConfig(const std::string& target = "candidate", const std::string& config = "") {
-        if (!connected_) {
-            throw std::runtime_error("Not connected to server");
-        }
-
-        // Convert target string to NC_DATASTORE
-        NC_DATASTORE ncTarget = NC_DATASTORE_CANDIDATE;
-        if (target == "running") {
-            ncTarget = NC_DATASTORE_RUNNING;
-        } else if (target == "startup") {
-            ncTarget = NC_DATASTORE_STARTUP;
-        }
-
-        // TODO: Parse config string to lyd_node
-        // For now, create empty config
-        struct lyd_node* configData = nullptr;
-
-        // Create edit-config RPC
-        struct nc_rpc* rpc = nc_rpc_edit(ncTarget, NC_RPC_EDIT_DFLTOP_MERGE, NC_RPC_EDIT_TESTOPT_SET, NC_RPC_EDIT_ERROPT_STOP, nullptr, NC_PARAMTYPE_CONST);
-        if (!rpc) {
-            return netd::Response("1", "Failed to create edit-config RPC", false);
-        }
-
-        // Send RPC and get message ID
-        uint64_t msgid;
-        NC_MSG_TYPE msgtype = nc_send_rpc(session_, rpc, 1000, &msgid);
-        if (msgtype != NC_MSG_RPC) {
-            nc_rpc_free(rpc);
-            return netd::Response("1", "Failed to send edit-config RPC", false);
-        }
-
-        // Receive reply
-        struct lyd_node* envp = nullptr;
-        struct lyd_node* op = nullptr;
-        msgtype = nc_recv_reply(session_, rpc, msgid, 1000, &envp, &op);
-        
-        nc_rpc_free(rpc);
-        
-        if (msgtype == NC_MSG_REPLY) {
-            // Success
-            lyd_free_tree(envp);
-            lyd_free_tree(op);
-            return netd::Response(std::to_string(msgid), "", true);
-        } else {
-            // Error
-            lyd_free_tree(envp);
-            lyd_free_tree(op);
-            return netd::Response(std::to_string(msgid), "edit-config failed", false);
-        }
+    std::string get(const std::string& filter) {
+        return g_netconfClient.get(filter);
     }
 
-    netd::Response commit() {
-        if (!connected_) {
-            throw std::runtime_error("Not connected to server");
-        }
-
-        // Create commit RPC
-        struct nc_rpc* rpc = nc_rpc_commit(0, 0, nullptr, nullptr, NC_PARAMTYPE_CONST);
-        if (!rpc) {
-            return netd::Response("1", "Failed to create commit RPC", false);
-        }
-
-        // Send RPC and get message ID
-        uint64_t msgid;
-        NC_MSG_TYPE msgtype = nc_send_rpc(session_, rpc, 1000, &msgid);
-        if (msgtype != NC_MSG_RPC) {
-            nc_rpc_free(rpc);
-            return netd::Response("1", "Failed to send commit RPC", false);
-        }
-
-        // Receive reply
-        struct lyd_node* envp = nullptr;
-        struct lyd_node* op = nullptr;
-        msgtype = nc_recv_reply(session_, rpc, msgid, 1000, &envp, &op);
-        
-        nc_rpc_free(rpc);
-        
-        if (msgtype == NC_MSG_REPLY) {
-            // Success
-            lyd_free_tree(envp);
-            lyd_free_tree(op);
-            return netd::Response(std::to_string(msgid), "", true);
-        } else {
-            // Error
-            lyd_free_tree(envp);
-            lyd_free_tree(op);
-            return netd::Response(std::to_string(msgid), "commit failed", false);
-        }
+    std::string editConfig(const std::string& target, const std::string& config) {
+        return g_netconfClient.editConfig(target, config);
     }
 
-private:
-    struct nc_session* session_;
-    std::unique_ptr<YangAbstract> yang_;
-    bool connected_;
-};
 
-// Global NETCONF client instance
-static NetconfClient g_netconfClient;
-
-// Public interface functions
-bool connectToServer(const std::string& socketPath) {
-    return g_netconfClient.connect(socketPath);
-}
-
-void disconnectFromServer() {
-    g_netconfClient.disconnect();
-}
-
-bool isConnectedToServer() {
-    return g_netconfClient.isConnected();
-}
-
-std::string sendNetconfRequest(const std::string& request) {
-    return g_netconfClient.sendRequest(request);
-}
-
-netd::Response getConfig(const std::string& source) {
-    return g_netconfClient.getConfig(source);
-}
-
-netd::Response editConfig(const std::string& target, const std::string& config) {
-    return g_netconfClient.editConfig(target, config);
-}
-
-netd::Response commit() {
-    return g_netconfClient.commit();
-}
-
-} // namespace netd
+} // namespace netd::client

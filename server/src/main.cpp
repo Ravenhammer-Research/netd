@@ -27,7 +27,7 @@
 
 #include <iostream>
 #include <shared/include/logger.hpp>
-#include <server/include/netconf.hpp>
+#include <server/include/netconf/server.hpp>
 #include <csignal>
 #include <chrono>
 #include <thread>
@@ -42,7 +42,7 @@ void signalHandler(int signal) {
 }
 
 int main() {
-    auto& logger = netd::Logger::getInstance();
+    auto& logger = netd::shared::Logger::getInstance();
     logger.info("NETD Server starting...");
     
     // Set up signal handlers for graceful shutdown
@@ -51,7 +51,7 @@ int main() {
     
     // Start NETCONF server with user-writable socket path
     std::string socketPath = "/tmp/netd.sock";
-    if (!netd::startNetconfServer(socketPath)) {
+    if (!netd::server::netconf::startNetconfServer(socketPath)) {
         logger.error("Failed to start NETCONF server");
         return 1;
     }
@@ -62,7 +62,7 @@ int main() {
     
     // Run the server in a separate thread so we can handle signals
     std::thread serverThread([]() {
-        netd::runNetconfServer();
+        netd::server::netconf::runNetconfServer();
     });
     
     // Main loop - just wait for shutdown signal
@@ -71,12 +71,12 @@ int main() {
     }
     
     // Stop the server and wait for thread to finish
-    netd::stopNetconfServer();
+    netd::server::netconf::stopNetconfServer();
     serverThread.join();
     
     // Graceful shutdown
     logger.info("Shutting down NETD Server...");
-    netd::stopNetconfServer();
+    netd::server::netconf::stopNetconfServer();
     logger.info("NETD Server stopped");
     
     return 0;

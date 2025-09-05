@@ -36,11 +36,9 @@
 #include <shared/include/interface/tap.hpp>
 #include <shared/include/base/serialization.hpp>
 
-namespace netd {
-namespace freebsd {
-namespace interface {
+namespace netd::freebsd::interface {
 
-class TapInterface : public netd::TapInterface {
+    class TapInterface : public netd::shared::interface::TapInterface {
 public:
     TapInterface();
     explicit TapInterface(const std::string& name);
@@ -64,8 +62,8 @@ public:
     // Statistics and information
     std::string getType() const { return "tap"; }
 
-    // Conversion to shared interface for serialization
-    operator netd::TapInterface() const;
+        // Conversion to shared interface for serialization
+        operator netd::shared::interface::TapInterface() const;
 
 private:
     // Interface name
@@ -85,8 +83,6 @@ private:
     bool setTapInfo() const;
 };
 
-} // namespace interface
-} // namespace freebsd
-} // namespace netd
+} // namespace netd::freebsd::interface
 
 #endif // NETD_FREEBSD_INTERFACE_TAP_HPP

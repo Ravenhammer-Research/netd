@@ -36,11 +36,9 @@
 #include <shared/include/interface/wireguard.hpp>
 #include <shared/include/base/serialization.hpp>
 
-namespace netd {
-namespace freebsd {
-namespace interface {
+namespace netd::freebsd::interface {
 
-class WireguardInterface : public netd::WireguardInterface {
+    class WireguardInterface : public netd::shared::interface::WireguardInterface {
 public:
     WireguardInterface();
     explicit WireguardInterface(const std::string& name);
@@ -66,8 +64,8 @@ public:
     // Statistics and information
     std::string getType() const { return "wireguard"; }
 
-    // Conversion to shared interface for serialization
-    operator netd::WireguardInterface() const;
+        // Conversion to shared interface for serialization
+        operator netd::shared::interface::WireguardInterface() const;
 
 private:
     // Interface name
@@ -88,8 +86,6 @@ private:
     bool setWireguardInfo() const;
 };
 
-} // namespace interface
-} // namespace freebsd
-} // namespace netd
+} // namespace netd::freebsd::interface
 
 #endif // NETD_FREEBSD_INTERFACE_WIREGUARD_HPP

@@ -36,60 +36,56 @@
 #include <shared/include/interface/ppp.hpp>
 #include <shared/include/base/serialization.hpp>
 
-namespace netd {
-namespace freebsd {
-namespace interface {
+namespace netd::freebsd::interface {
 
-class PppInterface : public netd::PppInterface {
-public:
-    PppInterface();
-    explicit PppInterface(const std::string& name);
-    virtual ~PppInterface();
+    class PppInterface : public netd::shared::interface::PppInterface {
+    public:
+        PppInterface();
+        explicit PppInterface(const std::string& name);
+        virtual ~PppInterface();
 
-    // Interface name
-    std::string getName() const { return name_; }
+        // Interface name
+        std::string getName() const { return name_; }
 
-    // FreeBSD-specific operations
-    bool createInterface();
-    bool destroyInterface();
-    bool loadFromSystem();
-    bool applyToSystem();
+        // FreeBSD-specific operations
+        bool createInterface();
+        bool destroyInterface();
+        bool loadFromSystem();
+        bool applyToSystem();
 
-    // PPP-specific configuration
-    bool setPppUnit(int unit);
-    int getPppUnit() const;
-    bool setPppMode(const std::string& mode);
-    std::string getPppMode() const;
-    bool setPppProtocol(const std::string& protocol);
-    std::string getPppProtocol() const;
+        // PPP-specific configuration
+        bool setPppUnit(int unit);
+        int getPppUnit() const;
+        bool setPppMode(const std::string& mode);
+        std::string getPppMode() const;
+        bool setPppProtocol(const std::string& protocol);
+        std::string getPppProtocol() const;
 
-    // Statistics and information
-    std::string getType() const { return "ppp"; }
+        // Statistics and information
+        std::string getType() const { return "ppp"; }
 
-    // Conversion to shared interface for serialization
-    operator netd::PppInterface() const;
+        // Conversion to shared interface for serialization
+        operator netd::shared::interface::PppInterface() const;
 
-private:
-    // Interface name
-    std::string name_;
-    
-    // PPP-specific members
-    int pppUnit_;
-    std::string pppMode_;
-    std::string pppProtocol_;
-    
-    // FreeBSD system interface
-    int socket_;
-    
-    // Helper methods
-    bool openSocket();
-    void closeSocket();
-    bool getPppInfo();
-    bool setPppInfo() const;
-};
+    private:
+        // Interface name
+        std::string name_;
+        
+        // PPP-specific members
+        int pppUnit_;
+        std::string pppMode_;
+        std::string pppProtocol_;
+        
+        // FreeBSD system interface
+        int socket_;
+        
+        // Helper methods
+        bool openSocket();
+        void closeSocket();
+        bool getPppInfo();
+        bool setPppInfo() const;
+    };
 
-} // namespace interface
-} // namespace freebsd
-} // namespace netd
+} // namespace netd::freebsd::interface
 
 #endif // NETD_FREEBSD_INTERFACE_PPP_HPP

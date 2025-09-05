@@ -28,31 +28,32 @@
 #ifndef NETD_INTERFACE_EPAIR_HPP
 #define NETD_INTERFACE_EPAIR_HPP
 
-#include <shared/include/ethernet.hpp>
+#include <shared/include/interface/base/ether.hpp>
 #include <shared/include/base/serialization.hpp>
 #include <string>
 #include <cstdint>
 #include <memory>
 
-namespace netd {
+namespace netd::shared::interface {
 
-class EpairInterface : public Ethernet, public base::Serialization<EpairInterface> {
+    class EpairInterface : public netd::shared::interface::base::Ether, 
+        public netd::shared::base::Serialization<EpairInterface> {
 public:
-    EpairInterface();
-    explicit EpairInterface(const std::string& name);
-    virtual ~EpairInterface();
+        EpairInterface();
+        explicit EpairInterface(const std::string& name);
+        virtual ~EpairInterface();
 
-    // Epair-specific configuration
-    virtual bool setPeerEnd(const std::string& peerEnd) { return false; }
-    virtual std::string getPeerEnd() const { return ""; }
-    virtual bool setEpairUnit(int unit) { return false; }
-    virtual int getEpairUnit() const { return -1; }
+        // Epair-specific configuration
+        virtual bool setPeerEnd(const std::string& peerEnd) { return false; }
+        virtual std::string getPeerEnd() const { return ""; }
+        virtual bool setEpairUnit(int unit) { return false; }
+        virtual int getEpairUnit() const { return -1; }
 
-    // YANG serialization
-    lyd_node* toYang(ly_ctx* ctx) const override;
-    static EpairInterface fromYang(const ly_ctx* ctx, const lyd_node* node);
-};
+        // YANG serialization
+        lyd_node* toYang(ly_ctx* ctx) const override;
+        static EpairInterface fromYang(const ly_ctx* ctx, const lyd_node* node);
+    };
 
-} // namespace netd
+} // namespace netd::shared::interface
 
 #endif // NETD_INTERFACE_EPAIR_HPP

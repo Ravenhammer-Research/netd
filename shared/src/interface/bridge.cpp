@@ -29,57 +29,57 @@
 #include <shared/include/yang.hpp>
 #include <libyang/tree_data.h>
 
-namespace netd {
+namespace netd::shared::interface {
 
-lyd_node* BridgeInterface::toYang(ly_ctx* ctx) const {
-    
-    if (!ctx) {
-        return nullptr;
-    }
-    
-    // Create interface node using ietf-interfaces schema
-    lyd_node* interfaces = nullptr;
-    lyd_node* interface = nullptr;
-    
-    // Create the interfaces container
-    if (lyd_new_path(nullptr, ctx, "/ietf-interfaces:interfaces", nullptr, 0, &interfaces) != LY_SUCCESS) {
-        return nullptr;
-    }
-    
-            // Create the interface list entry
-        std::string name = getName();
-        std::string path = "/ietf-interfaces:interfaces/interface[name='" + name + "']";
-        if (lyd_new_path(interfaces, ctx, path.c_str(), nullptr, 0, &interface) != LY_SUCCESS) {
-            lyd_free_tree(interfaces);
+    lyd_node* BridgeInterface::toYang(ly_ctx* ctx) const {
+        
+        if (!ctx) {
             return nullptr;
         }
         
-        // Set interface type
-        lyd_node* typeNode = nullptr;
-        std::string typePath = path + "/type";
-        if (lyd_new_path(interface, ctx, typePath.c_str(), "iana-if-type:bridge", 0, &typeNode) != LY_SUCCESS) {
-            lyd_free_tree(interfaces);
+        // Create interface node using ietf-interfaces schema
+        lyd_node* interfaces = nullptr;
+        lyd_node* interface = nullptr;
+        
+        // Create the interfaces container
+        if (lyd_new_path(nullptr, ctx, "/ietf-interfaces:interfaces", nullptr, 0, &interfaces) != LY_SUCCESS) {
             return nullptr;
         }
         
-        // Set interface enabled state
-        lyd_node* enabledNode = nullptr;
-        std::string enabledPath = path + "/enabled";
-        std::string enabled = isUp() ? "true" : "false";
-        if (lyd_new_path(interface, ctx, enabledPath.c_str(), enabled.c_str(), 0, &enabledNode) != LY_SUCCESS) {
-            lyd_free_tree(interfaces);
-            return nullptr;
-        }
-    
-    // TODO: Add bridge-specific YANG extensions (STP, members, etc.)
-    
-    return interfaces;
-}
+                // Create the interface list entry
+            std::string name = getName();
+            std::string path = "/ietf-interfaces:interfaces/interface[name='" + name + "']";
+            if (lyd_new_path(interfaces, ctx, path.c_str(), nullptr, 0, &interface) != LY_SUCCESS) {
+                lyd_free_tree(interfaces);
+                return nullptr;
+            }
+            
+            // Set interface type
+            lyd_node* typeNode = nullptr;
+            std::string typePath = path + "/type";
+            if (lyd_new_path(interface, ctx, typePath.c_str(), "iana-if-type:bridge", 0, &typeNode) != LY_SUCCESS) {
+                lyd_free_tree(interfaces);
+                return nullptr;
+            }
+            
+            // Set interface enabled state
+            lyd_node* enabledNode = nullptr;
+            std::string enabledPath = path + "/enabled";
+            std::string enabled = isUp() ? "true" : "false";
+            if (lyd_new_path(interface, ctx, enabledPath.c_str(), enabled.c_str(), 0, &enabledNode) != LY_SUCCESS) {
+                lyd_free_tree(interfaces);
+                return nullptr;
+            }
+        
+        // TODO: Add bridge-specific YANG extensions (STP, members, etc.)
+        
+        return interfaces;
+    }
 
-BridgeInterface BridgeInterface::fromYang(const ly_ctx* ctx, const lyd_node* node) {
-    // TODO: Implement YANG deserialization for bridge interfaces
-    // This should parse a YANG node to extract bridge interface configuration
-    return BridgeInterface();
-}
+    BridgeInterface BridgeInterface::fromYang(const ly_ctx* ctx, const lyd_node* node) {
+        // TODO: Implement YANG deserialization for bridge interfaces
+        // This should parse a YANG node to extract bridge interface configuration
+        return BridgeInterface();
+    }
 
 } // namespace netd

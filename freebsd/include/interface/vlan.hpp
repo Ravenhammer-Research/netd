@@ -36,11 +36,9 @@
 #include <shared/include/interface/vlan.hpp>
 #include <shared/include/base/serialization.hpp>
 
-namespace netd {
-namespace freebsd {
-namespace interface {
+namespace netd::freebsd::interface {
 
-class VlanInterface : public netd::VlanInterface {
+    class VlanInterface : public netd::shared::interface::VlanInterface {
 public:
     VlanInterface();
     explicit VlanInterface(const std::string& name);
@@ -66,8 +64,8 @@ public:
     // Statistics and information
     std::string getType() const { return "vlan"; }
 
-    // Conversion to shared interface for serialization
-    operator netd::VlanInterface() const;
+        // Conversion to shared interface for serialization
+        operator netd::shared::interface::VlanInterface() const;
 
 private:
     // Interface name
@@ -88,8 +86,6 @@ private:
     bool setVlanInfo() const;
 };
 
-} // namespace interface
-} // namespace freebsd
-} // namespace netd
+} // namespace netd::freebsd::interface
 
 #endif // NETD_FREEBSD_INTERFACE_VLAN_HPP
