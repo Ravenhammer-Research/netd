@@ -73,8 +73,9 @@ namespace netd::shared::request {
     return rpcNode;
   }
 
-  std::unique_ptr<Request> DiscardRequest::fromYang(const ly_ctx *ctx,
-                                                    const lyd_node *node) {
+  std::unique_ptr<Request>
+  DiscardRequest::fromYang([[maybe_unused]] const ly_ctx *ctx,
+                           const lyd_node *node) {
     if (!node) {
       throw NotImplementedError(
           "Invalid YANG node provided to DiscardRequest::fromYang");

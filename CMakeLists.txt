@@ -43,35 +43,26 @@ message(STATUS "LIBNETCONF2_LIBRARY_DIRS: ${LIBNETCONF2_LIBRARY_DIRS}")
 # Find curses
 find_package(Curses REQUIRED)
 
+# Force clang compiler
+set(CMAKE_CXX_COMPILER clang++)
+set(CMAKE_C_COMPILER clang)
+
+# Set global compile options BEFORE adding subdirectories
+add_compile_options(
+    -Wall
+    -Wextra
+    -Wpedantic
+    -Werror
+    -fPIC
+    -fstack-protector-strong
+    -D_FORTIFY_SOURCE=2
+    -isystem /usr/local/include
+)
+
 # Add subdirectories
 add_subdirectory(shared)
 add_subdirectory(freebsd)
 add_subdirectory(server)
 add_subdirectory(client)
-
-# Set global compile options
-add_compile_options(
-    -Wall
-    -Wextra
-    -Wpedantic
-    -Werror=return-type
-    -Werror=uninitialized
-    -Werror=format
-    -Werror=format-security
-    -Werror=array-bounds
-    -Werror=non-virtual-dtor
-    -Werror=delete-non-virtual-dtor
-    -Werror=unused-parameter
-    -Werror=unused-variable
-    -Werror=unused-function
-    -Werror=shadow
-    -Werror=conversion
-    -Werror=sign-conversion
-    -Werror=float-conversion
-    -Werror=double-promotion
-    -fPIC
-    -fstack-protector-strong
-    -D_FORTIFY_SOURCE=2
-)
 
 # Global include directories are set per-target

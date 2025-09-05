@@ -47,10 +47,16 @@ namespace netd::shared::interface {
     virtual ~LagInterface();
 
     // LAGG-specific configuration
-    virtual bool setLaggProtocol(const std::string &protocol) { return false; }
+    virtual bool setLaggProtocol([[maybe_unused]] const std::string &protocol) {
+      return false;
+    }
     virtual std::string getLaggProtocol() const { return "failover"; }
-    virtual bool addLaggPort(const std::string &portName) { return false; }
-    virtual bool removeLaggPort(const std::string &portName) { return false; }
+    virtual bool addLaggPort([[maybe_unused]] const std::string &portName) {
+      return false;
+    }
+    virtual bool removeLaggPort([[maybe_unused]] const std::string &portName) {
+      return false;
+    }
     virtual std::vector<std::string> getLaggPorts() const { return {}; }
 
     // YANG serialization

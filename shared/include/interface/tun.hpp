@@ -44,9 +44,11 @@ namespace netd::shared::interface {
     virtual ~TunInterface();
 
     // TUN-specific configuration
-    virtual bool setTunUnit(int unit) { return false; }
+    virtual bool setTunUnit([[maybe_unused]] int unit) { return false; }
     virtual int getTunUnit() const { return -1; }
-    virtual bool setTunMode(const std::string &mode) { return false; }
+    virtual bool setTunMode([[maybe_unused]] const std::string &mode) {
+      return false;
+    }
     virtual std::string getTunMode() const { return "tun"; }
 
     // YANG serialization

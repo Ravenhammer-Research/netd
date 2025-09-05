@@ -68,9 +68,6 @@ namespace netd::freebsd::interface {
     bool loadFromSystem();
     bool applyToSystem() const;
 
-    // Conversion to shared interface for serialization
-    operator netd::shared::interface::BridgeInterface() const;
-
   private:
     // Interface name
     std::string name_;

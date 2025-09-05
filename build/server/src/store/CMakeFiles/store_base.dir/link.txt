@@ -1,2 +1,0 @@
-/usr/bin/llvm-ar qc libstore_base.a CMakeFiles/store_base.dir/base.cpp.o
-/usr/bin/llvm-ranlib libstore_base.a

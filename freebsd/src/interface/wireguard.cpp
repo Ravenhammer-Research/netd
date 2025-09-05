@@ -166,13 +166,6 @@ namespace netd::freebsd::interface {
     return true;
   }
 
-  WireguardInterface::operator netd::shared::interface::WireguardInterface()
-      const {
-    // Cast to shared interface - we inherit from it so this is safe
-    return static_cast<const netd::shared::interface::WireguardInterface &>(
-        *this);
-  }
-
   bool WireguardInterface::openSocket() {
     if (socket_ >= 0) {
       return true; // Already open

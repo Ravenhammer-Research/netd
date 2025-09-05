@@ -65,9 +65,6 @@ namespace netd::freebsd::interface {
     // Statistics and information
     std::string getType() const { return "wireguard"; }
 
-    // Conversion to shared interface for serialization
-    operator netd::shared::interface::WireguardInterface() const;
-
   private:
     // Interface name
     std::string name_;

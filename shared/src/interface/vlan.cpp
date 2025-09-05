@@ -87,8 +87,8 @@ namespace netd::shared::interface {
     return interfaces;
   }
 
-  VlanInterface VlanInterface::fromYang(const ly_ctx *ctx,
-                                        const lyd_node *node) {
+  VlanInterface VlanInterface::fromYang([[maybe_unused]] const ly_ctx *ctx,
+                                        [[maybe_unused]] const lyd_node *node) {
     // TODO: Implement YANG deserialization for VLAN interfaces
     return VlanInterface();
   }

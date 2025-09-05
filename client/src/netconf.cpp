@@ -95,7 +95,8 @@ namespace netd::client {
     }
 
     // Convenience methods for common NETCONF operations
-    std::string getConfig(const std::string &source = "running") {
+    std::string
+    getConfig([[maybe_unused]] const std::string &source = "running") {
       if (!connected_) {
         throw std::runtime_error("Not connected to server");
       }
@@ -104,7 +105,7 @@ namespace netd::client {
       return "get-config response placeholder";
     }
 
-    std::string get(const std::string &filter = "") {
+    std::string get([[maybe_unused]] const std::string &filter = "") {
       if (!connected_) {
         throw std::runtime_error("Not connected to server");
       }
@@ -113,8 +114,9 @@ namespace netd::client {
       return "get response placeholder";
     }
 
-    std::string editConfig(const std::string &target = "candidate",
-                           const std::string &config = "") {
+    std::string
+    editConfig([[maybe_unused]] const std::string &target = "candidate",
+               [[maybe_unused]] const std::string &config = "") {
       if (!connected_) {
         throw std::runtime_error("Not connected to server");
       }

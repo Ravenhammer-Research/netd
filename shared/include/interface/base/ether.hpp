@@ -71,13 +71,17 @@ namespace netd::shared::interface::base {
     virtual bool destroy() { return false; }
 
     // Ethernet-specific configuration
-    virtual bool setDuplex(const std::string &duplex) { return false; }
+    virtual bool setDuplex([[maybe_unused]] const std::string &duplex) {
+      return false;
+    }
     virtual std::string getDuplex() const { return "auto"; }
-    virtual bool setSpeed(uint32_t speed) { return false; }
+    virtual bool setSpeed([[maybe_unused]] uint32_t speed) { return false; }
     virtual uint32_t getSpeed() const { return 0; }
-    virtual bool setAutoNegotiation(bool enabled) { return false; }
+    virtual bool setAutoNegotiation([[maybe_unused]] bool enabled) {
+      return false;
+    }
     virtual bool isAutoNegotiationEnabled() const { return true; }
-    virtual bool setFlowControl(bool enabled) { return false; }
+    virtual bool setFlowControl([[maybe_unused]] bool enabled) { return false; }
     virtual bool isFlowControlEnabled() const { return false; }
 
     // Statistics and information

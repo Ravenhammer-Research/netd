@@ -81,8 +81,9 @@ namespace netd::shared::interface {
     return interfaces;
   }
 
-  Ieee80211Interface Ieee80211Interface::fromYang(const ly_ctx *ctx,
-                                                  const lyd_node *node) {
+  Ieee80211Interface
+  Ieee80211Interface::fromYang([[maybe_unused]] const ly_ctx *ctx,
+                               [[maybe_unused]] const lyd_node *node) {
     // TODO: Implement YANG deserialization for wireless interfaces
     // This should parse a YANG node to extract wireless interface configuration
     return Ieee80211Interface();

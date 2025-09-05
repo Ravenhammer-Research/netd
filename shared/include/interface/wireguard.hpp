@@ -48,15 +48,19 @@ namespace netd::shared::interface {
     virtual ~WireguardInterface();
 
     // WireGuard-specific configuration
-    virtual bool setPrivateKey(const std::string &privateKey) { return false; }
-    virtual std::string getPrivateKey() const { return ""; }
-    virtual bool setListenPort(uint16_t port) { return false; }
-    virtual uint16_t getListenPort() const { return 51820; }
-    virtual bool addPeer(const std::string &publicKey,
-                         const std::string &endpoint) {
+    virtual bool setPrivateKey([[maybe_unused]] const std::string &privateKey) {
       return false;
     }
-    virtual bool removePeer(const std::string &publicKey) { return false; }
+    virtual std::string getPrivateKey() const { return ""; }
+    virtual bool setListenPort([[maybe_unused]] uint16_t port) { return false; }
+    virtual uint16_t getListenPort() const { return 51820; }
+    virtual bool addPeer([[maybe_unused]] const std::string &publicKey,
+                         [[maybe_unused]] const std::string &endpoint) {
+      return false;
+    }
+    virtual bool removePeer([[maybe_unused]] const std::string &publicKey) {
+      return false;
+    }
 
     // YANG serialization
     lyd_node *toYang(ly_ctx *ctx) const override;

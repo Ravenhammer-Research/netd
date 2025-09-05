@@ -88,7 +88,8 @@ namespace netd::shared::interface {
     return interfaces;
   }
 
-  LagInterface LagInterface::fromYang(const ly_ctx *ctx, const lyd_node *node) {
+  LagInterface LagInterface::fromYang([[maybe_unused]] const ly_ctx *ctx,
+                                      [[maybe_unused]] const lyd_node *node) {
     // TODO: Implement YANG deserialization for LAGG interfaces
     return LagInterface();
   }

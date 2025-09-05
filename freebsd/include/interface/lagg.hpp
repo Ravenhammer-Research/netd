@@ -63,9 +63,6 @@ namespace netd::freebsd::interface {
     // Statistics and information
     std::string getType() const { return "lagg"; }
 
-    // Conversion to shared interface for serialization
-    operator netd::shared::interface::LagInterface() const;
-
   private:
     // Interface name
     std::string name_;

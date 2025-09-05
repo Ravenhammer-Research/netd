@@ -46,11 +46,15 @@ namespace netd::shared::interface {
     virtual ~PppInterface();
 
     // PPP-specific configuration
-    virtual bool setPppUnit(int unit) { return false; }
+    virtual bool setPppUnit([[maybe_unused]] int unit) { return false; }
     virtual int getPppUnit() const { return -1; }
-    virtual bool setPppMode(const std::string &mode) { return false; }
+    virtual bool setPppMode([[maybe_unused]] const std::string &mode) {
+      return false;
+    }
     virtual std::string getPppMode() const { return "ppp"; }
-    virtual bool setPppProtocol(const std::string &protocol) { return false; }
+    virtual bool setPppProtocol([[maybe_unused]] const std::string &protocol) {
+      return false;
+    }
     virtual std::string getPppProtocol() const { return "ppp"; }
 
     // YANG serialization

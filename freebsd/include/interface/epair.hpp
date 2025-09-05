@@ -62,9 +62,6 @@ namespace netd::freebsd::interface {
     // Statistics and information
     std::string getType() const { return "epair"; }
 
-    // Conversion to shared interface for serialization
-    operator netd::shared::interface::EpairInterface() const;
-
   private:
     // Interface name
     std::string name_;

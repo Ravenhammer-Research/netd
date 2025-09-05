@@ -47,15 +47,19 @@ namespace netd::shared::interface {
     virtual ~VxlanInterface();
 
     // VXLAN-specific configuration
-    virtual bool setVni(uint32_t vni) { return false; }
+    virtual bool setVni([[maybe_unused]] uint32_t vni) { return false; }
     virtual uint32_t getVni() const { return 0; }
-    virtual bool setLocalEndpoint(const std::string &endpoint) { return false; }
+    virtual bool
+    setLocalEndpoint([[maybe_unused]] const std::string &endpoint) {
+      return false;
+    }
     virtual std::string getLocalEndpoint() const { return ""; }
-    virtual bool setRemoteEndpoint(const std::string &endpoint) {
+    virtual bool
+    setRemoteEndpoint([[maybe_unused]] const std::string &endpoint) {
       return false;
     }
     virtual std::string getRemoteEndpoint() const { return ""; }
-    virtual bool setUdpPort(uint16_t port) { return false; }
+    virtual bool setUdpPort([[maybe_unused]] uint16_t port) { return false; }
     virtual uint16_t getUdpPort() const { return 4789; }
 
     // YANG serialization

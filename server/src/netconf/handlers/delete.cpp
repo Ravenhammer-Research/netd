@@ -33,9 +33,9 @@
 
 namespace netd::server::netconf::handlers {
 
-  struct nc_server_reply *
-  RpcHandler::handleDeleteConfigRequest(struct nc_session *session,
-                                        struct lyd_node *rpc) {
+  struct nc_server_reply *RpcHandler::handleDeleteConfigRequest(
+      [[maybe_unused]] struct nc_session *session,
+      [[maybe_unused]] struct lyd_node *rpc) {
     auto &logger = netd::shared::Logger::getInstance();
     logger.info("Handling delete-config request");
 

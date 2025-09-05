@@ -70,7 +70,8 @@ namespace netd::shared::response {
   }
 
   std::unique_ptr<Response>
-  DeleteConfigResponse::fromYang(const ly_ctx *ctx, const lyd_node *node) {
+  DeleteConfigResponse::fromYang([[maybe_unused]] const ly_ctx *ctx,
+                                 const lyd_node *node) {
     if (!node) {
       throw NotImplementedError(
           "Invalid YANG node provided to DeleteConfigResponse::fromYang");

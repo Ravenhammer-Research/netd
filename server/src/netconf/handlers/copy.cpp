@@ -33,9 +33,9 @@
 
 namespace netd::server::netconf::handlers {
 
-  struct nc_server_reply *
-  RpcHandler::handleCopyConfigRequest(struct nc_session *session,
-                                      struct lyd_node *rpc) {
+  struct nc_server_reply *RpcHandler::handleCopyConfigRequest(
+      [[maybe_unused]] struct nc_session *session,
+      [[maybe_unused]] struct lyd_node *rpc) {
     auto &logger = netd::shared::Logger::getInstance();
     logger.info("Handling copy-config request");
 

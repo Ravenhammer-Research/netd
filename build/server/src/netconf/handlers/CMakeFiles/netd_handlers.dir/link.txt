@@ -1,2 +1,0 @@
-/usr/bin/llvm-ar qc libnetd_handlers.a CMakeFiles/netd_handlers.dir/config.cpp.o CMakeFiles/netd_handlers.dir/copy.cpp.o CMakeFiles/netd_handlers.dir/delete.cpp.o CMakeFiles/netd_handlers.dir/discard.cpp.o CMakeFiles/netd_handlers.dir/edit.cpp.o CMakeFiles/netd_handlers.dir/get.cpp.o CMakeFiles/netd_handlers.dir/lock.cpp.o CMakeFiles/netd_handlers.dir/unlock.cpp.o
-/usr/bin/llvm-ranlib libnetd_handlers.a

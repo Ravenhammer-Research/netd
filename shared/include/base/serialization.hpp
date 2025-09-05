@@ -28,7 +28,13 @@
 #ifndef NETD_BASE_SERIALIZATION_HPP
 #define NETD_BASE_SERIALIZATION_HPP
 
+// Suppress GNU extension warnings from libyang headers
+// https://github.com/CESNET/libyang/issues/2421
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wgnu-anonymous-struct"
+#pragma clang diagnostic ignored "-Wnested-anon-types"
 #include <libyang/libyang.h>
+#pragma clang diagnostic pop
 #include <string>
 
 namespace netd::shared::base {

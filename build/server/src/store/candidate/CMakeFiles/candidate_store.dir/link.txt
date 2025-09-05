@@ -1,2 +1,0 @@
-/usr/bin/llvm-ar qc libcandidate_store.a CMakeFiles/candidate_store.dir/commit.cpp.o CMakeFiles/candidate_store.dir/base.cpp.o
-/usr/bin/llvm-ranlib libcandidate_store.a

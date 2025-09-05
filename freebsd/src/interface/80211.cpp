@@ -160,12 +160,6 @@ namespace netd::freebsd::interface {
 
   std::string WifiInterface::getSecurity() const { return security_; }
 
-  WifiInterface::operator netd::shared::interface::Ieee80211Interface() const {
-    // Cast to shared interface - we inherit from it so this is safe
-    return static_cast<const netd::shared::interface::Ieee80211Interface &>(
-        *this);
-  }
-
   bool WifiInterface::openSocket() {
     if (socket_ >= 0) {
       return true; // Already open

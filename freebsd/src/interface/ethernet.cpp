@@ -164,13 +164,6 @@ namespace netd::freebsd::interface {
 
   bool EthernetInterface::isFlowControlEnabled() const { return flowControl_; }
 
-  EthernetInterface::operator netd::shared::interface::EthernetInterface()
-      const {
-    // Cast to shared interface - we inherit from it so this is safe
-    return static_cast<const netd::shared::interface::EthernetInterface &>(
-        *this);
-  }
-
   bool EthernetInterface::openSocket() {
     if (socket_ >= 0) {
       return true; // Already open

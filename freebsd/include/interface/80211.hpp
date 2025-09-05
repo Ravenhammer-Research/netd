@@ -66,9 +66,6 @@ namespace netd::freebsd::interface {
     // Statistics and information
     std::string getType() const { return "80211"; }
 
-    // Conversion to shared interface for serialization
-    operator netd::shared::interface::Ieee80211Interface() const;
-
   private:
     // Interface name
     std::string name_;

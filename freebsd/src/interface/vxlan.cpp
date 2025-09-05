@@ -163,11 +163,6 @@ namespace netd::freebsd::interface {
 
   uint16_t VxlanInterface::getUdpPort() const { return udpPort_; }
 
-  VxlanInterface::operator netd::shared::interface::VxlanInterface() const {
-    // Cast to shared interface - we inherit from it so this is safe
-    return static_cast<const netd::shared::interface::VxlanInterface &>(*this);
-  }
-
   bool VxlanInterface::openSocket() {
     if (socket_ >= 0) {
       return true; // Already open

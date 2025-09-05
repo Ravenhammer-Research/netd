@@ -207,11 +207,6 @@ namespace netd::freebsd::interface {
     return laggPorts_;
   }
 
-  LagInterface::operator netd::shared::interface::LagInterface() const {
-    // Cast to shared interface - we inherit from it so this is safe
-    return static_cast<const netd::shared::interface::LagInterface &>(*this);
-  }
-
   bool LagInterface::openSocket() {
     if (socket_ >= 0) {
       return true; // Already open

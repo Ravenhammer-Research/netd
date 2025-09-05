@@ -69,8 +69,9 @@ namespace netd::shared::response {
     return replyNode;
   }
 
-  std::unique_ptr<Response> LockResponse::fromYang(const ly_ctx *ctx,
-                                                   const lyd_node *node) {
+  std::unique_ptr<Response>
+  LockResponse::fromYang([[maybe_unused]] const ly_ctx *ctx,
+                         const lyd_node *node) {
     if (!node) {
       throw NotImplementedError(
           "Invalid YANG node provided to LockResponse::fromYang");

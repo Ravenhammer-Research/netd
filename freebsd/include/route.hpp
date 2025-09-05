@@ -60,9 +60,6 @@ namespace netd::freebsd {
     bool setFibTable(uint32_t fibTable);
     uint32_t getFibTable() const;
 
-    // Conversion to shared route for serialization
-    operator const netd::shared::Route &() const;
-
   private:
     std::string destination_;
     std::string gateway_;

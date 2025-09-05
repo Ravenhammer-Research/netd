@@ -45,9 +45,11 @@ namespace netd::shared::interface {
     virtual ~EpairInterface();
 
     // Epair-specific configuration
-    virtual bool setPeerEnd(const std::string &peerEnd) { return false; }
+    virtual bool setPeerEnd([[maybe_unused]] const std::string &peerEnd) {
+      return false;
+    }
     virtual std::string getPeerEnd() const { return ""; }
-    virtual bool setEpairUnit(int unit) { return false; }
+    virtual bool setEpairUnit([[maybe_unused]] int unit) { return false; }
     virtual int getEpairUnit() const { return -1; }
 
     // YANG serialization

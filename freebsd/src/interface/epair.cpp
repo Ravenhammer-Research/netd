@@ -146,11 +146,6 @@ namespace netd::freebsd::interface {
 
   int EpairInterface::getEpairUnit() const { return epairUnit_; }
 
-  EpairInterface::operator netd::shared::interface::EpairInterface() const {
-    // Cast to shared interface - we inherit from it so this is safe
-    return static_cast<const netd::shared::interface::EpairInterface &>(*this);
-  }
-
   bool EpairInterface::openSocket() {
     if (socket_ >= 0) {
       return true; // Already open

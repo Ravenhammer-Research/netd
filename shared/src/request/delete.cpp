@@ -79,7 +79,6 @@ namespace netd::shared::request {
     }
 
     // Add startup datastore as default (can't delete running)
-    lyd_node *startupNode = nullptr;
     if (lyd_new_term(targetNode, mod, "startup", nullptr, 0, nullptr) !=
         LY_SUCCESS) {
       lyd_free_tree(rpcNode);
@@ -89,8 +88,9 @@ namespace netd::shared::request {
     return rpcNode;
   }
 
-  std::unique_ptr<Request> DeleteConfigRequest::fromYang(const ly_ctx *ctx,
-                                                         const lyd_node *node) {
+  std::unique_ptr<Request>
+  DeleteConfigRequest::fromYang([[maybe_unused]] const ly_ctx *ctx,
+                                const lyd_node *node) {
     if (!node) {
       throw NotImplementedError(
           "Invalid YANG node provided to DeleteConfigRequest::fromYang");

@@ -45,14 +45,23 @@ namespace netd::shared::interface {
     virtual ~EthernetInterface();
 
     // Ethernet-specific configuration
-    virtual bool setDuplex(const std::string &duplex) { return false; }
-    virtual std::string getDuplex() const { return "auto"; }
-    virtual bool setSpeed(uint32_t speed) { return false; }
-    virtual uint32_t getSpeed() const { return 0; }
-    virtual bool setAutoNegotiation(bool enabled) { return false; }
-    virtual bool isAutoNegotiationEnabled() const { return true; }
-    virtual bool setFlowControl(bool enabled) { return false; }
-    virtual bool isFlowControlEnabled() const { return false; }
+    virtual bool
+    setDuplex([[maybe_unused]] const std::string &duplex) override {
+      return false;
+    }
+    virtual std::string getDuplex() const override { return "auto"; }
+    virtual bool setSpeed([[maybe_unused]] uint32_t speed) override {
+      return false;
+    }
+    virtual uint32_t getSpeed() const override { return 0; }
+    virtual bool setAutoNegotiation([[maybe_unused]] bool enabled) override {
+      return false;
+    }
+    virtual bool isAutoNegotiationEnabled() const override { return true; }
+    virtual bool setFlowControl([[maybe_unused]] bool enabled) override {
+      return false;
+    }
+    virtual bool isFlowControlEnabled() const override { return false; }
 
     // YANG serialization
     lyd_node *toYang(ly_ctx *ctx) const override;

@@ -160,11 +160,6 @@ namespace netd::freebsd::interface {
 
   std::string VlanInterface::getVlanProtocol() const { return vlanProtocol_; }
 
-  VlanInterface::operator netd::shared::interface::VlanInterface() const {
-    // Cast to shared interface - we inherit from it so this is safe
-    return static_cast<const netd::shared::interface::VlanInterface &>(*this);
-  }
-
   bool VlanInterface::openSocket() {
     if (socket_ >= 0) {
       return true; // Already open

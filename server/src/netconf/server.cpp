@@ -217,7 +217,7 @@ namespace netd::server::netconf {
   // Global server instance
   static std::unique_ptr<NetconfServer> g_server;
 
-  bool startNetconfServer(const std::string &socketPath) {
+  bool startNetconfServer([[maybe_unused]] const std::string &socketPath) {
     g_server = std::make_unique<NetconfServer>();
     return g_server->start();
   }

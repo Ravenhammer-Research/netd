@@ -44,9 +44,11 @@ namespace netd::shared::interface {
     virtual ~TapInterface();
 
     // TAP-specific configuration
-    virtual bool setTapUnit(int unit) { return false; }
+    virtual bool setTapUnit([[maybe_unused]] int unit) { return false; }
     virtual int getTapUnit() const { return -1; }
-    virtual bool setTapMode(const std::string &mode) { return false; }
+    virtual bool setTapMode([[maybe_unused]] const std::string &mode) {
+      return false;
+    }
     virtual std::string getTapMode() const { return "tap"; }
 
     // YANG serialization

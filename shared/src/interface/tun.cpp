@@ -87,7 +87,8 @@ namespace netd::shared::interface {
     return interfaces;
   }
 
-  TunInterface TunInterface::fromYang(const ly_ctx *ctx, const lyd_node *node) {
+  TunInterface TunInterface::fromYang([[maybe_unused]] const ly_ctx *ctx,
+                                      [[maybe_unused]] const lyd_node *node) {
     // TODO: Implement YANG deserialization for TUN interfaces
     return TunInterface();
   }

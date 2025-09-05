@@ -79,7 +79,6 @@ namespace netd::shared::request {
     }
 
     // Add running datastore as default
-    lyd_node *runningNode = nullptr;
     if (lyd_new_term(targetNode, mod, "running", nullptr, 0, nullptr) !=
         LY_SUCCESS) {
       lyd_free_tree(rpcNode);
@@ -95,7 +94,6 @@ namespace netd::shared::request {
     }
 
     // Add running datastore as default source
-    lyd_node *sourceRunningNode = nullptr;
     if (lyd_new_term(sourceNode, mod, "running", nullptr, 0, nullptr) !=
         LY_SUCCESS) {
       lyd_free_tree(rpcNode);
@@ -105,8 +103,9 @@ namespace netd::shared::request {
     return rpcNode;
   }
 
-  std::unique_ptr<Request> CopyConfigRequest::fromYang(const ly_ctx *ctx,
-                                                       const lyd_node *node) {
+  std::unique_ptr<Request>
+  CopyConfigRequest::fromYang([[maybe_unused]] const ly_ctx *ctx,
+                              const lyd_node *node) {
     if (!node) {
       throw NotImplementedError(
           "Invalid YANG node provided to CopyConfigRequest::fromYang");

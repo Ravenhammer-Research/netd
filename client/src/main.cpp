@@ -105,21 +105,21 @@ namespace netd::client {
       }
     }
 
-    bool handleShowVrf(const ParsedCommand &parsed) {
+    bool handleShowVrf([[maybe_unused]] const ParsedCommand &parsed) {
       // TODO: Implement VRF display
       terminal_.writeLine("VRF information:");
       terminal_.writeLine("  FIB 0: default");
       return true;
     }
 
-    bool handleShowRoute(const ParsedCommand &parsed) {
+    bool handleShowRoute([[maybe_unused]] const ParsedCommand &parsed) {
       // TODO: Implement route display
       terminal_.writeLine("Route information:");
       terminal_.writeLine("  No routes configured");
       return true;
     }
 
-    bool handleShowInterface(const ParsedCommand &parsed) {
+    bool handleShowInterface([[maybe_unused]] const ParsedCommand &parsed) {
       try {
         // Send get-config request with interface filter
         // This should generate: <get-config><source><running/></source><filter
@@ -168,31 +168,31 @@ namespace netd::client {
       }
     }
 
-    bool handleSetVrf(const ParsedCommand &parsed) {
+    bool handleSetVrf([[maybe_unused]] const ParsedCommand &parsed) {
       // TODO: Implement VRF configuration
       terminal_.writeLine("VRF configuration not yet implemented");
       return true;
     }
 
-    bool handleSetInterface(const ParsedCommand &parsed) {
+    bool handleSetInterface([[maybe_unused]] const ParsedCommand &parsed) {
       // TODO: Implement interface configuration
       terminal_.writeLine("Interface configuration not yet implemented");
       return true;
     }
 
-    bool handleSetRoute(const ParsedCommand &parsed) {
+    bool handleSetRoute([[maybe_unused]] const ParsedCommand &parsed) {
       // TODO: Implement route configuration
       terminal_.writeLine("Route configuration not yet implemented");
       return true;
     }
 
-    bool handleDeleteCommand(const ParsedCommand &parsed) {
+    bool handleDeleteCommand([[maybe_unused]] const ParsedCommand &parsed) {
       // TODO: Implement delete operations
       terminal_.writeLine("Delete operations not yet implemented");
       return true;
     }
 
-    bool handleCommitCommand(const ParsedCommand &parsed) {
+    bool handleCommitCommand([[maybe_unused]] const ParsedCommand &parsed) {
       try {
         terminal_.writeLine("Commit not implemented yet");
         return true;

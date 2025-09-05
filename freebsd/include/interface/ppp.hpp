@@ -64,9 +64,6 @@ namespace netd::freebsd::interface {
     // Statistics and information
     std::string getType() const { return "ppp"; }
 
-    // Conversion to shared interface for serialization
-    operator netd::shared::interface::PppInterface() const;
-
   private:
     // Interface name
     std::string name_;

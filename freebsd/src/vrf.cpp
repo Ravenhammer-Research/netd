@@ -244,16 +244,11 @@ namespace netd::freebsd {
     return true;
   }
 
-  bool VRF::setFibTableActive(bool active) {
+  bool VRF::setFibTableActive([[maybe_unused]] bool active) {
     // This would involve setting up routing table rules
     // and interface bindings for the VRF
 
     return true;
-  }
-
-  VRF::operator const netd::shared::VRF &() const {
-    // Cast to shared VRF - we inherit from shared::VRF so this is safe
-    return static_cast<const netd::shared::VRF &>(*this);
   }
 
 } // namespace netd::freebsd

@@ -153,11 +153,6 @@ namespace netd::freebsd::interface {
 
   std::string PppInterface::getPppProtocol() const { return pppProtocol_; }
 
-  PppInterface::operator netd::shared::interface::PppInterface() const {
-    // Cast to shared interface - we inherit from it so this is safe
-    return static_cast<const netd::shared::interface::PppInterface &>(*this);
-  }
-
   bool PppInterface::openSocket() {
     if (socket_ >= 0) {
       return true; // Already open

@@ -161,12 +161,7 @@ namespace netd::freebsd {
 
   uint32_t Route::getFibTable() const { return fibTable_; }
 
-  Route::operator const netd::shared::Route &() const {
-    // Cast to shared Route - we inherit from it so this is safe
-    return static_cast<const netd::shared::Route &>(*this);
-  }
-
-  bool Route::parseRouteString(const std::string &routeStr) {
+  bool Route::parseRouteString([[maybe_unused]] const std::string &routeStr) {
     // TODO: Implement route string parsing
     // This would parse route strings like "192.168.1.0/24 192.168.1.1 em0"
 

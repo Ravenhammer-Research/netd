@@ -87,8 +87,9 @@ namespace netd::shared::interface {
     return interfaces;
   }
 
-  EpairInterface EpairInterface::fromYang(const ly_ctx *ctx,
-                                          const lyd_node *node) {
+  EpairInterface
+  EpairInterface::fromYang([[maybe_unused]] const ly_ctx *ctx,
+                           [[maybe_unused]] const lyd_node *node) {
     // TODO: Implement YANG deserialization for epair interfaces
     return EpairInterface();
   }

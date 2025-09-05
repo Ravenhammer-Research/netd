@@ -110,56 +110,58 @@ namespace netd::server::netconf {
     }
   }
 
-  struct nc_server_reply *Server::handleGetRequest(struct nc_session *session,
-                                                   struct lyd_node *rpc) {
+  struct nc_server_reply *
+  Server::handleGetRequest([[maybe_unused]] struct nc_session *session,
+                           [[maybe_unused]] struct lyd_node *rpc) {
     throw netd::shared::NotImplementedError(
         "handleGetRequest not implemented in base Server class");
   }
 
   struct nc_server_reply *
-  Server::handleGetConfigRequest(struct nc_session *session,
-                                 struct lyd_node *rpc) {
+  Server::handleGetConfigRequest([[maybe_unused]] struct nc_session *session,
+                                 [[maybe_unused]] struct lyd_node *rpc) {
     throw netd::shared::NotImplementedError(
         "handleGetConfigRequest not implemented in base Server class");
   }
 
   struct nc_server_reply *
-  Server::handleEditConfigRequest(struct nc_session *session,
-                                  struct lyd_node *rpc) {
+  Server::handleEditConfigRequest([[maybe_unused]] struct nc_session *session,
+                                  [[maybe_unused]] struct lyd_node *rpc) {
     throw netd::shared::NotImplementedError(
         "handleEditConfigRequest not implemented in base Server class");
   }
 
   struct nc_server_reply *
-  Server::handleCopyConfigRequest(struct nc_session *session,
-                                  struct lyd_node *rpc) {
+  Server::handleCopyConfigRequest([[maybe_unused]] struct nc_session *session,
+                                  [[maybe_unused]] struct lyd_node *rpc) {
     throw netd::shared::NotImplementedError(
         "handleCopyConfigRequest not implemented in base Server class");
   }
 
   struct nc_server_reply *
-  Server::handleDeleteConfigRequest(struct nc_session *session,
-                                    struct lyd_node *rpc) {
+  Server::handleDeleteConfigRequest([[maybe_unused]] struct nc_session *session,
+                                    [[maybe_unused]] struct lyd_node *rpc) {
     throw netd::shared::NotImplementedError(
         "handleDeleteConfigRequest not implemented in base Server class");
   }
 
-  struct nc_server_reply *Server::handleLockRequest(struct nc_session *session,
-                                                    struct lyd_node *rpc) {
+  struct nc_server_reply *
+  Server::handleLockRequest([[maybe_unused]] struct nc_session *session,
+                            [[maybe_unused]] struct lyd_node *rpc) {
     throw netd::shared::NotImplementedError(
         "handleLockRequest not implemented in base Server class");
   }
 
   struct nc_server_reply *
-  Server::handleUnlockRequest(struct nc_session *session,
-                              struct lyd_node *rpc) {
+  Server::handleUnlockRequest([[maybe_unused]] struct nc_session *session,
+                              [[maybe_unused]] struct lyd_node *rpc) {
     throw netd::shared::NotImplementedError(
         "handleUnlockRequest not implemented in base Server class");
   }
 
   struct nc_server_reply *
-  Server::handleDiscardRequest(struct nc_session *session,
-                               struct lyd_node *rpc) {
+  Server::handleDiscardRequest([[maybe_unused]] struct nc_session *session,
+                               [[maybe_unused]] struct lyd_node *rpc) {
     throw netd::shared::NotImplementedError(
         "handleDiscardRequest not implemented in base Server class");
   }

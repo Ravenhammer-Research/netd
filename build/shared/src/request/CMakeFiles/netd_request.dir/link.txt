@@ -1,2 +1,0 @@
-/usr/bin/llvm-ar qc libnetd_request.a CMakeFiles/netd_request.dir/base.cpp.o CMakeFiles/netd_request.dir/get.cpp.o CMakeFiles/netd_request.dir/config.cpp.o CMakeFiles/netd_request.dir/edit.cpp.o CMakeFiles/netd_request.dir/copy.cpp.o CMakeFiles/netd_request.dir/delete.cpp.o CMakeFiles/netd_request.dir/lock.cpp.o CMakeFiles/netd_request.dir/unlock.cpp.o CMakeFiles/netd_request.dir/discard.cpp.o
-/usr/bin/llvm-ranlib libnetd_request.a

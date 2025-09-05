@@ -45,13 +45,16 @@ namespace netd::shared::interface {
     virtual ~VlanInterface();
 
     // VLAN-specific configuration
-    virtual bool setVlanId(uint16_t vlanId) { return false; }
+    virtual bool setVlanId([[maybe_unused]] uint16_t vlanId) { return false; }
     virtual uint16_t getVlanId() const { return 0; }
-    virtual bool setParentInterface(const std::string &parentInterface) {
+    virtual bool
+    setParentInterface([[maybe_unused]] const std::string &parentInterface) {
       return false;
     }
     virtual std::string getParentInterface() const { return ""; }
-    virtual bool setVlanProtocol(const std::string &protocol) { return false; }
+    virtual bool setVlanProtocol([[maybe_unused]] const std::string &protocol) {
+      return false;
+    }
     virtual std::string getVlanProtocol() const { return "802.1Q"; }
 
     // YANG serialization

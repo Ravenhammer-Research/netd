@@ -90,8 +90,9 @@ namespace netd::shared::interface {
     return interfaces;
   }
 
-  EthernetInterface EthernetInterface::fromYang(const ly_ctx *ctx,
-                                                const lyd_node *node) {
+  EthernetInterface
+  EthernetInterface::fromYang([[maybe_unused]] const ly_ctx *ctx,
+                              [[maybe_unused]] const lyd_node *node) {
     // TODO: Implement YANG deserialization for ethernet interfaces
     return EthernetInterface();
   }

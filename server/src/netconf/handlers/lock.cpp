@@ -34,8 +34,8 @@
 namespace netd::server::netconf::handlers {
 
   struct nc_server_reply *
-  RpcHandler::handleLockRequest(struct nc_session *session,
-                                struct lyd_node *rpc) {
+  RpcHandler::handleLockRequest([[maybe_unused]] struct nc_session *session,
+                                [[maybe_unused]] struct lyd_node *rpc) {
     auto &logger = netd::shared::Logger::getInstance();
     logger.info("Handling lock request");
 

@@ -37,5 +37,4 @@ target_link_libraries(netd_freebsd
 target_compile_definitions(netd_freebsd
     PRIVATE
         _FREEBSD
-        __FreeBSD__
 )

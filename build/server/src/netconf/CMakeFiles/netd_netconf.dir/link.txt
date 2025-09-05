@@ -1,2 +1,0 @@
-/usr/bin/llvm-ar qc libnetd_netconf.a CMakeFiles/netd_netconf.dir/base.cpp.o CMakeFiles/netd_netconf.dir/server.cpp.o CMakeFiles/netd_netconf.dir/unix.cpp.o
-/usr/bin/llvm-ranlib libnetd_netconf.a

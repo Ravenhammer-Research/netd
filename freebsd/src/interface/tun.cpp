@@ -146,11 +146,6 @@ namespace netd::freebsd::interface {
 
   std::string TunInterface::getTunMode() const { return tunMode_; }
 
-  TunInterface::operator netd::shared::interface::TunInterface() const {
-    // Cast to shared interface - we inherit from it so this is safe
-    return static_cast<const netd::shared::interface::TunInterface &>(*this);
-  }
-
   bool TunInterface::openSocket() {
     if (socket_ >= 0) {
       return true; // Already open

@@ -1,2 +1,0 @@
-/usr/bin/llvm-ar qc libnetd_response.a CMakeFiles/netd_response.dir/config.cpp.o CMakeFiles/netd_response.dir/copy.cpp.o CMakeFiles/netd_response.dir/delete.cpp.o CMakeFiles/netd_response.dir/discard.cpp.o CMakeFiles/netd_response.dir/edit.cpp.o CMakeFiles/netd_response.dir/lock.cpp.o CMakeFiles/netd_response.dir/unlock.cpp.o
-/usr/bin/llvm-ranlib libnetd_response.a

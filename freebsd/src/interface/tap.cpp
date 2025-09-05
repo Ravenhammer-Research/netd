@@ -146,11 +146,6 @@ namespace netd::freebsd::interface {
 
   std::string TapInterface::getTapMode() const { return tapMode_; }
 
-  TapInterface::operator netd::shared::interface::TapInterface() const {
-    // Cast to shared interface - we inherit from it so this is safe
-    return static_cast<const netd::shared::interface::TapInterface &>(*this);
-  }
-
   bool TapInterface::openSocket() {
     if (socket_ >= 0) {
       return true; // Already open

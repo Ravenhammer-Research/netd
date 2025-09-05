@@ -325,9 +325,4 @@ namespace netd::freebsd::interface {
     return true;
   }
 
-  BridgeInterface::operator netd::shared::interface::BridgeInterface() const {
-    // Cast to shared interface - we inherit from it so this is safe
-    return static_cast<const netd::shared::interface::BridgeInterface &>(*this);
-  }
-
 } // namespace netd::freebsd::interface

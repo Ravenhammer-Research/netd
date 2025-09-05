@@ -45,9 +45,9 @@ namespace netd::client {
   constexpr char KEY_UP_CONST = 0x41;
   constexpr char KEY_DOWN_CONST = 0x42;
 
-  constexpr int MAX_HISTORY_SIZE = 100;
-  constexpr int PROMPT_ROW = 0;
-  constexpr int PROMPT_COL = 0;
+  [[maybe_unused]] constexpr int MAX_HISTORY_SIZE = 100;
+  [[maybe_unused]] constexpr int PROMPT_ROW = 0;
+  [[maybe_unused]] constexpr int PROMPT_COL = 0;
 
   Terminal::Terminal()
       : initialized_(false), prompt_("net> "), historyPosition_(-1),

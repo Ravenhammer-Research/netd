@@ -66,9 +66,6 @@ namespace netd::freebsd::interface {
     // Statistics and information
     std::string getType() const { return "vxlan"; }
 
-    // Conversion to shared interface for serialization
-    operator netd::shared::interface::VxlanInterface() const;
-
   private:
     // Interface name
     std::string name_;

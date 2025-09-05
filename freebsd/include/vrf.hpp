@@ -61,9 +61,6 @@ namespace netd::freebsd {
                      const std::string &gateway = "");
     std::vector<std::string> getRoutes() const;
 
-    // Conversion to shared VRF for serialization
-    operator const netd::shared::VRF &() const;
-
   private:
     std::string name_;
     uint32_t fibTable_;
