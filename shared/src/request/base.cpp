@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Paige Thompson / Ravenhammer Research (paige@paige.bio)
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -25,10 +25,7 @@
  * SUCH DAMAGE.
  */
 
-#include <shared/include/request/base.hpp>
 #include <shared/include/exception.hpp>
+#include <shared/include/request/base.hpp>
 
-namespace netd::shared::request {
-
-
-} // namespace netd
+namespace netd::shared::request {} // namespace netd::shared::request

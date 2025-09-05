@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Paige Thompson / Ravenhammer Research (paige@paige.bio)
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -28,33 +28,36 @@
 #ifndef NETD_INTERFACE_VLAN_HPP
 #define NETD_INTERFACE_VLAN_HPP
 
-#include <shared/include/interface/base/ether.hpp>
-#include <shared/include/base/serialization.hpp>
-#include <string>
 #include <cstdint>
 #include <memory>
+#include <shared/include/base/serialization.hpp>
+#include <shared/include/interface/base/ether.hpp>
+#include <string>
 
 namespace netd::shared::interface {
 
-    class VlanInterface : public netd::shared::interface::base::Ether, 
+  class VlanInterface
+      : public netd::shared::interface::base::Ether,
         public netd::shared::base::Serialization<VlanInterface> {
-    public:
-        VlanInterface();
-        explicit VlanInterface(const std::string& name);
-        virtual ~VlanInterface();
+  public:
+    VlanInterface();
+    explicit VlanInterface(const std::string &name);
+    virtual ~VlanInterface();
 
-        // VLAN-specific configuration
-        virtual bool setVlanId(uint16_t vlanId) { return false; }
-        virtual uint16_t getVlanId() const { return 0; }
-        virtual bool setParentInterface(const std::string& parentInterface) { return false; }
-        virtual std::string getParentInterface() const { return ""; }
-        virtual bool setVlanProtocol(const std::string& protocol) { return false; }
-        virtual std::string getVlanProtocol() const { return "802.1Q"; }
+    // VLAN-specific configuration
+    virtual bool setVlanId(uint16_t vlanId) { return false; }
+    virtual uint16_t getVlanId() const { return 0; }
+    virtual bool setParentInterface(const std::string &parentInterface) {
+      return false;
+    }
+    virtual std::string getParentInterface() const { return ""; }
+    virtual bool setVlanProtocol(const std::string &protocol) { return false; }
+    virtual std::string getVlanProtocol() const { return "802.1Q"; }
 
-        // YANG serialization
-        lyd_node* toYang(ly_ctx* ctx) const override;
-        static VlanInterface fromYang(const ly_ctx* ctx, const lyd_node* node);
-    };
+    // YANG serialization
+    lyd_node *toYang(ly_ctx *ctx) const override;
+    static VlanInterface fromYang(const ly_ctx *ctx, const lyd_node *node);
+  };
 
 } // namespace netd::shared::interface
 

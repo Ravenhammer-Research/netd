@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Paige Thompson / Ravenhammer Research (paige@paige.bio)
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -28,35 +28,35 @@
 #ifndef NETD_INTERFACE_LAGG_HPP
 #define NETD_INTERFACE_LAGG_HPP
 
-#include <shared/include/interface/base/ether.hpp>
-#include <shared/include/interface/base/master.hpp>
-#include <shared/include/base/serialization.hpp>
-#include <string>
 #include <cstdint>
 #include <memory>
+#include <shared/include/base/serialization.hpp>
+#include <shared/include/interface/base/ether.hpp>
+#include <shared/include/interface/base/master.hpp>
+#include <string>
 #include <vector>
 
 namespace netd::shared::interface {
 
-    class LagInterface : public netd::shared::interface::base::Ether, 
-        public netd::shared::interface::base::Master, 
-        public netd::shared::base::Serialization<LagInterface> {
-public:
-        LagInterface();
-        explicit LagInterface(const std::string& name);
-        virtual ~LagInterface();
+  class LagInterface : public netd::shared::interface::base::Ether,
+                       public netd::shared::interface::base::Master,
+                       public netd::shared::base::Serialization<LagInterface> {
+  public:
+    LagInterface();
+    explicit LagInterface(const std::string &name);
+    virtual ~LagInterface();
 
-        // LAGG-specific configuration
-        virtual bool setLaggProtocol(const std::string& protocol) { return false; }
-        virtual std::string getLaggProtocol() const { return "failover"; }
-        virtual bool addLaggPort(const std::string& portName) { return false; }
-        virtual bool removeLaggPort(const std::string& portName) { return false; }
-        virtual std::vector<std::string> getLaggPorts() const { return {}; }
+    // LAGG-specific configuration
+    virtual bool setLaggProtocol(const std::string &protocol) { return false; }
+    virtual std::string getLaggProtocol() const { return "failover"; }
+    virtual bool addLaggPort(const std::string &portName) { return false; }
+    virtual bool removeLaggPort(const std::string &portName) { return false; }
+    virtual std::vector<std::string> getLaggPorts() const { return {}; }
 
-        // YANG serialization
-        lyd_node* toYang(ly_ctx* ctx) const override;
-        static LagInterface fromYang(const ly_ctx* ctx, const lyd_node* node);
-    };
+    // YANG serialization
+    lyd_node *toYang(ly_ctx *ctx) const override;
+    static LagInterface fromYang(const ly_ctx *ctx, const lyd_node *node);
+  };
 
 } // namespace netd::shared::interface
 

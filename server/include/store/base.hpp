@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Paige Thompson / Ravenhammer Research (paige@paige.bio)
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -28,35 +28,35 @@
 #ifndef NETD_SERVER_STORE_BASE_HPP
 #define NETD_SERVER_STORE_BASE_HPP
 
+#include <libyang/tree_data.h>
+#include <mutex>
 #include <string>
 #include <vector>
-#include <mutex>
-#include <libyang/tree_data.h>
 
 namespace netd::server::store {
 
-	class Store {
-	public:
-		Store() = default;
-		virtual ~Store() = default;
+  class Store {
+  public:
+    Store() = default;
+    virtual ~Store() = default;
 
-		// Core store operations
-		virtual bool load();
-		virtual bool commit();
+    // Core store operations
+    virtual bool load();
+    virtual bool commit();
 
-		// Search methods
-		std::vector<lyd_node*> search(const std::string& xpath);
-		std::vector<lyd_node*> searchInterface(const std::string& filter = "");
-		std::vector<lyd_node*> searchVRF(const std::string& filter = "");
-		std::vector<lyd_node*> searchRoute(const std::string& filter = "");
+    // Search methods
+    std::vector<lyd_node *> search(const std::string &xpath);
+    std::vector<lyd_node *> searchInterface(const std::string &filter = "");
+    std::vector<lyd_node *> searchVRF(const std::string &filter = "");
+    std::vector<lyd_node *> searchRoute(const std::string &filter = "");
 
-		// Lock/unlock methods
-		void lock();
-		void unlock();
+    // Lock/unlock methods
+    void lock();
+    void unlock();
 
-	private:
-		std::mutex storeMutex_;
-	};
+  private:
+    std::mutex storeMutex_;
+  };
 
 } // namespace netd::server::store
 

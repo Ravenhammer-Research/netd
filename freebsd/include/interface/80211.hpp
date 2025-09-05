@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Paige Thompson / Ravenhammer Research (paige@paige.bio)
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -28,66 +28,66 @@
 #ifndef NETD_FREEBSD_INTERFACE_80211_HPP
 #define NETD_FREEBSD_INTERFACE_80211_HPP
 
-#include <string>
 #include <cstdint>
 #include <memory>
+#include <string>
 #include <vector>
 
-#include <shared/include/interface/80211.hpp>
 #include <shared/include/base/serialization.hpp>
+#include <shared/include/interface/80211.hpp>
 
 namespace netd::freebsd::interface {
 
-    class WifiInterface : public netd::shared::interface::Ieee80211Interface {
-    public:
-        WifiInterface();
-        explicit WifiInterface(const std::string& name);
-        virtual ~WifiInterface();
+  class WifiInterface : public netd::shared::interface::Ieee80211Interface {
+  public:
+    WifiInterface();
+    explicit WifiInterface(const std::string &name);
+    virtual ~WifiInterface();
 
-        // Interface name
-        std::string getName() const { return name_; }
+    // Interface name
+    std::string getName() const { return name_; }
 
-        // FreeBSD-specific operations
-        bool createInterface();
-        bool destroyInterface();
-        bool loadFromSystem();
-        bool applyToSystem();
+    // FreeBSD-specific operations
+    bool createInterface();
+    bool destroyInterface();
+    bool loadFromSystem();
+    bool applyToSystem();
 
-        // WiFi-specific configuration
-        bool setSsid(const std::string& ssid);
-        std::string getSsid() const;
-        bool setChannel(uint8_t channel);
-        uint8_t getChannel() const;
-        bool setMode(const std::string& mode);
-        std::string getMode() const;
-        bool setSecurity(const std::string& security);
-        std::string getSecurity() const;
+    // WiFi-specific configuration
+    bool setSsid(const std::string &ssid);
+    std::string getSsid() const;
+    bool setChannel(uint8_t channel);
+    uint8_t getChannel() const;
+    bool setMode(const std::string &mode);
+    std::string getMode() const;
+    bool setSecurity(const std::string &security);
+    std::string getSecurity() const;
 
-        // Statistics and information
-        std::string getType() const { return "80211"; }
+    // Statistics and information
+    std::string getType() const { return "80211"; }
 
-        // Conversion to shared interface for serialization
-        operator netd::shared::interface::Ieee80211Interface() const;
+    // Conversion to shared interface for serialization
+    operator netd::shared::interface::Ieee80211Interface() const;
 
-    private:
-        // Interface name
-        std::string name_;
-        
-        // WiFi-specific members
-        std::string ssid_;
-        uint8_t channel_;
-        std::string mode_;
-        std::string security_;
-        
-        // FreeBSD system interface
-        int socket_;
-        
-        // Helper methods
-        bool openSocket();
-        void closeSocket();
-        bool getWifiInfo();
-        bool setWifiInfo() const;
-    };
+  private:
+    // Interface name
+    std::string name_;
+
+    // WiFi-specific members
+    std::string ssid_;
+    uint8_t channel_;
+    std::string mode_;
+    std::string security_;
+
+    // FreeBSD system interface
+    int socket_;
+
+    // Helper methods
+    bool openSocket();
+    void closeSocket();
+    bool getWifiInfo();
+    bool setWifiInfo() const;
+  };
 
 } // namespace netd::freebsd::interface
 

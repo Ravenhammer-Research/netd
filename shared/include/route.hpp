@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Paige Thompson / Ravenhammer Research (paige@paige.bio)
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -28,43 +28,44 @@
 #ifndef NETD_ROUTE_HPP
 #define NETD_ROUTE_HPP
 
-#include <string>
-#include <memory>
 #include <cstdint>
+#include <memory>
 #include <shared/include/address.hpp>
 #include <shared/include/base/serialization.hpp>
+#include <string>
 
 namespace netd::shared {
 
-    class Route : public base::Serialization<Route> {
-public:
-        Route() = default;
-        Route(std::shared_ptr<Address> destination, std::shared_ptr<Address> gateway, 
-              const std::string& interface, uint32_t vrf);
-        virtual ~Route() = default;
+  class Route : public base::Serialization<Route> {
+  public:
+    Route() = default;
+    Route(std::shared_ptr<Address> destination,
+          std::shared_ptr<Address> gateway, const std::string &interface,
+          uint32_t vrf);
+    virtual ~Route() = default;
 
-        // Serialization methods
-        lyd_node* toYang(ly_ctx* ctx) const override;
-        static Route fromYang(const ly_ctx* ctx, const lyd_node* node);
+    // Serialization methods
+    lyd_node *toYang(ly_ctx *ctx) const override;
+    static Route fromYang(const ly_ctx *ctx, const lyd_node *node);
 
-        // Route properties
-        std::shared_ptr<Address> getDestination() const;
-        std::shared_ptr<Address> getGateway() const;
-        std::string getInterface() const;
-        uint32_t getVRF() const;
+    // Route properties
+    std::shared_ptr<Address> getDestination() const;
+    std::shared_ptr<Address> getGateway() const;
+    std::string getInterface() const;
+    uint32_t getVRF() const;
 
-        // Setters
-        void setDestination(std::shared_ptr<Address> destination);
-        void setGateway(std::shared_ptr<Address> gateway);
-        void setInterface(const std::string& interface);
-        void setVRF(uint32_t vrf);
+    // Setters
+    void setDestination(std::shared_ptr<Address> destination);
+    void setGateway(std::shared_ptr<Address> gateway);
+    void setInterface(const std::string &interface);
+    void setVRF(uint32_t vrf);
 
-private:
-        std::shared_ptr<Address> destination_;
-        std::shared_ptr<Address> gateway_;
-        std::string interface_;
-        uint32_t vrf_;
-    };
+  private:
+    std::shared_ptr<Address> destination_;
+    std::shared_ptr<Address> gateway_;
+    std::string interface_;
+    uint32_t vrf_;
+  };
 
 } // namespace netd::shared
 

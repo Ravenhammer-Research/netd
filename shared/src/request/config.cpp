@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Paige Thompson / Ravenhammer Research (paige@paige.bio)
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -25,73 +25,78 @@
  * SUCH DAMAGE.
  */
 
-#include <shared/include/request/config.hpp>
-#include <shared/include/yang.hpp>
-#include <shared/include/exception.hpp>
 #include <libyang/libyang.h>
 #include <libyang/tree_data.h>
+#include <shared/include/exception.hpp>
+#include <shared/include/request/config.hpp>
+#include <shared/include/yang.hpp>
 
 namespace netd::shared::request {
 
-	GetConfigRequest::GetConfigRequest() {
-	}
+  GetConfigRequest::GetConfigRequest() {}
 
-	GetConfigRequest::~GetConfigRequest() {
-	}
+  GetConfigRequest::~GetConfigRequest() {}
 
-	lyd_node* GetConfigRequest::toYang(ly_ctx* ctx) const {
-		if (!ctx) {
-			return nullptr;
-		}
-		
-		// Get the ietf-netconf module
-		const struct lys_module* mod = ly_ctx_get_module_implemented(ctx, "ietf-netconf");
-		if (!mod) {
-			return nullptr;
-		}
-		
-		// Create the complete RPC structure with envelope
-		lyd_node* rpcNode = nullptr;
-		if (lyd_new_inner(nullptr, mod, "rpc", 0, &rpcNode) != LY_SUCCESS) {
-			return nullptr;
-		}
-		
-		// Add message-id attribute to the RPC envelope
-		if (lyd_new_meta(nullptr, rpcNode, nullptr, "message-id", "1", 0, nullptr) != LY_SUCCESS) {
-			lyd_free_tree(rpcNode);
-			return nullptr;
-		}
-		
-		// Create the get-config operation inside the RPC
-		lyd_node* getConfigNode = nullptr;
-		if (lyd_new_inner(rpcNode, mod, "get-config", 0, &getConfigNode) != LY_SUCCESS) {
-			lyd_free_tree(rpcNode);
-			return nullptr;
-		}
-		
-		// Create the source container
-		lyd_node* sourceNode = nullptr;
-		if (lyd_new_inner(getConfigNode, mod, "source", 0, &sourceNode) != LY_SUCCESS) {
-			lyd_free_tree(rpcNode);
-			return nullptr;
-		}
-		
-		// Add running datastore as default
-		lyd_node* runningNode = nullptr;
-		if (lyd_new_term(sourceNode, mod, "running", nullptr, 0, nullptr) != LY_SUCCESS) {
-			lyd_free_tree(rpcNode);
-			return nullptr;
-		}
-		
-		return rpcNode;
-	}
+  lyd_node *GetConfigRequest::toYang(ly_ctx *ctx) const {
+    if (!ctx) {
+      return nullptr;
+    }
 
-	std::unique_ptr<Request> GetConfigRequest::fromYang(const ly_ctx* ctx, const lyd_node* node) {
-		if (!node) {
-			throw NotImplementedError("Invalid YANG node provided to GetConfigRequest::fromYang");
-		}
-		
-		return std::make_unique<GetConfigRequest>();
-	}
+    // Get the ietf-netconf module
+    const struct lys_module *mod =
+        ly_ctx_get_module_implemented(ctx, "ietf-netconf");
+    if (!mod) {
+      return nullptr;
+    }
+
+    // Create the complete RPC structure with envelope
+    lyd_node *rpcNode = nullptr;
+    if (lyd_new_inner(nullptr, mod, "rpc", 0, &rpcNode) != LY_SUCCESS) {
+      return nullptr;
+    }
+
+    // Add message-id attribute to the RPC envelope
+    if (lyd_new_meta(nullptr, rpcNode, nullptr, "message-id", "1", 0,
+                     nullptr) != LY_SUCCESS) {
+      lyd_free_tree(rpcNode);
+      return nullptr;
+    }
+
+    // Create the get-config operation inside the RPC
+    lyd_node *getConfigNode = nullptr;
+    if (lyd_new_inner(rpcNode, mod, "get-config", 0, &getConfigNode) !=
+        LY_SUCCESS) {
+      lyd_free_tree(rpcNode);
+      return nullptr;
+    }
+
+    // Create the source container
+    lyd_node *sourceNode = nullptr;
+    if (lyd_new_inner(getConfigNode, mod, "source", 0, &sourceNode) !=
+        LY_SUCCESS) {
+      lyd_free_tree(rpcNode);
+      return nullptr;
+    }
+
+    // Add running datastore as default
+    lyd_node *runningNode = nullptr;
+    if (lyd_new_term(sourceNode, mod, "running", nullptr, 0, nullptr) !=
+        LY_SUCCESS) {
+      lyd_free_tree(rpcNode);
+      return nullptr;
+    }
+
+    return rpcNode;
+  }
+
+  std::unique_ptr<Request> GetConfigRequest::fromYang(const ly_ctx *ctx,
+                                                      const lyd_node *node) {
+    if (!node) {
+      throw NotImplementedError(
+          "Invalid YANG node provided to GetConfigRequest::fromYang");
+    }
+
+    return std::make_unique<GetConfigRequest>();
+  }
 
 } // namespace netd::shared::request

@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Paige Thompson / Ravenhammer Research (paige@paige.bio)
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -32,10 +32,10 @@
 
 namespace netd::server::netconf {
 
-	// Server management functions
-	bool startNetconfServer(const std::string& socketPath);
-	void stopNetconfServer();
-	void runNetconfServer();
+  // Server management functions
+  bool startNetconfServer(const std::string &socketPath);
+  void stopNetconfServer();
+  void runNetconfServer();
 
 } // namespace netd::server::netconf
 

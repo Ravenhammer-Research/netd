@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Paige Thompson / Ravenhammer Research (paige@paige.bio)
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -25,59 +25,61 @@
  * SUCH DAMAGE.
  */
 
-#include <shared/include/request/get.hpp>
-#include <shared/include/yang.hpp>
-#include <shared/include/exception.hpp>
 #include <libyang/libyang.h>
 #include <libyang/tree_data.h>
+#include <shared/include/exception.hpp>
+#include <shared/include/request/get.hpp>
+#include <shared/include/yang.hpp>
 
 namespace netd::shared::request {
 
-    GetRequest::GetRequest() {
+  GetRequest::GetRequest() {}
+
+  GetRequest::~GetRequest() {}
+
+  lyd_node *GetRequest::toYang(ly_ctx *ctx) const {
+    if (!ctx) {
+      return nullptr;
     }
 
-    GetRequest::~GetRequest() {
+    // Get the ietf-netconf module
+    const struct lys_module *mod =
+        ly_ctx_get_module_implemented(ctx, "ietf-netconf");
+    if (!mod) {
+      return nullptr;
     }
 
-    lyd_node* GetRequest::toYang(ly_ctx* ctx) const {
-        if (!ctx) {
-            return nullptr;
-        }
-        
-        // Get the ietf-netconf module
-        const struct lys_module* mod = ly_ctx_get_module_implemented(ctx, "ietf-netconf");
-        if (!mod) {
-            return nullptr;
-        }
-        
-        // Create the complete RPC structure with envelope
-        lyd_node* rpcNode = nullptr;
-        if (lyd_new_inner(nullptr, mod, "rpc", 0, &rpcNode) != LY_SUCCESS) {
-            return nullptr;
-        }
-        
-        // Add message-id attribute to the RPC envelope
-        if (lyd_new_meta(nullptr, rpcNode, nullptr, "message-id", "1", 0, nullptr) != LY_SUCCESS) {
-            lyd_free_tree(rpcNode);
-            return nullptr;
-        }
-        
-        // Create the get operation inside the RPC
-        lyd_node* getNode = nullptr;
-        if (lyd_new_inner(rpcNode, mod, "get", 0, &getNode) != LY_SUCCESS) {
-            lyd_free_tree(rpcNode);
-            return nullptr;
-        }
-        
-        return rpcNode;
+    // Create the complete RPC structure with envelope
+    lyd_node *rpcNode = nullptr;
+    if (lyd_new_inner(nullptr, mod, "rpc", 0, &rpcNode) != LY_SUCCESS) {
+      return nullptr;
     }
 
-    std::unique_ptr<Request> GetRequest::fromYang(const ly_ctx* ctx, const lyd_node* node) {
-        if (!node) {
-            throw NotImplementedError("Invalid YANG node provided to GetRequest::fromYang");
-        }
-        
-        return std::make_unique<GetRequest>();
+    // Add message-id attribute to the RPC envelope
+    if (lyd_new_meta(nullptr, rpcNode, nullptr, "message-id", "1", 0,
+                     nullptr) != LY_SUCCESS) {
+      lyd_free_tree(rpcNode);
+      return nullptr;
     }
+
+    // Create the get operation inside the RPC
+    lyd_node *getNode = nullptr;
+    if (lyd_new_inner(rpcNode, mod, "get", 0, &getNode) != LY_SUCCESS) {
+      lyd_free_tree(rpcNode);
+      return nullptr;
+    }
+
+    return rpcNode;
+  }
+
+  std::unique_ptr<Request> GetRequest::fromYang(const ly_ctx *ctx,
+                                                const lyd_node *node) {
+    if (!node) {
+      throw NotImplementedError(
+          "Invalid YANG node provided to GetRequest::fromYang");
+    }
+
+    return std::make_unique<GetRequest>();
+  }
 
 } // namespace netd::shared::request

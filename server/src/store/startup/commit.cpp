@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Paige Thompson / Ravenhammer Research (paige@paige.bio)
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -30,7 +30,7 @@
 
 namespace netd::server::store::startup {
 
-	// StartupStore commit operations implementation
-	// Note: commit() method is implemented in load.cpp
+  // StartupStore commit operations implementation
+  // Note: commit() method is implemented in load.cpp
 
 } // namespace netd::server::store::startup

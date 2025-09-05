@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Paige Thompson / Ravenhammer Research (paige@paige.bio)
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -28,20 +28,19 @@
 #ifndef NETD_BASE_SERIALIZATION_HPP
 #define NETD_BASE_SERIALIZATION_HPP
 
-#include <string>
 #include <libyang/libyang.h>
+#include <string>
 
 namespace netd::shared::base {
 
-	template<typename T>
-	class Serialization {
-	public:
-		virtual ~Serialization() = default;
+  template <typename T> class Serialization {
+  public:
+    virtual ~Serialization() = default;
 
-		// YANG serialization
-		virtual lyd_node* toYang(ly_ctx* ctx) const = 0;
-		static T fromYang(const ly_ctx* ctx, const lyd_node* node);
-	};
+    // YANG serialization
+    virtual lyd_node *toYang(ly_ctx *ctx) const = 0;
+    static T fromYang(const ly_ctx *ctx, const lyd_node *node);
+  };
 
 } // namespace netd::shared::base
 

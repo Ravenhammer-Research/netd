@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Paige Thompson / Ravenhammer Research (paige@paige.bio)
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -28,49 +28,58 @@
 #ifndef NETD_SERVER_NETCONF_BASE_HPP
 #define NETD_SERVER_NETCONF_BASE_HPP
 
-#include <memory>
-#include <string>
-#include <libyang/libyang.h>
-#include <libnetconf2/netconf.h>
-#include <libnetconf2/session_server.h>
 #include <libnetconf2/messages_server.h>
+#include <libnetconf2/netconf.h>
 #include <libnetconf2/server_config.h>
+#include <libnetconf2/session_server.h>
+#include <libyang/libyang.h>
+#include <memory>
 #include <shared/include/yang.hpp>
+#include <string>
 
 namespace netd::server::netconf {
 
-	class Server {
-	public:
-		Server();
-		virtual ~Server();
+  class Server {
+  public:
+    Server();
+    virtual ~Server();
 
-		// Server lifecycle methods
-		virtual bool start() = 0;
-		virtual void stop() = 0;
-		bool isRunning() const;
+    // Server lifecycle methods
+    virtual bool start() = 0;
+    virtual void stop() = 0;
+    bool isRunning() const;
 
-		// Session management
-		struct nc_session* acceptSession();
-		void closeSession(struct nc_session* session);
+    // Session management
+    struct nc_session *acceptSession();
+    void closeSession(struct nc_session *session);
 
-		// RPC handling
-		virtual struct nc_server_reply* handleRpc(struct nc_session* session, struct lyd_node* rpc);
+    // RPC handling
+    virtual struct nc_server_reply *handleRpc(struct nc_session *session,
+                                              struct lyd_node *rpc);
 
-		// Specific RPC request handlers
-		virtual struct nc_server_reply* handleGetRequest(struct nc_session* session, struct lyd_node* rpc);
-		virtual struct nc_server_reply* handleGetConfigRequest(struct nc_session* session, struct lyd_node* rpc);
-		virtual struct nc_server_reply* handleEditConfigRequest(struct nc_session* session, struct lyd_node* rpc);
-		virtual struct nc_server_reply* handleCopyConfigRequest(struct nc_session* session, struct lyd_node* rpc);
-		virtual struct nc_server_reply* handleDeleteConfigRequest(struct nc_session* session, struct lyd_node* rpc);
-		virtual struct nc_server_reply* handleLockRequest(struct nc_session* session, struct lyd_node* rpc);
-		virtual struct nc_server_reply* handleUnlockRequest(struct nc_session* session, struct lyd_node* rpc);
-		virtual struct nc_server_reply* handleDiscardRequest(struct nc_session* session, struct lyd_node* rpc);
+    // Specific RPC request handlers
+    virtual struct nc_server_reply *handleGetRequest(struct nc_session *session,
+                                                     struct lyd_node *rpc);
+    virtual struct nc_server_reply *
+    handleGetConfigRequest(struct nc_session *session, struct lyd_node *rpc);
+    virtual struct nc_server_reply *
+    handleEditConfigRequest(struct nc_session *session, struct lyd_node *rpc);
+    virtual struct nc_server_reply *
+    handleCopyConfigRequest(struct nc_session *session, struct lyd_node *rpc);
+    virtual struct nc_server_reply *
+    handleDeleteConfigRequest(struct nc_session *session, struct lyd_node *rpc);
+    virtual struct nc_server_reply *
+    handleLockRequest(struct nc_session *session, struct lyd_node *rpc);
+    virtual struct nc_server_reply *
+    handleUnlockRequest(struct nc_session *session, struct lyd_node *rpc);
+    virtual struct nc_server_reply *
+    handleDiscardRequest(struct nc_session *session, struct lyd_node *rpc);
 
-	protected:
-		bool running_;
-		struct nc_pollsession* ps_;
-	};
+  protected:
+    bool running_;
+    struct nc_pollsession *ps_;
+  };
 
-} // namespace netd::netconf
+} // namespace netd::server::netconf
 
 #endif // NETD_SERVER_NETCONF_BASE_HPP

@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Paige Thompson / Ravenhammer Research (paige@paige.bio)
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -28,41 +28,36 @@
 #ifndef NETD_LOGGER_HPP
 #define NETD_LOGGER_HPP
 
-#include <string>
 #include <functional>
 #include <memory>
+#include <string>
 
 namespace netd::shared {
 
-    enum class LogLevel {
-        DEBUG,
-        INFO,
-        WARNING,
-        ERROR
-    };
+  enum class LogLevel { DEBUG, INFO, WARNING, ERROR };
 
-    class Logger {
-public:
-        using Callback = std::function<void(LogLevel, const std::string&)>;
+  class Logger {
+  public:
+    using Callback = std::function<void(LogLevel, const std::string &)>;
 
-        static Logger& getInstance();
-        
-        void setCallback(Callback callback);
-        void log(LogLevel level, const std::string& message);
-        
-        void debug(const std::string& message);
-        void info(const std::string& message);
-        void warning(const std::string& message);
-        void error(const std::string& message);
+    static Logger &getInstance();
 
-private:
-        Logger() = default;
-        ~Logger() = default;
-        Logger(const Logger&) = delete;
-        Logger& operator=(const Logger&) = delete;
+    void setCallback(Callback callback);
+    void log(LogLevel level, const std::string &message);
 
-        Callback callback_;
-    };
+    void debug(const std::string &message);
+    void info(const std::string &message);
+    void warning(const std::string &message);
+    void error(const std::string &message);
+
+  private:
+    Logger() = default;
+    ~Logger() = default;
+    Logger(const Logger &) = delete;
+    Logger &operator=(const Logger &) = delete;
+
+    Callback callback_;
+  };
 
 } // namespace netd::shared
 

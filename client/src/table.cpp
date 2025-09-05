@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Paige Thompson / Ravenhammer Research (paige@paige.bio)
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -25,103 +25,100 @@
  * SUCH DAMAGE.
  */
 
-#include <client/include/table.hpp>
-#include <string>
 #include <algorithm>
+#include <client/include/table.hpp>
 #include <iomanip>
 #include <sstream>
+#include <string>
 
 namespace netd::client {
 
-    constexpr size_t COLUMN_SPACING = 0x02;
-    constexpr char SEPARATOR_CHAR = 0x2D;
-    constexpr char NEWLINE_CHAR = 0x0A;
-    constexpr char SPACE_CHAR = 0x20;
-    constexpr const char* EMPTY = "";
+  constexpr size_t COLUMN_SPACING = 0x02;
+  constexpr char SEPARATOR_CHAR = 0x2D;
+  constexpr char NEWLINE_CHAR = 0x0A;
+  constexpr char SPACE_CHAR = 0x20;
+  constexpr const char *EMPTY = "";
 
-    Table::Table() {
+  Table::Table() {}
+
+  void Table::addColumn(const std::string &name) { columns_.push_back(name); }
+
+  void Table::addRow(const std::vector<std::string> &values) {
+    rows_.push_back(values);
+  }
+
+  void Table::clear() {
+    columns_.clear();
+    rows_.clear();
+  }
+
+  std::string Table::format() const {
+    if (columns_.empty()) {
+      return EMPTY;
     }
 
-    void Table::addColumn(const std::string& name) {
-        columns_.push_back(name);
+    std::vector<size_t> widths = calculateColumnWidths();
+    std::ostringstream oss;
+
+    // Format header
+    oss << formatRow(columns_, widths) << NEWLINE_CHAR;
+    oss << formatSeparator(widths) << NEWLINE_CHAR;
+
+    // Format rows
+    for (const auto &row : rows_) {
+      oss << formatRow(row, widths) << NEWLINE_CHAR;
     }
 
-    void Table::addRow(const std::vector<std::string>& values) {
-        rows_.push_back(values);
-    }
+    return oss.str();
+  }
 
-    void Table::clear() {
-        columns_.clear();
-        rows_.clear();
-    }
+  std::vector<size_t> Table::calculateColumnWidths() const {
+    std::vector<size_t> widths(columns_.size(), 0);
 
-    std::string Table::format() const {
-        if (columns_.empty()) {
-            return EMPTY;
+    // Calculate width for each column
+    for (size_t i = 0; i < columns_.size(); ++i) {
+      // Start with column header width
+      widths[i] = columns_[i].length();
+
+      // Check all rows for this column
+      for (const auto &row : rows_) {
+        if (i < row.size()) {
+          widths[i] = std::max(widths[i], row[i].length());
         }
-
-        std::vector<size_t> widths = calculateColumnWidths();
-        std::ostringstream oss;
-
-        // Format header
-        oss << formatRow(columns_, widths) << NEWLINE_CHAR;
-        oss << formatSeparator(widths) << NEWLINE_CHAR;
-
-        // Format rows
-        for (const auto& row : rows_) {
-            oss << formatRow(row, widths) << NEWLINE_CHAR;
-        }
-
-        return oss.str();
+      }
     }
 
-    std::vector<size_t> Table::calculateColumnWidths() const {
-        std::vector<size_t> widths(columns_.size(), 0);
+    return widths;
+  }
 
-        // Calculate width for each column
-        for (size_t i = 0; i < columns_.size(); ++i) {
-            // Start with column header width
-            widths[i] = columns_[i].length();
+  std::string Table::formatRow(const std::vector<std::string> &values,
+                               const std::vector<size_t> &widths) const {
+    std::ostringstream oss;
 
-            // Check all rows for this column
-            for (const auto& row : rows_) {
-                if (i < row.size()) {
-                    widths[i] = std::max(widths[i], row[i].length());
-                }
-            }
-        }
+    for (size_t i = 0; i < columns_.size(); ++i) {
+      std::string value = (i < values.size()) ? values[i] : "";
+      oss << std::left << std::setw(widths[i]) << value;
 
-        return widths;
+      if (i < columns_.size() - 1) {
+        oss << std::string(COLUMN_SPACING, SPACE_CHAR);
+      }
     }
 
-    std::string Table::formatRow(const std::vector<std::string>& values, 
-                                const std::vector<size_t>& widths) const {
-        std::ostringstream oss;
-        
-        for (size_t i = 0; i < columns_.size(); ++i) {
-            std::string value = (i < values.size()) ? values[i] : "";
-            oss << std::left << std::setw(widths[i]) << value;
-            
-            if (i < columns_.size() - 1) {
-                oss << std::string(COLUMN_SPACING, SPACE_CHAR);
-            }
-        }
-        
-        return oss.str();
+    return oss.str();
+  }
+
+  std::string Table::formatSeparator(const std::vector<size_t> &widths) const {
+    std::ostringstream oss;
+
+    for (size_t i = 0; i < widths.size(); ++i) {
+      oss << std::string(widths[i], SEPARATOR_CHAR);
+
+      if (i < widths.size() - 1) {
+        oss << std::string(COLUMN_SPACING, SPACE_CHAR);
+      }
     }
 
-    std::string Table::formatSeparator(const std::vector<size_t>& widths) const {
-        std::ostringstream oss;
-        
-        for (size_t i = 0; i < widths.size(); ++i) {
-            oss << std::string(widths[i], SEPARATOR_CHAR);
-            
-            if (i < widths.size() - 1) {
-                oss << std::string(COLUMN_SPACING, SPACE_CHAR);
-            }
-        }
-        
-        return oss.str();
-    }
+    return oss.str();
+  }
 
 } // namespace netd::client

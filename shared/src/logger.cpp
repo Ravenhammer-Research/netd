@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Paige Thompson / Ravenhammer Research (paige@paige.bio)
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -25,54 +25,60 @@
  * SUCH DAMAGE.
  */
 
-#include <shared/include/logger.hpp>
-#include <iostream>
 #include <iomanip>
+#include <iostream>
+#include <shared/include/logger.hpp>
 
 namespace netd::shared {
 
-	Logger& Logger::getInstance() {
-		static Logger instance;
-		if (!instance.callback_) {
-			// Set up default console logging
-			instance.setCallback([](LogLevel level, const std::string& message) {
-				const char* levelStr = "";
-				switch (level) {
-					case LogLevel::DEBUG:   levelStr = "DEBUG"; break;
-					case LogLevel::INFO:    levelStr = "INFO "; break;
-					case LogLevel::WARNING: levelStr = "WARN "; break;
-					case LogLevel::ERROR:   levelStr = "ERROR"; break;
-				}
-				std::cerr << "[" << levelStr << "] " << message << std::endl;
-			});
-		}
-		return instance;
-	}
+  Logger &Logger::getInstance() {
+    static Logger instance;
+    if (!instance.callback_) {
+      // Set up default console logging
+      instance.setCallback([](LogLevel level, const std::string &message) {
+        const char *levelStr = "";
+        switch (level) {
+        case LogLevel::DEBUG:
+          levelStr = "DEBUG";
+          break;
+        case LogLevel::INFO:
+          levelStr = "INFO ";
+          break;
+        case LogLevel::WARNING:
+          levelStr = "WARN ";
+          break;
+        case LogLevel::ERROR:
+          levelStr = "ERROR";
+          break;
+        }
+        std::cerr << "[" << levelStr << "] " << message << std::endl;
+      });
+    }
+    return instance;
+  }
 
-	void Logger::setCallback(Callback callback) {
-		callback_ = callback;
-	}
+  void Logger::setCallback(Callback callback) { callback_ = callback; }
 
-	void Logger::log(LogLevel level, const std::string& message) {
-		if (callback_) {
-			callback_(level, message);
-		}
-	}
+  void Logger::log(LogLevel level, const std::string &message) {
+    if (callback_) {
+      callback_(level, message);
+    }
+  }
 
-	void Logger::debug(const std::string& message) {
-		log(LogLevel::DEBUG, message);
-	}
+  void Logger::debug(const std::string &message) {
+    log(LogLevel::DEBUG, message);
+  }
 
-	void Logger::info(const std::string& message) {
-		log(LogLevel::INFO, message);
-	}
+  void Logger::info(const std::string &message) {
+    log(LogLevel::INFO, message);
+  }
 
-	void Logger::warning(const std::string& message) {
-		log(LogLevel::WARNING, message);
-	}
+  void Logger::warning(const std::string &message) {
+    log(LogLevel::WARNING, message);
+  }
 
-	void Logger::error(const std::string& message) {
-		log(LogLevel::ERROR, message);
-	}
+  void Logger::error(const std::string &message) {
+    log(LogLevel::ERROR, message);
+  }
 
 } // namespace netd::shared

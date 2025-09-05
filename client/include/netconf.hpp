@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Paige Thompson / Ravenhammer Research (paige@paige.bio)
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -28,23 +28,24 @@
 #ifndef NETD_CLIENT_NETCONF_HPP
 #define NETD_CLIENT_NETCONF_HPP
 
-#include <string>
 #include <shared/include/request/config.hpp>
-#include <shared/include/request/get.hpp>
 #include <shared/include/request/edit.hpp>
+#include <shared/include/request/get.hpp>
+#include <string>
 
 namespace netd::client {
 
-	// Connection management
-	bool connectToServer(const std::string& socketPath = "/var/run/netd.sock");
-	void disconnectFromServer();
-	bool isConnectedToServer();
+  // Connection management
+  bool connectToServer(const std::string &socketPath = "/var/run/netd.sock");
+  void disconnectFromServer();
+  bool isConnectedToServer();
 
-	// NETCONF operations
-	std::string sendNetconfRequest(const std::string& request);
-	std::string getConfig(const std::string& source = "running");
-	std::string get(const std::string& filter = "");
-	std::string editConfig(const std::string& target = "candidate", const std::string& config = "");
+  // NETCONF operations
+  std::string sendNetconfRequest(const std::string &request);
+  std::string getConfig(const std::string &source = "running");
+  std::string get(const std::string &filter = "");
+  std::string editConfig(const std::string &target = "candidate",
+                         const std::string &config = "");
 
 } // namespace netd::client
 

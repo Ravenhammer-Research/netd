@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Paige Thompson / Ravenhammer Research (paige@paige.bio)
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -25,58 +25,45 @@
  * SUCH DAMAGE.
  */
 
+#include <libyang/tree_data.h>
 #include <shared/include/vrf.hpp>
 #include <shared/include/yang.hpp>
-#include <libyang/tree_data.h>
 
 namespace netd::shared {
 
-	VRF::VRF(uint32_t id, const std::string& name, bool active)
-		: id_(id), name_(name), active_(active) {
-	}
+  VRF::VRF(uint32_t id, const std::string &name, bool active)
+      : id_(id), name_(name), active_(active) {}
 
-	lyd_node* VRF::toYang(ly_ctx* ctx) const {
-		// TODO: Implement YANG serialization for VRF
-		if (!ctx) {
-			return nullptr;
-		}
-		
-		// Placeholder implementation - needs actual YANG node creation
-		return nullptr;
-	}
+  lyd_node *VRF::toYang(ly_ctx *ctx) const {
+    // TODO: Implement YANG serialization for VRF
+    if (!ctx) {
+      return nullptr;
+    }
 
-	VRF VRF::fromYang(const ly_ctx* ctx, const lyd_node* node) {
-		// TODO: Implement YANG deserialization for VRF
-		if (!ctx || !node) {
-			return VRF();
-		}
-		
-		// Placeholder implementation - needs actual YANG node parsing
-		return VRF();
-	}
+    // Placeholder implementation - needs actual YANG node creation
+    return nullptr;
+  }
 
-	uint32_t VRF::getId() const {
-		return id_;
-	}
+  VRF VRF::fromYang(const ly_ctx *ctx, const lyd_node *node) {
+    // TODO: Implement YANG deserialization for VRF
+    if (!ctx || !node) {
+      return VRF();
+    }
 
-	std::string VRF::getName() const {
-		return name_;
-	}
+    // Placeholder implementation - needs actual YANG node parsing
+    return VRF();
+  }
 
-	bool VRF::isActive() const {
-		return active_;
-	}
+  uint32_t VRF::getId() const { return id_; }
 
-	void VRF::setId(uint32_t id) {
-		id_ = id;
-	}
+  std::string VRF::getName() const { return name_; }
 
-	void VRF::setName(const std::string& name) {
-		name_ = name;
-	}
+  bool VRF::isActive() const { return active_; }
 
-	void VRF::setActive(bool active) {
-		active_ = active;
-	}
+  void VRF::setId(uint32_t id) { id_ = id; }
+
+  void VRF::setName(const std::string &name) { name_ = name; }
+
+  void VRF::setActive(bool active) { active_ = active; }
 
 } // namespace netd::shared

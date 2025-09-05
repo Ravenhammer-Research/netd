@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Paige Thompson / Ravenhammer Research (paige@paige.bio)
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -28,37 +28,40 @@
 #ifndef NETD_INTERFACE_VXLAN_HPP
 #define NETD_INTERFACE_VXLAN_HPP
 
-#include <shared/include/interface/base/ether.hpp>
-#include <shared/include/interface/base/tunnel.hpp>
-#include <shared/include/base/serialization.hpp>
-#include <string>
 #include <cstdint>
 #include <memory>
+#include <shared/include/base/serialization.hpp>
+#include <shared/include/interface/base/ether.hpp>
+#include <shared/include/interface/base/tunnel.hpp>
+#include <string>
 
 namespace netd::shared::interface {
 
-    class VxlanInterface : public netd::shared::interface::base::Ether, 
-        public netd::shared::interface::base::Tunnel, 
+  class VxlanInterface
+      : public netd::shared::interface::base::Ether,
+        public netd::shared::interface::base::Tunnel,
         public netd::shared::base::Serialization<VxlanInterface> {
-    public:
-        VxlanInterface();
-        explicit VxlanInterface(const std::string& name);
-        virtual ~VxlanInterface();
+  public:
+    VxlanInterface();
+    explicit VxlanInterface(const std::string &name);
+    virtual ~VxlanInterface();
 
-        // VXLAN-specific configuration
-        virtual bool setVni(uint32_t vni) { return false; }
-        virtual uint32_t getVni() const { return 0; }
-        virtual bool setLocalEndpoint(const std::string& endpoint) { return false; }
-        virtual std::string getLocalEndpoint() const { return ""; }
-        virtual bool setRemoteEndpoint(const std::string& endpoint) { return false; }
-        virtual std::string getRemoteEndpoint() const { return ""; }
-        virtual bool setUdpPort(uint16_t port) { return false; }
-        virtual uint16_t getUdpPort() const { return 4789; }
+    // VXLAN-specific configuration
+    virtual bool setVni(uint32_t vni) { return false; }
+    virtual uint32_t getVni() const { return 0; }
+    virtual bool setLocalEndpoint(const std::string &endpoint) { return false; }
+    virtual std::string getLocalEndpoint() const { return ""; }
+    virtual bool setRemoteEndpoint(const std::string &endpoint) {
+      return false;
+    }
+    virtual std::string getRemoteEndpoint() const { return ""; }
+    virtual bool setUdpPort(uint16_t port) { return false; }
+    virtual uint16_t getUdpPort() const { return 4789; }
 
-        // YANG serialization
-        lyd_node* toYang(ly_ctx* ctx) const override;
-        static VxlanInterface fromYang(const ly_ctx* ctx, const lyd_node* node);
-    };
+    // YANG serialization
+    lyd_node *toYang(ly_ctx *ctx) const override;
+    static VxlanInterface fromYang(const ly_ctx *ctx, const lyd_node *node);
+  };
 
 } // namespace netd::shared::interface
 

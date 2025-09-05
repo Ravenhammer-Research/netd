@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Paige Thompson / Ravenhammer Research (paige@paige.bio)
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -25,53 +25,58 @@
  * SUCH DAMAGE.
  */
 
-#include <shared/include/response/config.hpp>
-#include <shared/include/yang.hpp>
-#include <shared/include/exception.hpp>
 #include <libyang/libyang.h>
 #include <libyang/tree_data.h>
+#include <shared/include/exception.hpp>
+#include <shared/include/response/config.hpp>
+#include <shared/include/yang.hpp>
 
 namespace netd::shared::response {
 
-	GetConfigResponse::GetConfigResponse() {
-	}
+  GetConfigResponse::GetConfigResponse() {}
 
-	GetConfigResponse::~GetConfigResponse() {
-	}
+  GetConfigResponse::~GetConfigResponse() {}
 
-	lyd_node* GetConfigResponse::toYang(ly_ctx* ctx) const {
-		if (!ctx) {
-			return nullptr;
-		}
-		
-		// Create the complete rpc-reply structure with envelope
-		lyd_node* replyNode = nullptr;
-		if (lyd_new_opaq2(nullptr, ctx, "rpc-reply", nullptr, nullptr, "urn:ietf:params:xml:ns:netconf:base:1.0", &replyNode) != LY_SUCCESS) {
-			return nullptr;
-		}
-		
-		// Add message-id attribute to the rpc-reply envelope
-		if (lyd_new_meta(nullptr, replyNode, nullptr, "message-id", "1", 0, nullptr) != LY_SUCCESS) {
-			lyd_free_tree(replyNode);
-			return nullptr;
-		}
-		
-		// Create the data element inside the rpc-reply
-		lyd_node* dataNode = nullptr;
-		if (lyd_new_opaq2(replyNode, nullptr, "data", nullptr, nullptr, "urn:ietf:params:xml:ns:netconf:base:1.0", &dataNode) != LY_SUCCESS) {
-			lyd_free_tree(replyNode);
-			return nullptr;
-		}
-		
-		return replyNode;
-	}
+  lyd_node *GetConfigResponse::toYang(ly_ctx *ctx) const {
+    if (!ctx) {
+      return nullptr;
+    }
 
-	std::unique_ptr<Response> GetConfigResponse::fromYang(const ly_ctx* ctx, const lyd_node* node) {
-		if (!node) {
-			throw NotImplementedError("Invalid YANG node provided to GetConfigResponse::fromYang");
-		}
-		
-		return std::make_unique<GetConfigResponse>();
-	}
+    // Create the complete rpc-reply structure with envelope
+    lyd_node *replyNode = nullptr;
+    if (lyd_new_opaq2(nullptr, ctx, "rpc-reply", nullptr, nullptr,
+                      "urn:ietf:params:xml:ns:netconf:base:1.0",
+                      &replyNode) != LY_SUCCESS) {
+      return nullptr;
+    }
+
+    // Add message-id attribute to the rpc-reply envelope
+    if (lyd_new_meta(nullptr, replyNode, nullptr, "message-id", "1", 0,
+                     nullptr) != LY_SUCCESS) {
+      lyd_free_tree(replyNode);
+      return nullptr;
+    }
+
+    // Create the data element inside the rpc-reply
+    lyd_node *dataNode = nullptr;
+    if (lyd_new_opaq2(replyNode, nullptr, "data", nullptr, nullptr,
+                      "urn:ietf:params:xml:ns:netconf:base:1.0",
+                      &dataNode) != LY_SUCCESS) {
+      lyd_free_tree(replyNode);
+      return nullptr;
+    }
+
+    return replyNode;
+  }
+
+  std::unique_ptr<Response> GetConfigResponse::fromYang(const ly_ctx *ctx,
+                                                        const lyd_node *node) {
+    if (!node) {
+      throw NotImplementedError(
+          "Invalid YANG node provided to GetConfigResponse::fromYang");
+    }
+
+    return std::make_unique<GetConfigResponse>();
+  }
 
 } // namespace netd::shared::response

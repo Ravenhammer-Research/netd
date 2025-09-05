@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Paige Thompson / Ravenhammer Research (paige@paige.bio)
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -28,20 +28,20 @@
 #ifndef NETD_FREEBSD_INTERFACE_TAP_HPP
 #define NETD_FREEBSD_INTERFACE_TAP_HPP
 
-#include <string>
 #include <cstdint>
 #include <memory>
+#include <string>
 #include <vector>
 
-#include <shared/include/interface/tap.hpp>
 #include <shared/include/base/serialization.hpp>
+#include <shared/include/interface/tap.hpp>
 
 namespace netd::freebsd::interface {
 
-    class TapInterface : public netd::shared::interface::TapInterface {
-public:
+  class TapInterface : public netd::shared::interface::TapInterface {
+  public:
     TapInterface();
-    explicit TapInterface(const std::string& name);
+    explicit TapInterface(const std::string &name);
     virtual ~TapInterface();
 
     // Interface name
@@ -56,32 +56,32 @@ public:
     // TAP-specific configuration
     bool setTapUnit(int unit);
     int getTapUnit() const;
-    bool setTapMode(const std::string& mode);
+    bool setTapMode(const std::string &mode);
     std::string getTapMode() const;
 
     // Statistics and information
     std::string getType() const { return "tap"; }
 
-        // Conversion to shared interface for serialization
-        operator netd::shared::interface::TapInterface() const;
+    // Conversion to shared interface for serialization
+    operator netd::shared::interface::TapInterface() const;
 
-private:
+  private:
     // Interface name
     std::string name_;
-    
+
     // TAP-specific members
     int tapUnit_;
     std::string tapMode_;
-    
+
     // FreeBSD system interface
     int socket_;
-    
+
     // Helper methods
     bool openSocket();
     void closeSocket();
     bool getTapInfo();
     bool setTapInfo() const;
-};
+  };
 
 } // namespace netd::freebsd::interface
 

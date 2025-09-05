@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Paige Thompson / Ravenhammer Research (paige@paige.bio)
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -28,6 +28,8 @@
 #include <freebsd/include/interface/ethernet.hpp>
 #include <shared/include/logger.hpp>
 
+#include <cstdlib>
+#include <cstring>
 #include <net/if.h>
 #include <net/if_var.h>
 #include <netinet/if_ether.h>
@@ -35,215 +37,199 @@
 #include <sys/socket.h>
 #include <sys/sysctl.h>
 #include <unistd.h>
-#include <cstring>
-#include <cstdlib>
 
 namespace netd::freebsd::interface {
 
-    EthernetInterface::EthernetInterface()
-        : netd::shared::interface::EthernetInterface(),
-        name_(""),
-        duplex_("auto"),
-        speed_(0),
-        autoNegotiation_(true),
-        flowControl_(false),
-        socket_(-1) {
+  EthernetInterface::EthernetInterface()
+      : netd::shared::interface::EthernetInterface(), name_(""),
+        duplex_("auto"), speed_(0), autoNegotiation_(true), flowControl_(false),
+        socket_(-1) {}
+
+  EthernetInterface::EthernetInterface(const std::string &name)
+      : netd::shared::interface::EthernetInterface(), name_(name),
+        duplex_("auto"), speed_(0), autoNegotiation_(true), flowControl_(false),
+        socket_(-1) {}
+
+  EthernetInterface::~EthernetInterface() { closeSocket(); }
+
+  bool EthernetInterface::createInterface() {
+    auto &logger = shared::Logger::getInstance();
+
+    if (!openSocket()) {
+      logger.error("Failed to open socket for creating ethernet interface");
+      return false;
     }
 
-    EthernetInterface::EthernetInterface(const std::string& name)
-        : netd::shared::interface::EthernetInterface(),
-        name_(name),
-        duplex_("auto"),
-        speed_(0),
-        autoNegotiation_(true),
-        flowControl_(false),
-        socket_(-1) {
+    // Use SIOCIFCREATE to create ethernet interface
+    struct ifreq ifr;
+    std::memset(&ifr, 0, sizeof(ifr));
+    std::strncpy(ifr.ifr_name, name_.c_str(), IFNAMSIZ - 1);
+
+    if (ioctl(socket_, SIOCIFCREATE, &ifr) < 0) {
+      logger.error("Failed to create ethernet interface " + name_ + ": " +
+                   std::strerror(errno));
+      closeSocket();
+      return false;
     }
 
-    EthernetInterface::~EthernetInterface() {
-        closeSocket();
+    logger.info("Created ethernet interface " + name_);
+    return true;
+  }
+
+  bool EthernetInterface::destroyInterface() {
+    auto &logger = shared::Logger::getInstance();
+
+    if (!openSocket()) {
+      logger.error("Failed to open socket for destroying ethernet interface");
+      return false;
     }
 
-    bool EthernetInterface::createInterface() {
-        auto& logger = shared::Logger::getInstance();
-        
-        if (!openSocket()) {
-            logger.error("Failed to open socket for creating ethernet interface");
-            return false;
-        }
-        
-        // Use SIOCIFCREATE to create ethernet interface
-        struct ifreq ifr;
-        std::memset(&ifr, 0, sizeof(ifr));
-        std::strncpy(ifr.ifr_name, name_.c_str(), IFNAMSIZ - 1);
-        
-        if (ioctl(socket_, SIOCIFCREATE, &ifr) < 0) {
-            logger.error("Failed to create ethernet interface " + name_ + ": " + std::strerror(errno));
-            closeSocket();
-            return false;
-        }
-        
-        logger.info("Created ethernet interface " + name_);
-        return true;
+    // Use SIOCIFDESTROY to destroy ethernet interface
+    struct ifreq ifr;
+    std::memset(&ifr, 0, sizeof(ifr));
+    std::strncpy(ifr.ifr_name, name_.c_str(), IFNAMSIZ - 1);
+
+    if (ioctl(socket_, SIOCIFDESTROY, &ifr) < 0) {
+      logger.error("Failed to destroy ethernet interface " + name_ + ": " +
+                   std::strerror(errno));
+      closeSocket();
+      return false;
     }
 
-    bool EthernetInterface::destroyInterface() {
-        auto& logger = shared::Logger::getInstance();
-        
-        if (!openSocket()) {
-            logger.error("Failed to open socket for destroying ethernet interface");
-            return false;
-        }
-        
-        // Use SIOCIFDESTROY to destroy ethernet interface
-        struct ifreq ifr;
-        std::memset(&ifr, 0, sizeof(ifr));
-        std::strncpy(ifr.ifr_name, name_.c_str(), IFNAMSIZ - 1);
-        
-        if (ioctl(socket_, SIOCIFDESTROY, &ifr) < 0) {
-            logger.error("Failed to destroy ethernet interface " + name_ + ": " + std::strerror(errno));
-            closeSocket();
-            return false;
-        }
-        
-        logger.info("Destroyed ethernet interface " + name_);
-        return true;
+    logger.info("Destroyed ethernet interface " + name_);
+    return true;
+  }
+
+  bool EthernetInterface::loadFromSystem() {
+    auto &logger = shared::Logger::getInstance();
+
+    if (!openSocket()) {
+      return false;
     }
 
-    bool EthernetInterface::loadFromSystem() {
-        auto& logger = shared::Logger::getInstance();
-        
-        if (!openSocket()) {
-            return false;
-        }
-        
-        if (!getInterfaceInfo()) {
-            closeSocket();
-            return false;
-        }
-        
-        closeSocket();
-        logger.info("Loaded ethernet interface information from system: " + name_);
-        return true;
+    if (!getInterfaceInfo()) {
+      closeSocket();
+      return false;
     }
 
-    bool EthernetInterface::applyToSystem() {
-        auto& logger = shared::Logger::getInstance();
-        
-        if (!openSocket()) {
-            return false;
-        }
-        
-        if (!setInterfaceInfo()) {
-            closeSocket();
-            return false;
-        }
-        
-        closeSocket();
-        logger.info("Applied ethernet interface configuration to system: " + name_);
-        return true;
+    closeSocket();
+    logger.info("Loaded ethernet interface information from system: " + name_);
+    return true;
+  }
+
+  bool EthernetInterface::applyToSystem() {
+    auto &logger = shared::Logger::getInstance();
+
+    if (!openSocket()) {
+      return false;
     }
 
-    bool EthernetInterface::setDuplex(const std::string& duplex) {
-        duplex_ = duplex;
-        return true;
+    if (!setInterfaceInfo()) {
+      closeSocket();
+      return false;
     }
 
-    std::string EthernetInterface::getDuplex() const {
-        return duplex_;
+    closeSocket();
+    logger.info("Applied ethernet interface configuration to system: " + name_);
+    return true;
+  }
+
+  bool EthernetInterface::setDuplex(const std::string &duplex) {
+    duplex_ = duplex;
+    return true;
+  }
+
+  std::string EthernetInterface::getDuplex() const { return duplex_; }
+
+  bool EthernetInterface::setSpeed(uint32_t speed) {
+    speed_ = speed;
+    return true;
+  }
+
+  uint32_t EthernetInterface::getSpeed() const { return speed_; }
+
+  bool EthernetInterface::setAutoNegotiation(bool enabled) {
+    autoNegotiation_ = enabled;
+    return true;
+  }
+
+  bool EthernetInterface::isAutoNegotiationEnabled() const {
+    return autoNegotiation_;
+  }
+
+  bool EthernetInterface::setFlowControl(bool enabled) {
+    flowControl_ = enabled;
+    return true;
+  }
+
+  bool EthernetInterface::isFlowControlEnabled() const { return flowControl_; }
+
+  EthernetInterface::operator netd::shared::interface::EthernetInterface()
+      const {
+    // Cast to shared interface - we inherit from it so this is safe
+    return static_cast<const netd::shared::interface::EthernetInterface &>(
+        *this);
+  }
+
+  bool EthernetInterface::openSocket() {
+    if (socket_ >= 0) {
+      return true; // Already open
     }
 
-    bool EthernetInterface::setSpeed(uint32_t speed) {
-        speed_ = speed;
-        return true;
+    socket_ = socket(AF_INET, SOCK_DGRAM, 0);
+    if (socket_ < 0) {
+      return false;
     }
 
-    uint32_t EthernetInterface::getSpeed() const {
-        return speed_;
+    return true;
+  }
+
+  void EthernetInterface::closeSocket() {
+    if (socket_ >= 0) {
+      close(socket_);
+      socket_ = -1;
+    }
+  }
+
+  bool EthernetInterface::getInterfaceInfo() {
+    struct ifreq ifr;
+    std::memset(&ifr, 0, sizeof(ifr));
+    std::strncpy(ifr.ifr_name, name_.c_str(), IFNAMSIZ - 1);
+
+    // Get interface flags
+    if (ioctl(socket_, SIOCGIFFLAGS, &ifr) < 0) {
+      return false;
     }
 
-    bool EthernetInterface::setAutoNegotiation(bool enabled) {
-        autoNegotiation_ = enabled;
-        return true;
+    // Get interface MTU
+    if (ioctl(socket_, SIOCGIFMTU, &ifr) < 0) {
+      return false;
     }
 
-    bool EthernetInterface::isAutoNegotiationEnabled() const {
-        return autoNegotiation_;
+    // Get interface address
+    if (ioctl(socket_, SIOCGIFADDR, &ifr) < 0) {
+      return false;
     }
 
-    bool EthernetInterface::setFlowControl(bool enabled) {
-        flowControl_ = enabled;
-        return true;
+    return true;
+  }
+
+  bool EthernetInterface::setInterfaceInfo() const {
+    struct ifreq ifr;
+    std::memset(&ifr, 0, sizeof(ifr));
+    std::strncpy(ifr.ifr_name, name_.c_str(), IFNAMSIZ - 1);
+
+    // Set interface flags
+    if (ioctl(socket_, SIOCSIFFLAGS, &ifr) < 0) {
+      return false;
     }
 
-    bool EthernetInterface::isFlowControlEnabled() const {
-        return flowControl_;
+    // Set interface MTU
+    if (ioctl(socket_, SIOCSIFMTU, &ifr) < 0) {
+      return false;
     }
 
-    EthernetInterface::operator netd::shared::interface::EthernetInterface() const {
-        // Cast to shared interface - we inherit from it so this is safe
-        return static_cast<const netd::shared::interface::EthernetInterface&>(*this);
-    }
-
-    bool EthernetInterface::openSocket() {
-        if (socket_ >= 0) {
-            return true; // Already open
-        }
-
-        socket_ = socket(AF_INET, SOCK_DGRAM, 0);
-        if (socket_ < 0) {
-            return false;
-        }
-
-        return true;
-    }
-
-    void EthernetInterface::closeSocket() {
-        if (socket_ >= 0) {
-            close(socket_);
-            socket_ = -1;
-        }
-    }
-
-    bool EthernetInterface::getInterfaceInfo() {
-        struct ifreq ifr;
-        std::memset(&ifr, 0, sizeof(ifr));
-        std::strncpy(ifr.ifr_name, name_.c_str(), IFNAMSIZ - 1);
-
-        // Get interface flags
-        if (ioctl(socket_, SIOCGIFFLAGS, &ifr) < 0) {
-            return false;
-        }
-
-        // Get interface MTU
-        if (ioctl(socket_, SIOCGIFMTU, &ifr) < 0) {
-            return false;
-        }
-
-        // Get interface address
-        if (ioctl(socket_, SIOCGIFADDR, &ifr) < 0) {
-            return false;
-        }
-
-        return true;
-    }
-
-    bool EthernetInterface::setInterfaceInfo() const {
-        struct ifreq ifr;
-        std::memset(&ifr, 0, sizeof(ifr));
-        std::strncpy(ifr.ifr_name, name_.c_str(), IFNAMSIZ - 1);
-
-        // Set interface flags
-        if (ioctl(socket_, SIOCSIFFLAGS, &ifr) < 0) {
-            return false;
-        }
-
-        // Set interface MTU
-        if (ioctl(socket_, SIOCSIFMTU, &ifr) < 0) {
-            return false;
-        }
-
-        return true;
-    }
+    return true;
+  }
 
 } // namespace netd::freebsd::interface

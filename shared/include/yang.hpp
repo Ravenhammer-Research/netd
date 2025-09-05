@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Paige Thompson / Ravenhammer Research (paige@paige.bio)
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -28,41 +28,42 @@
 #ifndef NETD_YANG_HPP
 #define NETD_YANG_HPP
 
-#include <string>
-#include <memory>
 #include <libyang/libyang.h>
+#include <memory>
+#include <string>
 
 namespace netd::shared {
 
-    class Yang {
-public:
-        // Singleton access
-        static Yang& getInstance();
-        
-        // Delete copy constructor and assignment operator
-        Yang(const Yang&) = delete;
-        Yang& operator=(const Yang&) = delete;
+  class Yang {
+  public:
+    // Singleton access
+    static Yang &getInstance();
 
-        // YANG context management
-        ly_ctx* getContext() const;
-        bool loadSchema(const std::string& schemaPath);
-        bool loadSchemaByName(const std::string& name, const std::string& revision = "");
-        
-        // Utility functions for YANG data conversion
-        static std::string yangToXml(const lyd_node* node);
-        static std::string yangToJson(const lyd_node* node);
-        static lyd_node* xmlToYang(ly_ctx* ctx, const std::string& xml);
-        static lyd_node* jsonToYang(ly_ctx* ctx, const std::string& json);
+    // Delete copy constructor and assignment operator
+    Yang(const Yang &) = delete;
+    Yang &operator=(const Yang &) = delete;
 
-protected:
-        // Protected constructor for singleton
-        Yang();
-        virtual ~Yang();
+    // YANG context management
+    ly_ctx *getContext() const;
+    bool loadSchema(const std::string &schemaPath);
+    bool loadSchemaByName(const std::string &name,
+                          const std::string &revision = "");
 
-private:
-        ly_ctx* ctx_;
-        void loadStandardSchemas();
-    };
+    // Utility functions for YANG data conversion
+    static std::string yangToXml(const lyd_node *node);
+    static std::string yangToJson(const lyd_node *node);
+    static lyd_node *xmlToYang(ly_ctx *ctx, const std::string &xml);
+    static lyd_node *jsonToYang(ly_ctx *ctx, const std::string &json);
+
+  protected:
+    // Protected constructor for singleton
+    Yang();
+    virtual ~Yang();
+
+  private:
+    ly_ctx *ctx_;
+    void loadStandardSchemas();
+  };
 
 } // namespace netd::shared
 

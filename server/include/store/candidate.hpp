@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Paige Thompson / Ravenhammer Research (paige@paige.bio)
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -32,26 +32,26 @@
 
 namespace netd::server::store::candidate {
 
-	class CandidateStore : public Store {
-	public:
-		// Singleton access
-		static CandidateStore& getInstance();
-		
-		// Delete copy constructor and assignment operator
-		CandidateStore(const CandidateStore&) = delete;
-		CandidateStore& operator=(const CandidateStore&) = delete;
+  class CandidateStore : public Store {
+  public:
+    // Singleton access
+    static CandidateStore &getInstance();
 
-		// Override base store operations
-		bool commit() override;
+    // Delete copy constructor and assignment operator
+    CandidateStore(const CandidateStore &) = delete;
+    CandidateStore &operator=(const CandidateStore &) = delete;
 
-	protected:
-		// Protected constructor for singleton
-		CandidateStore() = default;
-		virtual ~CandidateStore() = default;
+    // Override base store operations
+    bool commit() override;
 
-	private:
-		lyd_node* inMemoryTree_;
-	};
+  protected:
+    // Protected constructor for singleton
+    CandidateStore() = default;
+    virtual ~CandidateStore() = default;
+
+  private:
+    lyd_node *inMemoryTree_;
+  };
 
 } // namespace netd::server::store::candidate
 

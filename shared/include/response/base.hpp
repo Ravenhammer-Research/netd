@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Paige Thompson / Ravenhammer Research (paige@paige.bio)
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -29,19 +29,20 @@
 #define NETD_RESPONSE_BASE_HPP
 
 #include <memory>
-#include <string>
 #include <shared/include/base/serialization.hpp>
+#include <string>
 
 namespace netd::shared::response {
 
-	class Response : public netd::shared::base::Serialization<Response> {
-	public:
-		virtual ~Response() = default;
+  class Response : public netd::shared::base::Serialization<Response> {
+  public:
+    virtual ~Response() = default;
 
-		// Pure virtual methods that must be implemented by subclasses
-		virtual lyd_node* toYang(ly_ctx* ctx) const = 0;
-		virtual std::unique_ptr<Response> fromYang(const ly_ctx* ctx, const lyd_node* node) = 0;
-	};
+    // Pure virtual methods that must be implemented by subclasses
+    virtual lyd_node *toYang(ly_ctx *ctx) const = 0;
+    virtual std::unique_ptr<Response> fromYang(const ly_ctx *ctx,
+                                               const lyd_node *node) = 0;
+  };
 
 } // namespace netd::shared::response
 

@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Paige Thompson / Ravenhammer Research (paige@paige.bio)
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -26,64 +26,60 @@
  */
 
 #include <server/include/store/base.hpp>
-#include <shared/include/logger.hpp>
 #include <shared/include/exception.hpp>
+#include <shared/include/logger.hpp>
 
 namespace netd::server::store {
 
-	// Core store operations
-	bool Store::load() {
-		throw netd::shared::NotImplementedError("Store::load not implemented");
-	}
+  // Core store operations
+  bool Store::load() {
+    throw netd::shared::NotImplementedError("Store::load not implemented");
+  }
 
-	bool Store::commit() {
-		throw netd::shared::NotImplementedError("Store::commit not implemented");
-	}
+  bool Store::commit() {
+    throw netd::shared::NotImplementedError("Store::commit not implemented");
+  }
 
-	// Search methods
-	std::vector<lyd_node*> Store::search(const std::string& xpath) {
-		auto& logger = netd::shared::Logger::getInstance();
-		logger.debug("Store search: " + xpath);
-		
-		// TODO: Implement XPath search
-		std::vector<lyd_node*> results;
-		return results;
-	}
+  // Search methods
+  std::vector<lyd_node *> Store::search(const std::string &xpath) {
+    auto &logger = netd::shared::Logger::getInstance();
+    logger.debug("Store search: " + xpath);
 
-	std::vector<lyd_node*> Store::searchInterface(const std::string& filter) {
-		auto& logger = netd::shared::Logger::getInstance();
-		logger.debug("Store searchInterface with filter: " + filter);
-		
-		// TODO: Implement interface search
-		std::vector<lyd_node*> results;
-		return results;
-	}
+    // TODO: Implement XPath search
+    std::vector<lyd_node *> results;
+    return results;
+  }
 
-	std::vector<lyd_node*> Store::searchVRF(const std::string& filter) {
-		auto& logger = netd::shared::Logger::getInstance();
-		logger.debug("Store searchVRF with filter: " + filter);
-		
-		// TODO: Implement VRF search
-		std::vector<lyd_node*> results;
-		return results;
-	}
+  std::vector<lyd_node *> Store::searchInterface(const std::string &filter) {
+    auto &logger = netd::shared::Logger::getInstance();
+    logger.debug("Store searchInterface with filter: " + filter);
 
-	std::vector<lyd_node*> Store::searchRoute(const std::string& filter) {
-		auto& logger = netd::shared::Logger::getInstance();
-		logger.debug("Store searchRoute with filter: " + filter);
-		
-		// TODO: Implement route search
-		std::vector<lyd_node*> results;
-		return results;
-	}
+    // TODO: Implement interface search
+    std::vector<lyd_node *> results;
+    return results;
+  }
 
-	// Lock/unlock methods
-	void Store::lock() {
-		storeMutex_.lock();
-	}
+  std::vector<lyd_node *> Store::searchVRF(const std::string &filter) {
+    auto &logger = netd::shared::Logger::getInstance();
+    logger.debug("Store searchVRF with filter: " + filter);
 
-	void Store::unlock() {
-		storeMutex_.unlock();
-	}
+    // TODO: Implement VRF search
+    std::vector<lyd_node *> results;
+    return results;
+  }
+
+  std::vector<lyd_node *> Store::searchRoute(const std::string &filter) {
+    auto &logger = netd::shared::Logger::getInstance();
+    logger.debug("Store searchRoute with filter: " + filter);
+
+    // TODO: Implement route search
+    std::vector<lyd_node *> results;
+    return results;
+  }
+
+  // Lock/unlock methods
+  void Store::lock() { storeMutex_.lock(); }
+
+  void Store::unlock() { storeMutex_.unlock(); }
 
 } // namespace netd::server::store

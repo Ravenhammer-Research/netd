@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Paige Thompson / Ravenhammer Research (paige@paige.bio)
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -28,51 +28,53 @@
 #ifndef NETD_FREEBSD_ROUTE_HPP
 #define NETD_FREEBSD_ROUTE_HPP
 
-#include <shared/include/route.hpp>
-#include <shared/include/base/serialization.hpp>
-#include <string>
 #include <memory>
+#include <shared/include/base/serialization.hpp>
+#include <shared/include/route.hpp>
+#include <string>
 
 namespace netd::freebsd {
 
-    class Route : public netd::shared::Route {
-    public:
-        Route();
-        explicit Route(const std::string& destination, const std::string& gateway = "", const std::string& interface = "");
-        virtual ~Route();
+  class Route : public netd::shared::Route {
+  public:
+    Route();
+    explicit Route(const std::string &destination,
+                   const std::string &gateway = "",
+                   const std::string &interface = "");
+    virtual ~Route();
 
-        // Route management
-        bool add();
-        bool remove();
-        bool modify();
-        
-        // FreeBSD-specific operations
-        bool loadFromSystem();
-        bool applyToSystem() const;
-        
-        // Route properties
-        bool setMetric(uint32_t metric);
-        uint32_t getMetric() const;
-        bool setFlags(uint32_t flags);
-        uint32_t getFlags() const;
-        bool setFibTable(uint32_t fibTable);
-        uint32_t getFibTable() const;
+    // Route management
+    bool add();
+    bool remove();
+    bool modify();
 
-        // Conversion to shared route for serialization
-        operator const netd::shared::Route&() const;
+    // FreeBSD-specific operations
+    bool loadFromSystem();
+    bool applyToSystem() const;
 
-    private:
-        std::string destination_;
-        std::string gateway_;
-        std::string interface_;
-        uint32_t metric_;
-        uint32_t flags_;
-        uint32_t fibTable_;
-        
-        // Helper methods
-        bool parseRouteString(const std::string& routeStr);
-        std::string formatRouteString() const;
-    };
+    // Route properties
+    bool setMetric(uint32_t metric);
+    uint32_t getMetric() const;
+    bool setFlags(uint32_t flags);
+    uint32_t getFlags() const;
+    bool setFibTable(uint32_t fibTable);
+    uint32_t getFibTable() const;
+
+    // Conversion to shared route for serialization
+    operator const netd::shared::Route &() const;
+
+  private:
+    std::string destination_;
+    std::string gateway_;
+    std::string interface_;
+    uint32_t metric_;
+    uint32_t flags_;
+    uint32_t fibTable_;
+
+    // Helper methods
+    bool parseRouteString(const std::string &routeStr);
+    std::string formatRouteString() const;
+  };
 
 } // namespace netd::freebsd
 

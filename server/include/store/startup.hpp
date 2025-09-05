@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Paige Thompson / Ravenhammer Research (paige@paige.bio)
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -32,27 +32,27 @@
 
 namespace netd::server::store::startup {
 
-	class StartupStore : public Store {
-	public:
-		// Singleton access
-		static StartupStore& getInstance();
-		
-		// Delete copy constructor and assignment operator
-		StartupStore(const StartupStore&) = delete;
-		StartupStore& operator=(const StartupStore&) = delete;
+  class StartupStore : public Store {
+  public:
+    // Singleton access
+    static StartupStore &getInstance();
 
-		// Override base store operations
-		bool load() override;
-		bool commit() override;
+    // Delete copy constructor and assignment operator
+    StartupStore(const StartupStore &) = delete;
+    StartupStore &operator=(const StartupStore &) = delete;
 
-	protected:
-		// Protected constructor for singleton
-		StartupStore() = default;
-		virtual ~StartupStore() = default;
+    // Override base store operations
+    bool load() override;
+    bool commit() override;
 
-	private:
-		lyd_node* inMemoryTree_;
-	};
+  protected:
+    // Protected constructor for singleton
+    StartupStore() = default;
+    virtual ~StartupStore() = default;
+
+  private:
+    lyd_node *inMemoryTree_;
+  };
 
 } // namespace netd::server::store::startup
 

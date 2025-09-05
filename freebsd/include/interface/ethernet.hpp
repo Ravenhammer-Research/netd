@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Paige Thompson / Ravenhammer Research (paige@paige.bio)
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -28,66 +28,66 @@
 #ifndef NETD_FREEBSD_INTERFACE_ETHERNET_HPP
 #define NETD_FREEBSD_INTERFACE_ETHERNET_HPP
 
-#include <string>
 #include <cstdint>
 #include <memory>
+#include <string>
 #include <vector>
 
-#include <shared/include/interface/ethernet.hpp>
 #include <shared/include/base/serialization.hpp>
+#include <shared/include/interface/ethernet.hpp>
 
 namespace netd::freebsd::interface {
 
-    class EthernetInterface : public netd::shared::interface::EthernetInterface {
-    public:
-        EthernetInterface();
-        explicit EthernetInterface(const std::string& name);
-        virtual ~EthernetInterface();
+  class EthernetInterface : public netd::shared::interface::EthernetInterface {
+  public:
+    EthernetInterface();
+    explicit EthernetInterface(const std::string &name);
+    virtual ~EthernetInterface();
 
-        // Interface name
-        std::string getName() const { return name_; }
+    // Interface name
+    std::string getName() const { return name_; }
 
-        // FreeBSD-specific operations
-        bool createInterface();
-        bool destroyInterface();
-        bool loadFromSystem();
-        bool applyToSystem();
+    // FreeBSD-specific operations
+    bool createInterface();
+    bool destroyInterface();
+    bool loadFromSystem();
+    bool applyToSystem();
 
-        // Ethernet-specific configuration
-        bool setDuplex(const std::string& duplex);
-        std::string getDuplex() const;
-        bool setSpeed(uint32_t speed);
-        uint32_t getSpeed() const;
-        bool setAutoNegotiation(bool enabled);
-        bool isAutoNegotiationEnabled() const;
-        bool setFlowControl(bool enabled);
-        bool isFlowControlEnabled() const;
+    // Ethernet-specific configuration
+    bool setDuplex(const std::string &duplex);
+    std::string getDuplex() const;
+    bool setSpeed(uint32_t speed);
+    uint32_t getSpeed() const;
+    bool setAutoNegotiation(bool enabled);
+    bool isAutoNegotiationEnabled() const;
+    bool setFlowControl(bool enabled);
+    bool isFlowControlEnabled() const;
 
-        // Statistics and information
-        std::string getType() const { return "ethernet"; }
+    // Statistics and information
+    std::string getType() const { return "ethernet"; }
 
-        // Conversion to shared interface for serialization
-        operator netd::shared::interface::EthernetInterface() const;
+    // Conversion to shared interface for serialization
+    operator netd::shared::interface::EthernetInterface() const;
 
-    private:
-        // Interface name
-        std::string name_;
-        
-        // Ethernet-specific members
-        std::string duplex_;
-        uint32_t speed_;
-        bool autoNegotiation_;
-        bool flowControl_;
-        
-        // FreeBSD system interface
-        int socket_;
-        
-        // Helper methods
-        bool openSocket();
-        void closeSocket();
-        bool getInterfaceInfo();
-        bool setInterfaceInfo() const;
-    };
+  private:
+    // Interface name
+    std::string name_;
+
+    // Ethernet-specific members
+    std::string duplex_;
+    uint32_t speed_;
+    bool autoNegotiation_;
+    bool flowControl_;
+
+    // FreeBSD system interface
+    int socket_;
+
+    // Helper methods
+    bool openSocket();
+    void closeSocket();
+    bool getInterfaceInfo();
+    bool setInterfaceInfo() const;
+  };
 
 } // namespace netd::freebsd::interface
 

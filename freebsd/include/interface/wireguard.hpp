@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Paige Thompson / Ravenhammer Research (paige@paige.bio)
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -28,20 +28,21 @@
 #ifndef NETD_FREEBSD_INTERFACE_WIREGUARD_HPP
 #define NETD_FREEBSD_INTERFACE_WIREGUARD_HPP
 
-#include <string>
 #include <cstdint>
 #include <memory>
+#include <string>
 #include <vector>
 
-#include <shared/include/interface/wireguard.hpp>
 #include <shared/include/base/serialization.hpp>
+#include <shared/include/interface/wireguard.hpp>
 
 namespace netd::freebsd::interface {
 
-    class WireguardInterface : public netd::shared::interface::WireguardInterface {
-public:
+  class WireguardInterface
+      : public netd::shared::interface::WireguardInterface {
+  public:
     WireguardInterface();
-    explicit WireguardInterface(const std::string& name);
+    explicit WireguardInterface(const std::string &name);
     virtual ~WireguardInterface();
 
     // Interface name
@@ -54,37 +55,38 @@ public:
     bool applyToSystem();
 
     // WireGuard-specific configuration
-    bool setPrivateKey(const std::string& privateKey);
+    bool setPrivateKey(const std::string &privateKey);
     std::string getPrivateKey() const;
     bool setListenPort(uint16_t port);
     uint16_t getListenPort() const;
-    bool addPeer(const std::string& publicKey, const std::string& endpoint);
-    bool removePeer(const std::string& publicKey);
+    bool addPeer(const std::string &publicKey, const std::string &endpoint);
+    bool removePeer(const std::string &publicKey);
 
     // Statistics and information
     std::string getType() const { return "wireguard"; }
 
-        // Conversion to shared interface for serialization
-        operator netd::shared::interface::WireguardInterface() const;
+    // Conversion to shared interface for serialization
+    operator netd::shared::interface::WireguardInterface() const;
 
-private:
+  private:
     // Interface name
     std::string name_;
-    
+
     // WireGuard-specific members
     std::string privateKey_;
     uint16_t listenPort_;
-    std::vector<std::pair<std::string, std::string>> peers_; // publicKey -> endpoint
-    
+    std::vector<std::pair<std::string, std::string>>
+        peers_; // publicKey -> endpoint
+
     // FreeBSD system interface
     int socket_;
-    
+
     // Helper methods
     bool openSocket();
     void closeSocket();
     bool getWireguardInfo();
     bool setWireguardInfo() const;
-};
+  };
 
 } // namespace netd::freebsd::interface
 

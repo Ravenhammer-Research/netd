@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Paige Thompson / Ravenhammer Research (paige@paige.bio)
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -33,15 +33,17 @@
 
 namespace netd::shared {
 
-    class NetdException : public std::runtime_error {
-public:
-        explicit NetdException(const std::string& message) : std::runtime_error(message) {}
-    };
+  class NetdException : public std::runtime_error {
+  public:
+    explicit NetdException(const std::string &message)
+        : std::runtime_error(message) {}
+  };
 
-    class NotImplementedError : public NetdException {
-public:
-        explicit NotImplementedError(const std::string& message) : NetdException(message) {}
-    };
+  class NotImplementedError : public NetdException {
+  public:
+    explicit NotImplementedError(const std::string &message)
+        : NetdException(message) {}
+  };
 
 } // namespace netd::shared
 

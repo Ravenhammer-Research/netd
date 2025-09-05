@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Paige Thompson / Ravenhammer Research (paige@paige.bio)
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -27,57 +27,47 @@
 
 #pragma once
 
+#include <memory>
 #include <string>
 #include <vector>
-#include <memory>
 
 namespace netd::client {
 
-enum class CommandType {
-    SHOW,
-    SET,
-    DELETE,
-    COMMIT,
-    UNKNOWN
-};
+  enum class CommandType { SHOW, SET, DELETE, COMMIT, UNKNOWN };
 
-enum class TargetType {
-    INTERFACE,
-    VRF,
-    ROUTE,
-    UNKNOWN
-};
+  enum class TargetType { INTERFACE, VRF, ROUTE, UNKNOWN };
 
-struct ParsedCommand {
+  struct ParsedCommand {
     CommandType command;
     TargetType target;
     std::vector<std::string> arguments;
-    
-    ParsedCommand() : command(CommandType::UNKNOWN), target(TargetType::UNKNOWN) {}
-};
 
-class CommandParser {
-public:
+    ParsedCommand()
+        : command(CommandType::UNKNOWN), target(TargetType::UNKNOWN) {}
+  };
+
+  class CommandParser {
+  public:
     CommandParser();
     ~CommandParser();
-    
+
     // Parse a command string and return the parsed result
-    ParsedCommand parse(const std::string& command);
-    
+    ParsedCommand parse(const std::string &command);
+
     // Check if the command is valid
-    bool isValid(const std::string& command);
-    
-private:
+    bool isValid(const std::string &command);
+
+  private:
     // Internal parsing methods for different command types
-    ParsedCommand parseShowCommand(const std::string& command);
-    ParsedCommand parseSetCommand(const std::string& command);
-    ParsedCommand parseDeleteCommand(const std::string& command);
-    ParsedCommand parseCommitCommand(const std::string& command);
-    
+    ParsedCommand parseShowCommand(const std::string &command);
+    ParsedCommand parseSetCommand(const std::string &command);
+    ParsedCommand parseDeleteCommand(const std::string &command);
+    ParsedCommand parseCommitCommand(const std::string &command);
+
     // Helper methods
-    std::vector<std::string> tokenize(const std::string& command);
-    CommandType getCommandType(const std::string& cmd);
-    TargetType getTargetType(const std::string& target);
-};
+    std::vector<std::string> tokenize(const std::string &command);
+    CommandType getCommandType(const std::string &cmd);
+    TargetType getTargetType(const std::string &target);
+  };
 
 } // namespace netd::client

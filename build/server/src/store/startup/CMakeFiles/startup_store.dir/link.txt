@@ -1,0 +1,2 @@
+/usr/bin/llvm-ar qc libstartup_store.a CMakeFiles/startup_store.dir/load.cpp.o CMakeFiles/startup_store.dir/commit.cpp.o CMakeFiles/startup_store.dir/base.cpp.o
+/usr/bin/llvm-ranlib libstartup_store.a

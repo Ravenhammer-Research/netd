@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Paige Thompson / Ravenhammer Research (paige@paige.bio)
- * 
+ *
  * Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
@@ -22,67 +22,60 @@
  * SUCH DAMAGE.
  */
 
+#include <libyang/tree_data.h>
 #include <shared/include/route.hpp>
 #include <shared/include/yang.hpp>
-#include <libyang/tree_data.h>
 
 namespace netd::shared {
 
-	Route::Route(std::shared_ptr<Address> destination, std::shared_ptr<Address> gateway, 
-	             const std::string& interface, uint32_t vrf)
-		: destination_(destination), gateway_(gateway), interface_(interface), vrf_(vrf) {
-	}
+  Route::Route(std::shared_ptr<Address> destination,
+               std::shared_ptr<Address> gateway, const std::string &interface,
+               uint32_t vrf)
+      : destination_(destination), gateway_(gateway), interface_(interface),
+        vrf_(vrf) {}
 
-	lyd_node* Route::toYang(ly_ctx* ctx) const {
-		// TODO: Implement YANG serialization for routes
-		if (!ctx) {
-			return nullptr;
-		}
-		
-		// Placeholder implementation - needs actual YANG node creation
-		return nullptr;
-	}
+  lyd_node *Route::toYang(ly_ctx *ctx) const {
+    // TODO: Implement YANG serialization for routes
+    if (!ctx) {
+      return nullptr;
+    }
 
-	Route Route::fromYang(const ly_ctx* ctx, const lyd_node* node) {
-		// TODO: Implement YANG deserialization for routes
-		if (!ctx || !node) {
-			return Route();
-		}
-		
-		// Placeholder implementation - needs actual YANG node parsing
-		return Route();
-	}
+    // Placeholder implementation - needs actual YANG node creation
+    return nullptr;
+  }
 
-	std::shared_ptr<Address> Route::getDestination() const {
-		return destination_;
-	}
+  Route Route::fromYang(const ly_ctx *ctx, const lyd_node *node) {
+    // TODO: Implement YANG deserialization for routes
+    if (!ctx || !node) {
+      return Route();
+    }
 
-	std::shared_ptr<Address> Route::getGateway() const {
-		return gateway_;
-	}
+    // Placeholder implementation - needs actual YANG node parsing
+    return Route();
+  }
 
-	std::string Route::getInterface() const {
-		return interface_;
-	}
+  std::shared_ptr<Address> Route::getDestination() const {
+    return destination_;
+  }
 
-	uint32_t Route::getVRF() const {
-		return vrf_;
-	}
+  std::shared_ptr<Address> Route::getGateway() const { return gateway_; }
 
-	void Route::setDestination(std::shared_ptr<Address> destination) {
-		destination_ = destination;
-	}
+  std::string Route::getInterface() const { return interface_; }
 
-	void Route::setGateway(std::shared_ptr<Address> gateway) {
-		gateway_ = gateway;
-	}
+  uint32_t Route::getVRF() const { return vrf_; }
 
-	void Route::setInterface(const std::string& interface) {
-		interface_ = interface;
-	}
+  void Route::setDestination(std::shared_ptr<Address> destination) {
+    destination_ = destination;
+  }
 
-	void Route::setVRF(uint32_t vrf) {
-		vrf_ = vrf;
-	}
+  void Route::setGateway(std::shared_ptr<Address> gateway) {
+    gateway_ = gateway;
+  }
+
+  void Route::setInterface(const std::string &interface) {
+    interface_ = interface;
+  }
+
+  void Route::setVRF(uint32_t vrf) { vrf_ = vrf; }
 
 } // namespace netd::shared

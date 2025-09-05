@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Paige Thompson / Ravenhammer Research (paige@paige.bio)
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -28,35 +28,35 @@
 #ifndef NETD_INTERFACE_PPP_HPP
 #define NETD_INTERFACE_PPP_HPP
 
-#include <shared/include/interface/base/ether.hpp>
-#include <shared/include/interface/base/tunnel.hpp>
-#include <shared/include/base/serialization.hpp>
-#include <string>
 #include <cstdint>
 #include <memory>
+#include <shared/include/base/serialization.hpp>
+#include <shared/include/interface/base/ether.hpp>
+#include <shared/include/interface/base/tunnel.hpp>
+#include <string>
 
 namespace netd::shared::interface {
 
-    class PppInterface : public netd::shared::interface::base::Ether, 
-        public netd::shared::interface::base::Tunnel, 
-        public netd::shared::base::Serialization<PppInterface> {
-    public:
-        PppInterface();
-        explicit PppInterface(const std::string& name);
-        virtual ~PppInterface();
+  class PppInterface : public netd::shared::interface::base::Ether,
+                       public netd::shared::interface::base::Tunnel,
+                       public netd::shared::base::Serialization<PppInterface> {
+  public:
+    PppInterface();
+    explicit PppInterface(const std::string &name);
+    virtual ~PppInterface();
 
-        // PPP-specific configuration
-        virtual bool setPppUnit(int unit) { return false; }
-        virtual int getPppUnit() const { return -1; }
-        virtual bool setPppMode(const std::string& mode) { return false; }
-        virtual std::string getPppMode() const { return "ppp"; }
-        virtual bool setPppProtocol(const std::string& protocol) { return false; }
-        virtual std::string getPppProtocol() const { return "ppp"; }
+    // PPP-specific configuration
+    virtual bool setPppUnit(int unit) { return false; }
+    virtual int getPppUnit() const { return -1; }
+    virtual bool setPppMode(const std::string &mode) { return false; }
+    virtual std::string getPppMode() const { return "ppp"; }
+    virtual bool setPppProtocol(const std::string &protocol) { return false; }
+    virtual std::string getPppProtocol() const { return "ppp"; }
 
-        // YANG serialization
-        lyd_node* toYang(ly_ctx* ctx) const override;
-        static PppInterface fromYang(const ly_ctx* ctx, const lyd_node* node);
-    };
+    // YANG serialization
+    lyd_node *toYang(ly_ctx *ctx) const override;
+    static PppInterface fromYang(const ly_ctx *ctx, const lyd_node *node);
+  };
 
 } // namespace netd::shared::interface
 

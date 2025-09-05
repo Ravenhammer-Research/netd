@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Paige Thompson / Ravenhammer Research (paige@paige.bio)
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -28,32 +28,32 @@
 #ifndef NETD_SERVER_STORE_RUNNING_HPP
 #define NETD_SERVER_STORE_RUNNING_HPP
 
-#include <server/include/store/base.hpp>
 #include <fstream>
+#include <server/include/store/base.hpp>
 
 namespace netd::server::store::running {
 
-	class RunningStore : public Store {
-public:
-		// Singleton access
-		static RunningStore& getInstance();
-		
-		// Delete copy constructor and assignment operator
-		RunningStore(const RunningStore&) = delete;
-		RunningStore& operator=(const RunningStore&) = delete;
+  class RunningStore : public Store {
+  public:
+    // Singleton access
+    static RunningStore &getInstance();
 
-		// Override base store operations
-		bool load() override;
-		bool commit() override;
+    // Delete copy constructor and assignment operator
+    RunningStore(const RunningStore &) = delete;
+    RunningStore &operator=(const RunningStore &) = delete;
 
-protected:
-		// Protected constructor for singleton
-		RunningStore() = default;
-		virtual ~RunningStore() = default;
+    // Override base store operations
+    bool load() override;
+    bool commit() override;
 
-		// Protected member for derived classes
-		std::fstream fileStream_;
-	};
+  protected:
+    // Protected constructor for singleton
+    RunningStore() = default;
+    virtual ~RunningStore() = default;
+
+    // Protected member for derived classes
+    std::fstream fileStream_;
+  };
 
 } // namespace netd::server::store::running
 

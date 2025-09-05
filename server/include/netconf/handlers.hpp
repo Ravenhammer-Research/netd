@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Paige Thompson / Ravenhammer Research (paige@paige.bio)
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -28,40 +28,48 @@
 #ifndef NETD_SERVER_NETCONF_HANDLERS_HPP
 #define NETD_SERVER_NETCONF_HANDLERS_HPP
 
-#include <libyang/libyang.h>
-#include <libnetconf2/netconf.h>
-#include <libnetconf2/session_server.h>
 #include <libnetconf2/messages_server.h>
+#include <libnetconf2/netconf.h>
 #include <libnetconf2/server_config.h>
+#include <libnetconf2/session_server.h>
+#include <libyang/libyang.h>
 
 namespace netd::server::netconf::handlers {
 
-	class RpcHandler {
-	public:
-		// Get request handler
-		static struct nc_server_reply* handleGetRequest(struct nc_session* session, struct lyd_node* rpc);
-		
-		// Get-config request handler
-		static struct nc_server_reply* handleGetConfigRequest(struct nc_session* session, struct lyd_node* rpc);
-		
-		// Edit-config request handler
-		static struct nc_server_reply* handleEditConfigRequest(struct nc_session* session, struct lyd_node* rpc);
-		
-		// Copy-config request handler
-		static struct nc_server_reply* handleCopyConfigRequest(struct nc_session* session, struct lyd_node* rpc);
-		
-		// Delete-config request handler
-		static struct nc_server_reply* handleDeleteConfigRequest(struct nc_session* session, struct lyd_node* rpc);
-		
-		// Lock request handler
-		static struct nc_server_reply* handleLockRequest(struct nc_session* session, struct lyd_node* rpc);
-		
-		// Unlock request handler
-		static struct nc_server_reply* handleUnlockRequest(struct nc_session* session, struct lyd_node* rpc);
-		
-		// Discard-changes request handler
-		static struct nc_server_reply* handleDiscardRequest(struct nc_session* session, struct lyd_node* rpc);
-	};
+  class RpcHandler {
+  public:
+    // Get request handler
+    static struct nc_server_reply *handleGetRequest(struct nc_session *session,
+                                                    struct lyd_node *rpc);
+
+    // Get-config request handler
+    static struct nc_server_reply *
+    handleGetConfigRequest(struct nc_session *session, struct lyd_node *rpc);
+
+    // Edit-config request handler
+    static struct nc_server_reply *
+    handleEditConfigRequest(struct nc_session *session, struct lyd_node *rpc);
+
+    // Copy-config request handler
+    static struct nc_server_reply *
+    handleCopyConfigRequest(struct nc_session *session, struct lyd_node *rpc);
+
+    // Delete-config request handler
+    static struct nc_server_reply *
+    handleDeleteConfigRequest(struct nc_session *session, struct lyd_node *rpc);
+
+    // Lock request handler
+    static struct nc_server_reply *handleLockRequest(struct nc_session *session,
+                                                     struct lyd_node *rpc);
+
+    // Unlock request handler
+    static struct nc_server_reply *
+    handleUnlockRequest(struct nc_session *session, struct lyd_node *rpc);
+
+    // Discard-changes request handler
+    static struct nc_server_reply *
+    handleDiscardRequest(struct nc_session *session, struct lyd_node *rpc);
+  };
 
 } // namespace netd::server::netconf::handlers
 

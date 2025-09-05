@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Paige Thompson / Ravenhammer Research (paige@paige.bio)
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -28,37 +28,37 @@
 #ifndef NETD_VRF_HPP
 #define NETD_VRF_HPP
 
-#include <string>
 #include <cstdint>
 #include <shared/include/base/serialization.hpp>
+#include <string>
 
 namespace netd::shared {
 
-    class VRF : public base::Serialization<VRF> {
-public:
-        VRF() = default;
-        VRF(uint32_t id, const std::string& name, bool active = false);
-        virtual ~VRF() = default;
+  class VRF : public base::Serialization<VRF> {
+  public:
+    VRF() = default;
+    VRF(uint32_t id, const std::string &name, bool active = false);
+    virtual ~VRF() = default;
 
-        // Serialization methods
-        lyd_node* toYang(ly_ctx* ctx) const override;
-        static VRF fromYang(const ly_ctx* ctx, const lyd_node* node);
+    // Serialization methods
+    lyd_node *toYang(ly_ctx *ctx) const override;
+    static VRF fromYang(const ly_ctx *ctx, const lyd_node *node);
 
-        // VRF properties
-        uint32_t getId() const;
-        std::string getName() const;
-        bool isActive() const;
+    // VRF properties
+    uint32_t getId() const;
+    std::string getName() const;
+    bool isActive() const;
 
-        // Setters
-        void setId(uint32_t id);
-        void setName(const std::string& name);
-        void setActive(bool active);
+    // Setters
+    void setId(uint32_t id);
+    void setName(const std::string &name);
+    void setActive(bool active);
 
-private:
-        uint32_t id_;
-        std::string name_;
-        bool active_;
-    };
+  private:
+    uint32_t id_;
+    std::string name_;
+    bool active_;
+  };
 
 } // namespace netd::shared
 

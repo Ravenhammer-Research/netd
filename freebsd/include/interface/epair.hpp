@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Paige Thompson / Ravenhammer Research (paige@paige.bio)
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -28,60 +28,60 @@
 #ifndef NETD_FREEBSD_INTERFACE_EPAIR_HPP
 #define NETD_FREEBSD_INTERFACE_EPAIR_HPP
 
-#include <string>
 #include <cstdint>
 #include <memory>
+#include <string>
 #include <vector>
 
-#include <shared/include/interface/epair.hpp>
 #include <shared/include/base/serialization.hpp>
+#include <shared/include/interface/epair.hpp>
 
 namespace netd::freebsd::interface {
 
-    class EpairInterface : public netd::shared::interface::EpairInterface {
-    public:
-        EpairInterface();
-        explicit EpairInterface(const std::string& name);
-        virtual ~EpairInterface();
+  class EpairInterface : public netd::shared::interface::EpairInterface {
+  public:
+    EpairInterface();
+    explicit EpairInterface(const std::string &name);
+    virtual ~EpairInterface();
 
-        // Interface name
-        std::string getName() const { return name_; }
+    // Interface name
+    std::string getName() const { return name_; }
 
-        // FreeBSD-specific operations
-        bool createInterface();
-        bool destroyInterface();
-        bool loadFromSystem();
-        bool applyToSystem();
+    // FreeBSD-specific operations
+    bool createInterface();
+    bool destroyInterface();
+    bool loadFromSystem();
+    bool applyToSystem();
 
-        // Epair-specific configuration
-        bool setPeerEnd(const std::string& peerEnd);
-        std::string getPeerEnd() const;
-        bool setEpairUnit(int unit);
-        int getEpairUnit() const;
+    // Epair-specific configuration
+    bool setPeerEnd(const std::string &peerEnd);
+    std::string getPeerEnd() const;
+    bool setEpairUnit(int unit);
+    int getEpairUnit() const;
 
-        // Statistics and information
-        std::string getType() const { return "epair"; }
+    // Statistics and information
+    std::string getType() const { return "epair"; }
 
-        // Conversion to shared interface for serialization
-        operator netd::shared::interface::EpairInterface() const;
+    // Conversion to shared interface for serialization
+    operator netd::shared::interface::EpairInterface() const;
 
-    private:
-        // Interface name
-        std::string name_;
-        
-        // Epair-specific members
-        std::string peerEnd_;
-        int epairUnit_;
-        
-        // FreeBSD system interface
-        int socket_;
-        
-        // Helper methods
-        bool openSocket();
-        void closeSocket();
-        bool getEpairInfo();
-        bool setEpairInfo() const;
-    };
+  private:
+    // Interface name
+    std::string name_;
+
+    // Epair-specific members
+    std::string peerEnd_;
+    int epairUnit_;
+
+    // FreeBSD system interface
+    int socket_;
+
+    // Helper methods
+    bool openSocket();
+    void closeSocket();
+    bool getEpairInfo();
+    bool setEpairInfo() const;
+  };
 
 } // namespace netd::freebsd::interface
 

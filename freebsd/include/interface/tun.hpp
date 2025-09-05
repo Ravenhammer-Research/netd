@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Paige Thompson / Ravenhammer Research (paige@paige.bio)
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -28,20 +28,20 @@
 #ifndef NETD_FREEBSD_INTERFACE_TUN_HPP
 #define NETD_FREEBSD_INTERFACE_TUN_HPP
 
-#include <string>
 #include <cstdint>
 #include <memory>
+#include <string>
 #include <vector>
 
-#include <shared/include/interface/tun.hpp>
 #include <shared/include/base/serialization.hpp>
+#include <shared/include/interface/tun.hpp>
 
 namespace netd::freebsd::interface {
 
-    class TunInterface : public netd::shared::interface::TunInterface {
-public:
+  class TunInterface : public netd::shared::interface::TunInterface {
+  public:
     TunInterface();
-    explicit TunInterface(const std::string& name);
+    explicit TunInterface(const std::string &name);
     virtual ~TunInterface();
 
     // Interface name
@@ -56,32 +56,32 @@ public:
     // TUN-specific configuration
     bool setTunUnit(int unit);
     int getTunUnit() const;
-    bool setTunMode(const std::string& mode);
+    bool setTunMode(const std::string &mode);
     std::string getTunMode() const;
 
     // Statistics and information
     std::string getType() const { return "tun"; }
 
-        // Conversion to shared interface for serialization
-        operator netd::shared::interface::TunInterface() const;
+    // Conversion to shared interface for serialization
+    operator netd::shared::interface::TunInterface() const;
 
-private:
+  private:
     // Interface name
     std::string name_;
-    
+
     // TUN-specific members
     int tunUnit_;
     std::string tunMode_;
-    
+
     // FreeBSD system interface
     int socket_;
-    
+
     // Helper methods
     bool openSocket();
     void closeSocket();
     bool getTunInfo();
     bool setTunInfo() const;
-};
+  };
 
 } // namespace netd::freebsd::interface
 

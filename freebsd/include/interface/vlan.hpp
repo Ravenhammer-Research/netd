@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Paige Thompson / Ravenhammer Research (paige@paige.bio)
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -28,20 +28,20 @@
 #ifndef NETD_FREEBSD_INTERFACE_VLAN_HPP
 #define NETD_FREEBSD_INTERFACE_VLAN_HPP
 
-#include <string>
 #include <cstdint>
 #include <memory>
+#include <string>
 #include <vector>
 
-#include <shared/include/interface/vlan.hpp>
 #include <shared/include/base/serialization.hpp>
+#include <shared/include/interface/vlan.hpp>
 
 namespace netd::freebsd::interface {
 
-    class VlanInterface : public netd::shared::interface::VlanInterface {
-public:
+  class VlanInterface : public netd::shared::interface::VlanInterface {
+  public:
     VlanInterface();
-    explicit VlanInterface(const std::string& name);
+    explicit VlanInterface(const std::string &name);
     virtual ~VlanInterface();
 
     // Interface name
@@ -56,35 +56,35 @@ public:
     // VLAN-specific configuration
     bool setVlanId(uint16_t vlanId);
     uint16_t getVlanId() const;
-    bool setParentInterface(const std::string& parentInterface);
+    bool setParentInterface(const std::string &parentInterface);
     std::string getParentInterface() const;
-    bool setVlanProtocol(const std::string& protocol);
+    bool setVlanProtocol(const std::string &protocol);
     std::string getVlanProtocol() const;
 
     // Statistics and information
     std::string getType() const { return "vlan"; }
 
-        // Conversion to shared interface for serialization
-        operator netd::shared::interface::VlanInterface() const;
+    // Conversion to shared interface for serialization
+    operator netd::shared::interface::VlanInterface() const;
 
-private:
+  private:
     // Interface name
     std::string name_;
-    
+
     // VLAN-specific members
     uint16_t vlanId_;
     std::string parentInterface_;
     std::string vlanProtocol_;
-    
+
     // FreeBSD system interface
     int socket_;
-    
+
     // Helper methods
     bool openSocket();
     void closeSocket();
     bool getVlanInfo();
     bool setVlanInfo() const;
-};
+  };
 
 } // namespace netd::freebsd::interface
 

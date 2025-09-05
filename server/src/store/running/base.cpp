@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Paige Thompson / Ravenhammer Research (paige@paige.bio)
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -29,10 +29,10 @@
 
 namespace netd::server::store::running {
 
-	// Singleton instance
-	RunningStore& RunningStore::getInstance() {
-		static RunningStore instance;
-		return instance;
-	}
+  // Singleton instance
+  RunningStore &RunningStore::getInstance() {
+    static RunningStore instance;
+    return instance;
+  }
 
 } // namespace netd::server::store::running

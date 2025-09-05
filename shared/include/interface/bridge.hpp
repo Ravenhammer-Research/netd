@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Paige Thompson / Ravenhammer Research (paige@paige.bio)
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -28,25 +28,26 @@
 #ifndef NETD_INTERFACE_BRIDGE_HPP
 #define NETD_INTERFACE_BRIDGE_HPP
 
-#include <shared/include/interface/base/master.hpp>
-#include <shared/include/interface/base/ether.hpp>
 #include <shared/include/base/serialization.hpp>
+#include <shared/include/interface/base/ether.hpp>
+#include <shared/include/interface/base/master.hpp>
 
 namespace netd::shared::interface {
 
-    class BridgeInterface : public netd::shared::interface::base::Ether, 
-        public netd::shared::interface::base::Master, 
+  class BridgeInterface
+      : public netd::shared::interface::base::Ether,
+        public netd::shared::interface::base::Master,
         public netd::shared::base::Serialization<BridgeInterface> {
-    public:
-        BridgeInterface() = default;
-        virtual ~BridgeInterface() = default;
+  public:
+    BridgeInterface() = default;
+    virtual ~BridgeInterface() = default;
 
-        // Implement Serialization methods
-        lyd_node* toYang(ly_ctx* ctx) const override;
-        static BridgeInterface fromYang(const ly_ctx* ctx, const lyd_node* node);
+    // Implement Serialization methods
+    lyd_node *toYang(ly_ctx *ctx) const override;
+    static BridgeInterface fromYang(const ly_ctx *ctx, const lyd_node *node);
 
-        // Bridge-specific functionality can be added here
-    };
+    // Bridge-specific functionality can be added here
+  };
 
 } // namespace netd::shared::interface
 

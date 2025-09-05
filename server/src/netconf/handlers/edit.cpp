@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Paige Thompson / Ravenhammer Research (paige@paige.bio)
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -25,21 +25,23 @@
  * SUCH DAMAGE.
  */
 
+#include <libnetconf2/messages_server.h>
+#include <libnetconf2/netconf.h>
+#include <libyang/libyang.h>
 #include <server/include/netconf/handlers.hpp>
 #include <shared/include/logger.hpp>
-#include <libnetconf2/netconf.h>
-#include <libnetconf2/messages_server.h>
-#include <libyang/libyang.h>
 
 namespace netd::server::netconf::handlers {
 
-	struct nc_server_reply* RpcHandler::handleEditConfigRequest(struct nc_session* session, struct lyd_node* rpc) {
-		auto& logger = netd::shared::Logger::getInstance();
-		logger.info("Handling edit-config request");
-		
-		// For now, return a simple OK response
-		// TODO: Implement actual edit-config request handling
-		return nc_server_reply_ok();
-	}
+  struct nc_server_reply *
+  RpcHandler::handleEditConfigRequest(struct nc_session *session,
+                                      struct lyd_node *rpc) {
+    auto &logger = netd::shared::Logger::getInstance();
+    logger.info("Handling edit-config request");
+
+    // For now, return a simple OK response
+    // TODO: Implement actual edit-config request handling
+    return nc_server_reply_ok();
+  }
 
 } // namespace netd::server::netconf::handlers

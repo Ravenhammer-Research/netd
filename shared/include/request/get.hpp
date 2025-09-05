@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Paige Thompson / Ravenhammer Research (paige@paige.bio)
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -32,15 +32,16 @@
 
 namespace netd::shared::request {
 
-	class GetRequest : public Request {
-public:
-		GetRequest();
-		virtual ~GetRequest();
+  class GetRequest : public Request {
+  public:
+    GetRequest();
+    virtual ~GetRequest();
 
-		// Override base methods
-		lyd_node* toYang(ly_ctx* ctx) const override;
-		std::unique_ptr<Request> fromYang(const ly_ctx* ctx, const lyd_node* node) override;
-	};
+    // Override base methods
+    lyd_node *toYang(ly_ctx *ctx) const override;
+    std::unique_ptr<Request> fromYang(const ly_ctx *ctx,
+                                      const lyd_node *node) override;
+  };
 
 } // namespace netd::shared::request
 

@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Paige Thompson / Ravenhammer Research (paige@paige.bio)
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -28,43 +28,43 @@
 #ifndef NETD_CLIENT_TABLE_HPP
 #define NETD_CLIENT_TABLE_HPP
 
+#include <map>
 #include <string>
 #include <vector>
-#include <map>
 
 namespace netd::client {
 
-    class Table {
-    public:
-        Table();
-        ~Table() = default;
+  class Table {
+  public:
+    Table();
+    ~Table() = default;
 
-        // Add columns
-        void addColumn(const std::string& name);
-        
-        // Add rows
-        void addRow(const std::vector<std::string>& values);
-        
-        // Format and return the table as a string
-        std::string format() const;
-        
-        // Clear the table
-        void clear();
+    // Add columns
+    void addColumn(const std::string &name);
 
-    private:
-        std::vector<std::string> columns_;
-        std::vector<std::vector<std::string>> rows_;
-        
-        // Calculate column widths dynamically
-        std::vector<size_t> calculateColumnWidths() const;
-        
-        // Format a single row
-        std::string formatRow(const std::vector<std::string>& values, 
-                             const std::vector<size_t>& widths) const;
-        
-        // Format the header separator
-        std::string formatSeparator(const std::vector<size_t>& widths) const;
-    };
+    // Add rows
+    void addRow(const std::vector<std::string> &values);
+
+    // Format and return the table as a string
+    std::string format() const;
+
+    // Clear the table
+    void clear();
+
+  private:
+    std::vector<std::string> columns_;
+    std::vector<std::vector<std::string>> rows_;
+
+    // Calculate column widths dynamically
+    std::vector<size_t> calculateColumnWidths() const;
+
+    // Format a single row
+    std::string formatRow(const std::vector<std::string> &values,
+                          const std::vector<size_t> &widths) const;
+
+    // Format the header separator
+    std::string formatSeparator(const std::vector<size_t> &widths) const;
+  };
 
 } // namespace netd::client
 

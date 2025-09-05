@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Paige Thompson / Ravenhammer Research (paige@paige.bio)
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -25,95 +25,102 @@
  * SUCH DAMAGE.
  */
 
-#include <shared/include/interface/base/master.hpp>
 #include <algorithm>
+#include <shared/include/interface/base/master.hpp>
 
 namespace netd::shared::interface::base {
 
-    // Provide implementations for pure virtual methods to avoid linker errors
-    // These are placeholder implementations that should be overridden by derived classes
+  // Provide implementations for pure virtual methods to avoid linker errors
+  // These are placeholder implementations that should be overridden by derived
+  // classes
 
-    bool Master::addSlave(const std::string& slaveName, uint32_t priority) {
-        if (!slaveName.empty()) {
-            slaves_.emplace_back(slaveName, priority, true);
-            return true;
-        }
-        return false;
+  bool Master::addSlave(const std::string &slaveName, uint32_t priority) {
+    if (!slaveName.empty()) {
+      slaves_.emplace_back(slaveName, priority, true);
+      return true;
     }
+    return false;
+  }
 
-    bool Master::removeSlave(const std::string& slaveName) {
-        auto it = std::find_if(slaves_.begin(), slaves_.end(),
-                            [&](const SlaveInfo& info) { return info.name == slaveName; });
-        if (it != slaves_.end()) {
-            slaves_.erase(it);
-            return true;
-        }
-        return false;
+  bool Master::removeSlave(const std::string &slaveName) {
+    auto it = std::find_if(
+        slaves_.begin(), slaves_.end(),
+        [&](const SlaveInfo &info) { return info.name == slaveName; });
+    if (it != slaves_.end()) {
+      slaves_.erase(it);
+      return true;
     }
+    return false;
+  }
 
-    std::vector<std::string> Master::getSlaves() const {
-        std::vector<std::string> names;
-        for (const auto& slave : slaves_) {
-            names.push_back(slave.name);
-        }
-        return names;
+  std::vector<std::string> Master::getSlaves() const {
+    std::vector<std::string> names;
+    for (const auto &slave : slaves_) {
+      names.push_back(slave.name);
     }
+    return names;
+  }
 
-    bool Master::hasSlave(const std::string& slaveName) const {
-        return std::find_if(slaves_.begin(), slaves_.end(),
-                            [&](const SlaveInfo& info) { return info.name == slaveName; }) != slaves_.end();
+  bool Master::hasSlave(const std::string &slaveName) const {
+    return std::find_if(slaves_.begin(), slaves_.end(),
+                        [&](const SlaveInfo &info) {
+                          return info.name == slaveName;
+                        }) != slaves_.end();
+  }
+
+  bool Master::setSlavePriority(const std::string &slaveName,
+                                uint32_t priority) {
+    auto it = std::find_if(
+        slaves_.begin(), slaves_.end(),
+        [&](const SlaveInfo &info) { return info.name == slaveName; });
+    if (it != slaves_.end()) {
+      it->priority = priority;
+      return true;
     }
+    return false;
+  }
 
-    bool Master::setSlavePriority(const std::string& slaveName, uint32_t priority) {
-        auto it = std::find_if(slaves_.begin(), slaves_.end(),
-                            [&](const SlaveInfo& info) { return info.name == slaveName; });
-        if (it != slaves_.end()) {
-            it->priority = priority;
-            return true;
-        }
-        return false;
+  uint32_t Master::getSlavePriority(const std::string &slaveName) const {
+    auto it = std::find_if(
+        slaves_.begin(), slaves_.end(),
+        [&](const SlaveInfo &info) { return info.name == slaveName; });
+    if (it != slaves_.end()) {
+      return it->priority;
     }
+    return 0;
+  }
 
-    uint32_t Master::getSlavePriority(const std::string& slaveName) const {
-        auto it = std::find_if(slaves_.begin(), slaves_.end(),
-                            [&](const SlaveInfo& info) { return info.name == slaveName; });
-        if (it != slaves_.end()) {
-            return it->priority;
-        }
-        return 0;
+  bool Master::setSlaveEnabled(const std::string &slaveName, bool enabled) {
+    auto it = std::find_if(
+        slaves_.begin(), slaves_.end(),
+        [&](const SlaveInfo &info) { return info.name == slaveName; });
+    if (it != slaves_.end()) {
+      it->enabled = enabled;
+      return true;
     }
+    return false;
+  }
 
-    bool Master::setSlaveEnabled(const std::string& slaveName, bool enabled) {
-        auto it = std::find_if(slaves_.begin(), slaves_.end(),
-                            [&](const SlaveInfo& info) { return info.name == slaveName; });
-        if (it != slaves_.end()) {
-            it->enabled = enabled;
-            return true;
-        }
-        return false;
+  bool Master::isSlaveEnabled(const std::string &slaveName) const {
+    auto it = std::find_if(
+        slaves_.begin(), slaves_.end(),
+        [&](const SlaveInfo &info) { return info.name == slaveName; });
+    if (it != slaves_.end()) {
+      return it->enabled;
     }
+    return false;
+  }
 
-    bool Master::isSlaveEnabled(const std::string& slaveName) const {
-        auto it = std::find_if(slaves_.begin(), slaves_.end(),
-                            [&](const SlaveInfo& info) { return info.name == slaveName; });
-        if (it != slaves_.end()) {
-            return it->enabled;
-        }
-        return false;
-    }
+  bool Master::isMaster() const { return isMaster_; }
 
-    bool Master::isMaster() const {
-        return isMaster_;
-    }
+  uint32_t Master::getSlaveCount() const {
+    return static_cast<uint32_t>(slaves_.size());
+  }
 
-    uint32_t Master::getSlaveCount() const {
-        return static_cast<uint32_t>(slaves_.size());
-    }
+  bool Master::validateSlaveConfiguration() const {
+    // Basic validation - at least one slave should be enabled
+    return std::any_of(slaves_.begin(), slaves_.end(),
+                       [](const SlaveInfo &info) { return info.enabled; });
+  }
 
-    bool Master::validateSlaveConfiguration() const {
-        // Basic validation - at least one slave should be enabled
-        return std::any_of(slaves_.begin(), slaves_.end(),
-                        [](const SlaveInfo& info) { return info.enabled; });
-    }
-
-} // namespace netd::interface::base
+} // namespace netd::shared::interface::base

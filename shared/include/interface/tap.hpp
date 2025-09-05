@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Paige Thompson / Ravenhammer Research (paige@paige.bio)
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -28,31 +28,31 @@
 #ifndef NETD_INTERFACE_TAP_HPP
 #define NETD_INTERFACE_TAP_HPP
 
-#include <shared/include/interface/base/ether.hpp>
-#include <shared/include/base/serialization.hpp>
-#include <string>
 #include <cstdint>
 #include <memory>
+#include <shared/include/base/serialization.hpp>
+#include <shared/include/interface/base/ether.hpp>
+#include <string>
 
 namespace netd::shared::interface {
 
-    class TapInterface : public netd::shared::interface::base::Ether, 
-        public netd::shared::base::Serialization<TapInterface> {
-    public:
-        TapInterface();
-        explicit TapInterface(const std::string& name);
-        virtual ~TapInterface();
+  class TapInterface : public netd::shared::interface::base::Ether,
+                       public netd::shared::base::Serialization<TapInterface> {
+  public:
+    TapInterface();
+    explicit TapInterface(const std::string &name);
+    virtual ~TapInterface();
 
-        // TAP-specific configuration
-        virtual bool setTapUnit(int unit) { return false; }
-        virtual int getTapUnit() const { return -1; }
-        virtual bool setTapMode(const std::string& mode) { return false; }
-        virtual std::string getTapMode() const { return "tap"; }
+    // TAP-specific configuration
+    virtual bool setTapUnit(int unit) { return false; }
+    virtual int getTapUnit() const { return -1; }
+    virtual bool setTapMode(const std::string &mode) { return false; }
+    virtual std::string getTapMode() const { return "tap"; }
 
-        // YANG serialization
-        lyd_node* toYang(ly_ctx* ctx) const override;
-        static TapInterface fromYang(const ly_ctx* ctx, const lyd_node* node);
-    };
+    // YANG serialization
+    lyd_node *toYang(ly_ctx *ctx) const override;
+    static TapInterface fromYang(const ly_ctx *ctx, const lyd_node *node);
+  };
 
 } // namespace netd::shared::interface
 

@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Paige Thompson / Ravenhammer Research (paige@paige.bio)
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -28,41 +28,43 @@
 #ifndef NETD_INTERFACE_BASE_TUNNEL_HPP
 #define NETD_INTERFACE_BASE_TUNNEL_HPP
 
-#include <string>
-#include <memory>
 #include <cstdint>
+#include <memory>
 #include <shared/include/address.hpp>
+#include <string>
 
 namespace netd::shared::interface::base {
 
-    class Tunnel {
-    public:
-        virtual ~Tunnel() = default;
+  class Tunnel {
+  public:
+    virtual ~Tunnel() = default;
 
-        // Tunnel endpoint management
-        virtual bool setLocalAddr(const std::shared_ptr<netd::shared::Address>& localAddr);
-        virtual std::shared_ptr<netd::shared::Address> getLocalAddr() const;
-        virtual bool setRemoteAddr(const std::shared_ptr<netd::shared::Address>& remoteAddr);
-        virtual std::shared_ptr<netd::shared::Address> getRemoteAddr() const;
+    // Tunnel endpoint management
+    virtual bool
+    setLocalAddr(const std::shared_ptr<netd::shared::Address> &localAddr);
+    virtual std::shared_ptr<netd::shared::Address> getLocalAddr() const;
+    virtual bool
+    setRemoteAddr(const std::shared_ptr<netd::shared::Address> &remoteAddr);
+    virtual std::shared_ptr<netd::shared::Address> getRemoteAddr() const;
 
-        // Tunnel-specific configuration
-        virtual bool setTunnelVRF(uint32_t vrfId);
-        virtual uint32_t getTunnelVRF() const;
-        virtual bool setTunnelMTU(uint16_t mtu);
-        virtual uint16_t getTunnelMTU() const;
+    // Tunnel-specific configuration
+    virtual bool setTunnelVRF(uint32_t vrfId);
+    virtual uint32_t getTunnelVRF() const;
+    virtual bool setTunnelMTU(uint16_t mtu);
+    virtual uint16_t getTunnelMTU() const;
 
-        // Tunnel state
-        virtual bool isTunnelEstablished() const;
-        virtual bool establishTunnel();
-        virtual bool teardownTunnel();
+    // Tunnel state
+    virtual bool isTunnelEstablished() const;
+    virtual bool establishTunnel();
+    virtual bool teardownTunnel();
 
-    protected:
-        std::shared_ptr<netd::shared::Address> localAddr_;
-        std::shared_ptr<netd::shared::Address> remoteAddr_;
-        uint32_t tunnelVrfId_{0};
-        uint16_t tunnelMtu_{1500};
-        bool tunnelEstablished_{false};
-    };
+  protected:
+    std::shared_ptr<netd::shared::Address> localAddr_;
+    std::shared_ptr<netd::shared::Address> remoteAddr_;
+    uint32_t tunnelVrfId_{0};
+    uint16_t tunnelMtu_{1500};
+    bool tunnelEstablished_{false};
+  };
 
 } // namespace netd::shared::interface::base
 

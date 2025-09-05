@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Paige Thompson / Ravenhammer Research (paige@paige.bio)
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -28,20 +28,20 @@
 #ifndef NETD_FREEBSD_INTERFACE_VXLAN_HPP
 #define NETD_FREEBSD_INTERFACE_VXLAN_HPP
 
-#include <string>
 #include <cstdint>
 #include <memory>
+#include <string>
 #include <vector>
 
-#include <shared/include/interface/vxlan.hpp>
 #include <shared/include/base/serialization.hpp>
+#include <shared/include/interface/vxlan.hpp>
 
 namespace netd::freebsd::interface {
 
-    class VxlanInterface : public netd::shared::interface::VxlanInterface {
-public:
+  class VxlanInterface : public netd::shared::interface::VxlanInterface {
+  public:
     VxlanInterface();
-    explicit VxlanInterface(const std::string& name);
+    explicit VxlanInterface(const std::string &name);
     virtual ~VxlanInterface();
 
     // Interface name
@@ -56,9 +56,9 @@ public:
     // VXLAN-specific configuration
     bool setVni(uint32_t vni);
     uint32_t getVni() const;
-    bool setLocalEndpoint(const std::string& endpoint);
+    bool setLocalEndpoint(const std::string &endpoint);
     std::string getLocalEndpoint() const;
-    bool setRemoteEndpoint(const std::string& endpoint);
+    bool setRemoteEndpoint(const std::string &endpoint);
     std::string getRemoteEndpoint() const;
     bool setUdpPort(uint16_t port);
     uint16_t getUdpPort() const;
@@ -66,28 +66,28 @@ public:
     // Statistics and information
     std::string getType() const { return "vxlan"; }
 
-        // Conversion to shared interface for serialization
-        operator netd::shared::interface::VxlanInterface() const;
+    // Conversion to shared interface for serialization
+    operator netd::shared::interface::VxlanInterface() const;
 
-private:
+  private:
     // Interface name
     std::string name_;
-    
+
     // VXLAN-specific members
     uint32_t vni_;
     std::string localEndpoint_;
     std::string remoteEndpoint_;
     uint16_t udpPort_;
-    
+
     // FreeBSD system interface
     int socket_;
-    
+
     // Helper methods
     bool openSocket();
     void closeSocket();
     bool getVxlanInfo();
     bool setVxlanInfo() const;
-};
+  };
 
 } // namespace netd::freebsd::interface
 

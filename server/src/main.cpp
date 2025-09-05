@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Paige Thompson / Ravenhammer Research (paige@paige.bio)
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -25,59 +25,57 @@
  * SUCH DAMAGE.
  */
 
-#include <iostream>
-#include <shared/include/logger.hpp>
-#include <server/include/netconf/server.hpp>
-#include <csignal>
 #include <chrono>
+#include <csignal>
+#include <iostream>
+#include <server/include/netconf/server.hpp>
+#include <shared/include/logger.hpp>
 #include <thread>
 
 // Global flag for graceful shutdown
 static volatile bool g_running = true;
 
 void signalHandler(int signal) {
-    if (signal == SIGINT || signal == SIGTERM) {
-        g_running = false;
-    }
+  if (signal == SIGINT || signal == SIGTERM) {
+    g_running = false;
+  }
 }
 
 int main() {
-    auto& logger = netd::shared::Logger::getInstance();
-    logger.info("NETD Server starting...");
-    
-    // Set up signal handlers for graceful shutdown
-    signal(SIGINT, signalHandler);
-    signal(SIGTERM, signalHandler);
-    
-    // Start NETCONF server with user-writable socket path
-    std::string socketPath = "/tmp/netd.sock";
-    if (!netd::server::netconf::startNetconfServer(socketPath)) {
-        logger.error("Failed to start NETCONF server");
-        return 1;
-    }
-    
-    logger.info("NETD Server started successfully");
-    logger.info("NETCONF server listening on " + socketPath);
-    logger.info("Press Ctrl+C to stop");
-    
-    // Run the server in a separate thread so we can handle signals
-    std::thread serverThread([]() {
-        netd::server::netconf::runNetconfServer();
-    });
-    
-    // Main loop - just wait for shutdown signal
-    while (g_running) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    }
-    
-    // Stop the server and wait for thread to finish
-    netd::server::netconf::stopNetconfServer();
-    serverThread.join();
-    
-    // Graceful shutdown
-    logger.info("Shutting down NETD Server...");
-    netd::server::netconf::stopNetconfServer();
-    logger.info("NETD Server stopped");
-    
-    return 0;
+  auto &logger = netd::shared::Logger::getInstance();
+  logger.info("NETD Server starting...");
+
+  // Set up signal handlers for graceful shutdown
+  signal(SIGINT, signalHandler);
+  signal(SIGTERM, signalHandler);
+
+  // Start NETCONF server with user-writable socket path
+  std::string socketPath = "/tmp/netd.sock";
+  if (!netd::server::netconf::startNetconfServer(socketPath)) {
+    logger.error("Failed to start NETCONF server");
+    return 1;
+  }
+
+  logger.info("NETD Server started successfully");
+  logger.info("NETCONF server listening on " + socketPath);
+  logger.info("Press Ctrl+C to stop");
+
+  // Run the server in a separate thread so we can handle signals
+  std::thread serverThread([]() { netd::server::netconf::runNetconfServer(); });
+
+  // Main loop - just wait for shutdown signal
+  while (g_running) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  }
+
+  // Stop the server and wait for thread to finish
+  netd::server::netconf::stopNetconfServer();
+  serverThread.join();
+
+  // Graceful shutdown
+  logger.info("Shutting down NETD Server...");
+  netd::server::netconf::stopNetconfServer();
+  logger.info("NETD Server stopped");
+
+  return 0;
 }

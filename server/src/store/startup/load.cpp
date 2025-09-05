@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Paige Thompson / Ravenhammer Research (paige@paige.bio)
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -30,12 +30,14 @@
 
 namespace netd::server::store::startup {
 
-	bool StartupStore::load() {
-		throw netd::shared::NotImplementedError("StartupStore::load not implemented");
-	}
+  bool StartupStore::load() {
+    throw netd::shared::NotImplementedError(
+        "StartupStore::load not implemented");
+  }
 
-	bool StartupStore::commit() {
-		throw netd::shared::NotImplementedError("StartupStore::commit not implemented");
-	}
+  bool StartupStore::commit() {
+    throw netd::shared::NotImplementedError(
+        "StartupStore::commit not implemented");
+  }
 
 } // namespace netd::server::store::startup

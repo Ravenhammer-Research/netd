@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Paige Thompson / Ravenhammer Research (paige@paige.bio)
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -28,61 +28,61 @@
 #ifndef NETD_FREEBSD_INTERFACE_LAGG_HPP
 #define NETD_FREEBSD_INTERFACE_LAGG_HPP
 
-#include <string>
 #include <cstdint>
 #include <memory>
+#include <string>
 #include <vector>
 
-#include <shared/include/interface/lagg.hpp>
 #include <shared/include/base/serialization.hpp>
+#include <shared/include/interface/lagg.hpp>
 
 namespace netd::freebsd::interface {
 
-    class LagInterface : public netd::shared::interface::LagInterface {
-    public:
-        LagInterface();
-        explicit LagInterface(const std::string& name);
-        virtual ~LagInterface();
+  class LagInterface : public netd::shared::interface::LagInterface {
+  public:
+    LagInterface();
+    explicit LagInterface(const std::string &name);
+    virtual ~LagInterface();
 
-        // Interface name
-        std::string getName() const { return name_; }
+    // Interface name
+    std::string getName() const { return name_; }
 
-        // FreeBSD-specific operations
-        bool createInterface();
-        bool destroyInterface();
-        bool loadFromSystem();
-        bool applyToSystem();
+    // FreeBSD-specific operations
+    bool createInterface();
+    bool destroyInterface();
+    bool loadFromSystem();
+    bool applyToSystem();
 
-        // LAGG-specific configuration
-        bool setLaggProtocol(const std::string& protocol);
-        std::string getLaggProtocol() const;
-        bool addLaggPort(const std::string& portName);
-        bool removeLaggPort(const std::string& portName);
-        std::vector<std::string> getLaggPorts() const;
+    // LAGG-specific configuration
+    bool setLaggProtocol(const std::string &protocol);
+    std::string getLaggProtocol() const;
+    bool addLaggPort(const std::string &portName);
+    bool removeLaggPort(const std::string &portName);
+    std::vector<std::string> getLaggPorts() const;
 
-        // Statistics and information
-        std::string getType() const { return "lagg"; }
+    // Statistics and information
+    std::string getType() const { return "lagg"; }
 
-        // Conversion to shared interface for serialization
-        operator netd::shared::interface::LagInterface() const;
+    // Conversion to shared interface for serialization
+    operator netd::shared::interface::LagInterface() const;
 
-    private:
-        // Interface name
-        std::string name_;
-        
-        // LAGG-specific members
-        std::string laggProtocol_;
-        std::vector<std::string> laggPorts_;
-        
-        // FreeBSD system interface
-        int socket_;
-        
-        // Helper methods
-        bool openSocket();
-        void closeSocket();
-        bool getLaggInfo();
-        bool setLaggInfo() const;
-    };
+  private:
+    // Interface name
+    std::string name_;
+
+    // LAGG-specific members
+    std::string laggProtocol_;
+    std::vector<std::string> laggPorts_;
+
+    // FreeBSD system interface
+    int socket_;
+
+    // Helper methods
+    bool openSocket();
+    void closeSocket();
+    bool getLaggInfo();
+    bool setLaggInfo() const;
+  };
 
 } // namespace netd::freebsd::interface
 

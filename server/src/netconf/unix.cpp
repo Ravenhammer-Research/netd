@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2024 Paige Thompson / Ravenhammer Research (paige@paige.bio)
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -28,58 +28,53 @@
 #include <libnetconf2/netconf.h>
 #include <libnetconf2/server_config.h>
 #include <libnetconf2/session_server.h>
+#include <memory>
 #include <shared/include/logger.hpp>
 #include <string>
-#include <memory>
 
 namespace netd::server::netconf {
 
-	using netd::shared::Logger;
+  using netd::shared::Logger;
 
-	class UnixTransport {
-	private:
-		std::string socketPath_;
-		bool listening_;
+  class UnixTransport {
+  private:
+    std::string socketPath_;
+    bool listening_;
 
-	public:
-		UnixTransport() : listening_(false) {
-		}
+  public:
+    UnixTransport() : listening_(false) {}
 
-		~UnixTransport() {
-			stop();
-		}
+    ~UnixTransport() { stop(); }
 
-		bool start(const std::string& socketPath) {
-			auto& logger = Logger::getInstance();
-			
-			socketPath_ = socketPath;
-			
-			// Add Unix socket endpoint
-			if (nc_server_add_endpt_unix_socket_listen("netd", socketPath.c_str(), 0666, -1, -1) != 0) {
-				logger.error("Failed to add Unix socket endpoint: " + socketPath);
-				return false;
-			}
+    bool start(const std::string &socketPath) {
+      auto &logger = Logger::getInstance();
 
-			listening_ = true;
-			logger.info("Unix transport started on " + socketPath);
-			return true;
-		}
+      socketPath_ = socketPath;
 
-		void stop() {
-			if (!listening_) return;
-			
-			auto& logger = Logger::getInstance();
-			listening_ = false;
-			logger.info("Unix transport stopped");
-		}
+      // Add Unix socket endpoint
+      if (nc_server_add_endpt_unix_socket_listen("netd", socketPath.c_str(),
+                                                 0666, -1, -1) != 0) {
+        logger.error("Failed to add Unix socket endpoint: " + socketPath);
+        return false;
+      }
 
-		bool isListening() const {
-			return listening_;
-		}
+      listening_ = true;
+      logger.info("Unix transport started on " + socketPath);
+      return true;
+    }
 
-		const std::string& getSocketPath() const {
-			return socketPath_;
-		}
-	};
+    void stop() {
+      if (!listening_)
+        return;
+
+      auto &logger = Logger::getInstance();
+      listening_ = false;
+      logger.info("Unix transport stopped");
+    }
+
+    bool isListening() const { return listening_; }
+
+    const std::string &getSocketPath() const { return socketPath_; }
+  };
 
 } // namespace netd::server::netconf
