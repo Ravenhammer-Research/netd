@@ -68,6 +68,10 @@ namespace netd::freebsd::interface {
     bool loadFromSystem();
     bool applyToSystem() const;
 
+    // Static interface discovery functions
+    static std::vector<std::unique_ptr<BridgeInterface>>
+    getAllBridgeInterfaces();
+
   private:
     // Interface name
     std::string name_;

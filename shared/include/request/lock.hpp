@@ -32,15 +32,15 @@
 
 namespace netd::shared::request {
 
-  class LockRequest : public Request {
+  class LockRequest : public Request<LockRequest> {
   public:
     LockRequest();
     virtual ~LockRequest();
 
     // Override base methods
     lyd_node *toYang(ly_ctx *ctx) const override;
-    std::unique_ptr<Request> fromYang(const ly_ctx *ctx,
-                                      const lyd_node *node) override;
+    std::unique_ptr<LockRequest> fromYang(const ly_ctx *ctx,
+                                          const lyd_node *node) override;
   };
 
 } // namespace netd::shared::request

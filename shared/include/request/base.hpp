@@ -30,18 +30,60 @@
 
 #include <memory>
 #include <shared/include/base/serialization.hpp>
+#include <shared/include/marshalling/filter.hpp>
 #include <string>
 
 namespace netd::shared::request {
 
-  class Request : public netd::shared::base::Serialization<Request> {
+  // Source datastore enumeration
+  enum class Source { RUNNING, CANDIDATE, STARTUP };
+
+  template <typename T> class Request {
   public:
     virtual ~Request() = default;
 
     // Pure virtual methods that must be implemented by subclasses
     virtual lyd_node *toYang(ly_ctx *ctx) const = 0;
-    virtual std::unique_ptr<Request> fromYang(const ly_ctx *ctx,
-                                              const lyd_node *node) = 0;
+    virtual std::unique_ptr<T> fromYang(const ly_ctx *ctx,
+                                        const lyd_node *node) = 0;
+
+  protected:
+    // RPC request properties
+    std::string messageId = "1";
+    std::string xmlns = "urn:ietf:params:xml:ns:netconf:base:1.0";
+    Source source = Source::RUNNING;
+    std::unique_ptr<netd::shared::marshalling::Filter> filter = nullptr;
+
+    // Helper methods for property access
+    void setMessageId(const std::string &id) { messageId = id; }
+    const std::string &getMessageId() const { return messageId; }
+
+    void setXmlns(const std::string &ns) { xmlns = ns; }
+    const std::string &getXmlns() const { return xmlns; }
+
+    void setSource(Source src) { source = src; }
+    Source getSource() const { return source; }
+
+    void setFilter(std::unique_ptr<netd::shared::marshalling::Filter> f) {
+      filter = std::move(f);
+    }
+    netd::shared::marshalling::Filter *getFilter() const {
+      return filter.get();
+    }
+
+    // Helper method to convert Source enum to string
+    std::string sourceToString() const {
+      switch (source) {
+      case Source::RUNNING:
+        return "running";
+      case Source::CANDIDATE:
+        return "candidate";
+      case Source::STARTUP:
+        return "startup";
+      default:
+        return "running";
+      }
+    }
   };
 
 } // namespace netd::shared::request

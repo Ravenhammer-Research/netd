@@ -12,6 +12,7 @@ set_target_properties(netd_shared PROPERTIES
 
 # Add subdirectories
 add_subdirectory(src)
+add_subdirectory(src/marshalling)
 
 
 # Link dependencies
@@ -20,6 +21,7 @@ target_link_libraries(netd_shared
     netconf2
     netd_request
     netd_response
+    netd_marshalling
 )
 
 # Set library directories
@@ -46,7 +48,7 @@ target_compile_definitions(netd_shared
 )
 
 # Install rules
-install(TARGETS netd_shared netd_request netd_response
+install(TARGETS netd_shared netd_request netd_response netd_marshalling
     EXPORT netd_sharedTargets
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib

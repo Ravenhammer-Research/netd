@@ -1,19 +1,27 @@
 # Response module sources
 set(RESPONSE_SOURCES
-    config.cpp
+    base.cpp
     copy.cpp
     delete.cpp
     discard.cpp
     edit.cpp
     lock.cpp
     unlock.cpp
+    close.cpp
+    kill.cpp
+    commit.cpp
+    validate.cpp
+    hello.cpp
 )
+
+# Add get subdirectory
+add_subdirectory(get)
 
 # Create the netd_response static library
 add_library(netd_response STATIC ${RESPONSE_SOURCES})
 
-# Link with libyang
-target_link_libraries(netd_response yang)
+# Link with libyang and marshalling
+target_link_libraries(netd_response yang netd_marshalling)
 
 # Set include directories
 target_include_directories(netd_response PUBLIC

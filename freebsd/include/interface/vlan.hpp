@@ -64,6 +64,9 @@ namespace netd::freebsd::interface {
     // Statistics and information
     std::string getType() const { return "vlan"; }
 
+    // Static interface discovery functions
+    static std::vector<std::unique_ptr<VlanInterface>> getAllVlanInterfaces();
+
   private:
     // Interface name
     std::string name_;

@@ -28,16 +28,16 @@
 #include <libyang/libyang.h>
 #include <libyang/tree_data.h>
 #include <shared/include/exception.hpp>
-#include <shared/include/request/config.hpp>
+#include <shared/include/request/get/base.hpp>
 #include <shared/include/yang.hpp>
 
-namespace netd::shared::request {
+namespace netd::shared::request::get {
 
-  GetConfigRequest::GetConfigRequest() {}
+  GetRequest::GetRequest() {}
 
-  GetConfigRequest::~GetConfigRequest() {}
+  GetRequest::~GetRequest() {}
 
-  lyd_node *GetConfigRequest::toYang(ly_ctx *ctx) const {
+  lyd_node *GetRequest::toYang(ly_ctx *ctx) const {
     if (!ctx) {
       return nullptr;
     }
@@ -62,25 +62,9 @@ namespace netd::shared::request {
       return nullptr;
     }
 
-    // Create the get-config operation inside the RPC
-    lyd_node *getConfigNode = nullptr;
-    if (lyd_new_inner(rpcNode, mod, "get-config", 0, &getConfigNode) !=
-        LY_SUCCESS) {
-      lyd_free_tree(rpcNode);
-      return nullptr;
-    }
-
-    // Create the source container
-    lyd_node *sourceNode = nullptr;
-    if (lyd_new_inner(getConfigNode, mod, "source", 0, &sourceNode) !=
-        LY_SUCCESS) {
-      lyd_free_tree(rpcNode);
-      return nullptr;
-    }
-
-    // Add running datastore as default
-    if (lyd_new_term(sourceNode, mod, "running", nullptr, 0, nullptr) !=
-        LY_SUCCESS) {
+    // Create the get operation inside the RPC
+    lyd_node *getNode = nullptr;
+    if (lyd_new_inner(rpcNode, mod, "get", 0, &getNode) != LY_SUCCESS) {
       lyd_free_tree(rpcNode);
       return nullptr;
     }
@@ -88,15 +72,15 @@ namespace netd::shared::request {
     return rpcNode;
   }
 
-  std::unique_ptr<Request>
-  GetConfigRequest::fromYang([[maybe_unused]] const ly_ctx *ctx,
-                             const lyd_node *node) {
+  std::unique_ptr<GetRequest>
+  GetRequest::fromYang([[maybe_unused]] const ly_ctx *ctx,
+                       const lyd_node *node) {
     if (!node) {
       throw NotImplementedError(
-          "Invalid YANG node provided to GetConfigRequest::fromYang");
+          "Invalid YANG node provided to GetRequest::fromYang");
     }
 
-    return std::make_unique<GetConfigRequest>();
+    return std::make_unique<GetRequest>();
   }
 
-} // namespace netd::shared::request
+} // namespace netd::shared::request::get

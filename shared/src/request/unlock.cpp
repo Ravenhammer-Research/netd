@@ -87,7 +87,7 @@ namespace netd::shared::request {
     return rpcNode;
   }
 
-  std::unique_ptr<Request>
+  std::unique_ptr<UnlockRequest>
   UnlockRequest::fromYang([[maybe_unused]] const ly_ctx *ctx,
                           const lyd_node *node) {
     if (!node) {

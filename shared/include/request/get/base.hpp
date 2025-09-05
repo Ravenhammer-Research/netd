@@ -25,24 +25,24 @@
  * SUCH DAMAGE.
  */
 
-#ifndef NETD_REQUEST_CONFIG_HPP
-#define NETD_REQUEST_CONFIG_HPP
+#ifndef NETD_REQUEST_GET_BASE_HPP
+#define NETD_REQUEST_GET_BASE_HPP
 
 #include <shared/include/request/base.hpp>
 
-namespace netd::shared::request {
+namespace netd::shared::request::get {
 
-  class GetConfigRequest : public Request {
+  class GetRequest : public netd::shared::request::Request<GetRequest> {
   public:
-    GetConfigRequest();
-    virtual ~GetConfigRequest();
+    GetRequest();
+    virtual ~GetRequest();
 
     // Override base methods
     lyd_node *toYang(ly_ctx *ctx) const override;
-    std::unique_ptr<Request> fromYang(const ly_ctx *ctx,
-                                      const lyd_node *node) override;
+    std::unique_ptr<GetRequest> fromYang(const ly_ctx *ctx,
+                                         const lyd_node *node) override;
   };
 
-} // namespace netd::shared::request
+} // namespace netd::shared::request::get
 
-#endif // NETD_REQUEST_CONFIG_HPP
+#endif // NETD_REQUEST_GET_BASE_HPP

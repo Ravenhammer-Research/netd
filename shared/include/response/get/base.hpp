@@ -25,24 +25,24 @@
  * SUCH DAMAGE.
  */
 
-#ifndef NETD_RESPONSE_CONFIG_HPP
-#define NETD_RESPONSE_CONFIG_HPP
+#ifndef NETD_RESPONSE_GET_BASE_HPP
+#define NETD_RESPONSE_GET_BASE_HPP
 
 #include <shared/include/response/base.hpp>
 
-namespace netd::shared::response {
+namespace netd::shared::response::get {
 
-  class GetConfigResponse : public Response {
+  class GetResponse : public netd::shared::response::Response {
   public:
-    GetConfigResponse();
-    virtual ~GetConfigResponse();
+    GetResponse();
+    virtual ~GetResponse();
 
     // Override base methods
     lyd_node *toYang(ly_ctx *ctx) const override;
-    std::unique_ptr<Response> fromYang(const ly_ctx *ctx,
-                                       const lyd_node *node) override;
+    std::unique_ptr<netd::shared::response::Response>
+    fromYang(const ly_ctx *ctx, const lyd_node *node) override;
   };
 
-} // namespace netd::shared::response
+} // namespace netd::shared::response::get
 
-#endif // NETD_RESPONSE_CONFIG_HPP
+#endif // NETD_RESPONSE_GET_BASE_HPP

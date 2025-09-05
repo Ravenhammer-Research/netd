@@ -1,0 +1,31 @@
+/* (License header) */
+
+#include <shared/include/exception.hpp>
+#include <shared/include/request/kill.hpp>
+
+namespace netd::shared::request {
+
+  KillRequest::KillRequest() : Request<KillRequest>() {}
+
+  lyd_node *KillRequest::toYang(ly_ctx *ctx) const {
+    if (!ctx) {
+      throw NotImplementedError(
+          "Invalid YANG context provided to KillRequest::toYang");
+    }
+
+    // TODO: Implement kill-session RPC
+    return nullptr;
+  }
+
+  std::unique_ptr<KillRequest>
+  KillRequest::fromYang([[maybe_unused]] const ly_ctx *ctx,
+                        const lyd_node *node) {
+    if (!node) {
+      throw NotImplementedError(
+          "Invalid YANG node provided to KillRequest::fromYang");
+    }
+
+    return std::make_unique<KillRequest>();
+  }
+
+} // namespace netd::shared::request

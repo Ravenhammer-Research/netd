@@ -30,18 +30,56 @@
 
 #include <memory>
 #include <shared/include/base/serialization.hpp>
+#include <shared/include/marshalling/data.hpp>
+#include <shared/include/marshalling/error.hpp>
+#include <shared/include/marshalling/interface.hpp>
+#include <shared/include/marshalling/network.hpp>
+#include <shared/include/marshalling/route.hpp>
 #include <string>
 
 namespace netd::shared::response {
 
   class Response : public netd::shared::base::Serialization<Response> {
   public:
+    Response();
     virtual ~Response() = default;
 
     // Pure virtual methods that must be implemented by subclasses
     virtual lyd_node *toYang(ly_ctx *ctx) const = 0;
     virtual std::unique_ptr<Response> fromYang(const ly_ctx *ctx,
                                                const lyd_node *node) = 0;
+
+    // Error and data properties for flexible initialization
+    std::unique_ptr<netd::shared::marshalling::Error> error = nullptr;
+    std::unique_ptr<netd::shared::marshalling::Data> data = nullptr;
+
+    // Helper methods for initialization
+    void setError(std::unique_ptr<netd::shared::marshalling::Error> err) {
+      error = std::move(err);
+    }
+    void setData(std::unique_ptr<netd::shared::marshalling::Data> d) {
+      data = std::move(d);
+    }
+
+    netd::shared::marshalling::Error *getError() const { return error.get(); }
+    netd::shared::marshalling::Data *getData() const { return data.get(); }
+
+    // Convenience methods for common error types
+    void setProtocolError(netd::shared::marshalling::ErrorTag tag,
+                          const std::string &message = "");
+    void setApplicationError(netd::shared::marshalling::ErrorTag tag,
+                             const std::string &message = "");
+    void setRpcError(netd::shared::marshalling::ErrorTag tag,
+                     const std::string &message = "");
+    void setTransportError(netd::shared::marshalling::ErrorTag tag,
+                           const std::string &message = "");
+
+    // Convenience methods for common data types
+    void setNetworkInstance(
+        std::unique_ptr<netd::shared::marshalling::NetworkInstance> instance);
+    void setRoute(std::unique_ptr<netd::shared::marshalling::Route> route);
+    void setInterface(
+        std::unique_ptr<netd::shared::marshalling::Interface> interface);
   };
 
 } // namespace netd::shared::response

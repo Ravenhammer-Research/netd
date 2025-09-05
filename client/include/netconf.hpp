@@ -28,9 +28,9 @@
 #ifndef NETD_CLIENT_NETCONF_HPP
 #define NETD_CLIENT_NETCONF_HPP
 
-#include <shared/include/request/config.hpp>
 #include <shared/include/request/edit.hpp>
-#include <shared/include/request/get.hpp>
+#include <shared/include/request/get/base.hpp>
+#include <shared/include/request/get/config.hpp>
 #include <string>
 
 namespace netd::client {

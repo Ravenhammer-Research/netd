@@ -25,7 +25,13 @@
  * SUCH DAMAGE.
  */
 
-#include <shared/include/exception.hpp>
+#include <libyang/libyang.h>
+#include <libyang/tree_data.h>
 #include <shared/include/request/base.hpp>
 
-namespace netd::shared::request {} // namespace netd::shared::request
+namespace netd::shared::request {
+
+  // Base Request class implementation
+  // Template class - implementations are in the header
+
+} // namespace netd::shared::request

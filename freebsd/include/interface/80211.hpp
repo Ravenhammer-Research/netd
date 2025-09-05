@@ -66,6 +66,9 @@ namespace netd::freebsd::interface {
     // Statistics and information
     std::string getType() const { return "80211"; }
 
+    // Static interface discovery functions
+    static std::vector<std::unique_ptr<WifiInterface>> getAllWifiInterfaces();
+
   private:
     // Interface name
     std::string name_;

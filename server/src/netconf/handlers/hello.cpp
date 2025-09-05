@@ -25,24 +25,23 @@
  * SUCH DAMAGE.
  */
 
-#ifndef NETD_REQUEST_GET_HPP
-#define NETD_REQUEST_GET_HPP
+#include <libnetconf2/messages_server.h>
+#include <libnetconf2/netconf.h>
+#include <libyang/libyang.h>
+#include <server/include/netconf/handlers.hpp>
+#include <shared/include/logger.hpp>
 
-#include <shared/include/request/base.hpp>
+namespace netd::server::netconf::handlers {
 
-namespace netd::shared::request {
+  struct nc_server_reply *
+  RpcHandler::handleHelloRequest([[maybe_unused]] struct nc_session *session,
+                                 [[maybe_unused]] struct lyd_node *rpc) {
+    auto &logger = netd::shared::Logger::getInstance();
+    logger.info("Handling hello request");
 
-  class GetRequest : public Request {
-  public:
-    GetRequest();
-    virtual ~GetRequest();
+    // For now, return a simple OK response
+    // TODO: Implement actual hello request handling
+    return nc_server_reply_ok();
+  }
 
-    // Override base methods
-    lyd_node *toYang(ly_ctx *ctx) const override;
-    std::unique_ptr<Request> fromYang(const ly_ctx *ctx,
-                                      const lyd_node *node) override;
-  };
-
-} // namespace netd::shared::request
-
-#endif // NETD_REQUEST_GET_HPP
+} // namespace netd::server::netconf::handlers

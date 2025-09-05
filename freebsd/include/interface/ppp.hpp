@@ -64,6 +64,9 @@ namespace netd::freebsd::interface {
     // Statistics and information
     std::string getType() const { return "ppp"; }
 
+    // Static interface discovery functions
+    static std::vector<std::unique_ptr<PppInterface>> getAllPppInterfaces();
+
   private:
     // Interface name
     std::string name_;

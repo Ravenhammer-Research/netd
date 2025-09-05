@@ -1,21 +1,27 @@
 # Request module sources
 set(REQUEST_SOURCES
     base.cpp
-    get.cpp
-    config.cpp
     edit.cpp
     copy.cpp
     delete.cpp
     lock.cpp
     unlock.cpp
     discard.cpp
+    close.cpp
+    kill.cpp
+    commit.cpp
+    validate.cpp
+    hello.cpp
 )
+
+# Add get subdirectory
+add_subdirectory(get)
 
 # Create the netd_request static library
 add_library(netd_request STATIC ${REQUEST_SOURCES})
 
-# Link with libyang
-target_link_libraries(netd_request yang)
+# Link with libyang and marshalling
+target_link_libraries(netd_request yang netd_marshalling)
 
 # Set include directories
 target_include_directories(netd_request PUBLIC

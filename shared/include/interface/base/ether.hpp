@@ -89,6 +89,9 @@ namespace netd::shared::interface::base {
     virtual std::string getType() const { return "ethernet"; }
     void setName(const std::string &name);
 
+    // Static interface discovery function
+    static std::vector<std::unique_ptr<Ether>> getAllInterfaces();
+
   protected:
     std::vector<std::shared_ptr<netd::shared::Address>> addresses_;
     std::vector<std::string> groups_;

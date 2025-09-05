@@ -32,15 +32,15 @@
 
 namespace netd::shared::request {
 
-  class DeleteConfigRequest : public Request {
+  class DeleteConfigRequest : public Request<DeleteConfigRequest> {
   public:
     DeleteConfigRequest();
     virtual ~DeleteConfigRequest();
 
     // Override base methods
     lyd_node *toYang(ly_ctx *ctx) const override;
-    std::unique_ptr<Request> fromYang(const ly_ctx *ctx,
-                                      const lyd_node *node) override;
+    std::unique_ptr<DeleteConfigRequest>
+    fromYang(const ly_ctx *ctx, const lyd_node *node) override;
   };
 
 } // namespace netd::shared::request

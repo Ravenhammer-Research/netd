@@ -26,6 +26,12 @@
  */
 
 #include <algorithm>
+#include <freebsd/include/interface/80211.hpp>
+#include <freebsd/include/interface/bridge.hpp>
+#include <freebsd/include/interface/ethernet.hpp>
+#include <freebsd/include/interface/ppp.hpp>
+#include <freebsd/include/interface/tun.hpp>
+#include <freebsd/include/interface/vlan.hpp>
 #include <shared/include/interface/base/ether.hpp>
 #include <shared/include/yang.hpp>
 
@@ -120,5 +126,64 @@ namespace netd::shared::interface::base {
 
   // YANG serialization methods - placeholder implementation
   // These will be implemented when the YANG schemas are properly integrated
+
+  // Static interface discovery function
+  std::vector<std::unique_ptr<Ether>> Ether::getAllInterfaces() {
+    std::vector<std::unique_ptr<Ether>> allInterfaces;
+
+    // Get ethernet interfaces (already Ether type)
+    auto ethernetInterfaces =
+        netd::freebsd::interface::EthernetInterface::getAllEthernetInterfaces();
+    for (auto &iface : ethernetInterfaces) {
+      allInterfaces.push_back(std::move(iface));
+    }
+
+    // Get bridge interfaces (Master type) - convert to Ether
+    auto bridgeInterfaces =
+        netd::freebsd::interface::BridgeInterface::getAllBridgeInterfaces();
+    for (auto &iface : bridgeInterfaces) {
+      // Create a new Ether object with the bridge interface name
+      auto etherIface = std::make_unique<Ether>();
+      etherIface->setName(iface->getName());
+      allInterfaces.push_back(std::move(etherIface));
+    }
+
+    // Get VLAN interfaces (already Ether type)
+    auto vlanInterfaces =
+        netd::freebsd::interface::VlanInterface::getAllVlanInterfaces();
+    for (auto &iface : vlanInterfaces) {
+      allInterfaces.push_back(std::move(iface));
+    }
+
+    // Get WiFi interfaces (already Ether type)
+    auto wifiInterfaces =
+        netd::freebsd::interface::WifiInterface::getAllWifiInterfaces();
+    for (auto &iface : wifiInterfaces) {
+      allInterfaces.push_back(std::move(iface));
+    }
+
+    // Get PPP interfaces (already Ether type)
+    auto pppInterfaces =
+        netd::freebsd::interface::PppInterface::getAllPppInterfaces();
+    for (auto &iface : pppInterfaces) {
+      allInterfaces.push_back(std::move(iface));
+    }
+
+    // Get TUN interfaces (Tunnel type) - convert to Ether
+    auto tunInterfaces =
+        netd::freebsd::interface::TunInterface::getAllTunInterfaces();
+    for (auto &iface : tunInterfaces) {
+      // Create a new Ether object with the TUN interface name
+      auto etherIface = std::make_unique<Ether>();
+      etherIface->setName(iface->getName());
+      allInterfaces.push_back(std::move(etherIface));
+    }
+
+    // TODO: Add remaining tunnel interface types (VXLAN, WireGuard, TAP, etc.)
+    // Each should have their own getAll*Interfaces() function
+    // and be converted to Ether objects here
+
+    return allInterfaces;
+  }
 
 } // namespace netd::shared::interface::base

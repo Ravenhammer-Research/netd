@@ -25,62 +25,23 @@
  * SUCH DAMAGE.
  */
 
+#include <libnetconf2/messages_server.h>
+#include <libnetconf2/netconf.h>
 #include <libyang/libyang.h>
-#include <libyang/tree_data.h>
-#include <shared/include/exception.hpp>
-#include <shared/include/request/get.hpp>
-#include <shared/include/yang.hpp>
+#include <server/include/netconf/handlers.hpp>
+#include <shared/include/logger.hpp>
 
-namespace netd::shared::request {
+namespace netd::server::netconf::handlers {
 
-  GetRequest::GetRequest() {}
+  struct nc_server_reply *RpcHandler::handleKillSessionRequest(
+      [[maybe_unused]] struct nc_session *session,
+      [[maybe_unused]] struct lyd_node *rpc) {
+    auto &logger = netd::shared::Logger::getInstance();
+    logger.info("Handling kill-session request");
 
-  GetRequest::~GetRequest() {}
-
-  lyd_node *GetRequest::toYang(ly_ctx *ctx) const {
-    if (!ctx) {
-      return nullptr;
-    }
-
-    // Get the ietf-netconf module
-    const struct lys_module *mod =
-        ly_ctx_get_module_implemented(ctx, "ietf-netconf");
-    if (!mod) {
-      return nullptr;
-    }
-
-    // Create the complete RPC structure with envelope
-    lyd_node *rpcNode = nullptr;
-    if (lyd_new_inner(nullptr, mod, "rpc", 0, &rpcNode) != LY_SUCCESS) {
-      return nullptr;
-    }
-
-    // Add message-id attribute to the RPC envelope
-    if (lyd_new_meta(nullptr, rpcNode, nullptr, "message-id", "1", 0,
-                     nullptr) != LY_SUCCESS) {
-      lyd_free_tree(rpcNode);
-      return nullptr;
-    }
-
-    // Create the get operation inside the RPC
-    lyd_node *getNode = nullptr;
-    if (lyd_new_inner(rpcNode, mod, "get", 0, &getNode) != LY_SUCCESS) {
-      lyd_free_tree(rpcNode);
-      return nullptr;
-    }
-
-    return rpcNode;
+    // For now, return a simple OK response
+    // TODO: Implement actual kill-session request handling
+    return nc_server_reply_ok();
   }
 
-  std::unique_ptr<Request>
-  GetRequest::fromYang([[maybe_unused]] const ly_ctx *ctx,
-                       const lyd_node *node) {
-    if (!node) {
-      throw NotImplementedError(
-          "Invalid YANG node provided to GetRequest::fromYang");
-    }
-
-    return std::make_unique<GetRequest>();
-  }
-
-} // namespace netd::shared::request
+} // namespace netd::server::netconf::handlers

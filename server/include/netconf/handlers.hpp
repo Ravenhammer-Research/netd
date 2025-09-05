@@ -33,6 +33,10 @@
 #include <libnetconf2/server_config.h>
 #include <libnetconf2/session_server.h>
 #include <libyang/libyang.h>
+#include <memory>
+#include <shared/include/interface/base/ether.hpp>
+#include <string>
+#include <vector>
 
 namespace netd::server::netconf::handlers {
 
@@ -69,7 +73,37 @@ namespace netd::server::netconf::handlers {
     // Discard-changes request handler
     static struct nc_server_reply *
     handleDiscardRequest(struct nc_session *session, struct lyd_node *rpc);
+
+    // Close-session request handler
+    static struct nc_server_reply *
+    handleCloseSessionRequest(struct nc_session *session, struct lyd_node *rpc);
+
+    // Kill-session request handler
+    static struct nc_server_reply *
+    handleKillSessionRequest(struct nc_session *session, struct lyd_node *rpc);
+
+    // Validate request handler
+    static struct nc_server_reply *
+    handleValidateRequest(struct nc_session *session, struct lyd_node *rpc);
+
+    // Hello request handler
+    static struct nc_server_reply *
+    handleHelloRequest(struct nc_session *session, struct lyd_node *rpc);
+
+    // Commit request handler
+    static struct nc_server_reply *
+    handleCommitRequest(struct nc_session *session, struct lyd_node *rpc);
+
+  private:
+    // Helper functions for get-config
+    static std::vector<std::string> getAllInterfaceNames();
+    static std::unique_ptr<netd::shared::interface::base::Ether>
+    getInterfaceInfo(const std::string &ifName);
   };
+
+  // Interface-specific handler function
+  struct nc_server_reply *handleInterfaceRequest(struct nc_session *session,
+                                                 struct lyd_node *rpc);
 
 } // namespace netd::server::netconf::handlers
 

@@ -28,10 +28,10 @@
 #include <libyang/libyang.h>
 #include <libyang/tree_data.h>
 #include <shared/include/exception.hpp>
-#include <shared/include/response/config.hpp>
+#include <shared/include/response/get/config.hpp>
 #include <shared/include/yang.hpp>
 
-namespace netd::shared::response {
+namespace netd::shared::response::get {
 
   GetConfigResponse::GetConfigResponse() {}
 
@@ -80,4 +80,4 @@ namespace netd::shared::response {
     return std::make_unique<GetConfigResponse>();
   }
 
-} // namespace netd::shared::response
+} // namespace netd::shared::response::get

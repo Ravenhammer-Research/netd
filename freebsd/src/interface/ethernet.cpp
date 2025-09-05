@@ -25,18 +25,27 @@
  * SUCH DAMAGE.
  */
 
+#include <freebsd/include/interface/80211.hpp>
+#include <freebsd/include/interface/bridge.hpp>
 #include <freebsd/include/interface/ethernet.hpp>
+#include <freebsd/include/interface/ppp.hpp>
+#include <freebsd/include/interface/tun.hpp>
+#include <freebsd/include/interface/vlan.hpp>
 #include <shared/include/logger.hpp>
 
 #include <cstdlib>
 #include <cstring>
+#include <ifaddrs.h>
+#include <memory>
 #include <net/if.h>
 #include <net/if_var.h>
 #include <netinet/if_ether.h>
+#include <string>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <sys/sysctl.h>
 #include <unistd.h>
+#include <vector>
 
 namespace netd::freebsd::interface {
 
@@ -223,6 +232,42 @@ namespace netd::freebsd::interface {
     }
 
     return true;
+  }
+
+  // Static interface discovery functions
+  std::vector<std::unique_ptr<EthernetInterface>>
+  EthernetInterface::getAllEthernetInterfaces() {
+    std::vector<std::unique_ptr<EthernetInterface>> interfaces;
+    struct ifaddrs *ifaddr, *ifa;
+
+    if (getifaddrs(&ifaddr) == -1) {
+      return interfaces;
+    }
+
+    for (ifa = ifaddr; ifa != nullptr; ifa = ifa->ifa_next) {
+      if (ifa->ifa_name != nullptr) {
+        std::string name(ifa->ifa_name);
+        // Check if it's an ethernet interface based on name patterns
+        if (name.find("em") == 0 || name.find("igb") == 0 ||
+            name.find("ix") == 0 || name.find("bge") == 0 ||
+            name.find("re") == 0 || name.find("fxp") == 0) {
+          // Avoid duplicates
+          bool found = false;
+          for (const auto &existing : interfaces) {
+            if (existing->getName() == name) {
+              found = true;
+              break;
+            }
+          }
+          if (!found) {
+            interfaces.push_back(std::make_unique<EthernetInterface>(name));
+          }
+        }
+      }
+    }
+
+    freeifaddrs(ifaddr);
+    return interfaces;
   }
 
 } // namespace netd::freebsd::interface

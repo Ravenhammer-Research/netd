@@ -28,13 +28,17 @@
 #include <cstdlib>
 #include <cstring>
 #include <freebsd/include/interface/bridge.hpp>
+#include <ifaddrs.h>
+#include <memory>
 #include <net/if.h>
 #include <net/if_bridgevar.h>
 #include <net/if_var.h>
 #include <shared/include/logger.hpp>
+#include <string>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <vector>
 
 namespace netd::freebsd::interface {
 
@@ -323,6 +327,40 @@ namespace netd::freebsd::interface {
     // member interfaces, and other bridge-specific configuration
 
     return true;
+  }
+
+  // Static interface discovery functions
+  std::vector<std::unique_ptr<BridgeInterface>>
+  BridgeInterface::getAllBridgeInterfaces() {
+    std::vector<std::unique_ptr<BridgeInterface>> interfaces;
+    struct ifaddrs *ifaddr, *ifa;
+
+    if (getifaddrs(&ifaddr) == -1) {
+      return interfaces;
+    }
+
+    for (ifa = ifaddr; ifa != nullptr; ifa = ifa->ifa_next) {
+      if (ifa->ifa_name != nullptr) {
+        std::string name(ifa->ifa_name);
+        // Check if it's a bridge interface based on name patterns
+        if (name.find("bridge") == 0 || name.find("br") == 0) {
+          // Avoid duplicates
+          bool found = false;
+          for (const auto &existing : interfaces) {
+            if (existing->getName() == name) {
+              found = true;
+              break;
+            }
+          }
+          if (!found) {
+            interfaces.push_back(std::make_unique<BridgeInterface>(name));
+          }
+        }
+      }
+    }
+
+    freeifaddrs(ifaddr);
+    return interfaces;
   }
 
 } // namespace netd::freebsd::interface

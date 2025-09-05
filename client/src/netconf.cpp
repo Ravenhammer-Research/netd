@@ -30,9 +30,9 @@
 #include <libnetconf2/session_client.h>
 #include <libyang/libyang.h>
 #include <shared/include/logger.hpp>
-#include <shared/include/request/config.hpp>
 #include <shared/include/request/edit.hpp>
-#include <shared/include/request/get.hpp>
+#include <shared/include/request/get/base.hpp>
+#include <shared/include/request/get/config.hpp>
 #include <shared/include/yang.hpp>
 #include <stdexcept>
 

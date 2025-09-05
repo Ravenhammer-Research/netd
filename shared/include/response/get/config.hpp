@@ -25,23 +25,24 @@
  * SUCH DAMAGE.
  */
 
-#include <libnetconf2/messages_server.h>
-#include <libnetconf2/netconf.h>
-#include <libyang/libyang.h>
-#include <server/include/netconf/handlers.hpp>
-#include <shared/include/logger.hpp>
+#ifndef NETD_RESPONSE_CONFIG_HPP
+#define NETD_RESPONSE_CONFIG_HPP
 
-namespace netd::server::netconf::handlers {
+#include <shared/include/response/base.hpp>
 
-  struct nc_server_reply *RpcHandler::handleGetConfigRequest(
-      [[maybe_unused]] struct nc_session *session,
-      [[maybe_unused]] struct lyd_node *rpc) {
-    auto &logger = netd::shared::Logger::getInstance();
-    logger.info("Handling get-config request");
+namespace netd::shared::response::get {
 
-    // For now, return a simple OK response
-    // TODO: Implement actual get-config request handling
-    return nc_server_reply_ok();
-  }
+  class GetConfigResponse : public netd::shared::response::Response {
+  public:
+    GetConfigResponse();
+    virtual ~GetConfigResponse();
 
-} // namespace netd::server::netconf::handlers
+    // Override base methods
+    lyd_node *toYang(ly_ctx *ctx) const override;
+    std::unique_ptr<Response> fromYang(const ly_ctx *ctx,
+                                       const lyd_node *node) override;
+  };
+
+} // namespace netd::shared::response::get
+
+#endif // NETD_RESPONSE_CONFIG_HPP

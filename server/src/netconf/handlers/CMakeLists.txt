@@ -1,14 +1,20 @@
 # Handlers module sources
 set(HANDLERS_SOURCES
-    config.cpp
     copy.cpp
     delete.cpp
     discard.cpp
     edit.cpp
-    get.cpp
     lock.cpp
     unlock.cpp
+    close.cpp
+    kill.cpp
+    validate.cpp
+    hello.cpp
+    commit.cpp
 )
+
+# Add get subdirectory
+add_subdirectory(get)
 
 # Create the netd_handlers static library
 add_library(netd_handlers STATIC ${HANDLERS_SOURCES})
@@ -17,6 +23,7 @@ add_library(netd_handlers STATIC ${HANDLERS_SOURCES})
 target_link_libraries(netd_handlers
     yang
     netconf2
+    netd_get_handlers
 )
 
 # Set include directories

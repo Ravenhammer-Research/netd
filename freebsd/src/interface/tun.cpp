@@ -30,13 +30,17 @@
 
 #include <cstdlib>
 #include <cstring>
+#include <ifaddrs.h>
+#include <memory>
 #include <net/if.h>
 #include <net/if_tun.h>
 #include <net/if_var.h>
+#include <string>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <sys/sysctl.h>
 #include <unistd.h>
+#include <vector>
 
 namespace netd::freebsd::interface {
 
@@ -206,6 +210,40 @@ namespace netd::freebsd::interface {
     // TODO: Use TUN-specific ioctls to set TUN details
 
     return true;
+  }
+
+  // Static interface discovery functions
+  std::vector<std::unique_ptr<TunInterface>>
+  TunInterface::getAllTunInterfaces() {
+    std::vector<std::unique_ptr<TunInterface>> interfaces;
+    struct ifaddrs *ifaddr, *ifa;
+
+    if (getifaddrs(&ifaddr) == -1) {
+      return interfaces;
+    }
+
+    for (ifa = ifaddr; ifa != nullptr; ifa = ifa->ifa_next) {
+      if (ifa->ifa_name != nullptr) {
+        std::string name(ifa->ifa_name);
+        // Check if it's a TUN interface based on name patterns
+        if (name.find("tun") == 0) {
+          // Avoid duplicates
+          bool found = false;
+          for (const auto &existing : interfaces) {
+            if (existing->getName() == name) {
+              found = true;
+              break;
+            }
+          }
+          if (!found) {
+            interfaces.push_back(std::make_unique<TunInterface>(name));
+          }
+        }
+      }
+    }
+
+    freeifaddrs(ifaddr);
+    return interfaces;
   }
 
 } // namespace netd::freebsd::interface

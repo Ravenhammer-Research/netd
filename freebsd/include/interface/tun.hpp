@@ -62,6 +62,9 @@ namespace netd::freebsd::interface {
     // Statistics and information
     std::string getType() const { return "tun"; }
 
+    // Static interface discovery functions
+    static std::vector<std::unique_ptr<TunInterface>> getAllTunInterfaces();
+
   private:
     // Interface name
     std::string name_;

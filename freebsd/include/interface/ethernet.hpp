@@ -66,6 +66,10 @@ namespace netd::freebsd::interface {
     // Statistics and information
     std::string getType() const { return "ethernet"; }
 
+    // Static interface discovery functions
+    static std::vector<std::unique_ptr<EthernetInterface>>
+    getAllEthernetInterfaces();
+
   private:
     // Interface name
     std::string name_;
