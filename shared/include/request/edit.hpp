@@ -29,18 +29,28 @@
 #define NETD_REQUEST_EDIT_HPP
 
 #include <shared/include/request/base.hpp>
+#include <shared/include/request/get/config.hpp>
 
 namespace netd::shared::request {
 
   class EditConfigRequest : public Request<EditConfigRequest> {
   public:
-    EditConfigRequest();
-    virtual ~EditConfigRequest();
+    EditConfigRequest() : Request<EditConfigRequest>() {}
+    EditConfigRequest(struct nc_session *session, struct lyd_node *rpc) 
+      : Request<EditConfigRequest>(session, rpc) {}
+    virtual ~EditConfigRequest() = default;
 
     // Override base methods
     lyd_node *toYang(ly_ctx *ctx) const override;
     std::unique_ptr<EditConfigRequest> fromYang(const ly_ctx *ctx,
                                                 const lyd_node *node) override;
+
+    // Target datastore access
+    netd::shared::request::get::Datastore getTarget() const { return target_; }
+    void setTarget(netd::shared::request::get::Datastore target) { target_ = target; }
+
+  private:
+    netd::shared::request::get::Datastore target_ = netd::shared::request::get::Datastore::RUNNING;  // Default to running datastore
   };
 
 } // namespace netd::shared::request

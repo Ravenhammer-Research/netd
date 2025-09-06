@@ -34,8 +34,10 @@ namespace netd::shared::request::get {
 
   class GetRequest : public netd::shared::request::Request<GetRequest> {
   public:
-    GetRequest();
-    virtual ~GetRequest();
+    GetRequest() : netd::shared::request::Request<GetRequest>() {}
+    GetRequest(struct nc_session *session, struct lyd_node *rpc) 
+      : netd::shared::request::Request<GetRequest>(session, rpc) {}
+    virtual ~GetRequest() = default;
 
     // Override base methods
     lyd_node *toYang(ly_ctx *ctx) const override;

@@ -44,14 +44,16 @@ namespace netd::server::store::startup {
     // Override base store operations
     bool load() override;
     bool commit() override;
+    
+    // Override pure virtual methods from base Store
+    void clear() override;
+    bool add(lyd_node *node) override;
+    bool remove(lyd_node *node) override;
 
   protected:
     // Protected constructor for singleton
     StartupStore() = default;
     virtual ~StartupStore() = default;
-
-  private:
-    lyd_node *inMemoryTree_;
   };
 
 } // namespace netd::server::store::startup

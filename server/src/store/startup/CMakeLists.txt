@@ -1,19 +1,17 @@
-# Startup store CMakeLists.txt
-
-add_library(startup_store
-    load.cpp
-    commit.cpp
+# Startup store sources
+set(STARTUP_STORE_SOURCES
     base.cpp
+    commit.cpp
+    load.cpp
 )
 
-target_include_directories(startup_store
-    PUBLIC
-        ${CMAKE_SOURCE_DIR}
-        ${CMAKE_SOURCE_DIR}/shared/include
-        ${LIBYANG_INCLUDE_DIRS}
-)
+# Create netd_server_store_startup static library
+add_library(netd_server_store_startup STATIC ${STARTUP_STORE_SOURCES})
 
-target_link_libraries(startup_store
-    PUBLIC
-        yang
+# Set include directories
+target_include_directories(netd_server_store_startup PRIVATE ${GLOBAL_INCLUDE_DIRS})
+
+# Set compile definitions
+target_compile_definitions(netd_server_store_startup PRIVATE
+    YANG_DIR="${YANG_DIR}"
 )

@@ -28,6 +28,8 @@
 #ifndef NETD_REQUEST_BASE_HPP
 #define NETD_REQUEST_BASE_HPP
 
+#include <libnetconf2/netconf.h>
+#include <libyang/libyang.h>
 #include <memory>
 #include <shared/include/base/serialization.hpp>
 #include <shared/include/marshalling/filter.hpp>
@@ -40,6 +42,9 @@ namespace netd::shared::request {
 
   template <typename T> class Request {
   public:
+    Request() = default;
+    Request(struct nc_session *session, struct lyd_node *rpc) 
+        : session_(session), rpc_(rpc) {}
     virtual ~Request() = default;
 
     // Pure virtual methods that must be implemented by subclasses
@@ -47,7 +52,17 @@ namespace netd::shared::request {
     virtual std::unique_ptr<T> fromYang(const ly_ctx *ctx,
                                         const lyd_node *node) = 0;
 
+    // Session and RPC accessors
+    struct nc_session *getSession() const { return session_; }
+    struct lyd_node *getRpc() const { return rpc_; }
+    void setSession(struct nc_session *session) { session_ = session; }
+    void setRpc(struct lyd_node *rpc) { rpc_ = rpc; }
+
   protected:
+    // NETCONF session and RPC node
+    struct nc_session *session_ = nullptr;
+    struct lyd_node *rpc_ = nullptr;
+
     // RPC request properties
     std::string messageId = "1";
     std::string xmlns = "urn:ietf:params:xml:ns:netconf:base:1.0";

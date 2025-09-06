@@ -1,29 +1,20 @@
-# Marshalling module sources
+# Marshalling sources
 set(MARSHALLING_SOURCES
-  error.cpp
-  data.cpp
-  network.cpp
-  interface.cpp
-  route.cpp
-  filter.cpp
+    data.cpp
+    error.cpp
+    filter.cpp
+    interface.cpp
+    network.cpp
+    route.cpp
 )
 
-# Create the marshalling library
-add_library(netd_marshalling STATIC ${MARSHALLING_SOURCES})
-
-# Link with libyang
-target_link_libraries(netd_marshalling yang)
+# Create netd_shared_marshalling static library
+add_library(netd_shared_marshalling STATIC ${MARSHALLING_SOURCES})
 
 # Set include directories
-target_include_directories(netd_marshalling
-  PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}>
-    $<BUILD_INTERFACE:${LIBYANG_INCLUDE_DIRS}>
-    $<INSTALL_INTERFACE:include>
-)
+target_include_directories(netd_shared_marshalling PRIVATE ${GLOBAL_INCLUDE_DIRS})
 
 # Set compile definitions
-target_compile_definitions(netd_marshalling
-  PRIVATE
-    -DNETD_MARSHALLING_EXPORTS
+target_compile_definitions(netd_shared_marshalling PRIVATE
+    YANG_DIR="${YANG_DIR}"
 )

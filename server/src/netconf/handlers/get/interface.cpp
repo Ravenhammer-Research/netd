@@ -25,83 +25,102 @@
  * SUCH DAMAGE.
  */
 
-#include <freebsd/include/interface/base.hpp>
 #include <libnetconf2/messages_server.h>
 #include <libnetconf2/netconf.h>
 #include <libyang/libyang.h>
+#include <libyang/tree_data.h>
+#include <libyang/tree_schema.h>
 #include <server/include/netconf/handlers.hpp>
-#include <shared/include/interface/base/ether.hpp>
+#include <server/include/store/candidate.hpp>
+#include <server/include/store/running.hpp>
+#include <server/include/store/startup.hpp>
 #include <shared/include/logger.hpp>
 #include <shared/include/marshalling/interface.hpp>
+#include <shared/include/request/get/config.hpp>
+#include <shared/include/response/get/config.hpp>
 
 namespace netd::server::netconf::handlers {
 
-  // Helper function to get all interface names from the system
-  std::vector<std::string> RpcHandler::getAllInterfaceNames() {
-    std::vector<std::string> interfaceNames;
-
-    // Use FreeBSD interface discovery to get all interfaces as Ether objects
-    auto interfaces = netd::freebsd::interface::Interface::getAllInterfaces();
-
-    for (const auto &iface : interfaces) {
-      if (iface) {
-        interfaceNames.push_back(iface->getName());
-      }
-    }
-
-    return interfaceNames;
-  }
-
-  // Helper function to get interface information based on name
-  std::unique_ptr<netd::shared::interface::base::Ether>
-  RpcHandler::getInterfaceInfo(const std::string &ifName) {
-    // Use FreeBSD interface discovery to get all interfaces
-    auto interfaces = netd::freebsd::interface::Interface::getAllInterfaces();
-
-    // Find the interface with the matching name
-    for (auto &iface : interfaces) {
-      if (iface && iface->getName() == ifName) {
-        return std::move(iface);
-      }
-    }
-
-    // If not found, return nullptr
-    return nullptr;
-  }
-
-  // Function to handle interface-specific requests
-  struct nc_server_reply *
-  handleInterfaceRequest(struct nc_session *session,
-                         [[maybe_unused]] struct lyd_node *rpc) {
-    auto &logger = netd::shared::Logger::getInstance();
-    logger.info("Handling interface request");
-
+  std::unique_ptr<netd::shared::response::get::GetConfigResponse> 
+  RpcHandler::handleGetInterfaceRequest(
+      std::unique_ptr<netd::shared::request::get::GetConfigRequest> request) {
     try {
-      // Get all network interfaces from the system using FreeBSD interface
-      // discovery
-      auto interfaces = netd::freebsd::interface::Interface::getAllInterfaces();
-      logger.info("Found " + std::to_string(interfaces.size()) + " interfaces");
+      // Create response object
+      auto response =
+          std::make_unique<netd::shared::response::get::GetConfigResponse>();
 
-      // Process each interface
-      for (const auto &iface : interfaces) {
-        if (iface) {
-          logger.info("Processing interface: " + iface->getName() +
-                      " type: " + iface->getType());
+      // Create interface data container
+      auto interfaceData =
+          std::make_unique<netd::shared::marshalling::Interface>();
 
-          // TODO: Convert interface-specific data to YANG format
-          // This is where we would convert each interface type to its YANG
-          // representation
+      // Get the ietf-interfaces module from the request's session context
+      auto session = request->getSession();
+      auto ctx = nc_session_get_ctx(session);
+      const struct lys_module *ietfInterfaces = ly_ctx_get_module(ctx, "ietf-interfaces", nullptr);
+      if (!ietfInterfaces) {
+        throw std::runtime_error("ietf-interfaces module not found");
+      }
+
+      // Create interfaces container
+      lyd_node *interfacesContainer = nullptr;
+      if (lyd_new_inner(nullptr, ietfInterfaces, "interfaces", 0, &interfacesContainer) != LY_SUCCESS) {
+        throw std::runtime_error("Failed to create interfaces container");
+      }
+
+      // Determine the source from the request and get the appropriate store
+      auto source = request->getSource();
+      auto &logger = netd::shared::Logger::getInstance();
+      
+      std::vector<lyd_node *> interfaceNodes;
+      
+      switch (source) {
+        case netd::shared::request::get::Datastore::RUNNING: {
+          logger.info("Retrieving interface configuration from running datastore");
+          auto &runningStore = netd::server::store::running::RunningStore::getInstance();
+          interfaceNodes = runningStore.searchInterface();
+          break;
+        }
+        case netd::shared::request::get::Datastore::CANDIDATE: {
+          logger.info("Retrieving interface configuration from candidate datastore");
+          auto &candidateStore = netd::server::store::candidate::CandidateStore::getInstance();
+          interfaceNodes = candidateStore.searchInterface();
+          break;
+        }
+        case netd::shared::request::get::Datastore::STARTUP: {
+          logger.info("Retrieving interface configuration from startup datastore");
+          auto &startupStore = netd::server::store::startup::StartupStore::getInstance();
+          interfaceNodes = startupStore.searchInterface();
+          break;
+        }
+        default: {
+          throw std::runtime_error("Unknown datastore source");
+        }
+      }
+      
+      // Add each interface node to the container
+      for (auto *interfaceNode : interfaceNodes) {
+        if (interfaceNode) {
+          // Clone the interface node to avoid ownership issues
+          lyd_node *clonedNode = nullptr;
+          if (lyd_dup_single(interfaceNode, nullptr, LYD_DUP_RECURSIVE, &clonedNode) == LY_SUCCESS) {
+            lyd_insert_child(interfacesContainer, clonedNode);
+          }
         }
       }
 
-      // For now, return a simple OK response
-      // TODO: Implement actual interface data response
-      return nc_server_reply_ok();
+      // Set the complete interfaces tree in the data container
+      interfaceData->setData(interfacesContainer);
+
+      // Set the interface data in the response
+      response->setData(std::move(interfaceData));
+
+      return response;
 
     } catch (const std::exception &e) {
-      logger.error("Exception in interface handler: " + std::string(e.what()));
-      return nc_server_reply_err(
-          nc_err(nc_session_get_ctx(session), NC_ERR_OP_FAILED, e.what()));
+      // Return a response with error information
+      auto errorResponse = std::make_unique<netd::shared::response::get::GetConfigResponse>();
+      // TODO: Set error information in the response
+      return errorResponse;
     }
   }
 

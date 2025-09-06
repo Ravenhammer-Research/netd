@@ -2,10 +2,11 @@
 
 #include <shared/include/exception.hpp>
 #include <shared/include/request/validate.hpp>
+#include <libnetconf2/netconf.h>
+#include <libyang/tree_data.h>
 
 namespace netd::shared::request {
 
-  ValidateRequest::ValidateRequest() : Request<ValidateRequest>() {}
 
   lyd_node *ValidateRequest::toYang(ly_ctx *ctx) const {
     if (!ctx) {

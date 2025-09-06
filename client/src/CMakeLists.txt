@@ -1,11 +1,24 @@
-# Client source CMakeLists.txt
+# Client library sources (excluding main.cpp)
+set(CLIENT_LIB_SOURCES
+    netconf.cpp
+    parser.cpp
+    table.cpp
+    terminal.cpp
+)
 
-# Add source files to the client executable
-target_sources(netd_client
-    PRIVATE
-        main.cpp
-        netconf.cpp
-        terminal.cpp
-        table.cpp
-        parser.cpp
+# Create netd_client static library
+add_library(netd_client STATIC ${CLIENT_LIB_SOURCES})
+
+# Set include directories
+target_include_directories(netd_client PRIVATE ${GLOBAL_INCLUDE_DIRS})
+
+# Set compile definitions
+target_compile_definitions(netd_client PRIVATE
+    YANG_DIR="${YANG_DIR}"
+)
+
+# Link libraries
+target_link_libraries(netd_client PRIVATE
+    netd_shared
+    netd_client_parser
 )

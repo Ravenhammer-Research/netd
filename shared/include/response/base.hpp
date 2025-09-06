@@ -28,6 +28,8 @@
 #ifndef NETD_RESPONSE_BASE_HPP
 #define NETD_RESPONSE_BASE_HPP
 
+#include <libnetconf2/messages_server.h>
+#include <libnetconf2/netconf.h>
 #include <memory>
 #include <shared/include/base/serialization.hpp>
 #include <shared/include/marshalling/data.hpp>
@@ -48,6 +50,9 @@ namespace netd::shared::response {
     virtual lyd_node *toYang(ly_ctx *ctx) const = 0;
     virtual std::unique_ptr<Response> fromYang(const ly_ctx *ctx,
                                                const lyd_node *node) = 0;
+    
+    // Virtual method with default implementation for converting to NETCONF reply
+    virtual struct nc_server_reply *toNetconfReply(struct nc_session *session) const;
 
     // Error and data properties for flexible initialization
     std::unique_ptr<netd::shared::marshalling::Error> error = nullptr;

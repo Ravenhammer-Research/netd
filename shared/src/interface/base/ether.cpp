@@ -25,27 +25,26 @@
  * SUCH DAMAGE.
  */
 
-#include <algorithm>
 #include <shared/include/interface/base/ether.hpp>
-#include <shared/include/yang.hpp>
+#include <shared/include/exception.hpp>
+#include <algorithm>
 
 namespace netd::shared::interface::base {
 
-  // Provide implementations for pure virtual methods to avoid linker errors
-  // These are placeholder implementations that should be overridden by derived
-  // classes
-
-  bool
-  Ether::addAddress(const std::shared_ptr<netd::shared::Address> &address) {
-    if (address && address->isValid()) {
-      addresses_.push_back(address);
-      return true;
-    }
-    return false;
+  void Ether::setName(const std::string &name) {
+    name_ = name;
   }
 
-  bool
-  Ether::removeAddress(const std::shared_ptr<netd::shared::Address> &address) {
+  std::string Ether::getName() const {
+    return name_;
+  }
+
+  bool Ether::addAddress(const std::shared_ptr<netd::shared::Address> &address) {
+    addresses_.push_back(address);
+    return true;
+  }
+
+  bool Ether::removeAddress(const std::shared_ptr<netd::shared::Address> &address) {
     auto it = std::find(addresses_.begin(), addresses_.end(), address);
     if (it != addresses_.end()) {
       addresses_.erase(it);
@@ -54,17 +53,13 @@ namespace netd::shared::interface::base {
     return false;
   }
 
-  std::vector<std::shared_ptr<netd::shared::Address>>
-  Ether::getAddresses() const {
+  std::vector<std::shared_ptr<netd::shared::Address>> Ether::getAddresses() const {
     return addresses_;
   }
 
   bool Ether::addGroup(const std::string &group) {
-    if (!group.empty()) {
-      groups_.push_back(group);
-      return true;
-    }
-    return false;
+    groups_.push_back(group);
+    return true;
   }
 
   bool Ether::removeGroup(const std::string &group) {
@@ -76,30 +71,27 @@ namespace netd::shared::interface::base {
     return false;
   }
 
-  std::vector<std::string> Ether::getGroups() const { return groups_; }
-
-  bool Ether::setMTU(uint16_t mtu) {
-    if (mtu >= 68 && mtu <= 9000) { // Reasonable MTU range
-      mtu_ = mtu;
-      return true;
-    }
-    return false;
+  std::vector<std::string> Ether::getGroups() const {
+    return groups_;
   }
 
-  uint16_t Ether::getMTU() const { return mtu_; }
+  bool Ether::setMTU(uint16_t mtu) {
+    mtu_ = mtu;
+    return true;
+  }
+
+  uint16_t Ether::getMTU() const {
+    return mtu_;
+  }
 
   bool Ether::setFlags(uint32_t flags) {
     flags_ = flags;
     return true;
   }
 
-  uint32_t Ether::getFlags() const { return flags_; }
-
-  std::string Ether::getName() const { return name_; }
-
-  void Ether::setName(const std::string &name) { name_ = name; }
-
-  bool Ether::isUp() const { return up_; }
+  uint32_t Ether::getFlags() const {
+    return flags_;
+  }
 
   bool Ether::up() {
     up_ = true;
@@ -111,14 +103,22 @@ namespace netd::shared::interface::base {
     return true;
   }
 
+  bool Ether::isUp() const {
+    return up_;
+  }
+
   bool Ether::setVRF(uint32_t vrfId) {
     vrfId_ = vrfId;
     return true;
   }
 
-  uint32_t Ether::getVRF() const { return vrfId_; }
+  uint32_t Ether::getVRF() const {
+    return vrfId_;
+  }
 
-  // YANG serialization methods - placeholder implementation
-  // These will be implemented when the YANG schemas are properly integrated
+  lyd_node *Ether::toYang(ly_ctx *ctx) const {
+    // Basic implementation - can be expanded later
+    return nullptr;
+  }
 
 } // namespace netd::shared::interface::base

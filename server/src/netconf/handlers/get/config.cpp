@@ -36,65 +36,15 @@
 
 namespace netd::server::netconf::handlers {
 
-  struct nc_server_reply *
-  RpcHandler::handleGetConfigRequest(struct nc_session *session,
-                                     struct lyd_node *rpc) {
-    auto &logger = netd::shared::Logger::getInstance();
-    logger.info("Handling get-config request");
-
+  std::unique_ptr<netd::shared::response::get::GetConfigResponse>
+  RpcHandler::handleGetConfigRequest(std::unique_ptr<netd::shared::request::get::GetConfigRequest> request) {
     try {
-      // Parse the request using GetConfigRequest
-      auto request =
-          std::make_unique<netd::shared::request::get::GetConfigRequest>();
-      auto parsedRequest = request->fromYang(nc_session_get_ctx(session), rpc);
-
-      // Create response object
-      auto response =
-          std::make_unique<netd::shared::response::get::GetConfigResponse>();
-
-      // Get all network interfaces from the system using interface handler
-      std::vector<std::string> interfaceNames = getAllInterfaceNames();
-      logger.info("Found " + std::to_string(interfaceNames.size()) +
-                  " interfaces");
-
-      // Create interface data container
-      auto interfaceData =
-          std::make_unique<netd::shared::marshalling::Interface>();
-
-      // Process each interface using interface handler functions
-      for (const auto &ifName : interfaceNames) {
-        logger.info("Processing interface: " + ifName);
-
-        // Try to determine interface type and create appropriate handler
-        auto interfaceInfo = getInterfaceInfo(ifName);
-        if (interfaceInfo) {
-          // TODO: Convert interface-specific data to YANG format
-          // This is where we would convert each interface type to its YANG
-          // representation
-          logger.info("Interface " + ifName +
-                      " type: " + interfaceInfo->getType());
-        }
-      }
-
-      // Set the interface data in the response
-      response->setData(std::move(interfaceData));
-
-      // Convert response to YANG and return
-      auto yangResponse =
-          response->toYang(const_cast<ly_ctx *>(nc_session_get_ctx(session)));
-      if (yangResponse) {
-        return nc_server_reply_data(yangResponse, NC_WD_ALL, NC_PARAMTYPE_FREE);
-      } else {
-        logger.error("Failed to convert response to YANG");
-        return nc_server_reply_err(nc_err(nc_session_get_ctx(session),
-                                          NC_ERR_OP_FAILED,
-                                          "Failed to generate response"));
-      }
+      // Delegate to interface handler
+      return RpcHandler::handleGetInterfaceRequest(std::move(request));
 
     } catch (const std::exception &e) {
-      logger.error("Exception in get-config handler: " + std::string(e.what()));
-      return nc_server_reply_err(
-          nc_err(nc_session_get_ctx(session), NC_ERR_OP_FAILED, e.what()));
+      // TODO: Return proper error response
+      return std::make_unique<netd::shared::response::get::GetConfigResponse>();
     }
   }
 

@@ -1,17 +1,26 @@
-# Client parser CMakeLists.txt
-
-# Include custom Yacc and Lex processing modules
-include(${CMAKE_SOURCE_DIR}/cmake/Yacc.cmake)
+# Include custom CMake modules
 include(${CMAKE_SOURCE_DIR}/cmake/Lex.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/Yacc.cmake)
 
-# Process Yacc files to generate parsers
-add_yacc_source(netd_client get.y)
-add_yacc_source(netd_client set.y)
-add_yacc_source(netd_client commit.y)
-add_yacc_source(netd_client delete.y)
+# Create netd_client_parser static library
+add_library(netd_client_parser STATIC)
 
-# Process Lex files to generate lexers
-add_lex_source(netd_client get.l)
-add_lex_source(netd_client set.l)
-add_lex_source(netd_client commit.l)
-add_lex_source(netd_client delete.l)
+# Add lex sources
+add_lex_source(netd_client_parser commit.l)
+add_lex_source(netd_client_parser delete.l)
+add_lex_source(netd_client_parser get.l)
+add_lex_source(netd_client_parser set.l)
+
+# Add yacc sources
+add_yacc_source(netd_client_parser commit.y)
+add_yacc_source(netd_client_parser delete.y)
+add_yacc_source(netd_client_parser get.y)
+add_yacc_source(netd_client_parser set.y)
+
+# Set include directories
+target_include_directories(netd_client_parser PRIVATE ${GLOBAL_INCLUDE_DIRS})
+
+# Set compile definitions
+target_compile_definitions(netd_client_parser PRIVATE
+    YANG_DIR="${YANG_DIR}"
+)

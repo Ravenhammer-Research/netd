@@ -25,6 +25,8 @@
  * SUCH DAMAGE.
  */
 
+#include <libnetconf2/messages_server.h>
+#include <libnetconf2/netconf.h>
 #include <shared/include/marshalling/error.hpp>
 #include <shared/include/response/base.hpp>
 
@@ -94,6 +96,15 @@ namespace netd::shared::response {
   void Response::setInterface(
       std::unique_ptr<netd::shared::marshalling::Interface> interface) {
     data = std::move(interface);
+  }
+
+  // Default implementation of toNetconfReply
+  struct nc_server_reply *Response::toNetconfReply(struct nc_session *session) const {
+    if (error) {
+      return nc_server_reply_err(nc_err(nc_session_get_ctx(session), NC_ERR_OP_FAILED, 
+                                        error->getMessage().c_str()));
+    }
+    return nc_server_reply_ok();
   }
 
 } // namespace netd::shared::response

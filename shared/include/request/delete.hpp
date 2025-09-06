@@ -34,8 +34,10 @@ namespace netd::shared::request {
 
   class DeleteConfigRequest : public Request<DeleteConfigRequest> {
   public:
-    DeleteConfigRequest();
-    virtual ~DeleteConfigRequest();
+    DeleteConfigRequest() : Request<DeleteConfigRequest>() {}
+    DeleteConfigRequest(struct nc_session *session, struct lyd_node *rpc) 
+      : Request<DeleteConfigRequest>(session, rpc) {}
+    virtual ~DeleteConfigRequest() = default;
 
     // Override base methods
     lyd_node *toYang(ly_ctx *ctx) const override;

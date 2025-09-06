@@ -33,6 +33,19 @@
 #include <server/include/netconf/base.hpp>
 #include <server/include/netconf/handlers.hpp>
 #include <shared/include/logger.hpp>
+#include <shared/include/request/edit.hpp>
+#include <shared/include/request/commit.hpp>
+#include <shared/include/request/lock.hpp>
+#include <shared/include/request/unlock.hpp>
+#include <shared/include/request/discard.hpp>
+#include <shared/include/request/get/base.hpp>
+#include <shared/include/request/get/config.hpp>
+#include <shared/include/request/copy.hpp>
+#include <shared/include/request/delete.hpp>
+#include <shared/include/request/close.hpp>
+#include <shared/include/request/kill.hpp>
+#include <shared/include/request/validate.hpp>
+#include <shared/include/request/hello.hpp>
 #include <signal.h>
 #include <string>
 #include <unistd.h>
@@ -117,47 +130,168 @@ namespace netd::server::netconf {
 
     struct nc_server_reply *handleGetRequest(struct nc_session *session,
                                              struct lyd_node *rpc) override {
-      return RpcHandler::handleGetRequest(session, rpc);
+      // Create request object with session and rpc
+      auto request = std::make_unique<netd::shared::request::get::GetRequest>(session, rpc);
+      
+      // Call the new handler
+      auto response = RpcHandler::handleGetRequest(std::move(request));
+      
+      // Convert response to nc_server_reply using the new method
+      return response->toNetconfReply(session);
     }
 
     struct nc_server_reply *
     handleGetConfigRequest(struct nc_session *session,
                            struct lyd_node *rpc) override {
-      return RpcHandler::handleGetConfigRequest(session, rpc);
+      // Create request object with session and rpc
+      auto request = std::make_unique<netd::shared::request::get::GetConfigRequest>(session, rpc);
+      
+      // Call the new handler
+      auto response = RpcHandler::handleGetConfigRequest(std::move(request));
+      
+      // Convert response to nc_server_reply using the new method
+      return response->toNetconfReply(session);
     }
 
     struct nc_server_reply *
     handleEditConfigRequest(struct nc_session *session,
                             struct lyd_node *rpc) override {
-      return RpcHandler::handleEditConfigRequest(session, rpc);
+      // Create request object with session and rpc
+      auto request = std::make_unique<netd::shared::request::EditConfigRequest>(session, rpc);
+      
+      // Call the new handler
+      auto response = RpcHandler::handleEditConfigRequest(std::move(request));
+      
+      // Convert response to nc_server_reply using the new method
+      return response->toNetconfReply(session);
     }
 
     struct nc_server_reply *
     handleCopyConfigRequest(struct nc_session *session,
                             struct lyd_node *rpc) override {
-      return RpcHandler::handleCopyConfigRequest(session, rpc);
+      // Create request object with session and rpc
+      auto request = std::make_unique<netd::shared::request::CopyConfigRequest>(session, rpc);
+      
+      // Call the new handler
+      auto response = RpcHandler::handleCopyConfigRequest(std::move(request));
+      
+      // Convert response to nc_server_reply using the new method
+      return response->toNetconfReply(session);
     }
 
     struct nc_server_reply *
     handleDeleteConfigRequest(struct nc_session *session,
                               struct lyd_node *rpc) override {
-      return RpcHandler::handleDeleteConfigRequest(session, rpc);
+      // Create request object with session and rpc
+      auto request = std::make_unique<netd::shared::request::DeleteConfigRequest>(session, rpc);
+      
+      // Call the new handler
+      auto response = RpcHandler::handleDeleteConfigRequest(std::move(request));
+      
+      // Convert response to nc_server_reply using the new method
+      return response->toNetconfReply(session);
     }
 
     struct nc_server_reply *handleLockRequest(struct nc_session *session,
                                               struct lyd_node *rpc) override {
-      return RpcHandler::handleLockRequest(session, rpc);
+      // Create request object with session and rpc
+      auto request = std::make_unique<netd::shared::request::LockRequest>(session, rpc);
+      
+      // Call the new handler
+      auto response = RpcHandler::handleLockRequest(std::move(request));
+      
+      // Convert response to nc_server_reply using the new method
+      return response->toNetconfReply(session);
     }
 
     struct nc_server_reply *handleUnlockRequest(struct nc_session *session,
                                                 struct lyd_node *rpc) override {
-      return RpcHandler::handleUnlockRequest(session, rpc);
+      // Create request object with session and rpc
+      auto request = std::make_unique<netd::shared::request::UnlockRequest>(session, rpc);
+      
+      // Call the new handler
+      auto response = RpcHandler::handleUnlockRequest(std::move(request));
+      
+      // Convert response to nc_server_reply using the new method
+      return response->toNetconfReply(session);
     }
 
     struct nc_server_reply *
     handleDiscardRequest(struct nc_session *session,
                          struct lyd_node *rpc) override {
-      return RpcHandler::handleDiscardRequest(session, rpc);
+      // Create request object with session and rpc
+      auto request = std::make_unique<netd::shared::request::DiscardRequest>(session, rpc);
+      
+      // Call the new handler
+      auto response = RpcHandler::handleDiscardRequest(std::move(request));
+      
+      // Convert response to nc_server_reply using the new method
+      return response->toNetconfReply(session);
+    }
+
+    struct nc_server_reply *
+    handleCloseSessionRequest(struct nc_session *session,
+                             struct lyd_node *rpc) override {
+      // Create request object with session and rpc
+      auto request = std::make_unique<netd::shared::request::CloseRequest>(session, rpc);
+      
+      // Call the new handler
+      auto response = RpcHandler::handleCloseSessionRequest(std::move(request));
+      
+      // Convert response to nc_server_reply using the new method
+      return response->toNetconfReply(session);
+    }
+
+    struct nc_server_reply *
+    handleKillSessionRequest(struct nc_session *session,
+                            struct lyd_node *rpc) override {
+      // Create request object with session and rpc
+      auto request = std::make_unique<netd::shared::request::KillRequest>(session, rpc);
+      
+      // Call the new handler
+      auto response = RpcHandler::handleKillSessionRequest(std::move(request));
+      
+      // Convert response to nc_server_reply using the new method
+      return response->toNetconfReply(session);
+    }
+
+    struct nc_server_reply *
+    handleValidateRequest(struct nc_session *session,
+                         struct lyd_node *rpc) override {
+      // Create request object with session and rpc
+      auto request = std::make_unique<netd::shared::request::ValidateRequest>(session, rpc);
+      
+      // Call the new handler
+      auto response = RpcHandler::handleValidateRequest(std::move(request));
+      
+      // Convert response to nc_server_reply using the new method
+      return response->toNetconfReply(session);
+    }
+
+    struct nc_server_reply *
+    handleHelloRequest(struct nc_session *session,
+                      struct lyd_node *rpc) override {
+      // Create request object with session and rpc
+      auto request = std::make_unique<netd::shared::request::HelloRequest>(session, rpc);
+      
+      // Call the new handler
+      auto response = RpcHandler::handleHelloRequest(std::move(request));
+      
+      // Convert response to nc_server_reply using the new method
+      return response->toNetconfReply(session);
+    }
+
+    struct nc_server_reply *
+    handleCommitRequest(struct nc_session *session,
+                       struct lyd_node *rpc) override {
+      // Create request object with session and rpc
+      auto request = std::make_unique<netd::shared::request::CommitRequest>(session, rpc);
+      
+      // Call the new handler
+      auto response = RpcHandler::handleCommitRequest(std::move(request));
+      
+      // Convert response to nc_server_reply using the new method
+      return response->toNetconfReply(session);
     }
 
     void run() {

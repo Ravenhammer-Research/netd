@@ -27,15 +27,14 @@
 
 #include <libyang/libyang.h>
 #include <libyang/tree_data.h>
+#include <libnetconf2/netconf.h>
 #include <shared/include/exception.hpp>
 #include <shared/include/request/unlock.hpp>
 #include <shared/include/yang.hpp>
 
 namespace netd::shared::request {
 
-  UnlockRequest::UnlockRequest() {}
 
-  UnlockRequest::~UnlockRequest() {}
 
   lyd_node *UnlockRequest::toYang(ly_ctx *ctx) const {
     if (!ctx) {

@@ -1,32 +1,17 @@
-# Get handlers module sources
-set(GET_HANDLERS_SOURCES
+# Get handler sources
+set(GET_HANDLER_SOURCES
     base.cpp
     config.cpp
     interface.cpp
 )
 
-# Create the netd_get_handlers static library
-add_library(netd_get_handlers STATIC ${GET_HANDLERS_SOURCES})
-
-# Link with required libraries
-target_link_libraries(netd_get_handlers
-    yang
-    netconf2
-    netd_shared
-    netd_freebsd
-    netd_get_request
-    netd_get_response
-)
+# Create netd_server_netconf_handlers_get static library
+add_library(netd_server_netconf_handlers_get STATIC ${GET_HANDLER_SOURCES})
 
 # Set include directories
-target_include_directories(netd_get_handlers PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}>
-    $<BUILD_INTERFACE:${LIBYANG_INCLUDE_DIRS}>
-    $<BUILD_INTERFACE:${LIBNETCONF2_INCLUDE_DIRS}>
-    $<INSTALL_INTERFACE:include>
-)
+target_include_directories(netd_server_netconf_handlers_get PRIVATE ${GLOBAL_INCLUDE_DIRS})
 
 # Set compile definitions
-target_compile_definitions(netd_get_handlers PRIVATE
-    -DNETD_GET_HANDLERS_EXPORTS
+target_compile_definitions(netd_server_netconf_handlers_get PRIVATE
+    YANG_DIR="${YANG_DIR}"
 )

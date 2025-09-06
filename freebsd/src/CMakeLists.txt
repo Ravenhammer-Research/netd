@@ -1,41 +1,24 @@
-# FreeBSD Source CMakeLists.txt
-
-# Create the FreeBSD implementation library
-add_library(netd_freebsd STATIC
-    interface/base.cpp
-    interface/bridge.cpp
-    interface/epair.cpp
-    interface/ethernet.cpp
-    interface/lagg.cpp
-    interface/ppp.cpp
-    interface/tap.cpp
-    interface/tun.cpp
-    interface/vlan.cpp
-    interface/vxlan.cpp
-    interface/wireguard.cpp
-    interface/80211.cpp
-    vrf.cpp
+# FreeBSD sources
+set(FREEBSD_SOURCES
     route.cpp
+    vrf.cpp
 )
+
+# Add subdirectories
+add_subdirectory(interface)
+
+# Create netd_freebsd static library
+add_library(netd_freebsd STATIC ${FREEBSD_SOURCES})
 
 # Set include directories
-target_include_directories(netd_freebsd
-    PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/../..
-        ${LIBYANG_INCLUDE_DIRS}
-        ${LIBNETCONF2_INCLUDE_DIRS}
+target_include_directories(netd_freebsd PRIVATE ${GLOBAL_INCLUDE_DIRS})
+
+# Set compile definitions
+target_compile_definitions(netd_freebsd PRIVATE
+    YANG_DIR="${YANG_DIR}"
 )
 
-# Link against system libraries
-target_link_libraries(netd_freebsd
-    PUBLIC
-        netd_shared
-        yang
-        netconf2
-)
-
-# Set compile definitions for FreeBSD
-target_compile_definitions(netd_freebsd
-    PRIVATE
-        _FREEBSD
+# Link libraries
+target_link_libraries(netd_freebsd PRIVATE
+    netd_freebsd_interface
 )

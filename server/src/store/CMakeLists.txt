@@ -1,23 +1,27 @@
-# Store module CMakeLists.txt
-
-# Base store library
-add_library(store_base
+# Store sources
+set(STORE_SOURCES
     base.cpp
 )
 
-target_include_directories(store_base
-    PUBLIC
-        ${CMAKE_SOURCE_DIR}
-        ${CMAKE_SOURCE_DIR}/shared/include
-        ${LIBYANG_INCLUDE_DIRS}
-)
-
-target_link_libraries(store_base
-    PUBLIC
-        yang
-)
-
 # Add subdirectories
-add_subdirectory(startup)
 add_subdirectory(candidate)
 add_subdirectory(running)
+add_subdirectory(startup)
+
+# Create netd_server_store static library
+add_library(netd_server_store STATIC ${STORE_SOURCES})
+
+# Set include directories
+target_include_directories(netd_server_store PRIVATE ${GLOBAL_INCLUDE_DIRS})
+
+# Set compile definitions
+target_compile_definitions(netd_server_store PRIVATE
+    YANG_DIR="${YANG_DIR}"
+)
+
+# Link libraries
+target_link_libraries(netd_server_store PRIVATE
+    netd_server_store_candidate
+    netd_server_store_running
+    netd_server_store_startup
+)

@@ -35,6 +35,34 @@
 #include <libyang/libyang.h>
 #include <memory>
 #include <shared/include/interface/base/ether.hpp>
+#include <shared/include/request/base.hpp>
+#include <shared/include/request/close.hpp>
+#include <shared/include/request/commit.hpp>
+#include <shared/include/request/copy.hpp>
+#include <shared/include/request/delete.hpp>
+#include <shared/include/request/discard.hpp>
+#include <shared/include/request/edit.hpp>
+#include <shared/include/request/get/base.hpp>
+#include <shared/include/request/get/config.hpp>
+#include <shared/include/request/hello.hpp>
+#include <shared/include/request/kill.hpp>
+#include <shared/include/request/lock.hpp>
+#include <shared/include/request/unlock.hpp>
+#include <shared/include/request/validate.hpp>
+#include <shared/include/response/base.hpp>
+#include <shared/include/response/close.hpp>
+#include <shared/include/response/commit.hpp>
+#include <shared/include/response/copy.hpp>
+#include <shared/include/response/delete.hpp>
+#include <shared/include/response/discard.hpp>
+#include <shared/include/response/edit.hpp>
+#include <shared/include/response/get/base.hpp>
+#include <shared/include/response/get/config.hpp>
+#include <shared/include/response/hello.hpp>
+#include <shared/include/response/kill.hpp>
+#include <shared/include/response/lock.hpp>
+#include <shared/include/response/unlock.hpp>
+#include <shared/include/response/validate.hpp>
 #include <string>
 #include <vector>
 
@@ -43,67 +71,63 @@ namespace netd::server::netconf::handlers {
   class RpcHandler {
   public:
     // Get request handler
-    static struct nc_server_reply *handleGetRequest(struct nc_session *session,
-                                                    struct lyd_node *rpc);
+    static std::unique_ptr<netd::shared::response::get::GetResponse> 
+    handleGetRequest(std::unique_ptr<netd::shared::request::get::GetRequest> request);
 
     // Get-config request handler
-    static struct nc_server_reply *
-    handleGetConfigRequest(struct nc_session *session, struct lyd_node *rpc);
+    static std::unique_ptr<netd::shared::response::get::GetConfigResponse>
+    handleGetConfigRequest(std::unique_ptr<netd::shared::request::get::GetConfigRequest> request);
 
     // Edit-config request handler
-    static struct nc_server_reply *
-    handleEditConfigRequest(struct nc_session *session, struct lyd_node *rpc);
+    static std::unique_ptr<netd::shared::response::EditConfigResponse>
+    handleEditConfigRequest(std::unique_ptr<netd::shared::request::EditConfigRequest> request);
 
     // Copy-config request handler
-    static struct nc_server_reply *
-    handleCopyConfigRequest(struct nc_session *session, struct lyd_node *rpc);
+    static std::unique_ptr<netd::shared::response::CopyConfigResponse>
+    handleCopyConfigRequest(std::unique_ptr<netd::shared::request::CopyConfigRequest> request);
 
     // Delete-config request handler
-    static struct nc_server_reply *
-    handleDeleteConfigRequest(struct nc_session *session, struct lyd_node *rpc);
+    static std::unique_ptr<netd::shared::response::DeleteConfigResponse>
+    handleDeleteConfigRequest(std::unique_ptr<netd::shared::request::DeleteConfigRequest> request);
 
     // Lock request handler
-    static struct nc_server_reply *handleLockRequest(struct nc_session *session,
-                                                     struct lyd_node *rpc);
+    static std::unique_ptr<netd::shared::response::LockResponse>
+    handleLockRequest(std::unique_ptr<netd::shared::request::LockRequest> request);
 
     // Unlock request handler
-    static struct nc_server_reply *
-    handleUnlockRequest(struct nc_session *session, struct lyd_node *rpc);
+    static std::unique_ptr<netd::shared::response::UnlockResponse>
+    handleUnlockRequest(std::unique_ptr<netd::shared::request::UnlockRequest> request);
 
     // Discard-changes request handler
-    static struct nc_server_reply *
-    handleDiscardRequest(struct nc_session *session, struct lyd_node *rpc);
+    static std::unique_ptr<netd::shared::response::DiscardResponse>
+    handleDiscardRequest(std::unique_ptr<netd::shared::request::DiscardRequest> request);
 
     // Close-session request handler
-    static struct nc_server_reply *
-    handleCloseSessionRequest(struct nc_session *session, struct lyd_node *rpc);
+    static std::unique_ptr<netd::shared::response::CloseResponse>
+    handleCloseSessionRequest(std::unique_ptr<netd::shared::request::CloseRequest> request);
 
     // Kill-session request handler
-    static struct nc_server_reply *
-    handleKillSessionRequest(struct nc_session *session, struct lyd_node *rpc);
+    static std::unique_ptr<netd::shared::response::KillResponse>
+    handleKillSessionRequest(std::unique_ptr<netd::shared::request::KillRequest> request);
 
     // Validate request handler
-    static struct nc_server_reply *
-    handleValidateRequest(struct nc_session *session, struct lyd_node *rpc);
+    static std::unique_ptr<netd::shared::response::ValidateResponse>
+    handleValidateRequest(std::unique_ptr<netd::shared::request::ValidateRequest> request);
 
     // Hello request handler
-    static struct nc_server_reply *
-    handleHelloRequest(struct nc_session *session, struct lyd_node *rpc);
+    static std::unique_ptr<netd::shared::response::HelloResponse>
+    handleHelloRequest(std::unique_ptr<netd::shared::request::HelloRequest> request);
 
     // Commit request handler
-    static struct nc_server_reply *
-    handleCommitRequest(struct nc_session *session, struct lyd_node *rpc);
+    static std::unique_ptr<netd::shared::response::CommitResponse>
+    handleCommitRequest(std::unique_ptr<netd::shared::request::CommitRequest> request);
 
   private:
-    // Helper functions for get-config
-    static std::vector<std::string> getAllInterfaceNames();
-    static std::unique_ptr<netd::shared::interface::base::Ether>
-    getInterfaceInfo(const std::string &ifName);
+    // Interface-specific handler function
+    static std::unique_ptr<netd::shared::response::get::GetConfigResponse> 
+    handleGetInterfaceRequest(
+        std::unique_ptr<netd::shared::request::get::GetConfigRequest> request);
   };
-
-  // Interface-specific handler function
-  struct nc_server_reply *handleInterfaceRequest(struct nc_session *session,
-                                                 struct lyd_node *rpc);
 
 } // namespace netd::server::netconf::handlers
 

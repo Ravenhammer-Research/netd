@@ -1,68 +1,86 @@
 cmake_minimum_required(VERSION 3.16)
-project(NETD VERSION 1.0.0 LANGUAGES CXX)
+project(netd)
+
+message(STATUS "=== NETD CMake Configuration ===")
+message(STATUS "CMAKE_SOURCE_DIR: ${CMAKE_SOURCE_DIR}")
+message(STATUS "CMAKE_BINARY_DIR: ${CMAKE_BINARY_DIR}")
+message(STATUS "CMAKE_CXX_COMPILER: ${CMAKE_CXX_COMPILER}")
+message(STATUS "CMAKE_CXX_STANDARD: ${CMAKE_CXX_STANDARD}")
 
 # Set C++ standard
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
 
-# Set build type if not specified
-if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Release)
-endif()
-
-# Add custom CMake modules
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-
-# Set PKG_CONFIG_PATH to include /usr/local/lib/pkgconfig
-set(ENV{PKG_CONFIG_PATH} "/usr/local/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}")
+# Set library search paths
+set(CMAKE_LIBRARY_PATH "/usr/lib" "/usr/local/lib")
+link_directories("/usr/lib" "/usr/local/lib")
+message(STATUS "CMAKE_LIBRARY_PATH: ${CMAKE_LIBRARY_PATH}")
 
 # Find required packages
 find_package(PkgConfig REQUIRED)
+set(ENV{PKG_CONFIG_PATH} "/usr/local/lib/pkgconfig/")
+message(STATUS "PKG_CONFIG_PATH: $ENV{PKG_CONFIG_PATH}")
 
-# Find libyang
 pkg_check_modules(LIBYANG REQUIRED libyang)
-if(NOT LIBYANG_FOUND)
-    message(FATAL_ERROR "libyang not found. Please install libyang development package.")
-endif()
-
-# Find libnetconf2
 pkg_check_modules(LIBNETCONF2 REQUIRED libnetconf2)
-if(NOT LIBNETCONF2_FOUND)
-    message(FATAL_ERROR "libnetconf2 not found. Please install libnetconf2 development package.")
-endif()
 
-# Print pkg-config variables for debugging
-message(STATUS "LIBYANG_LIBRARIES: ${LIBYANG_LIBRARIES}")
-message(STATUS "LIBYANG_INCLUDE_DIRS: ${LIBYANG_INCLUDE_DIRS}")
-message(STATUS "LIBYANG_LIBRARY_DIRS: ${LIBYANG_LIBRARY_DIRS}")
-message(STATUS "LIBNETCONF2_LIBRARIES: ${LIBNETCONF2_LIBRARIES}")
-message(STATUS "LIBNETCONF2_INCLUDE_DIRS: ${LIBNETCONF2_INCLUDE_DIRS}")
-message(STATUS "LIBNETCONF2_LIBRARY_DIRS: ${LIBNETCONF2_LIBRARY_DIRS}")
-
-# Find curses
-find_package(Curses REQUIRED)
-
-# Force clang compiler
-set(CMAKE_CXX_COMPILER clang++)
-set(CMAKE_C_COMPILER clang)
-
-# Set global compile options BEFORE adding subdirectories
-add_compile_options(
-    -Wall
-    -Wextra
-    -Wpedantic
-    -Werror
-    -fPIC
-    -fstack-protector-strong
-    -D_FORTIFY_SOURCE=2
-    -isystem /usr/local/include
+# Define global include directories
+set(GLOBAL_INCLUDE_DIRS
+    ${CMAKE_SOURCE_DIR}
+    ${LIBYANG_INCLUDE_DIRS}
+    ${LIBNETCONF2_INCLUDE_DIRS}
 )
+
+# Define YANG directory
+set(YANG_DIR "${CMAKE_SOURCE_DIR}/yang")
+set(YANG_DIR "${YANG_DIR}:${CMAKE_SOURCE_DIR}/yang/standard")
+set(YANG_DIR "${YANG_DIR}:${CMAKE_SOURCE_DIR}/yang/experimental")
+set(YANG_DIR "${YANG_DIR}:${CMAKE_SOURCE_DIR}/yang/vendor")
+set(YANG_DIR "${YANG_DIR}:/usr/local/share/yang/modules/libnetconf2")
+message(STATUS "YANG_DIR: ${YANG_DIR}")
+message(STATUS "GLOBAL_INCLUDE_DIRS: ${GLOBAL_INCLUDE_DIRS}")
 
 # Add subdirectories
 add_subdirectory(shared)
-add_subdirectory(freebsd)
 add_subdirectory(server)
 add_subdirectory(client)
+add_subdirectory(freebsd)
 
-# Global include directories are set per-target
+# Create netd server executable
+add_executable(netd server/src/main.cpp)
+
+# Set include directories
+target_include_directories(netd PRIVATE ${GLOBAL_INCLUDE_DIRS})
+
+# Link libraries
+message(STATUS "LIBYANG_LIBRARIES: ${LIBYANG_LIBRARIES}")
+message(STATUS "LIBNETCONF2_LIBRARIES: ${LIBNETCONF2_LIBRARIES}")
+target_link_libraries(netd PRIVATE
+    ${LIBYANG_LIBRARIES}
+    ${LIBNETCONF2_LIBRARIES}
+    netd_shared
+    netd_server
+    netd_freebsd
+    pthread
+)
+
+# Create netd client executable
+add_executable(netc client/src/main.cpp)
+
+# Set include directories
+target_include_directories(netc PRIVATE ${GLOBAL_INCLUDE_DIRS})
+
+# Set compile definitions
+target_compile_definitions(netc PRIVATE
+    YANG_DIR="${YANG_DIR}"
+)
+
+# Link libraries
+target_link_libraries(netc PRIVATE
+    ${LIBYANG_LIBRARIES}
+    ${LIBNETCONF2_LIBRARIES}
+    netd_client
+    curses
+)
+
+message(STATUS "=== NETD CMake Configuration Complete ===")

@@ -43,6 +43,9 @@ namespace netd::server::store {
     // Core store operations
     virtual bool load();
     virtual bool commit();
+    virtual void clear() = 0;
+    virtual bool add(lyd_node *node) = 0;
+    virtual bool remove(lyd_node *node) = 0;
 
     // Search methods
     std::vector<lyd_node *> search(const std::string &xpath);
@@ -50,9 +53,16 @@ namespace netd::server::store {
     std::vector<lyd_node *> searchVRF(const std::string &filter = "");
     std::vector<lyd_node *> searchRoute(const std::string &filter = "");
 
+    // Data tree access
+    lyd_node *getDataTree() const { return dataTree_; }
+    void setDataTree(lyd_node *tree) { dataTree_ = tree; }
+
     // Lock/unlock methods
     void lock();
     void unlock();
+
+  protected:
+    lyd_node *dataTree_ = nullptr;
 
   private:
     std::mutex storeMutex_;

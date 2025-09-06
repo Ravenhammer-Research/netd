@@ -1,40 +1,33 @@
-# Handlers module sources
-set(HANDLERS_SOURCES
+# Handler sources
+set(HANDLER_SOURCES
+    close.cpp
+    commit.cpp
     copy.cpp
     delete.cpp
     discard.cpp
     edit.cpp
+    hello.cpp
+    kill.cpp
     lock.cpp
     unlock.cpp
-    close.cpp
-    kill.cpp
     validate.cpp
-    hello.cpp
-    commit.cpp
 )
 
 # Add get subdirectory
 add_subdirectory(get)
 
-# Create the netd_handlers static library
-add_library(netd_handlers STATIC ${HANDLERS_SOURCES})
-
-# Link with required libraries
-target_link_libraries(netd_handlers
-    yang
-    netconf2
-    netd_get_handlers
-)
+# Create netd_server_netconf_handlers static library
+add_library(netd_server_netconf_handlers STATIC ${HANDLER_SOURCES})
 
 # Set include directories
-target_include_directories(netd_handlers PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}>
-    $<BUILD_INTERFACE:${LIBYANG_INCLUDE_DIRS}>
-    $<BUILD_INTERFACE:${LIBNETCONF2_INCLUDE_DIRS}>
-    $<INSTALL_INTERFACE:include>
-)
+target_include_directories(netd_server_netconf_handlers PRIVATE ${GLOBAL_INCLUDE_DIRS})
 
 # Set compile definitions
-target_compile_definitions(netd_handlers PRIVATE
-    -DNETD_HANDLERS_EXPORTS
+target_compile_definitions(netd_server_netconf_handlers PRIVATE
+    YANG_DIR="${YANG_DIR}"
+)
+
+# Link libraries
+target_link_libraries(netd_server_netconf_handlers PRIVATE
+    netd_server_netconf_handlers_get
 )

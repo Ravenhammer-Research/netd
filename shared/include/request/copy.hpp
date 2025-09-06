@@ -34,8 +34,10 @@ namespace netd::shared::request {
 
   class CopyConfigRequest : public Request<CopyConfigRequest> {
   public:
-    CopyConfigRequest();
-    virtual ~CopyConfigRequest();
+    CopyConfigRequest() : Request<CopyConfigRequest>() {}
+    CopyConfigRequest(struct nc_session *session, struct lyd_node *rpc) 
+      : Request<CopyConfigRequest>(session, rpc) {}
+    virtual ~CopyConfigRequest() = default;
 
     // Override base methods
     lyd_node *toYang(ly_ctx *ctx) const override;

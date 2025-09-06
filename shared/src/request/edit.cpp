@@ -27,15 +27,14 @@
 
 #include <libyang/libyang.h>
 #include <libyang/tree_data.h>
+#include <libnetconf2/netconf.h>
 #include <shared/include/exception.hpp>
 #include <shared/include/request/edit.hpp>
 #include <shared/include/yang.hpp>
 
 namespace netd::shared::request {
 
-  EditConfigRequest::EditConfigRequest() {}
 
-  EditConfigRequest::~EditConfigRequest() {}
 
   lyd_node *EditConfigRequest::toYang(ly_ctx *ctx) const {
     if (!ctx) {
@@ -78,8 +77,9 @@ namespace netd::shared::request {
       return nullptr;
     }
 
-    // Add running datastore as default
-    if (lyd_new_term(targetNode, mod, "running", nullptr, 0, nullptr) !=
+    // Add the specified datastore target
+    std::string targetStr = netd::shared::request::get::datastoreToString(target_);
+    if (lyd_new_term(targetNode, mod, targetStr.c_str(), nullptr, 0, nullptr) !=
         LY_SUCCESS) {
       lyd_free_tree(rpcNode);
       return nullptr;
@@ -96,7 +96,39 @@ namespace netd::shared::request {
           "Invalid YANG node provided to EditConfigRequest::fromYang");
     }
 
-    return std::make_unique<EditConfigRequest>();
+    auto request = std::make_unique<EditConfigRequest>();
+
+    // Find the edit-config node
+    lyd_node *editConfigNode = lyd_child(node);
+    while (editConfigNode && strcmp(lyd_node_schema(editConfigNode)->name, "edit-config") != 0) {
+      editConfigNode = editConfigNode->next;
+    }
+
+    if (editConfigNode) {
+      // Find the target container
+      lyd_node *targetNode = lyd_child(editConfigNode);
+      while (targetNode && strcmp(lyd_node_schema(targetNode)->name, "target") != 0) {
+        targetNode = targetNode->next;
+      }
+
+      if (targetNode) {
+        // Find the datastore target (running, candidate, startup)
+        lyd_node *datastoreNode = lyd_child(targetNode);
+        while (datastoreNode) {
+          const char *nodeName = lyd_node_schema(datastoreNode)->name;
+          std::string targetStr(nodeName);
+          netd::shared::request::get::Datastore datastore = netd::shared::request::get::stringToDatastore(targetStr);
+          if (datastore != netd::shared::request::get::Datastore::RUNNING || targetStr == "running") {
+            // Only set if it's a valid datastore (not default fallback)
+            request->setTarget(datastore);
+            break;
+          }
+          datastoreNode = datastoreNode->next;
+        }
+      }
+    }
+
+    return request;
   }
 
 } // namespace netd::shared::request

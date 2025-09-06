@@ -28,6 +28,7 @@
 #include <server/include/store/base.hpp>
 #include <shared/include/exception.hpp>
 #include <shared/include/logger.hpp>
+#include <libyang/tree_data.h>
 
 namespace netd::server::store {
 
@@ -42,39 +43,37 @@ namespace netd::server::store {
 
   // Search methods
   std::vector<lyd_node *> Store::search(const std::string &xpath) {
-    auto &logger = netd::shared::Logger::getInstance();
-    logger.debug("Store search: " + xpath);
-
-    // TODO: Implement XPath search
     std::vector<lyd_node *> results;
+    
+    if (!dataTree_) {
+      return results;
+    }
+
+    // Use libyang XPath search - new API requires context
+    lyd_node *match = nullptr;
+    LY_ERR err = lyd_find_path(dataTree_, xpath.c_str(), 0, &match);
+    if (err == LY_SUCCESS && match) {
+      // For now, just add the first match
+      // TODO: Handle multiple matches properly
+      results.push_back(match);
+    }
+
     return results;
   }
 
   std::vector<lyd_node *> Store::searchInterface(const std::string &filter) {
-    auto &logger = netd::shared::Logger::getInstance();
-    logger.debug("Store searchInterface with filter: " + filter);
-
-    // TODO: Implement interface search
-    std::vector<lyd_node *> results;
-    return results;
+    std::string xpath = filter.empty() ? "/ietf-interfaces:interfaces/interface" : filter;
+    return search(xpath);
   }
 
   std::vector<lyd_node *> Store::searchVRF(const std::string &filter) {
-    auto &logger = netd::shared::Logger::getInstance();
-    logger.debug("Store searchVRF with filter: " + filter);
-
-    // TODO: Implement VRF search
-    std::vector<lyd_node *> results;
-    return results;
+    std::string xpath = filter.empty() ? "/ietf-routing:routing/control-plane-protocols/control-plane-protocol" : filter;
+    return search(xpath);
   }
 
   std::vector<lyd_node *> Store::searchRoute(const std::string &filter) {
-    auto &logger = netd::shared::Logger::getInstance();
-    logger.debug("Store searchRoute with filter: " + filter);
-
-    // TODO: Implement route search
-    std::vector<lyd_node *> results;
-    return results;
+    std::string xpath = filter.empty() ? "/ietf-routing:routing/ribs/rib/route" : filter;
+    return search(xpath);
   }
 
   // Lock/unlock methods

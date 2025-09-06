@@ -7,7 +7,9 @@ namespace netd::shared::request {
 
   class CommitRequest : public Request<CommitRequest> {
   public:
-    CommitRequest();
+    CommitRequest() : Request<CommitRequest>() {}
+    CommitRequest(struct nc_session *session, struct lyd_node *rpc) 
+      : Request<CommitRequest>(session, rpc) {}
     virtual ~CommitRequest() = default;
 
     lyd_node *toYang(ly_ctx *ctx) const override;

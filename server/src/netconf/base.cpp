@@ -166,4 +166,39 @@ namespace netd::server::netconf {
         "handleDiscardRequest not implemented in base Server class");
   }
 
+  struct nc_server_reply *
+  Server::handleCloseSessionRequest([[maybe_unused]] struct nc_session *session,
+                                   [[maybe_unused]] struct lyd_node *rpc) {
+    throw netd::shared::NotImplementedError(
+        "handleCloseSessionRequest not implemented in base Server class");
+  }
+
+  struct nc_server_reply *
+  Server::handleKillSessionRequest([[maybe_unused]] struct nc_session *session,
+                                  [[maybe_unused]] struct lyd_node *rpc) {
+    throw netd::shared::NotImplementedError(
+        "handleKillSessionRequest not implemented in base Server class");
+  }
+
+  struct nc_server_reply *
+  Server::handleValidateRequest([[maybe_unused]] struct nc_session *session,
+                               [[maybe_unused]] struct lyd_node *rpc) {
+    throw netd::shared::NotImplementedError(
+        "handleValidateRequest not implemented in base Server class");
+  }
+
+  struct nc_server_reply *
+  Server::handleHelloRequest([[maybe_unused]] struct nc_session *session,
+                            [[maybe_unused]] struct lyd_node *rpc) {
+    throw netd::shared::NotImplementedError(
+        "handleHelloRequest not implemented in base Server class");
+  }
+
+  struct nc_server_reply *
+  Server::handleCommitRequest([[maybe_unused]] struct nc_session *session,
+                             [[maybe_unused]] struct lyd_node *rpc) {
+    throw netd::shared::NotImplementedError(
+        "handleCommitRequest not implemented in base Server class");
+  }
+
 } // namespace netd::server::netconf

@@ -25,6 +25,8 @@
  * SUCH DAMAGE.
  */
 
+#include <libnetconf2/messages_server.h>
+#include <libnetconf2/netconf.h>
 #include <libyang/libyang.h>
 #include <libyang/tree_data.h>
 #include <shared/include/exception.hpp>
@@ -78,6 +80,11 @@ namespace netd::shared::response {
     }
 
     return std::make_unique<DiscardResponse>();
+  }
+
+  struct nc_server_reply *DiscardResponse::toNetconfReply(struct nc_session *session) const {
+    // Use the base class implementation which handles error cases
+    return Response::toNetconfReply(session);
   }
 
 } // namespace netd::shared::response

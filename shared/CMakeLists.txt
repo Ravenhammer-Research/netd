@@ -1,68 +1,34 @@
-# Shared library CMakeLists.txt
-
-# Create shared library target
-add_library(netd_shared SHARED)
-
-# Set target properties
-set_target_properties(netd_shared PROPERTIES
-    VERSION ${PROJECT_VERSION}
-    SOVERSION ${PROJECT_VERSION_MAJOR}
-    OUTPUT_NAME netd_shared
+# Shared src sources
+set(SHARED_SOURCES
+    src/address.cpp
+    src/exception.cpp
+    src/logger.cpp
+    src/route.cpp
+    src/vrf.cpp
+    src/yang.cpp
 )
 
 # Add subdirectories
 add_subdirectory(src)
-add_subdirectory(src/marshalling)
 
+# Create the netd_shared static library
+add_library(netd_shared STATIC)
 
-# Link dependencies
-target_link_libraries(netd_shared
-    yang
-    netconf2
-    netd_request
-    netd_response
-    netd_marshalling
-)
-
-# Set library directories
-target_link_directories(netd_shared
-    PRIVATE
-        ${LIBYANG_LIBRARY_DIRS}
-        ${LIBNETCONF2_LIBRARY_DIRS}
-)
+# Add sources from src directory
+target_sources(netd_shared PRIVATE ${SHARED_SOURCES})
 
 # Set include directories
-target_include_directories(netd_shared
-    PRIVATE
-        ${CMAKE_SOURCE_DIR}
-        ${CMAKE_CURRENT_SOURCE_DIR}/include
-        ${LIBYANG_INCLUDE_DIRS}
-        ${LIBNETCONF2_INCLUDE_DIRS}
-)
+target_include_directories(netd_shared PRIVATE ${GLOBAL_INCLUDE_DIRS})
 
 # Set compile definitions
-target_compile_definitions(netd_shared
-    PRIVATE
-        NETD_SHARED_EXPORTS
-        YANG_DIR="${CMAKE_SOURCE_DIR}/yang"
+target_compile_definitions(netd_shared PRIVATE
+    YANG_DIR="${YANG_DIR}"
 )
 
-# Install rules
-install(TARGETS netd_shared netd_request netd_response netd_marshalling
-    EXPORT netd_sharedTargets
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib
-    RUNTIME DESTINATION bin
-    INCLUDES DESTINATION include
-)
-
-install(DIRECTORY include/
-    DESTINATION include
-    FILES_MATCHING PATTERN "*.hpp"
-)
-
-install(EXPORT netd_sharedTargets
-    FILE netd_sharedTargets.cmake
-    NAMESPACE netd::
-    DESTINATION lib/cmake/netd_shared
+# Link sub-libraries
+target_link_libraries(netd_shared PRIVATE
+    netd_shared_interface
+    netd_shared_marshalling
+    netd_shared_request
+    netd_shared_response
 )

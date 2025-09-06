@@ -26,33 +26,22 @@
  */
 
 #include <shared/include/interface/base/tunnel.hpp>
+#include <shared/include/exception.hpp>
 
 namespace netd::shared::interface::base {
 
-  // Provide implementations for pure virtual methods to avoid linker errors
-  // These are placeholder implementations that should be overridden by derived
-  // classes
-
-  bool Tunnel::setLocalAddr(
-      const std::shared_ptr<netd::shared::Address> &localAddr) {
-    if (localAddr && localAddr->isValid()) {
-      localAddr_ = localAddr;
-      return true;
-    }
-    return false;
+  bool Tunnel::setLocalAddr(const std::shared_ptr<netd::shared::Address> &localAddr) {
+    localAddr_ = localAddr;
+    return true;
   }
 
   std::shared_ptr<netd::shared::Address> Tunnel::getLocalAddr() const {
     return localAddr_;
   }
 
-  bool Tunnel::setRemoteAddr(
-      const std::shared_ptr<netd::shared::Address> &remoteAddr) {
-    if (remoteAddr && remoteAddr->isValid()) {
-      remoteAddr_ = remoteAddr;
-      return true;
-    }
-    return false;
+  bool Tunnel::setRemoteAddr(const std::shared_ptr<netd::shared::Address> &remoteAddr) {
+    remoteAddr_ = remoteAddr;
+    return true;
   }
 
   std::shared_ptr<netd::shared::Address> Tunnel::getRemoteAddr() const {
@@ -64,27 +53,26 @@ namespace netd::shared::interface::base {
     return true;
   }
 
-  uint32_t Tunnel::getTunnelVRF() const { return tunnelVrfId_; }
-
-  bool Tunnel::setTunnelMTU(uint16_t mtu) {
-    if (mtu >= 68 && mtu <= 9000) { // Reasonable MTU range
-      tunnelMtu_ = mtu;
-      return true;
-    }
-    return false;
+  uint32_t Tunnel::getTunnelVRF() const {
+    return tunnelVrfId_;
   }
 
-  uint16_t Tunnel::getTunnelMTU() const { return tunnelMtu_; }
+  bool Tunnel::setTunnelMTU(uint16_t mtu) {
+    tunnelMtu_ = mtu;
+    return true;
+  }
 
-  bool Tunnel::isTunnelEstablished() const { return tunnelEstablished_; }
+  uint16_t Tunnel::getTunnelMTU() const {
+    return tunnelMtu_;
+  }
+
+  bool Tunnel::isTunnelEstablished() const {
+    return tunnelEstablished_;
+  }
 
   bool Tunnel::establishTunnel() {
-    // Basic validation that both addresses are set
-    if (localAddr_ && remoteAddr_) {
-      tunnelEstablished_ = true;
-      return true;
-    }
-    return false;
+    tunnelEstablished_ = true;
+    return true;
   }
 
   bool Tunnel::teardownTunnel() {

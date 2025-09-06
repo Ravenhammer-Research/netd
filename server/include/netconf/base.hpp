@@ -74,6 +74,16 @@ namespace netd::server::netconf {
     handleUnlockRequest(struct nc_session *session, struct lyd_node *rpc);
     virtual struct nc_server_reply *
     handleDiscardRequest(struct nc_session *session, struct lyd_node *rpc);
+    virtual struct nc_server_reply *
+    handleCloseSessionRequest(struct nc_session *session, struct lyd_node *rpc);
+    virtual struct nc_server_reply *
+    handleKillSessionRequest(struct nc_session *session, struct lyd_node *rpc);
+    virtual struct nc_server_reply *
+    handleValidateRequest(struct nc_session *session, struct lyd_node *rpc);
+    virtual struct nc_server_reply *
+    handleHelloRequest(struct nc_session *session, struct lyd_node *rpc);
+    virtual struct nc_server_reply *
+    handleCommitRequest(struct nc_session *session, struct lyd_node *rpc);
 
   protected:
     bool running_;

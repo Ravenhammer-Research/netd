@@ -30,18 +30,27 @@
 #include <libyang/libyang.h>
 #include <server/include/netconf/handlers.hpp>
 #include <shared/include/logger.hpp>
+#include <shared/include/request/copy.hpp>
+#include <shared/include/response/copy.hpp>
 
 namespace netd::server::netconf::handlers {
 
-  struct nc_server_reply *RpcHandler::handleCopyConfigRequest(
-      [[maybe_unused]] struct nc_session *session,
-      [[maybe_unused]] struct lyd_node *rpc) {
-    auto &logger = netd::shared::Logger::getInstance();
-    logger.info("Handling copy-config request");
+  std::unique_ptr<netd::shared::response::CopyConfigResponse>
+  RpcHandler::handleCopyConfigRequest(std::unique_ptr<netd::shared::request::CopyConfigRequest> request) {
+    try {
+      auto &logger = netd::shared::Logger::getInstance();
+      auto response = std::make_unique<netd::shared::response::CopyConfigResponse>();
+      
+      logger.info("Handling copy-config request");
 
-    // For now, return a simple OK response
-    // TODO: Implement actual copy-config request handling
-    return nc_server_reply_ok();
+      // For now, return a simple OK response
+      // TODO: Implement actual copy-config request handling
+      return response;
+    } catch (const std::exception &e) {
+      auto response = std::make_unique<netd::shared::response::CopyConfigResponse>();
+      response->setProtocolError(netd::shared::marshalling::ErrorTag::OPERATION_FAILED, e.what());
+      return response;
+    }
   }
 
 } // namespace netd::server::netconf::handlers

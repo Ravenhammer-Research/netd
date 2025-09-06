@@ -1,18 +1,16 @@
-# Candidate store CMakeLists.txt
-
-add_library(candidate_store
-    commit.cpp
+# Candidate store sources
+set(CANDIDATE_STORE_SOURCES
     base.cpp
+    commit.cpp
 )
 
-target_include_directories(candidate_store
-    PUBLIC
-        ${CMAKE_SOURCE_DIR}
-        ${CMAKE_SOURCE_DIR}/shared/include
-        ${LIBYANG_INCLUDE_DIRS}
-)
+# Create netd_server_store_candidate static library
+add_library(netd_server_store_candidate STATIC ${CANDIDATE_STORE_SOURCES})
 
-target_link_libraries(candidate_store
-    PUBLIC
-        yang
+# Set include directories
+target_include_directories(netd_server_store_candidate PRIVATE ${GLOBAL_INCLUDE_DIRS})
+
+# Set compile definitions
+target_compile_definitions(netd_server_store_candidate PRIVATE
+    YANG_DIR="${YANG_DIR}"
 )

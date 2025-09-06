@@ -34,8 +34,10 @@ namespace netd::shared::request {
 
   class LockRequest : public Request<LockRequest> {
   public:
-    LockRequest();
-    virtual ~LockRequest();
+    LockRequest() : Request<LockRequest>() {}
+    LockRequest(struct nc_session *session, struct lyd_node *rpc) 
+      : Request<LockRequest>(session, rpc) {}
+    virtual ~LockRequest() = default;
 
     // Override base methods
     lyd_node *toYang(ly_ctx *ctx) const override;

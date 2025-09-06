@@ -1,5 +1,7 @@
 /* (License header) */
 
+#include <libnetconf2/messages_server.h>
+#include <libnetconf2/netconf.h>
 #include <shared/include/exception.hpp>
 #include <shared/include/response/kill.hpp>
 
@@ -26,6 +28,11 @@ namespace netd::shared::response {
     }
 
     return std::make_unique<KillResponse>();
+  }
+
+  struct nc_server_reply *KillResponse::toNetconfReply(struct nc_session *session) const {
+    // Use the base class implementation which handles error cases
+    return Response::toNetconfReply(session);
   }
 
 } // namespace netd::shared::response

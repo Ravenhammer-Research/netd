@@ -43,14 +43,17 @@ namespace netd::server::store::candidate {
 
     // Override base store operations
     bool commit() override;
+    void clear() override;
+    bool add(lyd_node *node) override;
+    bool remove(lyd_node *node) override;
 
   protected:
     // Protected constructor for singleton
     CandidateStore() = default;
     virtual ~CandidateStore() = default;
 
-  private:
-    lyd_node *inMemoryTree_;
+    // Helper method to apply configuration to system
+    bool applyConfigurationToSystem(lyd_node *configTree);
   };
 
 } // namespace netd::server::store::candidate

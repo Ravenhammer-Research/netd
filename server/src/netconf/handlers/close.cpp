@@ -30,18 +30,27 @@
 #include <libyang/libyang.h>
 #include <server/include/netconf/handlers.hpp>
 #include <shared/include/logger.hpp>
+#include <shared/include/request/close.hpp>
+#include <shared/include/response/close.hpp>
 
 namespace netd::server::netconf::handlers {
 
-  struct nc_server_reply *RpcHandler::handleCloseSessionRequest(
-      [[maybe_unused]] struct nc_session *session,
-      [[maybe_unused]] struct lyd_node *rpc) {
-    auto &logger = netd::shared::Logger::getInstance();
-    logger.info("Handling close-session request");
+  std::unique_ptr<netd::shared::response::CloseResponse>
+  RpcHandler::handleCloseSessionRequest(std::unique_ptr<netd::shared::request::CloseRequest> request) {
+    try {
+      auto &logger = netd::shared::Logger::getInstance();
+      auto response = std::make_unique<netd::shared::response::CloseResponse>();
+      
+      logger.info("Handling close-session request");
 
-    // For now, return a simple OK response
-    // TODO: Implement actual close-session request handling
-    return nc_server_reply_ok();
+      // For now, return a simple OK response
+      // TODO: Implement actual close-session request handling
+      return response;
+    } catch (const std::exception &e) {
+      auto response = std::make_unique<netd::shared::response::CloseResponse>();
+      response->setProtocolError(netd::shared::marshalling::ErrorTag::OPERATION_FAILED, e.what());
+      return response;
+    }
   }
 
 } // namespace netd::server::netconf::handlers

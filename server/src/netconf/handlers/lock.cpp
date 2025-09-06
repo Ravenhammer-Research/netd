@@ -30,18 +30,27 @@
 #include <libyang/libyang.h>
 #include <server/include/netconf/handlers.hpp>
 #include <shared/include/logger.hpp>
+#include <shared/include/request/lock.hpp>
+#include <shared/include/response/lock.hpp>
 
 namespace netd::server::netconf::handlers {
 
-  struct nc_server_reply *
-  RpcHandler::handleLockRequest([[maybe_unused]] struct nc_session *session,
-                                [[maybe_unused]] struct lyd_node *rpc) {
-    auto &logger = netd::shared::Logger::getInstance();
-    logger.info("Handling lock request");
+  std::unique_ptr<netd::shared::response::LockResponse>
+  RpcHandler::handleLockRequest(std::unique_ptr<netd::shared::request::LockRequest> request) {
+    try {
+      auto &logger = netd::shared::Logger::getInstance();
+      auto response = std::make_unique<netd::shared::response::LockResponse>();
+      
+      logger.info("Handling lock request");
 
-    // For now, return a simple OK response
-    // TODO: Implement actual lock request handling
-    return nc_server_reply_ok();
+      // For now, return a simple OK response
+      // TODO: Implement actual lock request handling
+      return response;
+    } catch (const std::exception &e) {
+      auto response = std::make_unique<netd::shared::response::LockResponse>();
+      response->setProtocolError(netd::shared::marshalling::ErrorTag::OPERATION_FAILED, e.what());
+      return response;
+    }
   }
 
 } // namespace netd::server::netconf::handlers

@@ -28,20 +28,54 @@
 #include <libnetconf2/netconf.h>
 #include <libyang/libyang.h>
 #include <server/include/netconf/handlers.hpp>
+#include <server/include/store/candidate.hpp>
+#include <server/include/store/running.hpp>
+#include <shared/include/logger.hpp>
 #include <shared/include/request/commit.hpp>
 #include <shared/include/response/commit.hpp>
 
 namespace netd::server::netconf::handlers {
 
-  nc_server_reply *
-  RpcHandler::handleCommitRequest([[maybe_unused]] nc_session *session,
-                                  [[maybe_unused]] struct lyd_node *rpc) {
-    std::cout << "Handling commit request" << std::endl;
+  std::unique_ptr<netd::shared::response::CommitResponse>
+  RpcHandler::handleCommitRequest(std::unique_ptr<netd::shared::request::CommitRequest> request) {
+    try {
+      auto &logger = netd::shared::Logger::getInstance();
+      auto response = std::make_unique<netd::shared::response::CommitResponse>();
+      
+      logger.info("Handling commit request");
 
-    // TODO: Implement commit logic
-    // This should commit the candidate configuration to running
+      // Get the candidate and running stores
+      auto &candidateStore = netd::server::store::candidate::CandidateStore::getInstance();
+      auto &runningStore = netd::server::store::running::RunningStore::getInstance();
 
-    return nc_server_reply_ok();
+      // Get the candidate configuration
+      auto candidateData = candidateStore.getDataTree();
+      if (!candidateData) {
+        response->setProtocolError(netd::shared::marshalling::ErrorTag::OPERATION_FAILED, 
+                                  "No candidate configuration to commit");
+        return response;
+      }
+
+      // Clone the candidate data for the running store
+      lyd_node *runningData = nullptr;
+      LY_ERR err = lyd_dup_single(candidateData, nullptr, LYD_DUP_RECURSIVE, &runningData);
+      if (err != LY_SUCCESS || !runningData) {
+        response->setProtocolError(netd::shared::marshalling::ErrorTag::OPERATION_FAILED, 
+                                  "Failed to clone candidate configuration");
+        return response;
+      }
+
+      // Set the running configuration
+      runningStore.setDataTree(runningData);
+
+      logger.info("Successfully committed candidate configuration to running");
+      return response;
+
+    } catch (const std::exception &e) {
+      auto response = std::make_unique<netd::shared::response::CommitResponse>();
+      response->setProtocolError(netd::shared::marshalling::ErrorTag::OPERATION_FAILED, e.what());
+      return response;
+    }
   }
 
 } // namespace netd::server::netconf::handlers

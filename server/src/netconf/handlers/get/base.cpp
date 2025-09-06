@@ -33,15 +33,14 @@
 
 namespace netd::server::netconf::handlers {
 
-  struct nc_server_reply *
-  RpcHandler::handleGetRequest([[maybe_unused]] struct nc_session *session,
-                               [[maybe_unused]] struct lyd_node *rpc) {
+  std::unique_ptr<netd::shared::response::get::GetResponse>
+  RpcHandler::handleGetRequest(std::unique_ptr<netd::shared::request::get::GetRequest> request) {
     auto &logger = netd::shared::Logger::getInstance();
     logger.info("Handling get request");
 
     // For now, return a simple OK response
     // TODO: Implement actual get request handling
-    return nc_server_reply_ok();
+    return std::make_unique<netd::shared::response::get::GetResponse>();
   }
 
 } // namespace netd::server::netconf::handlers

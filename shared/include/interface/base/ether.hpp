@@ -29,6 +29,7 @@
 #define NETD_INTERFACE_BASE_ETHER_HPP
 
 #include <cstdint>
+#include <libyang/libyang.h>
 #include <memory>
 #include <shared/include/address.hpp>
 #include <string>
@@ -88,6 +89,9 @@ namespace netd::shared::interface::base {
     virtual std::string getName() const;
     virtual std::string getType() const { return "ethernet"; }
     void setName(const std::string &name);
+
+    // YANG serialization
+    virtual lyd_node *toYang(ly_ctx *ctx) const;
 
   protected:
     std::vector<std::shared_ptr<netd::shared::Address>> addresses_;

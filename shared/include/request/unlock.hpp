@@ -34,8 +34,10 @@ namespace netd::shared::request {
 
   class UnlockRequest : public Request<UnlockRequest> {
   public:
-    UnlockRequest();
-    virtual ~UnlockRequest();
+    UnlockRequest() : Request<UnlockRequest>() {}
+    UnlockRequest(struct nc_session *session, struct lyd_node *rpc) 
+      : Request<UnlockRequest>(session, rpc) {}
+    virtual ~UnlockRequest() = default;
 
     // Override base methods
     lyd_node *toYang(ly_ctx *ctx) const override;

@@ -34,8 +34,10 @@ namespace netd::shared::request {
 
   class DiscardRequest : public Request<DiscardRequest> {
   public:
-    DiscardRequest();
-    virtual ~DiscardRequest();
+    DiscardRequest() : Request<DiscardRequest>() {}
+    DiscardRequest(struct nc_session *session, struct lyd_node *rpc) 
+      : Request<DiscardRequest>(session, rpc) {}
+    virtual ~DiscardRequest() = default;
 
     // Override base methods
     lyd_node *toYang(ly_ctx *ctx) const override;

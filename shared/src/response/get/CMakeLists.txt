@@ -1,23 +1,16 @@
-# Get response module sources
+# Get response sources
 set(GET_RESPONSE_SOURCES
     base.cpp
     config.cpp
 )
 
-# Create the netd_get_response static library
-add_library(netd_get_response STATIC ${GET_RESPONSE_SOURCES})
-
-# Link with libyang
-target_link_libraries(netd_get_response yang)
+# Create netd_shared_response_get static library
+add_library(netd_shared_response_get STATIC ${GET_RESPONSE_SOURCES})
 
 # Set include directories
-target_include_directories(netd_get_response PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}>
-    $<BUILD_INTERFACE:${LIBYANG_INCLUDE_DIRS}>
-    $<INSTALL_INTERFACE:include>
-)
+target_include_directories(netd_shared_response_get PRIVATE ${GLOBAL_INCLUDE_DIRS})
 
 # Set compile definitions
-target_compile_definitions(netd_get_response PRIVATE
-    -DNETD_GET_RESPONSE_EXPORTS
+target_compile_definitions(netd_shared_response_get PRIVATE
+    YANG_DIR="${YANG_DIR}"
 )

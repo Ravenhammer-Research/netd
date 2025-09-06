@@ -27,15 +27,39 @@
 
 #include <libyang/libyang.h>
 #include <libyang/tree_data.h>
+#include <libnetconf2/netconf.h>
 #include <shared/include/exception.hpp>
 #include <shared/include/request/get/config.hpp>
 #include <shared/include/yang.hpp>
 
 namespace netd::shared::request::get {
 
-  GetConfigRequest::GetConfigRequest() {}
+  // Helper function implementations
+  std::string datastoreToString(Datastore datastore) {
+    switch (datastore) {
+      case Datastore::RUNNING:
+        return "running";
+      case Datastore::CANDIDATE:
+        return "candidate";
+      case Datastore::STARTUP:
+        return "startup";
+      default:
+        return "running";
+    }
+  }
 
-  GetConfigRequest::~GetConfigRequest() {}
+  Datastore stringToDatastore(const std::string &str) {
+    if (str == "running") {
+      return Datastore::RUNNING;
+    } else if (str == "candidate") {
+      return Datastore::CANDIDATE;
+    } else if (str == "startup") {
+      return Datastore::STARTUP;
+    } else {
+      return Datastore::RUNNING;  // Default fallback
+    }
+  }
+
 
   lyd_node *GetConfigRequest::toYang(ly_ctx *ctx) const {
     if (!ctx) {
@@ -78,8 +102,9 @@ namespace netd::shared::request::get {
       return nullptr;
     }
 
-    // Add running datastore as default
-    if (lyd_new_term(sourceNode, mod, "running", nullptr, 0, nullptr) !=
+    // Add the specified datastore source
+    std::string sourceStr = datastoreToString(source_);
+    if (lyd_new_term(sourceNode, mod, sourceStr.c_str(), nullptr, 0, nullptr) !=
         LY_SUCCESS) {
       lyd_free_tree(rpcNode);
       return nullptr;
@@ -96,7 +121,39 @@ namespace netd::shared::request::get {
           "Invalid YANG node provided to GetConfigRequest::fromYang");
     }
 
-    return std::make_unique<GetConfigRequest>();
+    auto request = std::make_unique<GetConfigRequest>();
+
+    // Find the get-config node
+    lyd_node *getConfigNode = lyd_child(node);
+    while (getConfigNode && strcmp(lyd_node_schema(getConfigNode)->name, "get-config") != 0) {
+      getConfigNode = getConfigNode->next;
+    }
+
+    if (getConfigNode) {
+      // Find the source container
+      lyd_node *sourceNode = lyd_child(getConfigNode);
+      while (sourceNode && strcmp(lyd_node_schema(sourceNode)->name, "source") != 0) {
+        sourceNode = sourceNode->next;
+      }
+
+      if (sourceNode) {
+        // Find the datastore source (running, candidate, startup)
+        lyd_node *datastoreNode = lyd_child(sourceNode);
+        while (datastoreNode) {
+          const char *nodeName = lyd_node_schema(datastoreNode)->name;
+          std::string sourceStr(nodeName);
+          Datastore datastore = stringToDatastore(sourceStr);
+          if (datastore != Datastore::RUNNING || sourceStr == "running") {
+            // Only set if it's a valid datastore (not default fallback)
+            request->setSource(datastore);
+            break;
+          }
+          datastoreNode = datastoreNode->next;
+        }
+      }
+    }
+
+    return request;
   }
 
 } // namespace netd::shared::request::get
