@@ -436,13 +436,6 @@ graph TB
         NetdWireguard[netd-interface-wireguard<br/>WireGuard interfaces]
     end
     
-    subgraph "Vendor Models"
-        Cisco[Cisco Models<br/>IOS XE/XR]
-        Juniper[Juniper Models<br/>JunOS]
-        Nokia[Nokia Models<br/>SR OS]
-        Huawei[Huawei Models<br/>VRP]
-    end
-    
     IETFInterfaces --> NetdInterface
     IETFInterfaces --> NetdEpair
     IETFInterfaces --> NetdPpp
