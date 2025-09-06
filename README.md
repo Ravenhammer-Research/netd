@@ -2,6 +2,33 @@
 
 NetD is a modern network configuration daemon for FreeBSD that provides NETCONF-based network management with a CLI interface. It offers a clean separation between configuration management and the underlying operating system, making it suitable for both traditional network equipment and modern software-defined networking environments.
 
+## What is NETCONF?
+
+**NETCONF (Network Configuration Protocol)** is an IETF standard (RFC 6241) that provides a standardized way to install, manipulate, and delete the configuration of network devices. It was developed by the Internet Engineering Task Force (IETF) to address the limitations of traditional network management protocols like SNMP.
+
+### Why NETCONF?
+
+NETCONF offers several advantages over traditional network management approaches:
+
+- **Standardized Protocol**: IETF-standardized protocol ensures interoperability across different vendors and devices
+- **YANG Data Modeling**: Uses YANG (Yet Another Next Generation) for data modeling, providing strong typing and validation
+- **Transaction-based**: Supports atomic configuration changes with rollback capabilities
+- **Separation of Concerns**: Clear separation between configuration data, operational data, and state data
+- **Modern Architecture**: Designed for modern network automation and software-defined networking
+- **Industry Adoption**: Widely adopted by major network equipment vendors (Cisco, Juniper, Nokia, Huawei, etc.)
+
+### IETF's Role
+
+The IETF has been instrumental in developing and maintaining NETCONF:
+
+- **RFC 6241**: Defines the core NETCONF protocol
+- **RFC 6020**: Defines the YANG data modeling language
+- **RFC 6242**: Defines NETCONF over SSH
+- **RFC 8071**: Defines NETCONF over TLS
+- **Ongoing Work**: Continuous development of new YANG models and protocol extensions
+
+NETCONF represents the IETF's vision for modern network management, providing a robust foundation for network automation, configuration management, and operational monitoring.
+
 ## Features
 
 - **NETCONF Server**: Full NETCONF 1.1 implementation with YANG data modeling
@@ -273,53 +300,115 @@ YANG models are located in the `yang/` directory:
 ### Project Structure
 
 ```mermaid
-graph TD
-    Root[netd/] --> Client[client/]
-    Root --> Server[server/]
-    Root --> Shared[shared/]
-    Root --> FreeBSD[freebsd/]
-    Root --> Yang[yang/]
-    Root --> Doc[doc/]
+classDiagram
+    class NetconfClient {
+        +connect(socketPath)
+        +disconnect()
+        +sendRequest(request)
+        +getConfig(source)
+        +get(filter)
+        +editConfig(target, config)
+    }
     
-    Client --> ClientInclude[include/]
-    Client --> ClientSrc[src/]
-    Client --> Parser[parser/]
+    class Terminal {
+        +initialize()
+        +readLine()
+        +writeLine(text)
+        +redrawPrompt()
+        +runInteractive()
+    }
     
-    Server --> ServerInclude[include/]
-    Server --> ServerSrc[src/]
+    class CommandProcessor {
+        +processCommand(command)
+        -handleShowCommand()
+        -handleSetCommand()
+        -handleDeleteCommand()
+    }
     
-    Shared --> SharedInclude[include/]
-    Shared --> SharedSrc[src/]
-    Shared --> SharedYang[yang/]
+    class NetconfServer {
+        +start()
+        +stop()
+        +handleRpc()
+    }
     
-    FreeBSD --> FreeBSDInclude[include/]
-    FreeBSD --> FreeBSDSrc[src/]
+    class RpcHandler {
+        +handleGetConfig()
+        +handleGet()
+        +handleEditConfig()
+        +handleCommit()
+    }
     
-    Yang --> Standard[standard/]
-    Yang --> Vendor[vendor/]
+    class Yang {
+        +getInstance()
+        +getContext()
+        +loadSchema()
+        +yangToXml()
+        +xmlToYang()
+    }
     
-    Parser --> ParserL[parser.l]
-    Parser --> ParserY[parser.y]
+    class Logger {
+        +getInstance()
+        +info(message)
+        +error(message)
+        +debug(message)
+        +setCallback()
+    }
     
-    ClientSrc --> Main[main.cpp]
-    ClientSrc --> Netconf[netconf.cpp]
-    ClientSrc --> Terminal[terminal.cpp]
+    class EthernetInterface {
+        +getAllEthernetInterfaces()
+        +configure()
+        +getStatus()
+    }
     
-    ServerSrc --> ServerMain[main.cpp]
-    ServerSrc --> NetconfServer[netconf/]
-    ServerSrc --> Store[store/]
+    class BridgeInterface {
+        +getAllBridgeInterfaces()
+        +addMember()
+        +removeMember()
+    }
     
-    SharedSrc --> Logger[logger.cpp]
-    SharedSrc --> YangCpp[yang.cpp]
-    SharedSrc --> Interfaces[interface/]
-    SharedSrc --> Requests[request/]
-    SharedSrc --> Responses[response/]
+    class VlanInterface {
+        +getAllVlanInterfaces()
+        +setVlanId()
+        +setParent()
+    }
+    
+    class VRF {
+        +create()
+        +delete()
+        +addInterface()
+        +removeInterface()
+    }
+    
+    class Route {
+        +addStaticRoute()
+        +deleteRoute()
+        +getRoutes()
+    }
+    
+    NetconfClient --> Terminal
+    NetconfClient --> Yang
+    CommandProcessor --> Terminal
+    CommandProcessor --> NetconfClient
+    
+    NetconfServer --> RpcHandler
+    NetconfServer --> Yang
+    RpcHandler --> Logger
+    
+    Yang --> Logger
+    EthernetInterface --> Logger
+    BridgeInterface --> Logger
+    VlanInterface --> Logger
+    
+    VRF --> EthernetInterface
+    VRF --> BridgeInterface
+    VRF --> VlanInterface
+    Route --> VRF
 ```
 
 ### Adding New Interface Types
 
-1. Define the interface type in `shared/include/interface/`
-2. Implement the FreeBSD-specific version in `freebsd/src/interface/`
+1. **Define the model class** in `shared/include/interface/` - These classes provide platform-independent functionality including YANG serialization/deserialization (`toYang`/`fromYang`) and serve as data models for creating native interfaces
+2. **Implement the FreeBSD-specific version** in `freebsd/src/interface/` - These classes handle native functionality including configuration acquisition and application via system calls
 3. Add discovery functions to the FreeBSD layer
 4. Update the server handlers to support the new type
 5. Add YANG models if needed
@@ -358,12 +447,13 @@ NetD supports standard NETCONF operations:
 sequenceDiagram
     participant Client as netc (Client)
     participant Server as netd (Server)
+    participant Store as Configuration Store
     participant FreeBSD as FreeBSD Layer
     
     Note over Client,FreeBSD: Configuration Retrieval
     Client->>Server: <get-config>
-    Server->>FreeBSD: Query interfaces/routes
-    FreeBSD-->>Server: Return data
+    Server->>Store: Query configuration
+    Store-->>Server: Return config data
     Server-->>Client: <rpc-reply>
     
     Note over Client,FreeBSD: Operational Data
@@ -374,23 +464,34 @@ sequenceDiagram
     
     Note over Client,FreeBSD: Configuration Changes
     Client->>Server: <edit-config>
-    Server->>FreeBSD: Apply configuration
-    FreeBSD-->>Server: Success/Error
+    Server->>Store: Store pending changes
+    Store-->>Server: Success/Error
     Server-->>Client: <rpc-reply>
     
     Note over Client,FreeBSD: Commit Changes
     Client->>Server: <commit>
-    Server->>FreeBSD: Commit pending changes
-    FreeBSD-->>Server: Commit result
+    Server->>Store: Apply configuration
+    Store->>FreeBSD: Apply native configuration
+    FreeBSD-->>Store: Apply result
+    Store->>Store: Write to running config
+    Store-->>Server: Commit result
     Server-->>Client: <rpc-reply>
 ```
 
 **Supported Operations:**
-- **`<get-config>`**: Retrieve configuration data
-- **`<get>`**: Retrieve operational data  
-- **`<edit-config>`**: Modify configuration
-- **`<commit>`**: Commit configuration changes
+All standard NETCONF operations are supported:
+- **`<get-config>`**: Retrieve configuration data from the store
+- **`<get>`**: Retrieve operational data from the system
+- **`<edit-config>`**: Modify configuration (stored in candidate)
+- **`<commit>`**: Commit candidate configuration to running
 - **`<close-session>`**: Close NETCONF session
+- **`<kill-session>`**: Terminate another session
+- **`<lock>`**: Lock configuration datastore
+- **`<unlock>`**: Unlock configuration datastore
+- **`<validate>`**: Validate configuration
+- **`<copy-config>`**: Copy configuration between datastores
+- **`<delete-config>`**: Delete configuration datastore
+- **`<discard-changes>`**: Discard uncommitted changes
 
 ### YANG Data Models
 
@@ -449,23 +550,6 @@ graph TB
 4. Add tests if applicable
 5. Submit a pull request
 
-### Code Style
-
-- Follow the existing C++ style
-- Use meaningful variable and function names
-- Add comments for complex logic
-- Ensure all code compiles with `-Wall -Wextra -Werror`
-
-### Testing
-
-```bash
-# Run basic tests
-make test
-
-# Test specific components
-./test_parser
-./test_netconf
-```
 
 ## License
 
@@ -480,6 +564,7 @@ NetD is licensed under the BSD 2-Clause License. See the [LICENSE](LICENSE) file
 ## Roadmap
 
 - [ ] Enhanced VXLAN and WireGuard support
+- [ ] SCTP protocol support
 - [ ] RESTCONF API support
 - [ ] Configuration validation and rollback
 - [ ] SNMP integration
