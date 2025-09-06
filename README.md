@@ -32,7 +32,7 @@ NETCONF represents the IETF's vision for modern network management, providing a 
 NetD can run on consumer hardware across multiple architectures:
 
 - **x86 (amd64)**: Full support for modern x86 processors including AMD64 and Intel EM64T architectures
-- **ARM (aarch64)**: Comprehensive ARM64 support including Raspberry Pi, AWS Graviton, and various ARM-based development boards
+- **ARM (aarch64)**: Comprehensive ARM64 support including Raspberry Pi, and various ARM-based development boards
 - **Broad Hardware Compatibility**: Leverages FreeBSD's extensive hardware support as documented in the [FreeBSD 14.0 Hardware Notes](https://www.freebsd.org/releases/14.0R/hardware/)
 
 This means you can deploy NetD on everything from enterprise servers to single-board computers, making NETCONF-based network management accessible across a wide range of hardware platforms and use cases.
@@ -481,8 +481,7 @@ NetD is licensed under the BSD 2-Clause License. See the [LICENSE](LICENSE) file
 - **Contact**: Don't hesitate to reach out: paige@paige.bio
 
 ## Do you really like this project?
-
-Don't hesitate to reach out: paige@paige.bio
+Would you like to make this work along-side your many racks of QFX 5100's in a meaningful capacity? I would like to see it myself and please don't hesitate to reach out: paige@paige.bio
 
 ## Roadmap
 
