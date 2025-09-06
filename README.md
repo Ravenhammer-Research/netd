@@ -35,6 +35,7 @@ NETCONF represents the IETF's vision for modern network management, providing a 
 - **Modular Architecture**: Clean separation between shared types, OS-specific implementations, and server logic
 - **YANG Support**: Comprehensive YANG schema support with libyang integration
 - **Type Safety**: Strongly-typed C++ implementation with comprehensive error handling
+- **LLDP Integration**: Both client and server capable of configuring and querying LLDP via lldpd socket
 
 ## Architecture
 
@@ -164,11 +165,16 @@ The following packages are required:
 
 ```bash
 # On FreeBSD
-pkg install cmake libyang libnetconf2 flex bison
+pkg install cmake libpcre2
 
-# Development packages
-pkg install libyang-dev libnetconf2-dev
+# Build libyang and libnetconf2 from source
+# These are not yet available as FreeBSD packages
+git clone https://github.com/CESNET/libyang.git
+git clone https://github.com/CESNET/libnetconf2.git
+# Follow build instructions in each repository
 ```
+
+**Note**: NetD uses BSD lex and BSD yacc (included with FreeBSD base system) for parser generation, not flex/bison.
 
 ## Usage
 
@@ -294,6 +300,13 @@ YANG models are located in the `yang/` directory:
 - `shared/yang/`: NetD-specific models
 
 ## Development
+
+NetD is built with modern C++ and follows industry best practices:
+
+- **Pure C++ / LLVM**: Built entirely in C++ with LLVM toolchain support
+- **CMake**: 99.9% modular CMake build system for easy compilation and dependency management
+- **libyang**: YANG data modeling library from [CESNET/libyang](https://github.com/CESNET/libyang)
+- **libnetconf2**: NETCONF protocol implementation from [CESNET/libnetconf2](https://github.com/CESNET/libnetconf2)
 
 ### Adding New Interface Types
 
@@ -434,14 +447,9 @@ graph TB
 - **NetD Custom Models**: NetD-specific interface extensions
 - **Vendor Models**: Support for vendor-specific extensions
 
-## Contributing
+**Note**: The `yang/` directory is a git-subtree of [YangModels/yang](https://github.com/YangModels/yang) repository, providing comprehensive YANG model coverage.
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
-
+**Current Status**: We don't currently support any YANG models at the moment, but we will soon and some of them will even be made available at no additional cost.
 
 ## License
 
@@ -455,11 +463,15 @@ NetD is licensed under the BSD 2-Clause License. See the [LICENSE](LICENSE) file
 
 ## Roadmap
 
-- [ ] Enhanced VXLAN and WireGuard support
 - [ ] SCTP protocol support
 - [ ] LLDPd integration
 - [ ] NETCONF over SSH (RFC 6242)
 - [ ] NETCONF over TLS (RFC 8071)
+- [ ] Test cases with ATF/Kyua (including harness classes)
+- [ ] Example project: Node.js/Emscripten netd_client with GraphQL gateway and React/Redux TypeScript frontend
+- [ ] Port to OpenBSD
+- [ ] Port to NetBSD
+- [ ] Commercial offering: integration, development, and support services
 
 ## Acknowledgments
 
