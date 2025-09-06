@@ -303,7 +303,7 @@ YANG models are located in the `yang/` directory:
 
 NetD is built with modern C++ and follows industry best practices:
 
-- **Pure C++ / LLVM**: Built entirely in C++ with LLVM toolchain support
+- **Pure C++ / clang**: Built entirely in C++ with clang toolchain support
 - **CMake**: 99.9% modular CMake build system for easy compilation and dependency management
 - **libyang**: YANG data modeling library from [CESNET/libyang](https://github.com/CESNET/libyang)
 - **libnetconf2**: NETCONF protocol implementation from [CESNET/libnetconf2](https://github.com/CESNET/libnetconf2)
