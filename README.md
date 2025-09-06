@@ -23,8 +23,6 @@ The IETF has been instrumental in developing and maintaining NETCONF:
 
 - **RFC 6241**: Defines the core NETCONF protocol
 - **RFC 6020**: Defines the YANG data modeling language
-- **RFC 6242**: Defines NETCONF over SSH
-- **RFC 8071**: Defines NETCONF over TLS
 - **Ongoing Work**: Continuous development of new YANG models and protocol extensions
 
 NETCONF represents the IETF's vision for modern network management, providing a robust foundation for network automation, configuration management, and operational monitoring.
@@ -297,117 +295,9 @@ YANG models are located in the `yang/` directory:
 
 ## Development
 
-### Project Structure
-
-```mermaid
-classDiagram
-    class NetconfClient {
-        +connect(socketPath)
-        +disconnect()
-        +sendRequest(request)
-        +getConfig(source)
-        +get(filter)
-        +editConfig(target, config)
-    }
-    
-    class Terminal {
-        +initialize()
-        +readLine()
-        +writeLine(text)
-        +redrawPrompt()
-        +runInteractive()
-    }
-    
-    class CommandProcessor {
-        +processCommand(command)
-        -handleShowCommand()
-        -handleSetCommand()
-        -handleDeleteCommand()
-    }
-    
-    class NetconfServer {
-        +start()
-        +stop()
-        +handleRpc()
-    }
-    
-    class RpcHandler {
-        +handleGetConfig()
-        +handleGet()
-        +handleEditConfig()
-        +handleCommit()
-    }
-    
-    class Yang {
-        +getInstance()
-        +getContext()
-        +loadSchema()
-        +yangToXml()
-        +xmlToYang()
-    }
-    
-    class Logger {
-        +getInstance()
-        +info(message)
-        +error(message)
-        +debug(message)
-        +setCallback()
-    }
-    
-    class EthernetInterface {
-        +getAllEthernetInterfaces()
-        +configure()
-        +getStatus()
-    }
-    
-    class BridgeInterface {
-        +getAllBridgeInterfaces()
-        +addMember()
-        +removeMember()
-    }
-    
-    class VlanInterface {
-        +getAllVlanInterfaces()
-        +setVlanId()
-        +setParent()
-    }
-    
-    class VRF {
-        +create()
-        +delete()
-        +addInterface()
-        +removeInterface()
-    }
-    
-    class Route {
-        +addStaticRoute()
-        +deleteRoute()
-        +getRoutes()
-    }
-    
-    NetconfClient --> Terminal
-    NetconfClient --> Yang
-    CommandProcessor --> Terminal
-    CommandProcessor --> NetconfClient
-    
-    NetconfServer --> RpcHandler
-    NetconfServer --> Yang
-    RpcHandler --> Logger
-    
-    Yang --> Logger
-    EthernetInterface --> Logger
-    BridgeInterface --> Logger
-    VlanInterface --> Logger
-    
-    VRF --> EthernetInterface
-    VRF --> BridgeInterface
-    VRF --> VlanInterface
-    Route --> VRF
-```
-
 ### Adding New Interface Types
 
-1. **Define the model class** in `shared/include/interface/` - These classes provide platform-independent functionality including YANG serialization/deserialization (`toYang`/`fromYang`) and serve as data models for creating native interfaces
+1. **Use existing model class** in `shared/include/interface/` when possible, or define a new one - These classes provide platform-independent functionality including YANG serialization/deserialization (`toYang`/`fromYang`) and serve as data models for creating native interfaces
 2. **Implement the FreeBSD-specific version** in `freebsd/src/interface/` - These classes handle native functionality including configuration acquisition and application via system calls
 3. Add discovery functions to the FreeBSD layer
 4. Update the server handlers to support the new type
@@ -458,8 +348,10 @@ sequenceDiagram
     
     Note over Client,FreeBSD: Operational Data
     Client->>Server: <get>
-    Server->>FreeBSD: Query operational state
-    FreeBSD-->>Server: Return state data
+    Server->>Store: Query operational state
+    Store->>FreeBSD: Query native state
+    FreeBSD-->>Store: Return state data
+    Store-->>Server: Return state data
     Server-->>Client: <rpc-reply>
     
     Note over Client,FreeBSD: Configuration Changes
@@ -565,12 +457,9 @@ NetD is licensed under the BSD 2-Clause License. See the [LICENSE](LICENSE) file
 
 - [ ] Enhanced VXLAN and WireGuard support
 - [ ] SCTP protocol support
-- [ ] RESTCONF API support
-- [ ] Configuration validation and rollback
-- [ ] SNMP integration
-- [ ] Web-based management interface
-- [ ] Docker containerization
-- [ ] Integration with network orchestration platforms
+- [ ] LLDPd integration
+- [ ] NETCONF over SSH (RFC 6242)
+- [ ] NETCONF over TLS (RFC 8071)
 
 ## Acknowledgments
 
