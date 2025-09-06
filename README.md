@@ -481,7 +481,7 @@ NetD is licensed under the BSD 2-Clause License. See the [LICENSE](LICENSE) file
 - **Contact**: Don't hesitate to reach out: paige@paige.bio
 
 ## Do you really like this project?
-Would you like to make this work along-side your many racks of QFX 5100's in a meaningful capacity? I would like to see it myself and please don't hesitate to reach out: paige@paige.bio
+Would you like to make this work along-side your QFX 5x00's in a meaningful capacity? Whatever you might have in mind, please don't hesitate to reach out: paige@paige.bio
 
 ## Roadmap
 
