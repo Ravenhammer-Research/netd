@@ -467,15 +467,23 @@ NetD is licensed under the BSD 2-Clause License. See the [LICENSE](LICENSE) file
 - **Documentation**: See the `doc/` directory for detailed documentation
 - **Issues**: Report bugs and feature requests via GitHub issues
 - **Discussions**: Use GitHub discussions for questions and general discussion
+- **Contact**: Don't hesitate to reach out: paige@paige.bio
+
+## Do you really like this project?
+
+Don't hesitate to reach out: paige@paige.bio
 
 ## Roadmap
 
 - [ ] SCTP protocol support
 - [ ] LLDPd integration
+- [ ] TACACS+ integration (starting with [robot527/tac_plus](https://github.com/robot527/tac_plus/), ietf-system-tacacs-plus@2021-08-05.yang)
 - [ ] NETCONF over SSH (RFC 6242)
 - [ ] NETCONF over TLS (RFC 8071)
 - [ ] Test cases with ATF/Kyua (including harness classes)
 - [ ] Example project: Node.js/Emscripten netd_client with GraphQL gateway and React/Redux TypeScript frontend
+- [ ] OCI
+- [x] Linux port (50% complete)
 - [ ] Port to OpenBSD
 - [ ] Port to NetBSD
 - [ ] Commercial offering: integration, development, and support services
