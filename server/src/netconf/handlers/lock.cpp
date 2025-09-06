@@ -36,11 +36,12 @@
 namespace netd::server::netconf::handlers {
 
   std::unique_ptr<netd::shared::response::LockResponse>
-  RpcHandler::handleLockRequest(std::unique_ptr<netd::shared::request::LockRequest> request) {
+  RpcHandler::handleLockRequest(
+      std::unique_ptr<netd::shared::request::LockRequest> /* request */) {
     try {
       auto &logger = netd::shared::Logger::getInstance();
       auto response = std::make_unique<netd::shared::response::LockResponse>();
-      
+
       logger.info("Handling lock request");
 
       // For now, return a simple OK response
@@ -48,7 +49,8 @@ namespace netd::server::netconf::handlers {
       return response;
     } catch (const std::exception &e) {
       auto response = std::make_unique<netd::shared::response::LockResponse>();
-      response->setProtocolError(netd::shared::marshalling::ErrorTag::OPERATION_FAILED, e.what());
+      response->setProtocolError(
+          netd::shared::marshalling::ErrorTag::OPERATION_FAILED, e.what());
       return response;
     }
   }

@@ -34,6 +34,7 @@
 #include <shared/include/logger.hpp>
 #include <sstream>
 #include <string>
+#include <thread>
 #include <vector>
 
 namespace netd::client {
@@ -234,21 +235,12 @@ int main() {
           break;
         }
         terminal.writeLine(prefix + message);
+        // Redraw prompt after logging
+        terminal.redrawPrompt();
       });
 
-  logger.info("NETD Client starting...");
-
-  // Connect to server
-  terminal.writeLine("Connecting to NETD server...");
-  std::string socketPath = "/tmp/netd.sock";
-  if (!netd::client::connectToServer(socketPath)) {
-    terminal.writeLine("Failed to connect to NETD server");
-    terminal.writeLine("Make sure the server is running with: ./netd");
-    terminal.cleanup();
-    return 1;
-  }
-
-  terminal.writeLine("Connected to NETD server successfully!");
+  // Run interactive mode on separate thread
+  std::thread interactiveThread([&terminal]() { terminal.runInteractive(); });
 
   // Set up command processor
   netd::client::CommandProcessor processor(terminal);
@@ -256,13 +248,27 @@ int main() {
     return processor.processCommand(command);
   });
 
-  // Run interactive mode
-  terminal.runInteractive();
+  // Connect to server
+  std::string socketPath = "/tmp/netd.sock";
+  if (!netd::client::connectToServer(socketPath)) {
+    logger.error("Failed to connect to NETD server");
+    logger.error("Make sure the server is running with: ./netd");
+    terminal.cleanup();
+    goto wait;
+  }
 
+  logger.info("Connected to NetD via UNIX socket");
+
+  // Display welcome message
+  logger.info("NETD CLI - Network Configuration Tool");
+  logger.info("Type 'help' for available commands or 'quit' to exit.");
+
+wait:
+  // Block until interactive mode completes
+  interactiveThread.join();
   // Cleanup
   netd::client::disconnectFromServer();
   terminal.cleanup();
-
   logger.info("NETD Client finished");
   return 0;
 }

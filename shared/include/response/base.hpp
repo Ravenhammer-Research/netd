@@ -50,9 +50,11 @@ namespace netd::shared::response {
     virtual lyd_node *toYang(ly_ctx *ctx) const = 0;
     virtual std::unique_ptr<Response> fromYang(const ly_ctx *ctx,
                                                const lyd_node *node) = 0;
-    
-    // Virtual method with default implementation for converting to NETCONF reply
-    virtual struct nc_server_reply *toNetconfReply(struct nc_session *session) const;
+
+    // Virtual method with default implementation for converting to NETCONF
+    // reply
+    virtual struct nc_server_reply *
+    toNetconfReply(struct nc_session *session) const;
 
     // Error and data properties for flexible initialization
     std::unique_ptr<netd::shared::marshalling::Error> error = nullptr;

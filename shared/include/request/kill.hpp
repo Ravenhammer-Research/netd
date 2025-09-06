@@ -8,8 +8,8 @@ namespace netd::shared::request {
   class KillRequest : public Request<KillRequest> {
   public:
     KillRequest() : Request<KillRequest>() {}
-    KillRequest(struct nc_session *session, struct lyd_node *rpc) 
-      : Request<KillRequest>(session, rpc) {}
+    KillRequest(struct nc_session *session, struct lyd_node *rpc)
+        : Request<KillRequest>(session, rpc) {}
     virtual ~KillRequest() = default;
 
     lyd_node *toYang(ly_ctx *ctx) const override;

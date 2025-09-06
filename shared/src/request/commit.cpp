@@ -1,12 +1,11 @@
 /* (License header) */
 
-#include <shared/include/exception.hpp>
-#include <shared/include/request/commit.hpp>
 #include <libnetconf2/netconf.h>
 #include <libyang/tree_data.h>
+#include <shared/include/exception.hpp>
+#include <shared/include/request/commit.hpp>
 
 namespace netd::shared::request {
-
 
   lyd_node *CommitRequest::toYang(ly_ctx *ctx) const {
     if (!ctx) {

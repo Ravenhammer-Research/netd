@@ -36,11 +36,13 @@
 namespace netd::server::netconf::handlers {
 
   std::unique_ptr<netd::shared::response::CloseResponse>
-  RpcHandler::handleCloseSessionRequest(std::unique_ptr<netd::shared::request::CloseRequest> request) {
+  RpcHandler::handleCloseSessionRequest(
+      [[maybe_unused]] std::unique_ptr<netd::shared::request::CloseRequest>
+          request) {
     try {
       auto &logger = netd::shared::Logger::getInstance();
       auto response = std::make_unique<netd::shared::response::CloseResponse>();
-      
+
       logger.info("Handling close-session request");
 
       // For now, return a simple OK response
@@ -48,7 +50,8 @@ namespace netd::server::netconf::handlers {
       return response;
     } catch (const std::exception &e) {
       auto response = std::make_unique<netd::shared::response::CloseResponse>();
-      response->setProtocolError(netd::shared::marshalling::ErrorTag::OPERATION_FAILED, e.what());
+      response->setProtocolError(
+          netd::shared::marshalling::ErrorTag::OPERATION_FAILED, e.what());
       return response;
     }
   }

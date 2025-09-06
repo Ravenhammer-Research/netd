@@ -43,7 +43,7 @@ namespace netd::client {
   class NetconfClient {
   public:
     NetconfClient() : session_(nullptr), connected_(false) {
-      Yang::getInstance();
+      // Yang will be initialized lazily when needed
     }
 
     ~NetconfClient() {
@@ -53,7 +53,7 @@ namespace netd::client {
     }
 
     bool connect(const std::string &socketPath = "/tmp/netd.sock") {
-      auto &logger = Logger::getInstance();
+      auto &logger = netd::shared::Logger::getInstance();
 
       // Use the shared YANG context
       struct ly_ctx *ctx = Yang::getInstance().getContext();
@@ -86,7 +86,7 @@ namespace netd::client {
         throw std::runtime_error("Not connected to server");
       }
 
-      auto &logger = Logger::getInstance();
+      auto &logger = netd::shared::Logger::getInstance();
 
       // TODO: Parse request string to nc_rpc and send via nc_send_rpc
       // For now, return a placeholder response
@@ -130,32 +130,54 @@ namespace netd::client {
     bool connected_;
   };
 
-  // Global NETCONF client instance
-  static NetconfClient g_netconfClient;
+  // Global NETCONF client instance - lazy initialization to avoid static init
+  // order issues
+  static NetconfClient *g_netconfClient = nullptr;
 
   // Public interface functions
   bool connectToServer(const std::string &socketPath) {
-    return g_netconfClient.connect(socketPath);
+    if (!g_netconfClient) {
+      g_netconfClient = new NetconfClient();
+    }
+    return g_netconfClient->connect(socketPath);
   }
 
-  void disconnectFromServer() { g_netconfClient.disconnect(); }
+  void disconnectFromServer() {
+    if (g_netconfClient) {
+      g_netconfClient->disconnect();
+    }
+  }
 
-  bool isConnectedToServer() { return g_netconfClient.isConnected(); }
+  bool isConnectedToServer() {
+    return g_netconfClient ? g_netconfClient->isConnected() : false;
+  }
 
   std::string sendNetconfRequest(const std::string &request) {
-    return g_netconfClient.sendRequest(request);
+    if (!g_netconfClient) {
+      throw std::runtime_error("Not connected to server");
+    }
+    return g_netconfClient->sendRequest(request);
   }
 
   std::string getConfig(const std::string &source) {
-    return g_netconfClient.getConfig(source);
+    if (!g_netconfClient) {
+      throw std::runtime_error("Not connected to server");
+    }
+    return g_netconfClient->getConfig(source);
   }
 
   std::string get(const std::string &filter) {
-    return g_netconfClient.get(filter);
+    if (!g_netconfClient) {
+      throw std::runtime_error("Not connected to server");
+    }
+    return g_netconfClient->get(filter);
   }
 
   std::string editConfig(const std::string &target, const std::string &config) {
-    return g_netconfClient.editConfig(target, config);
+    if (!g_netconfClient) {
+      throw std::runtime_error("Not connected to server");
+    }
+    return g_netconfClient->editConfig(target, config);
   }
 
 } // namespace netd::client

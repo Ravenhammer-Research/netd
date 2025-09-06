@@ -64,6 +64,7 @@ namespace netd::client {
     // Interactive mode
     void runInteractive();
     void setPrompt(const std::string &prompt) { prompt_ = prompt; }
+    void redrawPrompt();
 
     // Command processing
     void setCommandHandler(std::function<bool(const std::string &)> handler) {

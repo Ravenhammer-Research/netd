@@ -25,9 +25,9 @@
  * SUCH DAMAGE.
  */
 
-#include <shared/include/interface/base/master.hpp>
-#include <shared/include/exception.hpp>
 #include <algorithm>
+#include <shared/include/exception.hpp>
+#include <shared/include/interface/base/master.hpp>
 
 namespace netd::shared::interface::base {
 
@@ -41,10 +41,9 @@ namespace netd::shared::interface::base {
   }
 
   bool Master::removeSlave(const std::string &slaveName) {
-    auto it = std::find_if(slaves_.begin(), slaves_.end(),
-                          [&slaveName](const SlaveInfo &info) {
-                            return info.name == slaveName;
-                          });
+    auto it = std::find_if(
+        slaves_.begin(), slaves_.end(),
+        [&slaveName](const SlaveInfo &info) { return info.name == slaveName; });
     if (it != slaves_.end()) {
       slaves_.erase(it);
       return true;
@@ -61,17 +60,16 @@ namespace netd::shared::interface::base {
   }
 
   bool Master::hasSlave(const std::string &slaveName) const {
-    return std::any_of(slaves_.begin(), slaves_.end(),
-                      [&slaveName](const SlaveInfo &info) {
-                        return info.name == slaveName;
-                      });
+    return std::any_of(
+        slaves_.begin(), slaves_.end(),
+        [&slaveName](const SlaveInfo &info) { return info.name == slaveName; });
   }
 
-  bool Master::setSlavePriority(const std::string &slaveName, uint32_t priority) {
-    auto it = std::find_if(slaves_.begin(), slaves_.end(),
-                          [&slaveName](const SlaveInfo &info) {
-                            return info.name == slaveName;
-                          });
+  bool Master::setSlavePriority(const std::string &slaveName,
+                                uint32_t priority) {
+    auto it = std::find_if(
+        slaves_.begin(), slaves_.end(),
+        [&slaveName](const SlaveInfo &info) { return info.name == slaveName; });
     if (it != slaves_.end()) {
       it->priority = priority;
       return true;
@@ -80,10 +78,9 @@ namespace netd::shared::interface::base {
   }
 
   uint32_t Master::getSlavePriority(const std::string &slaveName) const {
-    auto it = std::find_if(slaves_.begin(), slaves_.end(),
-                          [&slaveName](const SlaveInfo &info) {
-                            return info.name == slaveName;
-                          });
+    auto it = std::find_if(
+        slaves_.begin(), slaves_.end(),
+        [&slaveName](const SlaveInfo &info) { return info.name == slaveName; });
     if (it != slaves_.end()) {
       return it->priority;
     }
@@ -91,10 +88,9 @@ namespace netd::shared::interface::base {
   }
 
   bool Master::setSlaveEnabled(const std::string &slaveName, bool enabled) {
-    auto it = std::find_if(slaves_.begin(), slaves_.end(),
-                          [&slaveName](const SlaveInfo &info) {
-                            return info.name == slaveName;
-                          });
+    auto it = std::find_if(
+        slaves_.begin(), slaves_.end(),
+        [&slaveName](const SlaveInfo &info) { return info.name == slaveName; });
     if (it != slaves_.end()) {
       it->enabled = enabled;
       return true;
@@ -103,19 +99,16 @@ namespace netd::shared::interface::base {
   }
 
   bool Master::isSlaveEnabled(const std::string &slaveName) const {
-    auto it = std::find_if(slaves_.begin(), slaves_.end(),
-                          [&slaveName](const SlaveInfo &info) {
-                            return info.name == slaveName;
-                          });
+    auto it = std::find_if(
+        slaves_.begin(), slaves_.end(),
+        [&slaveName](const SlaveInfo &info) { return info.name == slaveName; });
     if (it != slaves_.end()) {
       return it->enabled;
     }
     return false;
   }
 
-  bool Master::isMaster() const {
-    return isMaster_;
-  }
+  bool Master::isMaster() const { return isMaster_; }
 
   uint32_t Master::getSlaveCount() const {
     return static_cast<uint32_t>(slaves_.size());

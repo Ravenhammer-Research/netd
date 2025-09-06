@@ -37,7 +37,8 @@
 namespace netd::server::netconf::handlers {
 
   std::unique_ptr<netd::shared::response::get::GetConfigResponse>
-  RpcHandler::handleGetConfigRequest(std::unique_ptr<netd::shared::request::get::GetConfigRequest> request) {
+  RpcHandler::handleGetConfigRequest(
+      std::unique_ptr<netd::shared::request::get::GetConfigRequest> request) {
     try {
       // Delegate to interface handler
       return RpcHandler::handleGetInterfaceRequest(std::move(request));

@@ -30,7 +30,8 @@ namespace netd::shared::response {
     return std::make_unique<ValidateResponse>();
   }
 
-  struct nc_server_reply *ValidateResponse::toNetconfReply(struct nc_session *session) const {
+  struct nc_server_reply *
+  ValidateResponse::toNetconfReply(struct nc_session *session) const {
     // Use the base class implementation which handles error cases
     return Response::toNetconfReply(session);
   }

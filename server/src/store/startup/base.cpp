@@ -25,11 +25,11 @@
  * SUCH DAMAGE.
  */
 
-#include <server/include/store/startup.hpp>
 #include <freebsd/include/interface/base.hpp>
 #include <freebsd/include/route.hpp>
 #include <freebsd/include/vrf.hpp>
 #include <libyang/libyang.h>
+#include <server/include/store/startup.hpp>
 #include <shared/include/logger.hpp>
 
 namespace netd::server::store::startup {
@@ -63,7 +63,9 @@ namespace netd::server::store::startup {
 
       // Create root data tree
       lyd_node *root = nullptr;
-      if (lyd_new_inner(nullptr, ly_ctx_get_module(ctx, "ietf-interfaces", nullptr), "interfaces", 0, &root) != LY_SUCCESS) {
+      if (lyd_new_inner(nullptr,
+                        ly_ctx_get_module(ctx, "ietf-interfaces", nullptr),
+                        "interfaces", 0, &root) != LY_SUCCESS) {
         logger.error("Failed to create interfaces container");
         ly_ctx_destroy(ctx);
         return false;
@@ -91,7 +93,8 @@ namespace netd::server::store::startup {
       return true;
 
     } catch (const std::exception &e) {
-      logger.error("Exception loading startup configuration: " + std::string(e.what()));
+      logger.error("Exception loading startup configuration: " +
+                   std::string(e.what()));
       return false;
     }
   }
@@ -142,7 +145,8 @@ namespace netd::server::store::startup {
     }
 
     lyd_node *found = nullptr;
-    LY_ERR err = lyd_find_path(currentTree, lyd_path(node, LYD_PATH_STD, nullptr, 0), 0, &found);
+    LY_ERR err = lyd_find_path(
+        currentTree, lyd_path(node, LYD_PATH_STD, nullptr, 0), 0, &found);
     if (err == LY_SUCCESS && found) {
       lyd_free_tree(found);
       return true;

@@ -44,7 +44,7 @@ namespace netd::server::store::startup {
     // Override base store operations
     bool load() override;
     bool commit() override;
-    
+
     // Override pure virtual methods from base Store
     void clear() override;
     bool add(lyd_node *node) override;

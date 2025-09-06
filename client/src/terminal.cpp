@@ -77,6 +77,10 @@ namespace netd::client {
     cbreak();
     noecho();
     keypad(stdscr, TRUE);
+
+    // Position cursor at top initially, bottom line is reserved for prompt
+    move(0, 0);
+
     refresh();
   }
 
@@ -175,15 +179,49 @@ namespace netd::client {
   }
 
   void Terminal::updateDisplay() {
-    move(0, 0);
+    int maxy, maxx;
+    getmaxyx(stdscr, maxy, maxx);
+    move(maxy - 1, 0);
     clrtoeol();
     printw("%s%s", prompt_.c_str(), currentLine_.c_str());
-    move(0, prompt_.length() + cursorPosition_);
+    move(maxy - 1, prompt_.length() + cursorPosition_);
     refresh();
+  }
+
+  void Terminal::redrawPrompt() {
+    if (initialized_) {
+      // Save current cursor position
+      int cury, curx;
+      getyx(stdscr, cury, curx);
+
+      // Redraw the prompt
+      int maxy, maxx;
+      getmaxyx(stdscr, maxy, maxx);
+      move(maxy - 1, 0);
+      clrtoeol();
+      printw("%s", prompt_.c_str());
+      move(maxy - 1, prompt_.length());
+      refresh();
+
+      // Restore original cursor position
+      move(cury, curx);
+    }
   }
 
   void Terminal::write(const std::string &text) {
     if (initialized_) {
+      int maxy, maxx;
+      getmaxyx(stdscr, maxy, maxx);
+
+      // Save current cursor position
+      int cury, curx;
+      getyx(stdscr, cury, curx);
+
+      // If we're at the bottom line, move up one line
+      if (cury >= maxy - 1) {
+        move(maxy - 2, 0);
+      }
+
       printw("%s", text.c_str());
       refresh();
     }
@@ -191,6 +229,18 @@ namespace netd::client {
 
   void Terminal::writeLine(const std::string &text) {
     if (initialized_) {
+      int maxy, maxx;
+      getmaxyx(stdscr, maxy, maxx);
+
+      // Save current cursor position
+      int cury, curx;
+      getyx(stdscr, cury, curx);
+
+      // If we're at the bottom line, move up one line
+      if (cury >= maxy - 1) {
+        move(maxy - 2, 0);
+      }
+
       printw("%s\n", text.c_str());
       refresh();
     }
@@ -291,10 +341,6 @@ namespace netd::client {
     if (!initialized_) {
       return;
     }
-
-    writeLine("NETD CLI - Network Configuration Tool");
-    writeLine("Type 'help' for available commands or 'quit' to exit.");
-    writeLine("");
 
     std::string line;
     while (true) {

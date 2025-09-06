@@ -32,11 +32,7 @@
 
 namespace netd::shared::request::get {
 
-  enum class Datastore {
-    RUNNING,
-    CANDIDATE,
-    STARTUP
-  };
+  enum class Datastore { RUNNING, CANDIDATE, STARTUP };
 
   // Helper functions to convert between enum and string
   std::string datastoreToString(Datastore datastore);
@@ -46,8 +42,8 @@ namespace netd::shared::request::get {
       : public netd::shared::request::Request<GetConfigRequest> {
   public:
     GetConfigRequest() : netd::shared::request::Request<GetConfigRequest>() {}
-    GetConfigRequest(struct nc_session *session, struct lyd_node *rpc) 
-      : netd::shared::request::Request<GetConfigRequest>(session, rpc) {}
+    GetConfigRequest(struct nc_session *session, struct lyd_node *rpc)
+        : netd::shared::request::Request<GetConfigRequest>(session, rpc) {}
     virtual ~GetConfigRequest() = default;
 
     // Override base methods
@@ -60,7 +56,7 @@ namespace netd::shared::request::get {
     void setSource(Datastore source) { source_ = source; }
 
   private:
-    Datastore source_ = Datastore::RUNNING;  // Default to running datastore
+    Datastore source_ = Datastore::RUNNING; // Default to running datastore
   };
 
 } // namespace netd::shared::request::get

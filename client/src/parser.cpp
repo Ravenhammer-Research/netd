@@ -31,6 +31,7 @@
 #include <shared/include/logger.hpp>
 #include <sstream>
 
+// Forward declarations for lexer functions
 namespace netd::client {
 
   CommandParser::CommandParser() {}

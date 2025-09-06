@@ -25,12 +25,13 @@
  * SUCH DAMAGE.
  */
 
-#include <shared/include/interface/base/tunnel.hpp>
 #include <shared/include/exception.hpp>
+#include <shared/include/interface/base/tunnel.hpp>
 
 namespace netd::shared::interface::base {
 
-  bool Tunnel::setLocalAddr(const std::shared_ptr<netd::shared::Address> &localAddr) {
+  bool Tunnel::setLocalAddr(
+      const std::shared_ptr<netd::shared::Address> &localAddr) {
     localAddr_ = localAddr;
     return true;
   }
@@ -39,7 +40,8 @@ namespace netd::shared::interface::base {
     return localAddr_;
   }
 
-  bool Tunnel::setRemoteAddr(const std::shared_ptr<netd::shared::Address> &remoteAddr) {
+  bool Tunnel::setRemoteAddr(
+      const std::shared_ptr<netd::shared::Address> &remoteAddr) {
     remoteAddr_ = remoteAddr;
     return true;
   }
@@ -53,22 +55,16 @@ namespace netd::shared::interface::base {
     return true;
   }
 
-  uint32_t Tunnel::getTunnelVRF() const {
-    return tunnelVrfId_;
-  }
+  uint32_t Tunnel::getTunnelVRF() const { return tunnelVrfId_; }
 
   bool Tunnel::setTunnelMTU(uint16_t mtu) {
     tunnelMtu_ = mtu;
     return true;
   }
 
-  uint16_t Tunnel::getTunnelMTU() const {
-    return tunnelMtu_;
-  }
+  uint16_t Tunnel::getTunnelMTU() const { return tunnelMtu_; }
 
-  bool Tunnel::isTunnelEstablished() const {
-    return tunnelEstablished_;
-  }
+  bool Tunnel::isTunnelEstablished() const { return tunnelEstablished_; }
 
   bool Tunnel::establishTunnel() {
     tunnelEstablished_ = true;

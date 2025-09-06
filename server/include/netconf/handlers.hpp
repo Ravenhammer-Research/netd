@@ -71,60 +71,73 @@ namespace netd::server::netconf::handlers {
   class RpcHandler {
   public:
     // Get request handler
-    static std::unique_ptr<netd::shared::response::get::GetResponse> 
-    handleGetRequest(std::unique_ptr<netd::shared::request::get::GetRequest> request);
+    static std::unique_ptr<netd::shared::response::get::GetResponse>
+    handleGetRequest(
+        std::unique_ptr<netd::shared::request::get::GetRequest> request);
 
     // Get-config request handler
     static std::unique_ptr<netd::shared::response::get::GetConfigResponse>
-    handleGetConfigRequest(std::unique_ptr<netd::shared::request::get::GetConfigRequest> request);
+    handleGetConfigRequest(
+        std::unique_ptr<netd::shared::request::get::GetConfigRequest> request);
 
     // Edit-config request handler
     static std::unique_ptr<netd::shared::response::EditConfigResponse>
-    handleEditConfigRequest(std::unique_ptr<netd::shared::request::EditConfigRequest> request);
+    handleEditConfigRequest(
+        std::unique_ptr<netd::shared::request::EditConfigRequest> request);
 
     // Copy-config request handler
     static std::unique_ptr<netd::shared::response::CopyConfigResponse>
-    handleCopyConfigRequest(std::unique_ptr<netd::shared::request::CopyConfigRequest> request);
+    handleCopyConfigRequest(
+        std::unique_ptr<netd::shared::request::CopyConfigRequest> request);
 
     // Delete-config request handler
     static std::unique_ptr<netd::shared::response::DeleteConfigResponse>
-    handleDeleteConfigRequest(std::unique_ptr<netd::shared::request::DeleteConfigRequest> request);
+    handleDeleteConfigRequest(
+        std::unique_ptr<netd::shared::request::DeleteConfigRequest> request);
 
     // Lock request handler
     static std::unique_ptr<netd::shared::response::LockResponse>
-    handleLockRequest(std::unique_ptr<netd::shared::request::LockRequest> request);
+    handleLockRequest(
+        std::unique_ptr<netd::shared::request::LockRequest> request);
 
     // Unlock request handler
     static std::unique_ptr<netd::shared::response::UnlockResponse>
-    handleUnlockRequest(std::unique_ptr<netd::shared::request::UnlockRequest> request);
+    handleUnlockRequest(
+        std::unique_ptr<netd::shared::request::UnlockRequest> request);
 
     // Discard-changes request handler
     static std::unique_ptr<netd::shared::response::DiscardResponse>
-    handleDiscardRequest(std::unique_ptr<netd::shared::request::DiscardRequest> request);
+    handleDiscardRequest(
+        std::unique_ptr<netd::shared::request::DiscardRequest> request);
 
     // Close-session request handler
     static std::unique_ptr<netd::shared::response::CloseResponse>
-    handleCloseSessionRequest(std::unique_ptr<netd::shared::request::CloseRequest> request);
+    handleCloseSessionRequest(
+        std::unique_ptr<netd::shared::request::CloseRequest> request);
 
     // Kill-session request handler
     static std::unique_ptr<netd::shared::response::KillResponse>
-    handleKillSessionRequest(std::unique_ptr<netd::shared::request::KillRequest> request);
+    handleKillSessionRequest(
+        std::unique_ptr<netd::shared::request::KillRequest> request);
 
     // Validate request handler
     static std::unique_ptr<netd::shared::response::ValidateResponse>
-    handleValidateRequest(std::unique_ptr<netd::shared::request::ValidateRequest> request);
+    handleValidateRequest(
+        std::unique_ptr<netd::shared::request::ValidateRequest> request);
 
     // Hello request handler
     static std::unique_ptr<netd::shared::response::HelloResponse>
-    handleHelloRequest(std::unique_ptr<netd::shared::request::HelloRequest> request);
+    handleHelloRequest(
+        std::unique_ptr<netd::shared::request::HelloRequest> request);
 
     // Commit request handler
     static std::unique_ptr<netd::shared::response::CommitResponse>
-    handleCommitRequest(std::unique_ptr<netd::shared::request::CommitRequest> request);
+    handleCommitRequest(
+        std::unique_ptr<netd::shared::request::CommitRequest> request);
 
   private:
     // Interface-specific handler function
-    static std::unique_ptr<netd::shared::response::get::GetConfigResponse> 
+    static std::unique_ptr<netd::shared::response::get::GetConfigResponse>
     handleGetInterfaceRequest(
         std::unique_ptr<netd::shared::request::get::GetConfigRequest> request);
   };

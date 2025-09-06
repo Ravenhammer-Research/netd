@@ -36,11 +36,12 @@
 namespace netd::server::netconf::handlers {
 
   std::unique_ptr<netd::shared::response::KillResponse>
-  RpcHandler::handleKillSessionRequest(std::unique_ptr<netd::shared::request::KillRequest> request) {
+  RpcHandler::handleKillSessionRequest(
+      std::unique_ptr<netd::shared::request::KillRequest> /* request */) {
     try {
       auto &logger = netd::shared::Logger::getInstance();
       auto response = std::make_unique<netd::shared::response::KillResponse>();
-      
+
       logger.info("Handling kill-session request");
 
       // For now, return a simple OK response
@@ -48,7 +49,8 @@ namespace netd::server::netconf::handlers {
       return response;
     } catch (const std::exception &e) {
       auto response = std::make_unique<netd::shared::response::KillResponse>();
-      response->setProtocolError(netd::shared::marshalling::ErrorTag::OPERATION_FAILED, e.what());
+      response->setProtocolError(
+          netd::shared::marshalling::ErrorTag::OPERATION_FAILED, e.what());
       return response;
     }
   }

@@ -36,19 +36,23 @@
 namespace netd::server::netconf::handlers {
 
   std::unique_ptr<netd::shared::response::ValidateResponse>
-  RpcHandler::handleValidateRequest(std::unique_ptr<netd::shared::request::ValidateRequest> request) {
+  RpcHandler::handleValidateRequest(
+      std::unique_ptr<netd::shared::request::ValidateRequest> /* request */) {
     try {
       auto &logger = netd::shared::Logger::getInstance();
-      auto response = std::make_unique<netd::shared::response::ValidateResponse>();
-      
+      auto response =
+          std::make_unique<netd::shared::response::ValidateResponse>();
+
       logger.info("Handling validate request");
 
       // For now, return a simple OK response
       // TODO: Implement actual validate request handling
       return response;
     } catch (const std::exception &e) {
-      auto response = std::make_unique<netd::shared::response::ValidateResponse>();
-      response->setProtocolError(netd::shared::marshalling::ErrorTag::OPERATION_FAILED, e.what());
+      auto response =
+          std::make_unique<netd::shared::response::ValidateResponse>();
+      response->setProtocolError(
+          netd::shared::marshalling::ErrorTag::OPERATION_FAILED, e.what());
       return response;
     }
   }

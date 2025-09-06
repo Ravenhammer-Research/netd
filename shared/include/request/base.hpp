@@ -43,7 +43,7 @@ namespace netd::shared::request {
   template <typename T> class Request {
   public:
     Request() = default;
-    Request(struct nc_session *session, struct lyd_node *rpc) 
+    Request(struct nc_session *session, struct lyd_node *rpc)
         : session_(session), rpc_(rpc) {}
     virtual ~Request() = default;
 

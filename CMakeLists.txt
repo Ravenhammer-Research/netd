@@ -11,6 +11,18 @@ message(STATUS "CMAKE_CXX_STANDARD: ${CMAKE_CXX_STANDARD}")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Set compile flags for hardening
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Werror")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Werror")
+
+# Additional hardening flags
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_FORTIFY_SOURCE=2 -fstack-protector-strong -fPIE -Wformat -Wformat-security")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_FORTIFY_SOURCE=2 -fstack-protector-strong -fPIE -Wformat -Wformat-security")
+
+# Link hardening flags
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-z,relro -Wl,-z,now -pie")
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-z,relro -Wl,-z,now")
+
 # Set library search paths
 set(CMAKE_LIBRARY_PATH "/usr/lib" "/usr/local/lib")
 link_directories("/usr/lib" "/usr/local/lib")
@@ -32,11 +44,7 @@ set(GLOBAL_INCLUDE_DIRS
 )
 
 # Define YANG directory
-set(YANG_DIR "${CMAKE_SOURCE_DIR}/yang")
-set(YANG_DIR "${YANG_DIR}:${CMAKE_SOURCE_DIR}/yang/standard")
-set(YANG_DIR "${YANG_DIR}:${CMAKE_SOURCE_DIR}/yang/experimental")
-set(YANG_DIR "${YANG_DIR}:${CMAKE_SOURCE_DIR}/yang/vendor")
-set(YANG_DIR "${YANG_DIR}:/usr/local/share/yang/modules/libnetconf2")
+set(YANG_DIR "${CMAKE_SOURCE_DIR}/yang/")
 message(STATUS "YANG_DIR: ${YANG_DIR}")
 message(STATUS "GLOBAL_INCLUDE_DIRS: ${GLOBAL_INCLUDE_DIRS}")
 
@@ -82,6 +90,7 @@ target_link_libraries(netc PRIVATE
     netd_shared
     netd_client
     curses
+    pthread
 )
 
 message(STATUS "=== NETD CMake Configuration Complete ===")

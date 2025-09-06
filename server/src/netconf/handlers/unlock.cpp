@@ -36,19 +36,23 @@
 namespace netd::server::netconf::handlers {
 
   std::unique_ptr<netd::shared::response::UnlockResponse>
-  RpcHandler::handleUnlockRequest(std::unique_ptr<netd::shared::request::UnlockRequest> request) {
+  RpcHandler::handleUnlockRequest(
+      std::unique_ptr<netd::shared::request::UnlockRequest> /* request */) {
     try {
       auto &logger = netd::shared::Logger::getInstance();
-      auto response = std::make_unique<netd::shared::response::UnlockResponse>();
-      
+      auto response =
+          std::make_unique<netd::shared::response::UnlockResponse>();
+
       logger.info("Handling unlock request");
 
       // For now, return a simple OK response
       // TODO: Implement actual unlock request handling
       return response;
     } catch (const std::exception &e) {
-      auto response = std::make_unique<netd::shared::response::UnlockResponse>();
-      response->setProtocolError(netd::shared::marshalling::ErrorTag::OPERATION_FAILED, e.what());
+      auto response =
+          std::make_unique<netd::shared::response::UnlockResponse>();
+      response->setProtocolError(
+          netd::shared::marshalling::ErrorTag::OPERATION_FAILED, e.what());
       return response;
     }
   }

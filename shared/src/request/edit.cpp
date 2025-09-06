@@ -25,16 +25,14 @@
  * SUCH DAMAGE.
  */
 
+#include <libnetconf2/netconf.h>
 #include <libyang/libyang.h>
 #include <libyang/tree_data.h>
-#include <libnetconf2/netconf.h>
 #include <shared/include/exception.hpp>
 #include <shared/include/request/edit.hpp>
 #include <shared/include/yang.hpp>
 
 namespace netd::shared::request {
-
-
 
   lyd_node *EditConfigRequest::toYang(ly_ctx *ctx) const {
     if (!ctx) {
@@ -78,7 +76,8 @@ namespace netd::shared::request {
     }
 
     // Add the specified datastore target
-    std::string targetStr = netd::shared::request::get::datastoreToString(target_);
+    std::string targetStr =
+        netd::shared::request::get::datastoreToString(target_);
     if (lyd_new_term(targetNode, mod, targetStr.c_str(), nullptr, 0, nullptr) !=
         LY_SUCCESS) {
       lyd_free_tree(rpcNode);
@@ -100,14 +99,16 @@ namespace netd::shared::request {
 
     // Find the edit-config node
     lyd_node *editConfigNode = lyd_child(node);
-    while (editConfigNode && strcmp(lyd_node_schema(editConfigNode)->name, "edit-config") != 0) {
+    while (editConfigNode &&
+           strcmp(lyd_node_schema(editConfigNode)->name, "edit-config") != 0) {
       editConfigNode = editConfigNode->next;
     }
 
     if (editConfigNode) {
       // Find the target container
       lyd_node *targetNode = lyd_child(editConfigNode);
-      while (targetNode && strcmp(lyd_node_schema(targetNode)->name, "target") != 0) {
+      while (targetNode &&
+             strcmp(lyd_node_schema(targetNode)->name, "target") != 0) {
         targetNode = targetNode->next;
       }
 
@@ -117,8 +118,10 @@ namespace netd::shared::request {
         while (datastoreNode) {
           const char *nodeName = lyd_node_schema(datastoreNode)->name;
           std::string targetStr(nodeName);
-          netd::shared::request::get::Datastore datastore = netd::shared::request::get::stringToDatastore(targetStr);
-          if (datastore != netd::shared::request::get::Datastore::RUNNING || targetStr == "running") {
+          netd::shared::request::get::Datastore datastore =
+              netd::shared::request::get::stringToDatastore(targetStr);
+          if (datastore != netd::shared::request::get::Datastore::RUNNING ||
+              targetStr == "running") {
             // Only set if it's a valid datastore (not default fallback)
             request->setTarget(datastore);
             break;

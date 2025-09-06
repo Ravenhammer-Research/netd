@@ -36,8 +36,8 @@ namespace netd::shared::request {
   class EditConfigRequest : public Request<EditConfigRequest> {
   public:
     EditConfigRequest() : Request<EditConfigRequest>() {}
-    EditConfigRequest(struct nc_session *session, struct lyd_node *rpc) 
-      : Request<EditConfigRequest>(session, rpc) {}
+    EditConfigRequest(struct nc_session *session, struct lyd_node *rpc)
+        : Request<EditConfigRequest>(session, rpc) {}
     virtual ~EditConfigRequest() = default;
 
     // Override base methods
@@ -47,10 +47,14 @@ namespace netd::shared::request {
 
     // Target datastore access
     netd::shared::request::get::Datastore getTarget() const { return target_; }
-    void setTarget(netd::shared::request::get::Datastore target) { target_ = target; }
+    void setTarget(netd::shared::request::get::Datastore target) {
+      target_ = target;
+    }
 
   private:
-    netd::shared::request::get::Datastore target_ = netd::shared::request::get::Datastore::RUNNING;  // Default to running datastore
+    netd::shared::request::get::Datastore target_ =
+        netd::shared::request::get::Datastore::RUNNING; // Default to running
+                                                        // datastore
   };
 
 } // namespace netd::shared::request

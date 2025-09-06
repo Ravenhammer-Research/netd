@@ -25,26 +25,24 @@
  * SUCH DAMAGE.
  */
 
-#include <shared/include/interface/base/ether.hpp>
-#include <shared/include/exception.hpp>
 #include <algorithm>
+#include <shared/include/exception.hpp>
+#include <shared/include/interface/base/ether.hpp>
 
 namespace netd::shared::interface::base {
 
-  void Ether::setName(const std::string &name) {
-    name_ = name;
-  }
+  void Ether::setName(const std::string &name) { name_ = name; }
 
-  std::string Ether::getName() const {
-    return name_;
-  }
+  std::string Ether::getName() const { return name_; }
 
-  bool Ether::addAddress(const std::shared_ptr<netd::shared::Address> &address) {
+  bool
+  Ether::addAddress(const std::shared_ptr<netd::shared::Address> &address) {
     addresses_.push_back(address);
     return true;
   }
 
-  bool Ether::removeAddress(const std::shared_ptr<netd::shared::Address> &address) {
+  bool
+  Ether::removeAddress(const std::shared_ptr<netd::shared::Address> &address) {
     auto it = std::find(addresses_.begin(), addresses_.end(), address);
     if (it != addresses_.end()) {
       addresses_.erase(it);
@@ -53,7 +51,8 @@ namespace netd::shared::interface::base {
     return false;
   }
 
-  std::vector<std::shared_ptr<netd::shared::Address>> Ether::getAddresses() const {
+  std::vector<std::shared_ptr<netd::shared::Address>>
+  Ether::getAddresses() const {
     return addresses_;
   }
 
@@ -71,27 +70,21 @@ namespace netd::shared::interface::base {
     return false;
   }
 
-  std::vector<std::string> Ether::getGroups() const {
-    return groups_;
-  }
+  std::vector<std::string> Ether::getGroups() const { return groups_; }
 
   bool Ether::setMTU(uint16_t mtu) {
     mtu_ = mtu;
     return true;
   }
 
-  uint16_t Ether::getMTU() const {
-    return mtu_;
-  }
+  uint16_t Ether::getMTU() const { return mtu_; }
 
   bool Ether::setFlags(uint32_t flags) {
     flags_ = flags;
     return true;
   }
 
-  uint32_t Ether::getFlags() const {
-    return flags_;
-  }
+  uint32_t Ether::getFlags() const { return flags_; }
 
   bool Ether::up() {
     up_ = true;
@@ -103,20 +96,16 @@ namespace netd::shared::interface::base {
     return true;
   }
 
-  bool Ether::isUp() const {
-    return up_;
-  }
+  bool Ether::isUp() const { return up_; }
 
   bool Ether::setVRF(uint32_t vrfId) {
     vrfId_ = vrfId;
     return true;
   }
 
-  uint32_t Ether::getVRF() const {
-    return vrfId_;
-  }
+  uint32_t Ether::getVRF() const { return vrfId_; }
 
-  lyd_node *Ether::toYang(ly_ctx *ctx) const {
+  lyd_node *Ether::toYang([[maybe_unused]] ly_ctx *ctx) const {
     // Basic implementation - can be expanded later
     return nullptr;
   }

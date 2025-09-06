@@ -25,9 +25,9 @@
  * SUCH DAMAGE.
  */
 
+#include <libyang/libyang.h>
 #include <server/include/store/running.hpp>
 #include <server/include/store/startup.hpp>
-#include <libyang/libyang.h>
 #include <shared/include/logger.hpp>
 
 namespace netd::server::store::running {
@@ -44,8 +44,9 @@ namespace netd::server::store::running {
 
     try {
       // Copy data from startup store to running store
-      auto &startupStore = netd::server::store::startup::StartupStore::getInstance();
-      
+      auto &startupStore =
+          netd::server::store::startup::StartupStore::getInstance();
+
       // Load startup configuration first
       if (!startupStore.load()) {
         logger.error("Failed to load startup configuration");
@@ -56,29 +57,34 @@ namespace netd::server::store::running {
       lyd_node *startupTree = startupStore.getDataTree();
       if (startupTree) {
         lyd_node *runningTree = nullptr;
-        LY_ERR err = lyd_dup_single(startupTree, nullptr, LYD_DUP_RECURSIVE, &runningTree);
+        LY_ERR err = lyd_dup_single(startupTree, nullptr, LYD_DUP_RECURSIVE,
+                                    &runningTree);
         if (err == LY_SUCCESS && runningTree) {
           setDataTree(runningTree);
-          logger.info("Successfully copied startup configuration to running store");
+          logger.info(
+              "Successfully copied startup configuration to running store");
           return true;
         } else {
           logger.error("Failed to duplicate startup configuration");
           return false;
         }
       } else {
-        logger.warning("No startup configuration found, creating empty running store");
+        logger.warning(
+            "No startup configuration found, creating empty running store");
         return true;
       }
 
     } catch (const std::exception &e) {
-      logger.error("Exception loading running configuration: " + std::string(e.what()));
+      logger.error("Exception loading running configuration: " +
+                   std::string(e.what()));
       return false;
     }
   }
 
   bool RunningStore::commit() {
     auto &logger = netd::shared::Logger::getInstance();
-    logger.info("Running store commit - configuration already applied to system");
+    logger.info(
+        "Running store commit - configuration already applied to system");
 
     // Running store commit is now just a confirmation
     // The actual system application happens in candidate store commit
@@ -127,7 +133,8 @@ namespace netd::server::store::running {
     }
 
     lyd_node *found = nullptr;
-    LY_ERR err = lyd_find_path(currentTree, lyd_path(node, LYD_PATH_STD, nullptr, 0), 0, &found);
+    LY_ERR err = lyd_find_path(
+        currentTree, lyd_path(node, LYD_PATH_STD, nullptr, 0), 0, &found);
     if (err == LY_SUCCESS && found) {
       lyd_free_tree(found);
       return true;

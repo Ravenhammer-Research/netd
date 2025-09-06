@@ -25,10 +25,10 @@
  * SUCH DAMAGE.
  */
 
+#include <libyang/tree_data.h>
 #include <server/include/store/base.hpp>
 #include <shared/include/exception.hpp>
 #include <shared/include/logger.hpp>
-#include <libyang/tree_data.h>
 
 namespace netd::server::store {
 
@@ -44,7 +44,7 @@ namespace netd::server::store {
   // Search methods
   std::vector<lyd_node *> Store::search(const std::string &xpath) {
     std::vector<lyd_node *> results;
-    
+
     if (!dataTree_) {
       return results;
     }
@@ -62,17 +62,22 @@ namespace netd::server::store {
   }
 
   std::vector<lyd_node *> Store::searchInterface(const std::string &filter) {
-    std::string xpath = filter.empty() ? "/ietf-interfaces:interfaces/interface" : filter;
+    std::string xpath =
+        filter.empty() ? "/ietf-interfaces:interfaces/interface" : filter;
     return search(xpath);
   }
 
   std::vector<lyd_node *> Store::searchVRF(const std::string &filter) {
-    std::string xpath = filter.empty() ? "/ietf-routing:routing/control-plane-protocols/control-plane-protocol" : filter;
+    std::string xpath = filter.empty()
+                            ? "/ietf-routing:routing/control-plane-protocols/"
+                              "control-plane-protocol"
+                            : filter;
     return search(xpath);
   }
 
   std::vector<lyd_node *> Store::searchRoute(const std::string &filter) {
-    std::string xpath = filter.empty() ? "/ietf-routing:routing/ribs/rib/route" : filter;
+    std::string xpath =
+        filter.empty() ? "/ietf-routing:routing/ribs/rib/route" : filter;
     return search(xpath);
   }
 

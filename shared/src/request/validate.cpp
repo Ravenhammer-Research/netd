@@ -1,12 +1,11 @@
 /* (License header) */
 
-#include <shared/include/exception.hpp>
-#include <shared/include/request/validate.hpp>
 #include <libnetconf2/netconf.h>
 #include <libyang/tree_data.h>
+#include <shared/include/exception.hpp>
+#include <shared/include/request/validate.hpp>
 
 namespace netd::shared::request {
-
 
   lyd_node *ValidateRequest::toYang(ly_ctx *ctx) const {
     if (!ctx) {

@@ -99,9 +99,11 @@ namespace netd::shared::response {
   }
 
   // Default implementation of toNetconfReply
-  struct nc_server_reply *Response::toNetconfReply(struct nc_session *session) const {
+  struct nc_server_reply *
+  Response::toNetconfReply(struct nc_session *session) const {
     if (error) {
-      return nc_server_reply_err(nc_err(nc_session_get_ctx(session), NC_ERR_OP_FAILED, 
+      return nc_server_reply_err(nc_err(nc_session_get_ctx(session),
+                                        NC_ERR_OP_FAILED,
                                         error->getMessage().c_str()));
     }
     return nc_server_reply_ok();

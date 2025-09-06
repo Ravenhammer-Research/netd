@@ -25,9 +25,9 @@
  * SUCH DAMAGE.
  */
 
+#include <libnetconf2/netconf.h>
 #include <libyang/libyang.h>
 #include <libyang/tree_data.h>
-#include <libnetconf2/netconf.h>
 #include <shared/include/exception.hpp>
 #include <shared/include/request/get/config.hpp>
 #include <shared/include/yang.hpp>
@@ -37,14 +37,14 @@ namespace netd::shared::request::get {
   // Helper function implementations
   std::string datastoreToString(Datastore datastore) {
     switch (datastore) {
-      case Datastore::RUNNING:
-        return "running";
-      case Datastore::CANDIDATE:
-        return "candidate";
-      case Datastore::STARTUP:
-        return "startup";
-      default:
-        return "running";
+    case Datastore::RUNNING:
+      return "running";
+    case Datastore::CANDIDATE:
+      return "candidate";
+    case Datastore::STARTUP:
+      return "startup";
+    default:
+      return "running";
     }
   }
 
@@ -56,10 +56,9 @@ namespace netd::shared::request::get {
     } else if (str == "startup") {
       return Datastore::STARTUP;
     } else {
-      return Datastore::RUNNING;  // Default fallback
+      return Datastore::RUNNING; // Default fallback
     }
   }
-
 
   lyd_node *GetConfigRequest::toYang(ly_ctx *ctx) const {
     if (!ctx) {
@@ -125,14 +124,16 @@ namespace netd::shared::request::get {
 
     // Find the get-config node
     lyd_node *getConfigNode = lyd_child(node);
-    while (getConfigNode && strcmp(lyd_node_schema(getConfigNode)->name, "get-config") != 0) {
+    while (getConfigNode &&
+           strcmp(lyd_node_schema(getConfigNode)->name, "get-config") != 0) {
       getConfigNode = getConfigNode->next;
     }
 
     if (getConfigNode) {
       // Find the source container
       lyd_node *sourceNode = lyd_child(getConfigNode);
-      while (sourceNode && strcmp(lyd_node_schema(sourceNode)->name, "source") != 0) {
+      while (sourceNode &&
+             strcmp(lyd_node_schema(sourceNode)->name, "source") != 0) {
         sourceNode = sourceNode->next;
       }
 
