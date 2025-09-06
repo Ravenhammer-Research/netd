@@ -80,9 +80,13 @@ graph TB
 
 - **`netd`**: The main server daemon that provides NETCONF services
 - **`netc`**: The client CLI application for interactive configuration
-- **Shared Layer**: Common types, YANG support, and marshalling logic
-- **FreeBSD Layer**: OS-specific interface and routing management
-- **Parser**: Flex/Bison-based command parser for the CLI
+- **`server/`**: Server implementation with NETCONF handlers and configuration store
+- **`client/`**: Client implementation with interactive CLI and command parser
+- **`shared/`**: Common types, YANG support, request/response handling, and marshalling logic
+- **`freebsd/`**: FreeBSD-specific interface and routing management implementations
+- **`yang/`**: Comprehensive YANG model repository with standard IETF, vendor, and custom models
+- **`cmake/`**: CMake modules and build system configuration
+- **`doc/`**: Project documentation and type hierarchy specifications
 
 ## Supported Interface Types
 
@@ -134,10 +138,10 @@ graph TB
 
 ### Prerequisites
 
-- FreeBSD 13.0 or later
+- FreeBSD 14.0 or later
 - CMake 3.16 or later
 - libyang and libnetconf2 development packages
-- Flex and Bison for parser generation
+- BSD lex(1) / yacc(1) for parser generation
 
 ### Building
 
@@ -174,7 +178,6 @@ git clone https://github.com/CESNET/libnetconf2.git
 # Follow build instructions in each repository
 ```
 
-**Note**: NetD uses BSD lex and BSD yacc (included with FreeBSD base system) for parser generation, not flex/bison.
 
 ## Usage
 
