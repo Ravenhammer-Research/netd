@@ -79,6 +79,7 @@ target_compile_definitions(netc PRIVATE
 target_link_libraries(netc PRIVATE
     ${LIBYANG_LIBRARIES}
     ${LIBNETCONF2_LIBRARIES}
+    netd_shared
     netd_client
     curses
 )

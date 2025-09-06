@@ -19,6 +19,5 @@ target_compile_definitions(netd_client PRIVATE
 
 # Link libraries
 target_link_libraries(netd_client PRIVATE
-    netd_shared
     netd_client_parser
 )
