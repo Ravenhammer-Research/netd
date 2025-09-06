@@ -27,15 +27,23 @@ The IETF has been instrumental in developing and maintaining NETCONF:
 
 NETCONF represents the IETF's vision for modern network management, providing a robust foundation for network automation, configuration management, and operational monitoring.
 
+## Why NETCONF?
+
+NetD can run on consumer hardware across multiple architectures:
+
+- **x86 (amd64)**: Full support for modern x86 processors including AMD64 and Intel EM64T architectures
+- **ARM (aarch64)**: Comprehensive ARM64 support including Raspberry Pi, AWS Graviton, and various ARM-based development boards
+- **Broad Hardware Compatibility**: Leverages FreeBSD's extensive hardware support as documented in the [FreeBSD 14.0 Hardware Notes](https://www.freebsd.org/releases/14.0R/hardware/)
+
+This means you can deploy NetD on everything from enterprise servers to single-board computers, making NETCONF-based network management accessible across a wide range of hardware platforms and use cases.
+
 ## Features
 
 - **NETCONF Server**: Full NETCONF 1.1 implementation with YANG data modeling
 - **Interactive CLI**: Curses-based command-line interface with command completion
 - **FreeBSD Integration**: Native FreeBSD interface and routing management
-- **Modular Architecture**: Clean separation between shared types, OS-specific implementations, and server logic
 - **YANG Support**: Comprehensive YANG schema support with libyang integration
 - **Type Safety**: Strongly-typed C++ implementation with comprehensive error handling
-- **LLDP Integration**: Both client and server capable of configuring and querying LLDP via lldpd socket
 
 ## Architecture
 
