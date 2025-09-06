@@ -308,6 +308,20 @@ NetD is built with modern C++ and follows industry best practices:
 - **libyang**: YANG data modeling library from [CESNET/libyang](https://github.com/CESNET/libyang)
 - **libnetconf2**: NETCONF protocol implementation from [CESNET/libnetconf2](https://github.com/CESNET/libnetconf2)
 
+### Code Formatting
+
+NetD enforces strict code formatting using clang-format:
+
+```bash
+# Format all C++ header files
+find . -name "*.hpp" -type f | xargs clang-format19 --style=file -i
+
+# Format all C++ source files
+find . -name "*.cpp" -type f | xargs clang-format19 --style=file -i
+```
+
+**Configuration**: `.clang-format` file in the project root directory defines the formatting rules.
+
 ### Adding New Interface Types
 
 1. **Use existing model class** in `shared/include/interface/` when possible, or define a new one - These classes provide platform-independent functionality including YANG serialization/deserialization (`toYang`/`fromYang`) and serve as data models for creating native interfaces
