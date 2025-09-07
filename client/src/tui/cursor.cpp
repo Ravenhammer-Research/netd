@@ -25,44 +25,54 @@
  * SUCH DAMAGE.
  */
 
-#ifndef NETD_LOGGER_HPP
-#define NETD_LOGGER_HPP
+#include <client/include/tui.hpp>
+#include <curses.h>
 
-#include <functional>
-#include <memory>
-#include <string>
+namespace netd::client {
 
-namespace netd::shared {
+  // Cursor management
+  int TUI::getCursorX() {
+    int y, x;
+    getyx(stdscr, y, x);
+    (void)y; // Suppress unused variable warning
+    return x;
+  }
 
-  enum class LogLevel { TRACE, DEBUG, INFO, WARNING, ERROR };
+  int TUI::getCursorY() {
+    int y, x;
+    getyx(stdscr, y, x);
+    (void)x; // Suppress unused variable warning
+    return y;
+  }
 
-  class Logger {
-  public:
-    using Callback = std::function<void(LogLevel, const std::string &)>;
+  void TUI::moveCursor(int y, int x) {
+    move(y, x);
+  }
 
-    static Logger &getInstance();
+  // Character insertion/deletion
+  void TUI::insertCharAtCursor(char ch) {
+    insch(ch);
+    refresh();
+  }
 
-    void setCallback(Callback callback);
-    void log(LogLevel level, const std::string &message);
+  void TUI::deleteCharAtCursor() {
+    delch();
+    refresh();
+  }
 
-    void trace(const std::string &message);
-    void debug(const std::string &message);
-    void info(const std::string &message);
-    void warning(const std::string &message);
-    void error(const std::string &message);
-    
-    void setLogLevel(LogLevel level);
+  void TUI::backspaceAtCursor() {
+    int y, x;
+    getyx(stdscr, y, x);
+    if (x > getPromptLength()) {
+      move(y, x - 1);
+      delch();
+      refresh();
+    }
+  }
 
-  private:
-    Logger();
-    ~Logger() = default;
-    Logger(const Logger &) = delete;
-    Logger &operator=(const Logger &) = delete;
+  void TUI::putChar(char ch) {
+    addch(ch);
+    refresh();
+  }
 
-    Callback callback_;
-    LogLevel currentLogLevel_ = LogLevel::ERROR;
-  };
-
-} // namespace netd::shared
-
-#endif // NETD_LOGGER_HPP
+} // namespace netd::client

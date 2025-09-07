@@ -25,44 +25,38 @@
  * SUCH DAMAGE.
  */
 
-#ifndef NETD_LOGGER_HPP
-#define NETD_LOGGER_HPP
+#ifndef NETD_CLIENT_PROCESSOR_HPP
+#define NETD_CLIENT_PROCESSOR_HPP
 
-#include <functional>
-#include <memory>
+#include <client/include/parser.hpp>
+#include <client/include/table.hpp>
+#include <client/include/tui.hpp>
 #include <string>
+#include <vector>
 
-namespace netd::shared {
+namespace netd::client {
 
-  enum class LogLevel { TRACE, DEBUG, INFO, WARNING, ERROR };
-
-  class Logger {
+  class CommandProcessor {
   public:
-    using Callback = std::function<void(LogLevel, const std::string &)>;
-
-    static Logger &getInstance();
-
-    void setCallback(Callback callback);
-    void log(LogLevel level, const std::string &message);
-
-    void trace(const std::string &message);
-    void debug(const std::string &message);
-    void info(const std::string &message);
-    void warning(const std::string &message);
-    void error(const std::string &message);
-    
-    void setLogLevel(LogLevel level);
+    CommandProcessor(TUI &tui);
+    bool processCommand(const std::string &command);
 
   private:
-    Logger();
-    ~Logger() = default;
-    Logger(const Logger &) = delete;
-    Logger &operator=(const Logger &) = delete;
+    TUI &tui_;
+    CommandParser parser_;
 
-    Callback callback_;
-    LogLevel currentLogLevel_ = LogLevel::ERROR;
+    bool handleShowCommand(const ParsedCommand &parsed);
+    bool handleSetCommand(const ParsedCommand &parsed);
+    bool handleDeleteCommand(const ParsedCommand &parsed);
+    bool handleCommitCommand(const ParsedCommand &parsed);
+    bool handleShowVrf(const ParsedCommand &parsed);
+    bool handleShowRoute(const ParsedCommand &parsed);
+    bool handleShowInterface(const ParsedCommand &parsed);
+    bool handleSetVrf(const ParsedCommand &parsed);
+    bool handleSetInterface(const ParsedCommand &parsed);
+    bool handleSetRoute(const ParsedCommand &parsed);
   };
 
-} // namespace netd::shared
+} // namespace netd::client
 
-#endif // NETD_LOGGER_HPP
+#endif // NETD_CLIENT_PROCESSOR_HPP

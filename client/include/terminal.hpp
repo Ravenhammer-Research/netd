@@ -78,13 +78,6 @@ namespace netd::client {
     int historyPosition_;
     std::vector<std::string> completions_;
     std::function<bool(const std::string &)> commandHandler_;
-
-    // Curses helpers
-    void setupCurses();
-    void handleKeyInput(char key);
-    void updateDisplay();
-    std::string currentLine_;
-    int cursorPosition_;
   };
 
 } // namespace netd::client

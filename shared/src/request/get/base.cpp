@@ -34,39 +34,8 @@
 
 namespace netd::shared::request::get {
 
-  lyd_node *GetRequest::toYang(ly_ctx *ctx) const {
-    if (!ctx) {
-      return nullptr;
-    }
-
-    // Get the ietf-netconf module
-    const struct lys_module *mod =
-        ly_ctx_get_module_implemented(ctx, "ietf-netconf");
-    if (!mod) {
-      return nullptr;
-    }
-
-    // Create the complete RPC structure with envelope
-    lyd_node *rpcNode = nullptr;
-    if (lyd_new_inner(nullptr, mod, "rpc", 0, &rpcNode) != LY_SUCCESS) {
-      return nullptr;
-    }
-
-    // Add message-id attribute to the RPC envelope
-    if (lyd_new_meta(nullptr, rpcNode, nullptr, "message-id", "1", 0,
-                     nullptr) != LY_SUCCESS) {
-      lyd_free_tree(rpcNode);
-      return nullptr;
-    }
-
-    // Create the get operation inside the RPC
-    lyd_node *getNode = nullptr;
-    if (lyd_new_inner(rpcNode, mod, "get", 0, &getNode) != LY_SUCCESS) {
-      lyd_free_tree(rpcNode);
-      return nullptr;
-    }
-
-    return rpcNode;
+  lyd_node *GetRequest::toYang([[maybe_unused]] ly_ctx *ctx) const {
+    throw NotImplementedError("toYang method not implemented");
   }
 
   std::unique_ptr<GetRequest>

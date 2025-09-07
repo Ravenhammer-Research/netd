@@ -31,6 +31,7 @@
 #include <libyang/parser_schema.h>
 #include <libyang/printer_data.h>
 #include <libyang/tree_data.h>
+#include <shared/include/exception.hpp>
 #include <shared/include/logger.hpp>
 #include <shared/include/yang.hpp>
 #include <sstream>
@@ -50,7 +51,7 @@ namespace netd::shared {
     if (!ctx_) {
       auto &logger = Logger::getInstance();
       logger.error("Failed to create libyang context");
-      throw std::runtime_error("Failed to create libyang context");
+      throw netd::shared::ConfigurationError("Failed to create libyang context");
     }
 
     // Set up search paths for YANG modules
@@ -60,6 +61,13 @@ namespace netd::shared {
     ly_ctx_set_searchdir(ctx_, "/usr/local/share/yang/modules/libnetconf2");
     ly_ctx_set_searchdir(ctx_, "/usr/share/yang/modules/libyang");
     ly_ctx_set_searchdir(ctx_, "/usr/share/yang/modules/libnetconf2");
+
+    // Load essential NETCONF modules
+    struct lys_module *netconf_module = ly_ctx_load_module(ctx_, "ietf-netconf", nullptr, nullptr);
+    if (!netconf_module) {
+      auto &logger = Logger::getInstance();
+      logger.error("Failed to load ietf-netconf module");
+    }
 
     // Load standard schemas
     loadStandardSchemas();

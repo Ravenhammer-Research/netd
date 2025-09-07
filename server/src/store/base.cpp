@@ -61,26 +61,6 @@ namespace netd::server::store {
     return results;
   }
 
-  std::vector<lyd_node *> Store::searchInterface(const std::string &filter) {
-    std::string xpath =
-        filter.empty() ? "/ietf-interfaces:interfaces/interface" : filter;
-    return search(xpath);
-  }
-
-  std::vector<lyd_node *> Store::searchVRF(const std::string &filter) {
-    std::string xpath = filter.empty()
-                            ? "/ietf-routing:routing/control-plane-protocols/"
-                              "control-plane-protocol"
-                            : filter;
-    return search(xpath);
-  }
-
-  std::vector<lyd_node *> Store::searchRoute(const std::string &filter) {
-    std::string xpath =
-        filter.empty() ? "/ietf-routing:routing/ribs/rib/route" : filter;
-    return search(xpath);
-  }
-
   // Lock/unlock methods
   void Store::lock() { storeMutex_.lock(); }
 

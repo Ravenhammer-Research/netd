@@ -30,18 +30,47 @@
 
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 namespace netd::shared {
 
   class NetdException : public std::runtime_error {
+  private:
+    std::vector<void*> stackTrace_;
+
   public:
-    explicit NetdException(const std::string &message)
-        : std::runtime_error(message) {}
+    explicit NetdException(const std::string &message);
+    const std::vector<void*>& getStackTrace() const { return stackTrace_; }
+    static std::string getStackTraceString(const std::vector<void*> &stackTrace);
   };
 
   class NotImplementedError : public NetdException {
   public:
     explicit NotImplementedError(const std::string &message)
+        : NetdException(message) {}
+  };
+
+  class ArgumentError : public NetdException {
+  public:
+    explicit ArgumentError(const std::string &message)
+        : NetdException(message) {}
+  };
+
+  class ConnectionError : public NetdException {
+  public:
+    explicit ConnectionError(const std::string &message)
+        : NetdException(message) {}
+  };
+
+  class ConfigurationError : public NetdException {
+  public:
+    explicit ConfigurationError(const std::string &message)
+        : NetdException(message) {}
+  };
+
+  class NetworkError : public NetdException {
+  public:
+    explicit NetworkError(const std::string &message)
         : NetdException(message) {}
   };
 

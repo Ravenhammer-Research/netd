@@ -35,6 +35,8 @@ namespace netd::shared::response::get {
   class GetConfigResponse : public netd::shared::response::Response {
   public:
     GetConfigResponse();
+    GetConfigResponse(GetConfigResponse &&other) noexcept;
+    GetConfigResponse &operator=(GetConfigResponse &&other) noexcept;
     virtual ~GetConfigResponse();
 
     // Override base methods

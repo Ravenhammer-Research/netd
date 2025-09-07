@@ -32,38 +32,18 @@
 #include <string>
 #include <vector>
 
+// Forward declaration
+namespace netd::shared::response::get {
+  class GetConfigResponse;
+}
+
 namespace netd::client {
 
   class Table {
   public:
     Table();
+    Table(const netd::shared::response::get::GetConfigResponse &response);
     ~Table() = default;
-
-    // Add columns
-    void addColumn(const std::string &name);
-
-    // Add rows
-    void addRow(const std::vector<std::string> &values);
-
-    // Format and return the table as a string
-    std::string format() const;
-
-    // Clear the table
-    void clear();
-
-  private:
-    std::vector<std::string> columns_;
-    std::vector<std::vector<std::string>> rows_;
-
-    // Calculate column widths dynamically
-    std::vector<size_t> calculateColumnWidths() const;
-
-    // Format a single row
-    std::string formatRow(const std::vector<std::string> &values,
-                          const std::vector<size_t> &widths) const;
-
-    // Format the header separator
-    std::string formatSeparator(const std::vector<size_t> &widths) const;
   };
 
 } // namespace netd::client

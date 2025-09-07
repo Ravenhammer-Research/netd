@@ -2,6 +2,7 @@
 set(CLIENT_LIB_SOURCES
     netconf.cpp
     parser.cpp
+    processor.cpp
     table.cpp
     terminal.cpp
 )
@@ -17,7 +18,11 @@ target_compile_definitions(netd_client PRIVATE
     YANG_DIR="${YANG_DIR}"
 )
 
+# Add TUI subdirectory
+add_subdirectory(tui)
+
 # Link libraries
 target_link_libraries(netd_client PRIVATE
     netd_client_parser
+    netd_tui
 )

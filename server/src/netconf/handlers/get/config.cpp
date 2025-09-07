@@ -29,6 +29,7 @@
 #include <libnetconf2/netconf.h>
 #include <libyang/libyang.h>
 #include <server/include/netconf/handlers.hpp>
+#include <shared/include/exception.hpp>
 #include <shared/include/logger.hpp>
 #include <shared/include/marshalling/interface.hpp>
 #include <shared/include/request/get/config.hpp>
@@ -39,12 +40,15 @@ namespace netd::server::netconf::handlers {
   std::unique_ptr<netd::shared::response::get::GetConfigResponse>
   RpcHandler::handleGetConfigRequest(
       std::unique_ptr<netd::shared::request::get::GetConfigRequest> request) {
-    try {
-      // Delegate to interface handler
-      return RpcHandler::handleGetInterfaceRequest(std::move(request));
+    std::string requestedModule = request->getRequestedModule();
 
-    } catch (const std::exception &e) {
-      // TODO: Return proper error response
+    if (requestedModule == "ietf-interfaces") {
+      return RpcHandler::handleGetInterfaceRequest(std::move(request));
+    } else if (requestedModule == "ietf-system") {
+      throw netd::shared::NotImplementedError("System configuration handler not implemented");
+    } else if (requestedModule == "ietf-routing") {
+      throw netd::shared::NotImplementedError("Routing configuration handler not implemented");
+    } else {
       return std::make_unique<netd::shared::response::get::GetConfigResponse>();
     }
   }

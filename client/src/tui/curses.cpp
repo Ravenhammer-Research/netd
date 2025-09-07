@@ -25,44 +25,85 @@
  * SUCH DAMAGE.
  */
 
-#ifndef NETD_LOGGER_HPP
-#define NETD_LOGGER_HPP
+#include <client/include/tui.hpp>
+#include <curses.h>
+#include <signal.h>
+#include <unistd.h>
 
-#include <functional>
-#include <memory>
-#include <string>
+namespace netd::client {
 
-namespace netd::shared {
+  // Terminal initialization and cleanup
+  void TUI::setupCurses() {
+    initscr();
+    setupColors();
+    enableRawMode();
+    disableEcho();
+    enableKeypad();
+    initializeScreen();
+  }
 
-  enum class LogLevel { TRACE, DEBUG, INFO, WARNING, ERROR };
+  void TUI::setupColors() {
+    if (has_colors()) {
+      start_color();
+      init_pair(1, COLOR_RED, COLOR_BLACK);
+      init_pair(2, COLOR_YELLOW, COLOR_BLACK);
+      init_pair(3, COLOR_BLUE, COLOR_BLACK);
+      init_pair(4, COLOR_GREEN, COLOR_BLACK);
+      init_pair(5, COLOR_MAGENTA, COLOR_BLACK);
+    }
+  }
 
-  class Logger {
-  public:
-    using Callback = std::function<void(LogLevel, const std::string &)>;
+  void TUI::configureSignalHandler() {
+    signal(SIGINT, [](int) {
+      // Clean exit on Ctrl-C
+      exit(0);
+    });
+  }
 
-    static Logger &getInstance();
+  void TUI::initializeScreen() {
+    refresh();
+  }
 
-    void setCallback(Callback callback);
-    void log(LogLevel level, const std::string &message);
+  void TUI::enableRawMode() {
+    raw();
+  }
 
-    void trace(const std::string &message);
-    void debug(const std::string &message);
-    void info(const std::string &message);
-    void warning(const std::string &message);
-    void error(const std::string &message);
-    
-    void setLogLevel(LogLevel level);
+  void TUI::disableEcho() {
+    noecho();
+  }
 
-  private:
-    Logger();
-    ~Logger() = default;
-    Logger(const Logger &) = delete;
-    Logger &operator=(const Logger &) = delete;
+  void TUI::enableKeypad() {
+    keypad(stdscr, TRUE);
+  }
 
-    Callback callback_;
-    LogLevel currentLogLevel_ = LogLevel::ERROR;
-  };
+  void TUI::cleanupScreen() {
+    endwin();
+  }
 
-} // namespace netd::shared
+  void TUI::cleanup() {
+    if (initialized_) {
+      cleanupLogger();
+      cleanupScreen();
+      initialized_ = false;
+    }
+  }
+  
+  // Screen refresh
+  void TUI::refreshCurses() {
+    refresh();
+  }
 
-#endif // NETD_LOGGER_HPP
+  // Terminal attributes
+  void TUI::setAttribute(int attr) {
+    attron(attr);
+  }
+
+  void TUI::addAttribute(int attr) {
+    attron(attr);
+  }
+
+  void TUI::removeAttribute(int attr) {
+    attroff(attr);
+  }
+
+} // namespace netd::client

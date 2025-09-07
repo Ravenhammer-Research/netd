@@ -26,9 +26,68 @@
  */
 
 #include <shared/include/exception.hpp>
+#include <shared/include/logger.hpp>
+#include <execinfo.h>
+#include <cxxabi.h>
+#include <cstring>
 
 namespace netd::shared {
 
-  // Exception classes are implemented inline in the header
+  NetdException::NetdException(const std::string &message)
+      : std::runtime_error(message) {
+    // Capture stack trace when exception is created
+    void *array[20];
+    size_t size = backtrace(array, 20);
+    stackTrace_.assign(array, array + size);
+  }
+
+  std::string NetdException::getStackTraceString(const std::vector<void*> &stackTrace) {
+    char **strings = backtrace_symbols(const_cast<void**>(stackTrace.data()), stackTrace.size());
+
+    std::string stackTraceStr = "Stack trace:\n";
+
+    for (size_t i = 0; i < stackTrace.size(); i++) {
+      std::string line = strings[i];
+
+      // Try to find and demangle any mangled symbols in the line
+      size_t pos = 0;
+      while (pos < line.length()) {
+        // Look for mangled symbols that start with _Z
+        size_t start = line.find("_Z", pos);
+        if (start == std::string::npos) break;
+
+        // Find the end of the mangled symbol (before + or at end of line)
+        size_t end = start + 2; // Skip _Z
+        while (end < line.length() && line[end] != '+' && line[end] != ' ' && line[end] != '>') {
+          end++;
+        }
+
+        if (end > start + 2) {
+          std::string mangled = line.substr(start, end - start);
+
+          int status;
+          char *demangled = abi::__cxa_demangle(mangled.c_str(), nullptr, nullptr, &status);
+
+          if (status == 0 && demangled) {
+            line = line.substr(0, start) + demangled + line.substr(end);
+            free(demangled);
+            pos = start + strlen(demangled);
+          } else {
+            pos = end;
+          }
+        } else {
+          pos = end;
+        }
+      }
+
+      // Add frame number prefix (reverse order - #0 is most recent)
+      char frameStr[32];
+      snprintf(frameStr, sizeof(frameStr), "#%zu ", stackTrace.size() - 1 - i);
+      stackTraceStr += frameStr + line + "\n";
+    }
+    free(strings);
+
+    return stackTraceStr;
+  }
 
 } // namespace netd::shared

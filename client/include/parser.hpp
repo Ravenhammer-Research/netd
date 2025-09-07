@@ -33,7 +33,7 @@
 
 namespace netd::client {
 
-  enum class CommandType { SHOW, SET, DELETE, COMMIT, UNKNOWN };
+  enum class CommandType { SHOW, SET, DELETE, COMMIT, QUIT, UNKNOWN };
 
   enum class TargetType { INTERFACE, VRF, ROUTE, UNKNOWN };
 

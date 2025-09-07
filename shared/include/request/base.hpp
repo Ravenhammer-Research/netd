@@ -29,6 +29,7 @@
 #define NETD_REQUEST_BASE_HPP
 
 #include <libnetconf2/netconf.h>
+#include <libnetconf2/session_client.h>
 #include <libyang/libyang.h>
 #include <memory>
 #include <shared/include/base/serialization.hpp>
@@ -51,6 +52,10 @@ namespace netd::shared::request {
     virtual lyd_node *toYang(ly_ctx *ctx) const = 0;
     virtual std::unique_ptr<T> fromYang(const ly_ctx *ctx,
                                         const lyd_node *node) = 0;
+    
+    // Convert to XML string
+    std::string toXml() const;
+    struct nc_rpc *toRpc() const;
 
     // Session and RPC accessors
     struct nc_session *getSession() const { return session_; }

@@ -25,33 +25,12 @@
  * SUCH DAMAGE.
  */
 
-#include <algorithm>
-#include <cctype>
 #include <client/include/terminal.hpp>
-#include <curses.h>
-#include <shared/include/logger.hpp>
-#include <string>
+#include <iostream>
 
 namespace netd::client {
 
-  constexpr char KEY_NEWLINE_CONST = 0x0A;
-  constexpr char KEY_CARRIAGE_RETURN_CONST = 0x0D;
-  constexpr char KEY_TAB_CONST = 0x09;
-  constexpr char KEY_DELETE_CONST = 0x7F;
-  constexpr char KEY_BACKSPACE_CONST = 0x08;
-
-  constexpr char KEY_LEFT_CONST = 0x44;
-  constexpr char KEY_RIGHT_CONST = 0x43;
-  constexpr char KEY_UP_CONST = 0x41;
-  constexpr char KEY_DOWN_CONST = 0x42;
-
-  [[maybe_unused]] constexpr int MAX_HISTORY_SIZE = 100;
-  [[maybe_unused]] constexpr int PROMPT_ROW = 0;
-  [[maybe_unused]] constexpr int PROMPT_COL = 0;
-
-  Terminal::Terminal()
-      : initialized_(false), prompt_("net> "), historyPosition_(-1),
-        cursorPosition_(0) {}
+  Terminal::Terminal() : initialized_(false) {}
 
   Terminal::~Terminal() { cleanup(); }
 
@@ -59,229 +38,60 @@ namespace netd::client {
     if (initialized_) {
       return true;
     }
-
-    setupCurses();
     initialized_ = true;
     return true;
   }
 
   void Terminal::cleanup() {
     if (initialized_) {
-      endwin();
       initialized_ = false;
     }
   }
 
-  void Terminal::setupCurses() {
-    initscr();
-    cbreak();
-    noecho();
-    keypad(stdscr, TRUE);
-
-    // Position cursor at top initially, bottom line is reserved for prompt
-    move(0, 0);
-
-    refresh();
-  }
-
   std::string Terminal::readLine() {
-    if (!initialized_) {
-      return "";
-    }
-
-    currentLine_.clear();
-    cursorPosition_ = 0;
-    historyPosition_ = -1;
-
-    char key;
-    while ((key = getch()) != KEY_NEWLINE_CONST &&
-           key != KEY_CARRIAGE_RETURN_CONST) {
-      handleKeyInput(key);
-    }
-
-    std::string result = currentLine_;
-    if (!result.empty()) {
-      addToHistory(result);
-    }
-
-    return result;
-  }
-
-  void Terminal::handleKeyInput(char key) {
-    switch (key) {
-    case KEY_BACKSPACE_CONST:
-    case KEY_DELETE_CONST:
-      if (cursorPosition_ > 0) {
-        currentLine_.erase(cursorPosition_ - 1, 1);
-        cursorPosition_--;
-        updateDisplay();
-      }
-      break;
-
-    case KEY_LEFT_CONST:
-      if (cursorPosition_ > 0) {
-        cursorPosition_--;
-        updateDisplay();
-      }
-      break;
-
-    case KEY_RIGHT_CONST:
-      if (cursorPosition_ < static_cast<int>(currentLine_.length())) {
-        cursorPosition_++;
-        updateDisplay();
-      }
-      break;
-
-    case KEY_UP_CONST:
-      if (!history_.empty()) {
-        if (historyPosition_ == -1) {
-          historyPosition_ = history_.size() - 1;
-        } else if (historyPosition_ > 0) {
-          historyPosition_--;
-        }
-        currentLine_ = history_[historyPosition_];
-        cursorPosition_ = currentLine_.length();
-        updateDisplay();
-      }
-      break;
-
-    case KEY_DOWN_CONST:
-      if (historyPosition_ != -1) {
-        if (historyPosition_ < static_cast<int>(history_.size()) - 1) {
-          historyPosition_++;
-          currentLine_ = history_[historyPosition_];
-        } else {
-          historyPosition_ = -1;
-          currentLine_.clear();
-        }
-        cursorPosition_ = currentLine_.length();
-        updateDisplay();
-      }
-      break;
-
-    case KEY_TAB_CONST: {
-      std::string completed = completeCommand(currentLine_);
-      if (!completed.empty() && completed != currentLine_) {
-        currentLine_ = completed;
-        cursorPosition_ = currentLine_.length();
-        updateDisplay();
-      }
-    } break;
-
-    default:
-      if (isprint(key)) {
-        currentLine_.insert(cursorPosition_, 1, static_cast<char>(key));
-        cursorPosition_++;
-        updateDisplay();
-      }
-      break;
-    }
-  }
-
-  void Terminal::updateDisplay() {
-    int maxy, maxx;
-    getmaxyx(stdscr, maxy, maxx);
-    move(maxy - 1, 0);
-    clrtoeol();
-    printw("%s%s", prompt_.c_str(), currentLine_.c_str());
-    move(maxy - 1, prompt_.length() + cursorPosition_);
-    refresh();
-  }
-
-  void Terminal::redrawPrompt() {
-    if (initialized_) {
-      // Save current cursor position
-      int cury, curx;
-      getyx(stdscr, cury, curx);
-
-      // Redraw the prompt
-      int maxy, maxx;
-      getmaxyx(stdscr, maxy, maxx);
-      move(maxy - 1, 0);
-      clrtoeol();
-      printw("%s", prompt_.c_str());
-      move(maxy - 1, prompt_.length());
-      refresh();
-
-      // Restore original cursor position
-      move(cury, curx);
-    }
+    std::string line;
+    std::getline(std::cin, line);
+    return line;
   }
 
   void Terminal::write(const std::string &text) {
-    if (initialized_) {
-      int maxy, maxx;
-      getmaxyx(stdscr, maxy, maxx);
-
-      // Save current cursor position
-      int cury, curx;
-      getyx(stdscr, cury, curx);
-
-      // If we're at the bottom line, move up one line
-      if (cury >= maxy - 1) {
-        move(maxy - 2, 0);
-      }
-
-      printw("%s", text.c_str());
-      refresh();
-    }
+    std::cout << text;
+    std::cout.flush();
   }
 
   void Terminal::writeLine(const std::string &text) {
-    if (initialized_) {
-      int maxy, maxx;
-      getmaxyx(stdscr, maxy, maxx);
-
-      // Save current cursor position
-      int cury, curx;
-      getyx(stdscr, cury, curx);
-
-      // If we're at the bottom line, move up one line
-      if (cury >= maxy - 1) {
-        move(maxy - 2, 0);
-      }
-
-      printw("%s\n", text.c_str());
-      refresh();
-    }
+    std::cout << text << std::endl;
   }
 
   void Terminal::clear() {
-    if (initialized_) {
-      clear();
-      refresh();
-    }
+    // Simple terminal clear - could be enhanced for different platforms
+    std::cout << "\033[2J\033[H";
+    std::cout.flush();
   }
 
   void Terminal::refresh() {
-    if (initialized_) {
-      ::refresh();
-    }
+    std::cout.flush();
   }
 
   void Terminal::addToHistory(const std::string &command) {
-    // Don't add duplicate consecutive commands
+    // Basic history management - could be enhanced
     if (history_.empty() || history_.back() != command) {
       history_.push_back(command);
-      // Limit history size
       if (history_.size() > 100) {
         history_.erase(history_.begin());
       }
     }
-    resetHistoryPosition();
   }
 
   std::string Terminal::getHistoryUp() {
     if (history_.empty()) {
       return "";
     }
-
     if (historyPosition_ == -1) {
       historyPosition_ = history_.size() - 1;
     } else if (historyPosition_ > 0) {
       historyPosition_--;
     }
-
     return history_[historyPosition_];
   }
 
@@ -289,7 +99,6 @@ namespace netd::client {
     if (history_.empty()) {
       return "";
     }
-
     if (historyPosition_ < static_cast<int>(history_.size()) - 1) {
       historyPosition_++;
       return history_[historyPosition_];
@@ -299,7 +108,9 @@ namespace netd::client {
     }
   }
 
-  void Terminal::resetHistoryPosition() { historyPosition_ = -1; }
+  void Terminal::resetHistoryPosition() { 
+    historyPosition_ = -1; 
+  }
 
   void Terminal::setCompletions(const std::vector<std::string> &completions) {
     completions_ = completions;
@@ -344,7 +155,9 @@ namespace netd::client {
 
     std::string line;
     while (true) {
-      write(prompt_);
+      std::cout << prompt_;
+      std::cout.flush();
+      
       line = readLine();
 
       if (line.empty()) {
@@ -375,6 +188,11 @@ namespace netd::client {
         writeLine("No command handler set");
       }
     }
+  }
+
+  void Terminal::redrawPrompt() {
+    // Basic implementation - could be enhanced
+    std::cout.flush();
   }
 
 } // namespace netd::client

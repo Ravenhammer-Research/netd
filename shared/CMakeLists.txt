@@ -3,6 +3,7 @@ set(SHARED_SOURCES
     src/address.cpp
     src/exception.cpp
     src/logger.cpp
+    src/pretty.cpp
     src/route.cpp
     src/vrf.cpp
     src/yang.cpp

@@ -37,6 +37,22 @@ namespace netd::shared::response {
     data = nullptr;
   }
 
+  Response::Response(Response &&other) noexcept
+      : error(std::move(other.error)), data(std::move(other.data)) {
+    other.error = nullptr;
+    other.data = nullptr;
+  }
+
+  Response &Response::operator=(Response &&other) noexcept {
+    if (this != &other) {
+      error = std::move(other.error);
+      data = std::move(other.data);
+      other.error = nullptr;
+      other.data = nullptr;
+    }
+    return *this;
+  }
+
   // Convenience methods for common error types
   void Response::setProtocolError(netd::shared::marshalling::ErrorTag tag,
                                   const std::string &message) {
@@ -96,6 +112,12 @@ namespace netd::shared::response {
   void Response::setInterface(
       std::unique_ptr<netd::shared::marshalling::Interface> interface) {
     data = std::move(interface);
+  }
+
+  // Value semantics overload for easier usage
+  void Response::setData(netd::shared::marshalling::Interface interface) {
+    data = std::make_unique<netd::shared::marshalling::Interface>(
+        std::move(interface));
   }
 
   // Default implementation of toNetconfReply

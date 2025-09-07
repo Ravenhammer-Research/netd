@@ -29,112 +29,120 @@
 #include <libnetconf2/messages_client.h>
 #include <libnetconf2/session_client.h>
 #include <libyang/libyang.h>
+#include <shared/include/exception.hpp>
 #include <shared/include/logger.hpp>
 #include <shared/include/request/edit.hpp>
 #include <shared/include/request/get/base.hpp>
+#include <shared/include/response/get/config.hpp>
 #include <shared/include/request/get/config.hpp>
 #include <shared/include/yang.hpp>
+#include <client/include/netconf.hpp>
 #include <stdexcept>
 
 namespace netd::client {
   using netd::shared::Logger;
   using netd::shared::Yang;
 
-  class NetconfClient {
-  public:
-    NetconfClient() : session_(nullptr), connected_(false) {
-      // Yang will be initialized lazily when needed
+  // NetconfClient implementation
+  NetconfClient::NetconfClient() : session_(nullptr), connected_(false) {
+  }
+
+  NetconfClient::~NetconfClient() {
+    if (connected_) {
+      disconnect();
+    }
+  }
+
+  bool NetconfClient::connect(const std::string &socketPath) {
+    auto &logger = netd::shared::Logger::getInstance();
+
+    struct ly_ctx *ctx = Yang::getInstance().getContext();
+
+    session_ = nc_connect_unix(socketPath.c_str(), ctx);
+    if (!session_) {
+      logger.error("Failed to connect to NETD server at " + socketPath);
+      return false;
     }
 
-    ~NetconfClient() {
-      if (connected_) {
-        disconnect();
-      }
+    connected_ = true;
+    logger.info("Connected to NETD server at " + socketPath);
+    return true;
+  }
+
+  void NetconfClient::disconnect() {
+    if (session_) {
+      nc_session_free(session_, nullptr);
+      session_ = nullptr;
+    }
+    connected_ = false;
+  }
+
+  bool NetconfClient::isConnected() const { 
+    return connected_; 
+  }
+  
+  struct nc_session *NetconfClient::getSession() const { 
+    return session_; 
+  }
+
+  netd::shared::response::get::GetConfigResponse NetconfClient::sendRequest(struct nc_rpc *rpc) {
+    if (!connected_) {
+      throw netd::shared::ConnectionError("Not connected to server");
     }
 
-    bool connect(const std::string &socketPath = "/tmp/netd.sock") {
-      auto &logger = netd::shared::Logger::getInstance();
-
-      // Use the shared YANG context
-      struct ly_ctx *ctx = Yang::getInstance().getContext();
-
-      // Connect to NETCONF server via Unix socket
-      session_ = nc_connect_unix(socketPath.c_str(), ctx);
-      if (!session_) {
-        logger.error("Failed to connect to NETD server at " + socketPath);
-        return false;
-      }
-
-      connected_ = true;
-      logger.info("Connected to NETD server at " + socketPath);
-      return true;
+    // Send the RPC
+    uint64_t msgid;
+    int ret = nc_send_rpc(session_, rpc, 1024, &msgid);
+    if (ret != NC_MSG_RPC) {
+      nc_rpc_free(rpc);
+      throw netd::shared::NetworkError("Failed to send RPC");
     }
 
-    void disconnect() {
-      if (session_) {
-        nc_session_free(session_, nullptr);
-        session_ = nullptr;
-      }
-      connected_ = false;
+    // Receive response
+    struct lyd_node *envp = nullptr;
+    struct lyd_node *op = nullptr;
+    ret = nc_recv_reply(session_, rpc, msgid, 1024, &envp, &op);
+    nc_rpc_free(rpc);
+
+    auto &logger = netd::shared::Logger::getInstance();
+    logger.debug("nc_recv_reply returned: " + std::to_string(ret) + " (expected: " + std::to_string(NC_MSG_REPLY) + ")");
+
+    if (ret != NC_MSG_REPLY) {
+      throw netd::shared::NetworkError("Failed to receive response, got return code: " + std::to_string(ret));
     }
 
-    bool isConnected() const { return connected_; }
-
-    // Send a NETCONF request and receive response
-    std::string sendRequest(const std::string &request) {
-      if (!connected_) {
-        throw std::runtime_error("Not connected to server");
-      }
-
-      auto &logger = netd::shared::Logger::getInstance();
-
-      // TODO: Parse request string to nc_rpc and send via nc_send_rpc
-      // For now, return a placeholder response
-      logger.debug("Sending request: " + request);
-      return "NETCONF response placeholder";
+    // Check if we received valid operation data
+    if (!op) {
+      lyd_free_tree(envp);
+      throw netd::shared::NetworkError("Received empty response from server");
     }
 
-    // Convenience methods for common NETCONF operations
-    std::string
-    getConfig([[maybe_unused]] const std::string &source = "running") {
-      if (!connected_) {
-        throw std::runtime_error("Not connected to server");
-      }
-
-      // TODO: Implement actual get-config request
-      return "get-config response placeholder";
+    // Create GetConfigResponse from the received data
+    netd::shared::response::get::GetConfigResponse response;
+    
+    // Parse the received data using the response's fromYang method
+    auto parsedResponse = response.fromYang(Yang::getInstance().getContext(), op);
+    if (parsedResponse) {
+      response = std::move(*static_cast<netd::shared::response::get::GetConfigResponse*>(parsedResponse.get()));
     }
+    
+    lyd_free_tree(envp);
+    lyd_free_tree(op);
+    
+    return response;
+  }
 
-    std::string get([[maybe_unused]] const std::string &filter = "") {
-      if (!connected_) {
-        throw std::runtime_error("Not connected to server");
-      }
 
-      // TODO: Implement actual get request
-      return "get response placeholder";
-    }
-
-    std::string
-    editConfig([[maybe_unused]] const std::string &target = "candidate",
-               [[maybe_unused]] const std::string &config = "") {
-      if (!connected_) {
-        throw std::runtime_error("Not connected to server");
-      }
-
-      // TODO: Implement actual edit-config request
-      return "edit-config response placeholder";
-    }
-
-  private:
-    struct nc_session *session_;
-    bool connected_;
-  };
-
-  // Global NETCONF client instance - lazy initialization to avoid static init
-  // order issues
+  // Global functions
   static NetconfClient *g_netconfClient = nullptr;
-
-  // Public interface functions
+  
+  NetconfClient &getNetconfClient() {
+    if (!g_netconfClient) {
+      g_netconfClient = new NetconfClient();
+    }
+    return *g_netconfClient;
+  }
+  
   bool connectToServer(const std::string &socketPath) {
     if (!g_netconfClient) {
       g_netconfClient = new NetconfClient();
@@ -152,32 +160,5 @@ namespace netd::client {
     return g_netconfClient ? g_netconfClient->isConnected() : false;
   }
 
-  std::string sendNetconfRequest(const std::string &request) {
-    if (!g_netconfClient) {
-      throw std::runtime_error("Not connected to server");
-    }
-    return g_netconfClient->sendRequest(request);
-  }
-
-  std::string getConfig(const std::string &source) {
-    if (!g_netconfClient) {
-      throw std::runtime_error("Not connected to server");
-    }
-    return g_netconfClient->getConfig(source);
-  }
-
-  std::string get(const std::string &filter) {
-    if (!g_netconfClient) {
-      throw std::runtime_error("Not connected to server");
-    }
-    return g_netconfClient->get(filter);
-  }
-
-  std::string editConfig(const std::string &target, const std::string &config) {
-    if (!g_netconfClient) {
-      throw std::runtime_error("Not connected to server");
-    }
-    return g_netconfClient->editConfig(target, config);
-  }
 
 } // namespace netd::client

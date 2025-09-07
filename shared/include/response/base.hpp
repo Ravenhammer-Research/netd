@@ -44,6 +44,8 @@ namespace netd::shared::response {
   class Response : public netd::shared::base::Serialization<Response> {
   public:
     Response();
+    Response(Response &&other) noexcept;
+    Response &operator=(Response &&other) noexcept;
     virtual ~Response() = default;
 
     // Pure virtual methods that must be implemented by subclasses
@@ -68,8 +70,14 @@ namespace netd::shared::response {
       data = std::move(d);
     }
 
+    // Value semantics overload for easier usage
+    void setData(netd::shared::marshalling::Interface interface);
+
     netd::shared::marshalling::Error *getError() const { return error.get(); }
     netd::shared::marshalling::Data *getData() const { return data.get(); }
+    
+    // Check if response has an error
+    bool isError() const { return error != nullptr; }
 
     // Convenience methods for common error types
     void setProtocolError(netd::shared::marshalling::ErrorTag tag,

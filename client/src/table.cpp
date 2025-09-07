@@ -30,95 +30,15 @@
 #include <iomanip>
 #include <sstream>
 #include <string>
+#include <shared/include/response/get/config.hpp>
+#include <shared/include/exception.hpp>
 
 namespace netd::client {
 
-  constexpr size_t COLUMN_SPACING = 0x02;
-  constexpr char SEPARATOR_CHAR = 0x2D;
-  constexpr char NEWLINE_CHAR = 0x0A;
-  constexpr char SPACE_CHAR = 0x20;
-  constexpr const char *EMPTY = "";
-
   Table::Table() {}
 
-  void Table::addColumn(const std::string &name) { columns_.push_back(name); }
-
-  void Table::addRow(const std::vector<std::string> &values) {
-    rows_.push_back(values);
+  Table::Table([[maybe_unused]] const netd::shared::response::get::GetConfigResponse &response) {
+    throw netd::shared::NotImplementedError("Table::Table(const netd::shared::response::get::GetConfigResponse &response): not implemented");
   }
-
-  void Table::clear() {
-    columns_.clear();
-    rows_.clear();
-  }
-
-  std::string Table::format() const {
-    if (columns_.empty()) {
-      return EMPTY;
-    }
-
-    std::vector<size_t> widths = calculateColumnWidths();
-    std::ostringstream oss;
-
-    // Format header
-    oss << formatRow(columns_, widths) << NEWLINE_CHAR;
-    oss << formatSeparator(widths) << NEWLINE_CHAR;
-
-    // Format rows
-    for (const auto &row : rows_) {
-      oss << formatRow(row, widths) << NEWLINE_CHAR;
-    }
-
-    return oss.str();
-  }
-
-  std::vector<size_t> Table::calculateColumnWidths() const {
-    std::vector<size_t> widths(columns_.size(), 0);
-
-    // Calculate width for each column
-    for (size_t i = 0; i < columns_.size(); ++i) {
-      // Start with column header width
-      widths[i] = columns_[i].length();
-
-      // Check all rows for this column
-      for (const auto &row : rows_) {
-        if (i < row.size()) {
-          widths[i] = std::max(widths[i], row[i].length());
-        }
-      }
-    }
-
-    return widths;
-  }
-
-  std::string Table::formatRow(const std::vector<std::string> &values,
-                               const std::vector<size_t> &widths) const {
-    std::ostringstream oss;
-
-    for (size_t i = 0; i < columns_.size(); ++i) {
-      std::string value = (i < values.size()) ? values[i] : "";
-      oss << std::left << std::setw(widths[i]) << value;
-
-      if (i < columns_.size() - 1) {
-        oss << std::string(COLUMN_SPACING, SPACE_CHAR);
-      }
-    }
-
-    return oss.str();
-  }
-
-  std::string Table::formatSeparator(const std::vector<size_t> &widths) const {
-    std::ostringstream oss;
-
-    for (size_t i = 0; i < widths.size(); ++i) {
-      oss << std::string(widths[i], SEPARATOR_CHAR);
-
-      if (i < widths.size() - 1) {
-        oss << std::string(COLUMN_SPACING, SPACE_CHAR);
-      }
-    }
-
-    return oss.str();
-  }
-
+ 
 } // namespace netd::client

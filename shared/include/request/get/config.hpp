@@ -55,8 +55,13 @@ namespace netd::shared::request::get {
     Datastore getSource() const { return source_; }
     void setSource(Datastore source) { source_ = source; }
 
+    // Requested module access
+    std::string getRequestedModule() const { return requestedModule_; }
+    void setRequestedModule(const std::string &module) { requestedModule_ = module; }
+
   private:
     Datastore source_ = Datastore::RUNNING; // Default to running datastore
+    std::string requestedModule_ = "all";   // Store the requested module name
   };
 
 } // namespace netd::shared::request::get

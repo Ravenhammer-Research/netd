@@ -152,8 +152,7 @@ namespace netd::server::store::candidate {
 
     try {
       // Apply interface configuration changes
-      auto interfaceNodes =
-          searchInterface("/ietf-interfaces:interfaces/interface");
+      auto interfaceNodes = search("/ietf-interfaces:interfaces/interface");
       for (const auto &interfaceNode : interfaceNodes) {
         if (interfaceNode) {
           // Extract interface name

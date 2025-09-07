@@ -32,6 +32,7 @@
 #include <memory>
 #include <server/include/netconf/base.hpp>
 #include <server/include/netconf/handlers.hpp>
+#include <shared/include/exception.hpp>
 #include <shared/include/logger.hpp>
 #include <shared/include/request/close.hpp>
 #include <shared/include/request/commit.hpp>
@@ -56,9 +57,93 @@ namespace netd::server::netconf {
   using netd::shared::Logger;
   using netd::shared::Yang;
 
+  // Forward declaration
+  class NetconfServer;
+
+  // Global server instance
+  static std::unique_ptr<NetconfServer> g_server;
+
   class NetconfServer : public netd::server::netconf::Server {
   private:
     std::string socketPath_;
+
+    // Static wrapper for the RPC callback
+    static struct nc_server_reply *rpcCallback(struct lyd_node *rpc,
+                                               struct nc_session *session) {
+      auto &logger = netd::shared::Logger::getInstance();
+      
+      // Print the incoming RPC request
+      char *xmlStr = nullptr;
+      if (lyd_print_mem(&xmlStr, rpc, LYD_XML, LYD_PRINT_WITHSIBLINGS) == LY_SUCCESS) {
+        logger.debug("Incoming RPC request: " + std::string(xmlStr));
+        free(xmlStr);
+      }
+      
+      if (!g_server) {
+        throw netd::shared::ArgumentError("Server instance not available");
+      }
+
+      if (!session || !rpc) {
+        throw netd::shared::ArgumentError("Invalid session or RPC parameters");
+      }
+
+      // Get the RPC operation name
+      const char *rpcName = LYD_NAME(rpc);
+      if (!rpcName) {
+        throw netd::shared::ArgumentError("Failed to get RPC operation name");
+      }
+
+      try {
+        // Dispatch to appropriate handler based on RPC name
+        if (strcmp(rpcName, "get") == 0) {
+          return g_server->handleGetRequest(session, rpc);
+        } else if (strcmp(rpcName, "get-config") == 0) {
+          return g_server->handleGetConfigRequest(session, rpc);
+        } else if (strcmp(rpcName, "edit-config") == 0) {
+          return g_server->handleEditConfigRequest(session, rpc);
+        } else if (strcmp(rpcName, "copy-config") == 0) {
+          return g_server->handleCopyConfigRequest(session, rpc);
+        } else if (strcmp(rpcName, "delete-config") == 0) {
+          return g_server->handleDeleteConfigRequest(session, rpc);
+        } else if (strcmp(rpcName, "lock") == 0) {
+          return g_server->handleLockRequest(session, rpc);
+        } else if (strcmp(rpcName, "unlock") == 0) {
+          return g_server->handleUnlockRequest(session, rpc);
+        } else if (strcmp(rpcName, "discard-changes") == 0) {
+          return g_server->handleDiscardRequest(session, rpc);
+        } else if (strcmp(rpcName, "close-session") == 0) {
+          return g_server->handleCloseSessionRequest(session, rpc);
+        } else if (strcmp(rpcName, "kill-session") == 0) {
+          return g_server->handleKillSessionRequest(session, rpc);
+        } else if (strcmp(rpcName, "validate") == 0) {
+          return g_server->handleValidateRequest(session, rpc);
+        } else if (strcmp(rpcName, "hello") == 0) {
+          return g_server->handleHelloRequest(session, rpc);
+        } else if (strcmp(rpcName, "commit") == 0) {
+          return g_server->handleCommitRequest(session, rpc);
+        } else {
+          // Unknown RPC
+          throw netd::shared::NotImplementedError("Unknown RPC operation: " +
+                                                  std::string(rpcName));
+        }
+      } catch (const netd::shared::ArgumentError &e) {
+        return nc_server_reply_err(
+            nc_err(netd::shared::Yang::getInstance().getContext(),
+                   NC_ERR_INVALID_VALUE, NC_ERR_TYPE_APP, e.what()));
+      } catch (const netd::shared::NotImplementedError &e) {
+        return nc_server_reply_err(
+            nc_err(netd::shared::Yang::getInstance().getContext(),
+                   NC_ERR_OP_NOT_SUPPORTED, NC_ERR_TYPE_APP, e.what()));
+      } catch (const std::runtime_error &e) {
+        return nc_server_reply_err(
+            nc_err(netd::shared::Yang::getInstance().getContext(),
+                   NC_ERR_OP_FAILED, NC_ERR_TYPE_APP, e.what()));
+      } catch (const std::exception &e) {
+        return nc_server_reply_err(
+            nc_err(netd::shared::Yang::getInstance().getContext(),
+                   NC_ERR_OP_FAILED, NC_ERR_TYPE_APP, e.what()));
+      }
+    }
 
   public:
     NetconfServer() { Yang::getInstance(); }
@@ -111,199 +196,174 @@ namespace netd::server::netconf {
         return false;
       }
 
+      // Register the global RPC callback
+      nc_set_global_rpc_clb(rpcCallback);
+
       running_ = true;
-      logger.info("NETCONF server started");
       return true;
     }
 
     void stop() override {
-      if (!isRunning())
-        return;
-
-      auto &logger = Logger::getInstance();
+      if (!isRunning()) {
+        throw netd::shared::NotImplementedError("Server is not running");
+      }
+        
       running_ = false;
 
       nc_server_destroy();
 
-      logger.info("NETCONF server stopped");
     }
 
     struct nc_server_reply *handleGetRequest(struct nc_session *session,
                                              struct lyd_node *rpc) override {
-      // Create request object with session and rpc
       auto request = std::make_unique<netd::shared::request::get::GetRequest>(
           session, rpc);
 
-      // Call the new handler
       auto response = RpcHandler::handleGetRequest(std::move(request));
 
-      // Convert response to nc_server_reply using the new method
       return response->toNetconfReply(session);
     }
 
     struct nc_server_reply *
     handleGetConfigRequest(struct nc_session *session,
                            struct lyd_node *rpc) override {
-      // Create request object with session and rpc
       auto request =
           std::make_unique<netd::shared::request::get::GetConfigRequest>(
               session, rpc);
 
-      // Call the new handler
       auto response = RpcHandler::handleGetConfigRequest(std::move(request));
 
-      // Convert response to nc_server_reply using the new method
+      // Log the response as XML before converting to NETCONF reply
+      auto &logger = netd::shared::Logger::getInstance();
+      auto &yang = netd::shared::Yang::getInstance();
+      lyd_node *responseNode = response->toYang(yang.getContext());
+      if (responseNode) {
+        char *xmlStr = nullptr;
+        if (lyd_print_mem(&xmlStr, responseNode, LYD_XML, LYD_PRINT_WITHSIBLINGS) == LY_SUCCESS) {
+          logger.debug("Outgoing RPC reply: " + std::string(xmlStr));
+          free(xmlStr);
+        }
+        lyd_free_tree(responseNode);
+      }
+
       return response->toNetconfReply(session);
     }
 
     struct nc_server_reply *
     handleEditConfigRequest(struct nc_session *session,
                             struct lyd_node *rpc) override {
-      // Create request object with session and rpc
       auto request = std::make_unique<netd::shared::request::EditConfigRequest>(
           session, rpc);
 
-      // Call the new handler
       auto response = RpcHandler::handleEditConfigRequest(std::move(request));
 
-      // Convert response to nc_server_reply using the new method
       return response->toNetconfReply(session);
     }
 
     struct nc_server_reply *
     handleCopyConfigRequest(struct nc_session *session,
                             struct lyd_node *rpc) override {
-      // Create request object with session and rpc
       auto request = std::make_unique<netd::shared::request::CopyConfigRequest>(
           session, rpc);
 
-      // Call the new handler
       auto response = RpcHandler::handleCopyConfigRequest(std::move(request));
 
-      // Convert response to nc_server_reply using the new method
       return response->toNetconfReply(session);
     }
 
     struct nc_server_reply *
     handleDeleteConfigRequest(struct nc_session *session,
                               struct lyd_node *rpc) override {
-      // Create request object with session and rpc
       auto request =
           std::make_unique<netd::shared::request::DeleteConfigRequest>(session,
                                                                        rpc);
 
-      // Call the new handler
       auto response = RpcHandler::handleDeleteConfigRequest(std::move(request));
 
-      // Convert response to nc_server_reply using the new method
       return response->toNetconfReply(session);
     }
 
     struct nc_server_reply *handleLockRequest(struct nc_session *session,
                                               struct lyd_node *rpc) override {
-      // Create request object with session and rpc
       auto request =
           std::make_unique<netd::shared::request::LockRequest>(session, rpc);
 
-      // Call the new handler
       auto response = RpcHandler::handleLockRequest(std::move(request));
 
-      // Convert response to nc_server_reply using the new method
       return response->toNetconfReply(session);
     }
 
     struct nc_server_reply *handleUnlockRequest(struct nc_session *session,
                                                 struct lyd_node *rpc) override {
-      // Create request object with session and rpc
       auto request =
           std::make_unique<netd::shared::request::UnlockRequest>(session, rpc);
 
-      // Call the new handler
       auto response = RpcHandler::handleUnlockRequest(std::move(request));
 
-      // Convert response to nc_server_reply using the new method
       return response->toNetconfReply(session);
     }
 
     struct nc_server_reply *
     handleDiscardRequest(struct nc_session *session,
                          struct lyd_node *rpc) override {
-      // Create request object with session and rpc
       auto request =
           std::make_unique<netd::shared::request::DiscardRequest>(session, rpc);
 
-      // Call the new handler
       auto response = RpcHandler::handleDiscardRequest(std::move(request));
 
-      // Convert response to nc_server_reply using the new method
       return response->toNetconfReply(session);
     }
 
     struct nc_server_reply *
     handleCloseSessionRequest(struct nc_session *session,
                               struct lyd_node *rpc) override {
-      // Create request object with session and rpc
       auto request =
           std::make_unique<netd::shared::request::CloseRequest>(session, rpc);
 
-      // Call the new handler
       auto response = RpcHandler::handleCloseSessionRequest(std::move(request));
 
-      // Convert response to nc_server_reply using the new method
       return response->toNetconfReply(session);
     }
 
     struct nc_server_reply *
     handleKillSessionRequest(struct nc_session *session,
                              struct lyd_node *rpc) override {
-      // Create request object with session and rpc
       auto request =
           std::make_unique<netd::shared::request::KillRequest>(session, rpc);
 
-      // Call the new handler
       auto response = RpcHandler::handleKillSessionRequest(std::move(request));
 
-      // Convert response to nc_server_reply using the new method
       return response->toNetconfReply(session);
     }
 
     struct nc_server_reply *
     handleValidateRequest(struct nc_session *session,
                           struct lyd_node *rpc) override {
-      // Create request object with session and rpc
       auto request = std::make_unique<netd::shared::request::ValidateRequest>(
           session, rpc);
 
-      // Call the new handler
       auto response = RpcHandler::handleValidateRequest(std::move(request));
 
-      // Convert response to nc_server_reply using the new method
       return response->toNetconfReply(session);
     }
 
     struct nc_server_reply *handleHelloRequest(struct nc_session *session,
                                                struct lyd_node *rpc) override {
-      // Create request object with session and rpc
       auto request =
           std::make_unique<netd::shared::request::HelloRequest>(session, rpc);
 
-      // Call the new handler
       auto response = RpcHandler::handleHelloRequest(std::move(request));
 
-      // Convert response to nc_server_reply using the new method
       return response->toNetconfReply(session);
     }
 
     struct nc_server_reply *handleCommitRequest(struct nc_session *session,
                                                 struct lyd_node *rpc) override {
-      // Create request object with session and rpc
       auto request =
           std::make_unique<netd::shared::request::CommitRequest>(session, rpc);
 
-      // Call the new handler
       auto response = RpcHandler::handleCommitRequest(std::move(request));
 
-      // Convert response to nc_server_reply using the new method
       return response->toNetconfReply(session);
     }
 
@@ -360,9 +420,6 @@ namespace netd::server::netconf {
       }
     }
   };
-
-  // Global server instance
-  static std::unique_ptr<NetconfServer> g_server;
 
   bool startNetconfServer([[maybe_unused]] const std::string &socketPath) {
     g_server = std::make_unique<NetconfServer>();

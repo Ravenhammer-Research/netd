@@ -34,104 +34,14 @@
 
 namespace netd::shared::request {
 
-  lyd_node *EditConfigRequest::toYang(ly_ctx *ctx) const {
-    if (!ctx) {
-      return nullptr;
-    }
-
-    // Get the ietf-netconf module
-    const struct lys_module *mod =
-        ly_ctx_get_module_implemented(ctx, "ietf-netconf");
-    if (!mod) {
-      return nullptr;
-    }
-
-    // Create the complete RPC structure with envelope
-    lyd_node *rpcNode = nullptr;
-    if (lyd_new_inner(nullptr, mod, "rpc", 0, &rpcNode) != LY_SUCCESS) {
-      return nullptr;
-    }
-
-    // Add message-id attribute to the RPC envelope
-    if (lyd_new_meta(nullptr, rpcNode, nullptr, "message-id", "1", 0,
-                     nullptr) != LY_SUCCESS) {
-      lyd_free_tree(rpcNode);
-      return nullptr;
-    }
-
-    // Create the edit-config operation inside the RPC
-    lyd_node *editConfigNode = nullptr;
-    if (lyd_new_inner(rpcNode, mod, "edit-config", 0, &editConfigNode) !=
-        LY_SUCCESS) {
-      lyd_free_tree(rpcNode);
-      return nullptr;
-    }
-
-    // Create the target container
-    lyd_node *targetNode = nullptr;
-    if (lyd_new_inner(editConfigNode, mod, "target", 0, &targetNode) !=
-        LY_SUCCESS) {
-      lyd_free_tree(rpcNode);
-      return nullptr;
-    }
-
-    // Add the specified datastore target
-    std::string targetStr =
-        netd::shared::request::get::datastoreToString(target_);
-    if (lyd_new_term(targetNode, mod, targetStr.c_str(), nullptr, 0, nullptr) !=
-        LY_SUCCESS) {
-      lyd_free_tree(rpcNode);
-      return nullptr;
-    }
-
-    return rpcNode;
+  lyd_node *EditConfigRequest::toYang([[maybe_unused]] ly_ctx *ctx) const {
+    throw NotImplementedError("toYang method not implemented");
   }
 
   std::unique_ptr<EditConfigRequest>
   EditConfigRequest::fromYang([[maybe_unused]] const ly_ctx *ctx,
-                              const lyd_node *node) {
-    if (!node) {
-      throw NotImplementedError(
-          "Invalid YANG node provided to EditConfigRequest::fromYang");
-    }
-
-    auto request = std::make_unique<EditConfigRequest>();
-
-    // Find the edit-config node
-    lyd_node *editConfigNode = lyd_child(node);
-    while (editConfigNode &&
-           strcmp(lyd_node_schema(editConfigNode)->name, "edit-config") != 0) {
-      editConfigNode = editConfigNode->next;
-    }
-
-    if (editConfigNode) {
-      // Find the target container
-      lyd_node *targetNode = lyd_child(editConfigNode);
-      while (targetNode &&
-             strcmp(lyd_node_schema(targetNode)->name, "target") != 0) {
-        targetNode = targetNode->next;
-      }
-
-      if (targetNode) {
-        // Find the datastore target (running, candidate, startup)
-        lyd_node *datastoreNode = lyd_child(targetNode);
-        while (datastoreNode) {
-          const char *nodeName = lyd_node_schema(datastoreNode)->name;
-          std::string targetStr(nodeName);
-          netd::shared::request::get::Datastore datastore =
-              netd::shared::request::get::stringToDatastore(targetStr);
-          if (datastore != netd::shared::request::get::Datastore::RUNNING ||
-              targetStr == "running") {
-            // Only set if it's a valid datastore (not default fallback)
-            request->setTarget(datastore);
-            break;
-          }
-          datastoreNode = datastoreNode->next;
-        }
-      }
-    }
-
-    return request;
+                              [[maybe_unused]] const lyd_node *node) {
+    throw NotImplementedError("fromYang method not implemented");
   }
 
 } // namespace netd::shared::request

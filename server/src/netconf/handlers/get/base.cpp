@@ -30,19 +30,16 @@
 #include <libyang/libyang.h>
 #include <server/include/netconf/handlers.hpp>
 #include <shared/include/logger.hpp>
+#include <shared/include/exception.hpp>
 
 namespace netd::server::netconf::handlers {
+  using netd::shared::NotImplementedError;
 
   std::unique_ptr<netd::shared::response::get::GetResponse>
   RpcHandler::handleGetRequest(
       [[maybe_unused]] std::unique_ptr<netd::shared::request::get::GetRequest>
           request) {
-    auto &logger = netd::shared::Logger::getInstance();
-    logger.info("Handling get request");
-
-    // For now, return a simple OK response
-    // TODO: Implement actual get request handling
-    return std::make_unique<netd::shared::response::get::GetResponse>();
+            throw NotImplementedError("handleGetRequest method not implemented");
   }
 
 } // namespace netd::server::netconf::handlers

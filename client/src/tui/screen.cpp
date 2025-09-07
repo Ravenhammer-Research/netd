@@ -25,44 +25,73 @@
  * SUCH DAMAGE.
  */
 
-#ifndef NETD_LOGGER_HPP
-#define NETD_LOGGER_HPP
+#include <client/include/tui.hpp>
+#include <curses.h>
+#include <algorithm>
 
-#include <functional>
-#include <memory>
-#include <string>
+namespace netd::client {
 
-namespace netd::shared {
+  // Screen dimension helpers
+  int TUI::getScreenSizeX() {
+    return COLS;
+  }
 
-  enum class LogLevel { TRACE, DEBUG, INFO, WARNING, ERROR };
+  int TUI::getScreenSizeY() {
+    return LINES;
+  }
 
-  class Logger {
-  public:
-    using Callback = std::function<void(LogLevel, const std::string &)>;
+  int TUI::getMaxLines() {
+    return getScreenSizeY() - 1; // Leave room for prompt
+  }
 
-    static Logger &getInstance();
 
-    void setCallback(Callback callback);
-    void log(LogLevel level, const std::string &message);
+  void TUI::redrawScreen() {
+    clear();
+    putMessages();
+    putPrompt();
+    refresh();
+  }
 
-    void trace(const std::string &message);
-    void debug(const std::string &message);
-    void info(const std::string &message);
-    void warning(const std::string &message);
-    void error(const std::string &message);
+  // Screen clearing
+  void TUI::clear() {
+    ::clear();
+  }
+
+  void TUI::clearToEndOfLine() {
+    clrtoeol();
+  }
+
+  // Message display
+  void TUI::putMessages() {
+    int promptRow = getPromptRow();
+    int maxLines = promptRow;
     
-    void setLogLevel(LogLevel level);
+    int startIdx = std::max(0, static_cast<int>(displayHistory_.size()) - maxLines + scrollOffset_);
+    int endIdx = static_cast<int>(displayHistory_.size());
+    
+    // Display messages from bottom to top
+    for (int i = startIdx; i < endIdx && (i - startIdx) < maxLines; i++) {
+      int row = promptRow - 1 - (i - startIdx); // Start from bottom and work up
+      move(row, 0);
+      clrtoeol();
+      printw("%s", displayHistory_[i].c_str());
+    }
+  }
 
-  private:
-    Logger();
-    ~Logger() = default;
-    Logger(const Logger &) = delete;
-    Logger &operator=(const Logger &) = delete;
 
-    Callback callback_;
-    LogLevel currentLogLevel_ = LogLevel::ERROR;
-  };
+  // Utility functions
+  void TUI::sleepMs(int ms) {
+    napms(ms);
+  }
 
-} // namespace netd::shared
+  void TUI::resizeTerminal() {
+    endwin();
+    refresh();
+    redrawScreen();
+  }
 
-#endif // NETD_LOGGER_HPP
+  void TUI::handleResize() {
+    resizeTerminal();
+  }
+
+} // namespace netd::client

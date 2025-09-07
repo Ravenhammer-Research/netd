@@ -33,6 +33,7 @@
 #include <server/include/netconf/handlers.hpp>
 #include <server/include/store/candidate.hpp>
 #include <server/include/store/running.hpp>
+#include <shared/include/exception.hpp>
 #include <server/include/store/startup.hpp>
 #include <shared/include/logger.hpp>
 #include <shared/include/marshalling/interface.hpp>
@@ -40,98 +41,34 @@
 #include <shared/include/response/get/config.hpp>
 
 namespace netd::server::netconf::handlers {
-
+  using netd::shared::NotImplementedError;
+  
   std::unique_ptr<netd::shared::response::get::GetConfigResponse>
   RpcHandler::handleGetInterfaceRequest(
       std::unique_ptr<netd::shared::request::get::GetConfigRequest> request) {
-    try {
-      // Create response object
-      auto response =
-          std::make_unique<netd::shared::response::get::GetConfigResponse>();
+    // Create response object on stack
+    netd::shared::response::get::GetConfigResponse response;
 
-      // Create interface data container
-      auto interfaceData =
-          std::make_unique<netd::shared::marshalling::Interface>();
+    // Get the source datastore from the request
+    auto source = request->getSource();
 
-      // Get the ietf-interfaces module from the request's session context
-      auto session = request->getSession();
-      auto ctx = nc_session_get_ctx(session);
-      const struct lys_module *ietfInterfaces =
-          ly_ctx_get_module(ctx, "ietf-interfaces", nullptr);
-      if (!ietfInterfaces) {
-        throw std::runtime_error("ietf-interfaces module not found");
-      }
-
-      // Create interfaces container
-      lyd_node *interfacesContainer = nullptr;
-      if (lyd_new_inner(nullptr, ietfInterfaces, "interfaces", 0,
-                        &interfacesContainer) != LY_SUCCESS) {
-        throw std::runtime_error("Failed to create interfaces container");
-      }
-
-      // Determine the source from the request and get the appropriate store
-      auto source = request->getSource();
-      auto &logger = netd::shared::Logger::getInstance();
-
-      std::vector<lyd_node *> interfaceNodes;
-
-      switch (source) {
-      case netd::shared::request::get::Datastore::RUNNING: {
-        logger.info(
-            "Retrieving interface configuration from running datastore");
-        auto &runningStore =
-            netd::server::store::running::RunningStore::getInstance();
-        interfaceNodes = runningStore.searchInterface();
-        break;
-      }
-      case netd::shared::request::get::Datastore::CANDIDATE: {
-        logger.info(
-            "Retrieving interface configuration from candidate datastore");
-        auto &candidateStore =
-            netd::server::store::candidate::CandidateStore::getInstance();
-        interfaceNodes = candidateStore.searchInterface();
-        break;
-      }
-      case netd::shared::request::get::Datastore::STARTUP: {
-        logger.info(
-            "Retrieving interface configuration from startup datastore");
-        auto &startupStore =
-            netd::server::store::startup::StartupStore::getInstance();
-        interfaceNodes = startupStore.searchInterface();
-        break;
-      }
-      default: {
-        throw std::runtime_error("Unknown datastore source");
-      }
-      }
-
-      // Add each interface node to the container
-      for (auto *interfaceNode : interfaceNodes) {
-        if (interfaceNode) {
-          // Clone the interface node to avoid ownership issues
-          lyd_node *clonedNode = nullptr;
-          if (lyd_dup_single(interfaceNode, nullptr, LYD_DUP_RECURSIVE,
-                             &clonedNode) == LY_SUCCESS) {
-            lyd_insert_child(interfacesContainer, clonedNode);
-          }
-        }
-      }
-
-      // Set the complete interfaces tree in the data container
-      interfaceData->setData(interfacesContainer);
-
-      // Set the interface data in the response
-      response->setData(std::move(interfaceData));
-
-      return response;
-
-    } catch (const std::exception &e) {
-      // Return a response with error information
-      auto errorResponse =
-          std::make_unique<netd::shared::response::get::GetConfigResponse>();
-      // TODO: Set error information in the response
-      return errorResponse;
+    // Get the appropriate store based on source
+    netd::server::store::Store *store [[maybe_unused]] = nullptr;
+    switch (source) {
+    case netd::shared::request::get::Datastore::RUNNING:
+      store = &netd::server::store::running::RunningStore::getInstance();
+      break;
+    case netd::shared::request::get::Datastore::CANDIDATE:
+      store = &netd::server::store::candidate::CandidateStore::getInstance();
+      break;
+    case netd::shared::request::get::Datastore::STARTUP:
+      store = &netd::server::store::startup::StartupStore::getInstance();
+      break;
+    default:
+      throw netd::shared::ConfigurationError("Unknown datastore source");
     }
+    
+    throw NotImplementedError("handleGetInterfaceRequest method not implemented");
   }
 
 } // namespace netd::server::netconf::handlers

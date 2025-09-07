@@ -31,6 +31,9 @@
 #include <server/include/netconf/server.hpp>
 #include <shared/include/logger.hpp>
 #include <thread>
+#include <unistd.h>
+#include <getopt.h>
+#include <string>
 
 // Global flag for graceful shutdown
 static volatile bool g_running = true;
@@ -41,25 +44,69 @@ void signalHandler(int signal) {
   }
 }
 
-int main() {
+void printUsage(const char *progname) {
+  std::cerr << "Usage: " << progname << " [options]\n";
+  std::cerr << "Options:\n";
+  std::cerr << "  -s <path>    Socket path (default: /tmp/netd.sock)\n";
+  std::cerr << "  -d           Enable warning logging\n";
+  std::cerr << "  -dd          Enable info logging\n";
+  std::cerr << "  -ddd         Enable debug logging\n";
+  std::cerr << "  -h           Show this help message\n";
+}
+
+int main(int argc, char *argv[]) {
   auto &logger = netd::shared::Logger::getInstance();
-  logger.info("NETD Server starting...");
+  
+  // Default values
+  std::string socketPath = "/tmp/netd.sock";
+  int debugLevel = 0;  // 0=error only, 1=warning, 2=info, 3=debug
+  
+  // Parse command line options
+  int opt;
+  while ((opt = getopt(argc, argv, "s:dh")) != -1) {
+    switch (opt) {
+    case 's':
+      socketPath = optarg;
+      break;
+    case 'd':
+      debugLevel++;
+      break;
+    case 'h':
+      printUsage(argv[0]);
+      return 0;
+    default:
+      printUsage(argv[0]);
+      return 1;
+    }
+  }
+  
+  // Set log level based on debug flags
+  switch (debugLevel) {
+  case 0:
+    logger.setLogLevel(netd::shared::LogLevel::ERROR);
+    break;
+  case 1:
+    logger.setLogLevel(netd::shared::LogLevel::WARNING);
+    break;
+  case 2:
+    logger.setLogLevel(netd::shared::LogLevel::INFO);
+    break;
+  case 3:
+    logger.setLogLevel(netd::shared::LogLevel::DEBUG);
+    break;
+  default:
+    logger.setLogLevel(netd::shared::LogLevel::TRACE);
+    break;
+  }
 
   // Set up signal handlers for graceful shutdown
   signal(SIGINT, signalHandler);
   signal(SIGTERM, signalHandler);
 
-  // Start NETCONF server with user-writable socket path
-  std::string socketPath = "/tmp/netd.sock";
+  // Start NETCONF server
   if (!netd::server::netconf::startNetconfServer(socketPath)) {
-    logger.error("Failed to start NETCONF server");
     return 1;
   }
-
-  logger.info("NETD Server started successfully");
-  logger.info("NETCONF server listening on " + socketPath);
-  logger.info("Press Ctrl+C to stop");
-
   // Run the server in a separate thread so we can handle signals
   std::thread serverThread([]() { netd::server::netconf::runNetconfServer(); });
 
@@ -73,9 +120,7 @@ int main() {
   serverThread.join();
 
   // Graceful shutdown
-  logger.info("Shutting down NETD Server...");
   netd::server::netconf::stopNetconfServer();
-  logger.info("NETD Server stopped");
 
   return 0;
 }

@@ -30,10 +30,22 @@
 #include <shared/include/exception.hpp>
 #include <shared/include/response/get/config.hpp>
 #include <shared/include/yang.hpp>
+#include <shared/include/logger.hpp>
 
 namespace netd::shared::response::get {
 
   GetConfigResponse::GetConfigResponse() {}
+
+  GetConfigResponse::GetConfigResponse(GetConfigResponse &&other) noexcept
+      : Response(std::move(other)) {}
+
+  GetConfigResponse &
+  GetConfigResponse::operator=(GetConfigResponse &&other) noexcept {
+    if (this != &other) {
+      Response::operator=(std::move(other));
+    }
+    return *this;
+  }
 
   GetConfigResponse::~GetConfigResponse() {}
 
@@ -51,8 +63,7 @@ namespace netd::shared::response::get {
     }
 
     // Add message-id attribute to the rpc-reply envelope
-    if (lyd_new_meta(nullptr, replyNode, nullptr, "message-id", "1", 0,
-                     nullptr) != LY_SUCCESS) {
+    if (lyd_new_attr(replyNode, nullptr, "message-id", "1", 0) != LY_SUCCESS) {
       lyd_free_tree(replyNode);
       return nullptr;
     }
@@ -77,7 +88,38 @@ namespace netd::shared::response::get {
           "Invalid YANG node provided to GetConfigResponse::fromYang");
     }
 
-    return std::make_unique<GetConfigResponse>();
+    auto response = std::make_unique<GetConfigResponse>();
+    
+    // Parse the received data node - walk through the YANG tree
+    const lyd_node *child = lyd_child(node);
+    while (child) {
+      const char *nodeName = lyd_node_schema(child) ? lyd_node_schema(child)->name : nullptr;
+      
+      if (nodeName && strcmp(nodeName, "interfaces") == 0) {
+        // Found interfaces container, parse interface data
+        const lyd_node *interfaceChild = lyd_child(child);
+        while (interfaceChild) {
+          const char *interfaceName = lyd_node_schema(interfaceChild) ? lyd_node_schema(interfaceChild)->name : nullptr;
+          
+          if (interfaceName && strcmp(interfaceName, "interface") == 0) {
+            // Found an interface, extract its data
+            const lyd_node *interfaceData = lyd_child(interfaceChild);
+            while (interfaceData) {
+              const char *dataName = lyd_node_schema(interfaceData) ? lyd_node_schema(interfaceData)->name : nullptr;
+              if (dataName) {
+                // Extract interface properties like name, type, enabled, etc.
+                // TODO: Store the actual interface data in the response object
+              }
+              interfaceData = interfaceData->next;
+            }
+          }
+          interfaceChild = interfaceChild->next;
+        }
+      }
+      child = child->next;
+    }
+    
+    return response;
   }
 
 } // namespace netd::shared::response::get

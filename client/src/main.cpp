@@ -27,248 +27,96 @@
 
 #include <client/include/netconf.hpp>
 #include <client/include/parser.hpp>
+#include <client/include/processor.hpp>
 #include <client/include/table.hpp>
-#include <client/include/terminal.hpp>
+#include <client/include/tui.hpp>
 #include <iostream>
 #include <shared/include/exception.hpp>
 #include <shared/include/logger.hpp>
 #include <sstream>
 #include <string>
 #include <thread>
+#include <unistd.h>
+#include <getopt.h>
 #include <vector>
 
-namespace netd::client {
+void printUsage(const char *progname) {
+  std::cerr << "Usage: " << progname << " [options]\n";
+  std::cerr << "Options:\n";
+  std::cerr << "  -s <path>    Socket path (default: /tmp/netd.sock)\n";
+  std::cerr << "  -d           Enable warning logging\n";
+  std::cerr << "  -dd          Enable info logging\n";
+  std::cerr << "  -ddd         Enable debug logging\n";
+  std::cerr << "  -h           Show this help message\n";
+}
 
-  class CommandProcessor {
-  public:
-    CommandProcessor(Terminal &terminal) : terminal_(terminal), parser_() {
-      setupCompletions();
+int main(int argc, char *argv[]) {
+  // Default values
+  std::string socketPath = "/tmp/netd.sock";
+  int debugLevel = 0;  // 0=error only, 1=warning, 2=info, 3=debug
+  
+  // Parse command line options
+  int opt;
+  while ((opt = getopt(argc, argv, "s:dh")) != -1) {
+    switch (opt) {
+    case 's':
+      socketPath = optarg;
+      break;
+    case 'd':
+      debugLevel++;
+      break;
+    case 'h':
+      printUsage(argv[0]);
+      return 0;
+    default:
+      printUsage(argv[0]);
+      return 1;
     }
-
-    bool processCommand(const std::string &command) {
-      if (command.empty()) {
-        return true;
-      }
-
-      ParsedCommand parsed = parser_.parse(command);
-
-      if (parsed.command == CommandType::UNKNOWN) {
-        terminal_.writeLine("Unknown command: " + command);
-        return false;
-      }
-
-      switch (parsed.command) {
-      case CommandType::SHOW:
-        return handleShowCommand(parsed);
-      case CommandType::SET:
-        return handleSetCommand(parsed);
-      case CommandType::DELETE:
-        return handleDeleteCommand(parsed);
-      case CommandType::COMMIT:
-        return handleCommitCommand(parsed);
-      default:
-        terminal_.writeLine("Unknown command type");
-        return false;
-      }
-    }
-
-  private:
-    Terminal &terminal_;
-    CommandParser parser_;
-
-    void setupCompletions() {
-      std::vector<std::string> completions = {
-          "show",    "set",      "delete",    "commit",    "help",    "quit",
-          "exit",    "vrf",      "interface", "protocol",  "static",  "host",
-          "network", "gateway",  "iface",     "address",   "mtu",     "group",
-          "member",  "laggport", "vlandev",   "vlanproto", "vxlanid", "tunnel",
-          "local",   "remote",   "type",      "name",      "id",      "inet",
-          "inet6"};
-      terminal_.setCompletions(completions);
-    }
-
-    bool handleShowCommand(const ParsedCommand &parsed) {
-      if (parsed.target == TargetType::UNKNOWN) {
-        terminal_.writeLine("Usage: show <vrf|interface> [options]");
-        return false;
-      }
-
-      switch (parsed.target) {
-      case TargetType::VRF:
-        return handleShowVrf(parsed);
-      case TargetType::INTERFACE:
-        return handleShowInterface(parsed);
-      case TargetType::ROUTE:
-        return handleShowRoute(parsed);
-      default:
-        terminal_.writeLine("Unknown show target");
-        return false;
-      }
-    }
-
-    bool handleShowVrf([[maybe_unused]] const ParsedCommand &parsed) {
-      // TODO: Implement VRF display
-      terminal_.writeLine("VRF information:");
-      terminal_.writeLine("  FIB 0: default");
-      return true;
-    }
-
-    bool handleShowRoute([[maybe_unused]] const ParsedCommand &parsed) {
-      // TODO: Implement route display
-      terminal_.writeLine("Route information:");
-      terminal_.writeLine("  No routes configured");
-      return true;
-    }
-
-    bool handleShowInterface([[maybe_unused]] const ParsedCommand &parsed) {
-      try {
-        // Send get-config request with interface filter
-        // This should generate: <get-config><source><running/></source><filter
-        // type="subtree"><interfaces/></filter></get-config>
-
-        throw netd::shared::NotImplementedError(
-            "handleShowInterface not implemented");
-
-        // TODO: Parse response data to shared Interface types
-        // For now, create a sample table
-        netd::client::Table table;
-        table.addColumn("Interface");
-        table.addColumn("Type");
-        table.addColumn("Status");
-        table.addColumn("MTU");
-
-        table.addRow({"lo0", "loopback", "UP", "16384"});
-        table.addRow({"em0", "ethernet", "UP", "1500"});
-        table.addRow({"bridge0", "bridge", "DOWN", "1500"});
-
-        terminal_.writeLine(table.format());
-        return true;
-      } catch (const std::exception &e) {
-        terminal_.writeLine("Error getting interface data: " +
-                            std::string(e.what()));
-        return false;
-      }
-    }
-
-    bool handleSetCommand(const ParsedCommand &parsed) {
-      if (parsed.target == TargetType::UNKNOWN) {
-        terminal_.writeLine("Usage: set <vrf|interface> [options]");
-        return false;
-      }
-
-      switch (parsed.target) {
-      case TargetType::VRF:
-        return handleSetVrf(parsed);
-      case TargetType::INTERFACE:
-        return handleSetInterface(parsed);
-      case TargetType::ROUTE:
-        return handleSetRoute(parsed);
-      default:
-        terminal_.writeLine("Unknown set target");
-        return false;
-      }
-    }
-
-    bool handleSetVrf([[maybe_unused]] const ParsedCommand &parsed) {
-      // TODO: Implement VRF configuration
-      terminal_.writeLine("VRF configuration not yet implemented");
-      return true;
-    }
-
-    bool handleSetInterface([[maybe_unused]] const ParsedCommand &parsed) {
-      // TODO: Implement interface configuration
-      terminal_.writeLine("Interface configuration not yet implemented");
-      return true;
-    }
-
-    bool handleSetRoute([[maybe_unused]] const ParsedCommand &parsed) {
-      // TODO: Implement route configuration
-      terminal_.writeLine("Route configuration not yet implemented");
-      return true;
-    }
-
-    bool handleDeleteCommand([[maybe_unused]] const ParsedCommand &parsed) {
-      // TODO: Implement delete operations
-      terminal_.writeLine("Delete operations not yet implemented");
-      return true;
-    }
-
-    bool handleCommitCommand([[maybe_unused]] const ParsedCommand &parsed) {
-      try {
-        terminal_.writeLine("Commit not implemented yet");
-        return true;
-      } catch (const std::exception &e) {
-        terminal_.writeLine("Error during commit: " + std::string(e.what()));
-        return false;
-      }
-    }
-  };
-
-} // namespace netd::client
-
-int main() {
+  }
+  
+  // Get logger instance and set log level
   auto &logger = netd::shared::Logger::getInstance();
-
-  // Initialize terminal first
-  netd::client::Terminal terminal;
-  if (!terminal.initialize()) {
-    std::cerr << "Failed to initialize terminal" << std::endl;
+  
+  // Set log level based on debug flags
+  switch (debugLevel) {
+  case 0:
+    logger.setLogLevel(netd::shared::LogLevel::ERROR);
+    break;
+  case 1:
+    logger.setLogLevel(netd::shared::LogLevel::WARNING);
+    break;
+  case 2:
+    logger.setLogLevel(netd::shared::LogLevel::INFO);
+    break;
+  case 3:
+    logger.setLogLevel(netd::shared::LogLevel::DEBUG);
+    break;
+  default:
+    logger.setLogLevel(netd::shared::LogLevel::TRACE);
+    break;
+  }
+  
+  // Initialize TUI
+  netd::client::TUI tui;
+  if (!tui.initialize()) {
+    std::cerr << "Failed to initialize TUI" << std::endl;
     return 1;
   }
-
-  // Set up logger callback to use terminal for output
-  logger.setCallback(
-      [&terminal](netd::shared::LogLevel level, const std::string &message) {
-        std::string prefix;
-        switch (level) {
-        case netd::shared::LogLevel::DEBUG:
-          prefix = "[DEBUG] ";
-          break;
-        case netd::shared::LogLevel::INFO:
-          prefix = "[INFO] ";
-          break;
-        case netd::shared::LogLevel::WARNING:
-          prefix = "[WARN] ";
-          break;
-        case netd::shared::LogLevel::ERROR:
-          prefix = "[ERROR] ";
-          break;
-        }
-        terminal.writeLine(prefix + message);
-        // Redraw prompt after logging
-        terminal.redrawPrompt();
-      });
-
-  // Run interactive mode on separate thread
-  std::thread interactiveThread([&terminal]() { terminal.runInteractive(); });
-
+  
+  // Set up logger integration AFTER TUI is initialized
+  tui.setLoggerInstance(&tui);
+  
+  // Start netconf client
+  netd::client::NetconfClient client;
+  client.connect(socketPath);
+  
   // Set up command processor
-  netd::client::CommandProcessor processor(terminal);
-  terminal.setCommandHandler([&processor](const std::string &command) {
+  netd::client::CommandProcessor processor(tui);
+  tui.setCommandHandler([&processor](const std::string &command) -> bool {
     return processor.processCommand(command);
   });
+  
+  tui.runInteractive();
 
-  // Connect to server
-  std::string socketPath = "/tmp/netd.sock";
-  if (!netd::client::connectToServer(socketPath)) {
-    logger.error("Failed to connect to NETD server");
-    logger.error("Make sure the server is running with: ./netd");
-    terminal.cleanup();
-    goto wait;
-  }
-
-  logger.info("Connected to NetD via UNIX socket");
-
-  // Display welcome message
-  logger.info("NETD CLI - Network Configuration Tool");
-  logger.info("Type 'help' for available commands or 'quit' to exit.");
-
-wait:
-  // Block until interactive mode completes
-  interactiveThread.join();
-  // Cleanup
-  netd::client::disconnectFromServer();
-  terminal.cleanup();
-  logger.info("NETD Client finished");
   return 0;
 }

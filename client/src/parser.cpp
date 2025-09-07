@@ -58,6 +58,12 @@ namespace netd::client {
       return parseDeleteCommand(command);
     case CommandType::COMMIT:
       return parseCommitCommand(command);
+    case CommandType::QUIT:
+      {
+        ParsedCommand result;
+        result.command = CommandType::QUIT;
+        return result;
+      }
     default:
       logger.warning("Unknown command type: " + tokens[0]);
       return ParsedCommand();
@@ -166,6 +172,8 @@ namespace netd::client {
       return CommandType::DELETE;
     } else if (lowerCmd == "commit") {
       return CommandType::COMMIT;
+    } else if (lowerCmd == "quit" || lowerCmd == "exit") {
+      return CommandType::QUIT;
     } else {
       return CommandType::UNKNOWN;
     }

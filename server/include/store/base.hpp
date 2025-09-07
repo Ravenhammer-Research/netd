@@ -49,9 +49,15 @@ namespace netd::server::store {
 
     // Search methods
     std::vector<lyd_node *> search(const std::string &xpath);
-    std::vector<lyd_node *> searchInterface(const std::string &filter = "");
-    std::vector<lyd_node *> searchVRF(const std::string &filter = "");
-    std::vector<lyd_node *> searchRoute(const std::string &filter = "");
+
+    // Generic search method that accepts request objects
+    template <typename RequestType>
+    std::vector<lyd_node *> search(const RequestType &request
+                                   [[maybe_unused]]) {
+      // Default implementation - can be overridden by derived classes
+      // For now, just return empty results
+      return std::vector<lyd_node *>();
+    }
 
     // Data tree access
     lyd_node *getDataTree() const { return dataTree_; }

@@ -12,8 +12,8 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Set compile flags for hardening
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Werror")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Werror")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g3 -Wall -Wextra -Werror")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g3 -Wall -Wextra -Werror")
 
 # Additional hardening flags
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_FORTIFY_SOURCE=2 -fstack-protector-strong -fPIE -Wformat -Wformat-security")
@@ -70,6 +70,7 @@ target_link_libraries(netd PRIVATE
     netd_server
     netd_freebsd
     pthread
+    execinfo
 )
 
 # Create netd client executable
@@ -91,6 +92,7 @@ target_link_libraries(netc PRIVATE
     netd_client
     curses
     pthread
+    execinfo
 )
 
 message(STATUS "=== NETD CMake Configuration Complete ===")
