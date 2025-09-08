@@ -2,6 +2,7 @@
 set(GET_RESPONSE_SOURCES
     base.cpp
     config.cpp
+    yanglib.cpp
 )
 
 # Create netd_shared_response_get static library

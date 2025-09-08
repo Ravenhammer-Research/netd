@@ -25,48 +25,37 @@
  * SUCH DAMAGE.
  */
 
-#ifndef NETD_REQUEST_GET_BASE_HPP
-#define NETD_REQUEST_GET_BASE_HPP
+#ifndef NETD_REQUEST_GET_YANGLIB_HPP
+#define NETD_REQUEST_GET_YANGLIB_HPP
 
 #include <shared/include/request/base.hpp>
-#include <shared/include/logger.hpp>
 
 namespace netd::shared::request::get {
 
-  class GetRequest : public netd::shared::request::Request<GetRequest> {
+  class GetYanglibRequest
+      : public netd::shared::request::Request<GetYanglibRequest> {
   public:
-    GetRequest() : netd::shared::request::Request<GetRequest>() {}
-    GetRequest(struct nc_session *session, struct lyd_node *rpc)
-        : netd::shared::request::Request<GetRequest>(session, rpc) {
-      // Parse the RPC data to populate filter information
-      if (rpc) {
-        auto &logger = netd::shared::Logger::getInstance();
-        logger.info("GetRequest constructor: calling parseRpcData");
-        parseRpcData(rpc);
-        logger.info("GetRequest constructor: parseRpcData completed, hasFilter=" + std::string(hasFilter_ ? "true" : "false"));
-      }
-    }
-    virtual ~GetRequest() = default;
+    GetYanglibRequest() : netd::shared::request::Request<GetYanglibRequest>() {}
+    GetYanglibRequest(struct nc_session *session, struct lyd_node *rpc)
+        : netd::shared::request::Request<GetYanglibRequest>(session, rpc) {}
+    virtual ~GetYanglibRequest() = default;
 
     // Override base methods
     lyd_node *toYang(ly_ctx *ctx) const override;
-    std::unique_ptr<GetRequest> fromYang(const ly_ctx *ctx,
-                                         const lyd_node *node) override;
+    std::unique_ptr<GetYanglibRequest> fromYang(const ly_ctx *ctx,
+                                                const lyd_node *node) override;
 
     // Access methods for filter information
-    bool hasFilter() const { return hasFilter_; }
-    std::string getFilterType() const { return filterType_; }
-    std::string getFilterSelect() const { return filterSelect_; }
+    bool hasYanglibFilter() const { return hasFilter_; }
+    std::string getYanglibFilterType() const { return filterType_; }
+    std::string getYanglibFilterSelect() const { return filterSelect_; }
 
-  protected:
+  private:
     bool hasFilter_ = false;
     std::string filterType_;
     std::string filterSelect_;
-    
-    // Helper method to parse RPC data
-    void parseRpcData(const lyd_node *node);
   };
 
 } // namespace netd::shared::request::get
 
-#endif // NETD_REQUEST_GET_BASE_HPP
+#endif // NETD_REQUEST_GET_YANGLIB_HPP
