@@ -40,48 +40,24 @@ namespace netd::client {
       return lines;
     }
     
+    // Simple approach: just break at character boundaries if needed
+    // This preserves the original text structure better
     std::string current_line;
-    std::string word;
     
     for (char c : text) {
-      if (c == ' ' || c == '\t') {
-        // Check if adding this word would exceed width
-        if (!current_line.empty() && current_line.length() + 1 + word.length() > static_cast<size_t>(width)) {
-          lines.push_back(current_line);
-          current_line = word;
-        } else {
-          if (!current_line.empty()) {
-            current_line += ' ';
-          }
-          current_line += word;
-        }
-        word.clear();
-      } else if (c == '\n') {
+      if (c == '\n') {
         // Force line break
-        if (!current_line.empty()) {
-          current_line += ' ' + word;
-        } else {
-          current_line = word;
-        }
         lines.push_back(current_line);
         current_line.clear();
-        word.clear();
       } else {
-        word += c;
-      }
-    }
-    
-    // Add remaining word
-    if (!word.empty()) {
-      if (!current_line.empty()) {
-        if (current_line.length() + 1 + word.length() > static_cast<size_t>(width)) {
-          lines.push_back(current_line);
-          current_line = word;
+        // Add character if it fits
+        if (current_line.length() + 1 <= static_cast<size_t>(width)) {
+          current_line += c;
         } else {
-          current_line += ' ' + word;
+          // Line is full, start new line with this character
+          lines.push_back(current_line);
+          current_line = c;
         }
-      } else {
-        current_line = word;
       }
     }
     

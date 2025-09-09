@@ -31,19 +31,24 @@
 
 namespace netd::client {
 
-  // Screen dimension helpers
+  // Screen dimension helpers - use getmaxyx directly, no state
   int TUI::getScreenSizeX() {
-    return COLS;
+    int y, x;
+    getmaxyx(stdscr, y, x);
+    (void)y; // Suppress unused variable warning
+    return x;
   }
 
   int TUI::getScreenSizeY() {
-    return LINES;
+    int y, x;
+    getmaxyx(stdscr, y, x);
+    (void)x; // Suppress unused variable warning
+    return y;
   }
 
   int TUI::getMaxLines() {
     return getScreenSizeY() - 1; // Leave room for prompt
   }
-
 
   void TUI::redrawScreen() {
     clear();
@@ -61,23 +66,60 @@ namespace netd::client {
     clrtoeol();
   }
 
-  // Message display
+  // Message display - no state, calculate everything on the fly
   void TUI::putMessages() {
     int promptRow = getPromptRow();
     int maxLines = promptRow;
+    int screenWidth = getScreenSizeX();
     
-    int startIdx = std::max(0, static_cast<int>(displayHistory_.size()) - maxLines + scrollOffset_);
-    int endIdx = static_cast<int>(displayHistory_.size());
+    if (displayHistory_.empty()) {
+      return;
+    }
     
-    // Display messages from bottom to top
-    for (int i = startIdx; i < endIdx && (i - startIdx) < maxLines; i++) {
-      int row = promptRow - 1 - (i - startIdx); // Start from bottom and work up
+    // Clear all message lines first
+    for (int row = 0; row < maxLines; row++) {
       move(row, 0);
       clrtoeol();
-      printw("%s", displayHistory_[i].c_str());
+    }
+    
+    // Calculate total lines needed for all messages (newest to oldest)
+    std::vector<std::vector<std::string>> all_wrapped_messages;
+    int totalLines = 0;
+    
+    // Process messages from newest to oldest
+    for (int i = static_cast<int>(displayHistory_.size()) - 1; i >= 0; i--) {
+      std::vector<std::string> wrapped = wrapText(displayHistory_[i], screenWidth);
+      all_wrapped_messages.push_back(wrapped);
+      totalLines += static_cast<int>(wrapped.size());
+    }
+    
+    // Limit scroll offset to valid range
+    int maxScroll = std::max(0, totalLines - maxLines);
+    scrollOffset_ = std::min(scrollOffset_, maxScroll);
+    
+    // Display messages from bottom up, accounting for scroll
+    int displayRow = 0;
+    int linesSkipped = 0;
+    
+    for (const auto &wrapped_lines : all_wrapped_messages) {
+      for (int j = static_cast<int>(wrapped_lines.size()) - 1; j >= 0; j--) {
+        if (linesSkipped < scrollOffset_) {
+          linesSkipped++;
+          continue;
+        }
+        
+        if (displayRow >= maxLines) {
+          return; // No more space
+        }
+        
+        int targetRow = maxLines - 1 - displayRow;
+        move(targetRow, 0);
+        clrtoeol();
+        printw("%s", wrapped_lines[j].c_str());
+        displayRow++;
+      }
     }
   }
-
 
   // Utility functions
   void TUI::sleepMs(int ms) {
@@ -85,7 +127,8 @@ namespace netd::client {
   }
 
   void TUI::resizeTerminal() {
-    endwin();
+    // Use proper curses resize handling
+    resizeterm(0, 0);
     refresh();
     redrawScreen();
   }

@@ -116,17 +116,20 @@ namespace netd::client {
     int scanKeyInput();
     int getPromptLength();
     void moveCursor(int y, int x);
-    void refreshCurses();
     void sleepMs(int ms);
     void resizeTerminal();
     void setAttribute(int attr);
     void addAttribute(int attr);
     void removeAttribute(int attr);
+    void clearCurses();
+    void refreshCurses();
+    void doUpdateCurses();
     void putChar(char ch);
     std::string formatReturnValue(bool ctrl_d_exit, const std::string &result);
     void handleKeyInput(int key);
     void redrawPrompt();
     void scrollMessages();
+    void scrollMessagesDown();
     
     // Key input handlers
     void handleBackspace();

@@ -65,7 +65,6 @@ namespace netd::client {
     refresh();
   }
 
-
   // Input reading
   std::string TUI::readLine() {
     if (!initialized_) {
@@ -78,7 +77,13 @@ namespace netd::client {
     while (true) {
       key = scanKeyInput();
       
-      if (key == '\n' || key == '\r') {
+      if (key == KEY_RESIZE) {
+        handleResize();
+        // Redraw the prompt and current input after resize
+        putPrompt();
+        putCurrentLine(line);
+        continue;
+      } else if (key == '\n' || key == '\r') {
         break;
       } else if (key == ERR) {
         // Check if this is EOF by trying to read again with a timeout
@@ -93,6 +98,18 @@ namespace netd::client {
         // Otherwise put the key back and continue
         ungetch(next_key);
         continue;
+      } else if (key == KEY_PPAGE) {
+        // Page up - scroll back through messages
+        scrollMessages();
+        redrawScreen();
+        putPrompt();
+        putCurrentLine(line);
+      } else if (key == KEY_NPAGE) {
+        // Page down - scroll forward through messages
+        scrollMessagesDown();
+        redrawScreen();
+        putPrompt();
+        putCurrentLine(line);
       } else if (key == KEY_BACKSPACE || key == 127) {
         if (!line.empty()) {
           line.pop_back();

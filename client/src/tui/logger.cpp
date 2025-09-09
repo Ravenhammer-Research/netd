@@ -43,14 +43,12 @@ namespace netd::client {
   // Get current timestamp as string
   std::string getCurrentTimestamp() {
     auto now = std::chrono::system_clock::now();
-    auto time_t = std::chrono::system_clock::to_time_t(now);
-    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
-        now.time_since_epoch()) % 1000;
+    auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(
+        now.time_since_epoch()) % 1000000000;
     
-    std::stringstream ss;
-    ss << std::put_time(std::localtime(&time_t), "%H:%M:%S");
-    ss << '.' << std::setfill('0') << std::setw(3) << ms.count();
-    return ss.str();
+    std::ostringstream oss;
+    oss << std::setfill('0') << std::setw(9) << ns.count();
+    return oss.str();
   }
 
   // Custom logger callback function
@@ -64,19 +62,19 @@ namespace netd::client {
     std::string formatted_message;
     switch (level) {
       case netd::shared::LogLevel::TRACE:
-        formatted_message = "[" + timestamp + "] [T] " + message;
+        formatted_message = "[" + timestamp + "][T]:" + message;
         break;
       case netd::shared::LogLevel::DEBUG:
-        formatted_message = "[" + timestamp + "] [D] " + message;
+        formatted_message = "[" + timestamp + "][D]:" + message;
         break;
       case netd::shared::LogLevel::INFO:
-        formatted_message = "[" + timestamp + "] [I] " + message;
+        formatted_message = "[" + timestamp + "][I]:" + message;
         break;
       case netd::shared::LogLevel::WARNING:
-        formatted_message = "[" + timestamp + "] [W] " + message;
+        formatted_message = "[" + timestamp + "][W]:" + message;
         break;
       case netd::shared::LogLevel::ERROR:
-        formatted_message = "[" + timestamp + "] [E] " + message;
+        formatted_message = "[" + timestamp + "][E]:" + message;
         break;
     }
 
@@ -98,7 +96,8 @@ namespace netd::client {
 
   // Cleanup logger
   void TUI::cleanupLogger() {
-    throw netd::shared::NotImplementedError("TUI::cleanupLogger");
+    // Clear the global TUI instance reference
+    g_tui_instance = nullptr;
   }
 
 } // namespace netd::client

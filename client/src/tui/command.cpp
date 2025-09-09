@@ -28,6 +28,7 @@
 #include <client/include/tui.hpp>
 #include <shared/include/logger.hpp>
 #include <shared/include/exception.hpp>
+#include <curses.h>
 #include <algorithm>
 
 namespace netd::client {
@@ -66,6 +67,16 @@ namespace netd::client {
 
     std::string line;
     while (true) {
+      // Check for terminal resize
+      int key = getch();
+      if (key == KEY_RESIZE) {
+        handleResize();
+        continue;
+      }
+      
+      // Put the key back if it's not a resize
+      ungetch(key);
+      
       putPrompt();
       line = readLine();
       
@@ -83,9 +94,9 @@ namespace netd::client {
       if (commandHandler_) {
         // Clear the prompt line before processing command
         int promptRow = getPromptRow();
-        moveCursor(promptRow, 0);
-        clearToEndOfLine();
-        refreshCurses();
+        move(promptRow, 0);
+        clrtoeol();
+        refresh();
         
         try {
           if (!commandHandler_(line)) {

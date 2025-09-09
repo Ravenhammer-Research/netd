@@ -106,4 +106,12 @@ namespace netd::client {
     attroff(attr);
   }
 
+  void TUI::clearCurses() {
+    clear();
+  }
+
+  void TUI::doUpdateCurses() {
+    doupdate();
+  }
+
 } // namespace netd::client

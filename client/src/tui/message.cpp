@@ -67,30 +67,20 @@ namespace netd::client {
 
   // Message display functions
   void TUI::putLine(const std::string &text) {
-    // Wrap the text to fit screen width
-    std::vector<std::string> wrapped_lines = wrapTextToScreen(text);
-    
-    // Add each wrapped line to display history
-    for (const auto &line : wrapped_lines) {
-      addToDisplayHistory(line);
-    }
+    // Store the original message without any modification
+    addToDisplayHistory(text);
     
     // Clear screen and redraw all messages from bottom up
-    clear();
+    clearCurses();
     putMessages();
     putPrompt();
-    refresh();
-    
-    // Force a screen update
-    doupdate();
+    refreshCurses();
   }
-
 
   void TUI::putFormattedText(const std::string &format, const std::string &text) {
     (void)format; // Suppress unused parameter warning
     addToDisplayHistory(text);
     redrawScreen();
-    refresh();
   }
 
   // Scroll management
@@ -103,9 +93,18 @@ namespace netd::client {
   }
 
   void TUI::scrollMessages() {
-    // Implementation for scrolling messages
-    if (scrollOffset_ > 0) {
-      scrollOffset_--;
+    // Scroll up (show older messages) - limit to one screen height
+    int screenHeight = getScreenSizeY() - 1; // Leave room for prompt
+    scrollOffset_ += screenHeight;
+  }
+
+  void TUI::scrollMessagesDown() {
+    // Scroll down (show newer messages) - limit to one screen height
+    int screenHeight = getScreenSizeY() - 1; // Leave room for prompt
+    if (scrollOffset_ >= screenHeight) {
+      scrollOffset_ -= screenHeight;
+    } else {
+      scrollOffset_ = 0;
     }
   }
 

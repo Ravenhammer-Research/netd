@@ -77,26 +77,10 @@ namespace netd::server::netconf::handlers {
           // We can use this directly in the response
           yanglibResponse->setYanglibData(yanglibData);
         } else {
-          // Fallback: Add some basic YANG modules that this server supports
-          yanglibResponse->addModule("ietf-netconf", "2013-09-29", 
-                                     "urn:ietf:params:xml:ns:netconf:base:1.0");
-          yanglibResponse->addModule("ietf-netconf-with-defaults", "2011-06-01",
-                                     "urn:ietf:params:xml:ns:yang:ietf-netconf-with-defaults");
-          yanglibResponse->addModule("ietf-interfaces", "2018-02-20",
-                                     "urn:ietf:params:xml:ns:yang:ietf-interfaces");
-          yanglibResponse->addModule("ietf-yang-library", "2019-01-04",
-                                     "urn:ietf:params:xml:ns:yang:ietf-yang-library");
+          throw netd::shared::NotImplementedError("YANG library data generation not implemented");
         }
       } else {
-        // Fallback: Add some basic YANG modules that this server supports
-        yanglibResponse->addModule("ietf-netconf", "2013-09-29", 
-                                   "urn:ietf:params:xml:ns:netconf:base:1.0");
-        yanglibResponse->addModule("ietf-netconf-with-defaults", "2011-06-01",
-                                   "urn:ietf:params:xml:ns:yang:ietf-netconf-with-defaults");
-        yanglibResponse->addModule("ietf-interfaces", "2018-02-20",
-                                   "urn:ietf:params:xml:ns:yang:ietf-interfaces");
-        yanglibResponse->addModule("ietf-yang-library", "2019-01-04",
-                                   "urn:ietf:params:xml:ns:yang:ietf-yang-library");
+        throw netd::shared::NotImplementedError("YANG context not available");
       }
       
       // Convert to base GetResponse

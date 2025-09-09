@@ -37,16 +37,20 @@ namespace netd::server::netconf::handlers {
 
   std::unique_ptr<netd::shared::response::CloseResponse>
   RpcHandler::handleCloseSessionRequest(
-      [[maybe_unused]] std::unique_ptr<netd::shared::request::CloseRequest>
-          request) {
+      std::unique_ptr<netd::shared::request::CloseRequest> request) {
     try {
       auto &logger = netd::shared::Logger::getInstance();
       auto response = std::make_unique<netd::shared::response::CloseResponse>();
 
       logger.info("Handling close-session request");
 
-      // For now, return a simple OK response
-      // TODO: Implement actual close-session request handling
+      // Set session termination reason to indicate normal close by client
+      // This matches the libnetconf2 default implementation
+      struct nc_session *session = request->getSession();
+      if (session) {
+        nc_session_set_term_reason(session, NC_SESSION_TERM_CLOSED);
+      }
+      
       return response;
     } catch (const std::exception &e) {
       auto response = std::make_unique<netd::shared::response::CloseResponse>();
