@@ -50,6 +50,20 @@ void printUsage(const char *progname) {
   std::cerr << "  -h           Show this help message\n";
 }
 
+void showStartupInfo(netd::client::TUI& tui) {
+  tui.putLine("NetD Client 1.0");
+  tui.putLine(" ");
+  tui.putLine("Copyright (c) 2025 RavenHammer Research. All rights reserved.");
+  tui.putLine(" ");
+  tui.putLine("Credits:");
+  tui.putLine(" ");
+  tui.putLine("  FreeBSD - Copyright (c) The Regents of the University of California.");
+  tui.putLine("           All rights reserved.");
+  tui.putLine("  libnetconf2 - Copyright (c) 2015-2020, CESNET. All rights reserved.");
+  tui.putLine("  libyang - Copyright (c) 2015-2025, CESNET. All rights reserved.");
+  tui.putLine(" ");
+}
+
 int main(int argc, char *argv[]) {
   // Default values
   std::string socketPath = "/tmp/netd.sock";
@@ -105,13 +119,17 @@ int main(int argc, char *argv[]) {
   
   // Set up logger integration AFTER TUI is initialized
   tui.setLoggerInstance(&tui);
+  tui.setDebugLevel(debugLevel);
+  
+  // Show startup information
+  showStartupInfo(tui);
   
   // Start netconf client
   netd::client::NetconfClient client;
   if (client.connect(socketPath)) {
     tui.setConnectionStatus("Connected to " + socketPath);
   } else {
-    tui.setConnectionStatus("Failed to connect to " + socketPath);
+    tui.setConnectionStatus("Disconnected");
   }
   
   // Set up command processor

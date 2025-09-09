@@ -72,6 +72,7 @@ namespace netd::client {
     
     // Clear screen and redraw all messages from bottom up
     clearCurses();
+    putStatusBar();
     putMessages();
     putPrompt();
     refreshCurses();

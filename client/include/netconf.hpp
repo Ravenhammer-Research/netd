@@ -34,6 +34,9 @@
 #include <shared/include/response/get/config.hpp>
 #include <libnetconf2/netconf.h>
 #include <string>
+#include <thread>
+#include <atomic>
+#include <chrono>
 
 namespace netd::client {
 
@@ -55,10 +58,23 @@ namespace netd::client {
     struct nc_session *getSession() const;
     
     netd::shared::response::get::GetConfigResponse sendRequest(struct nc_rpc *rpc);
+    
+    // Keep-alive control
+    void setKeepAliveEnabled(bool enabled);
+    void setKeepAliveInterval(int seconds);
 
   private:
     struct nc_session *session_;
     bool connected_;
+    
+    // Keep-alive mechanism
+    std::thread keepAliveThread_;
+    std::atomic<bool> keepAliveRunning_;
+    std::atomic<bool> keepAliveEnabled_;
+    int keepAliveInterval_; // seconds
+    
+    void keepAliveLoop();
+    void sendKeepAlive();
   };
   
   NetconfClient &getNetconfClient();

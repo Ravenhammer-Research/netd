@@ -76,6 +76,15 @@ namespace netd::client {
     void setConnectionStatus(const std::string& status) {
       connectionStatus_ = status;
     }
+    
+    // Debug level
+    void setDebugLevel(int level) {
+      debugLevel_ = level;
+    }
+    
+    int getDebugLevel() const {
+      return debugLevel_;
+    }
 
     // Display methods (public for signal handler access)
     void putMessages();
@@ -109,6 +118,7 @@ namespace netd::client {
     int commandHistoryPosition_;
     int scrollOffset_;
     std::string connectionStatus_;
+    int debugLevel_;
 
     // Curses helpers
     void setupCurses();

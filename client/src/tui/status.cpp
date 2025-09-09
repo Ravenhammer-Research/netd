@@ -89,12 +89,47 @@ namespace netd::client {
     int leftPos = 1;
     int rightPos = screenWidth - rightText.length() - 1;
     
-    // Draw left text
-    mvprintw(0, leftPos, "%s", leftText.c_str());
+    // Draw left text with bold only on hostname/filename
+    if (leftText.find("Connected to ") == 0) {
+      // Print "Connected to " in normal formatting
+      std::string prefix = "Connected to ";
+      mvprintw(0, leftPos, "%s", prefix.c_str());
+      
+      // Print the hostname/filename with bold
+      std::string hostname = leftText.substr(prefix.length());
+      attron(A_BOLD);
+      mvprintw(0, leftPos + prefix.length(), "%s", hostname.c_str());
+      attroff(A_BOLD);
+    } else {
+      // For other status messages (like "Disconnected"), print normally
+      mvprintw(0, leftPos, "%s", leftText.c_str());
+    }
     
     // Draw right text (only if there's scroll info to show)
     if (!rightText.empty()) {
-      mvprintw(0, rightPos, "%s", rightText.c_str());
+      // Parse the page numbers and make digits bold
+      size_t slashPos = rightText.find('/');
+      if (slashPos != std::string::npos) {
+        // Print first number in bold
+        std::string firstNum = rightText.substr(0, slashPos);
+        attron(A_BOLD);
+        mvprintw(0, rightPos, "%s", firstNum.c_str());
+        attroff(A_BOLD);
+        
+        // Print slash in normal
+        mvprintw(0, rightPos + slashPos, "/");
+        
+        // Print second number in bold
+        std::string secondNum = rightText.substr(slashPos + 1);
+        attron(A_BOLD);
+        mvprintw(0, rightPos + slashPos + 1, "%s", secondNum.c_str());
+        attroff(A_BOLD);
+      } else {
+        // Fallback: print entire string in bold
+        attron(A_BOLD);
+        mvprintw(0, rightPos, "%s", rightText.c_str());
+        attroff(A_BOLD);
+      }
     }
   }
 

@@ -36,7 +36,7 @@ namespace netd::client {
   constexpr size_t MAX_HISTORY_SIZE = 10240;
 
   // Constructor and destructor
-  TUI::TUI() : initialized_(false), prompt_("netc> "), commandHistoryPosition_(-1), scrollOffset_(0), connectionStatus_("Not connected") {}
+  TUI::TUI() : initialized_(false), prompt_("netc> "), commandHistoryPosition_(-1), scrollOffset_(0), connectionStatus_("Not connected"), debugLevel_(0) {}
 
   TUI::~TUI() { cleanup(); }
 

@@ -28,6 +28,7 @@
 #include <client/include/tui.hpp>
 #include <curses.h>
 #include <algorithm>
+#include <regex>
 
 namespace netd::client {
 
@@ -118,7 +119,72 @@ namespace netd::client {
         int targetRow = maxLines - displayRow; // Account for status bar offset
         move(targetRow, 0);
         clrtoeol();
-        printw("%s", wrapped_lines[j].c_str());
+        
+        // Check if this is a log message and apply colors using regex
+        std::string line = wrapped_lines[j];
+        // Pattern matches both [timestamp][LEVEL]: and [LEVEL]: formats
+        std::regex logPatternWithTimestamp(R"(\[([^\]]+)\]\[([TDIWE])\]:)");
+        std::regex logPatternWithoutTimestamp(R"(\[([TDIWE])\]:)");
+        std::smatch matches;
+        
+        char level = 0;
+        if (std::regex_search(line, matches, logPatternWithTimestamp)) {
+          // Format: [timestamp][LEVEL]:
+          level = matches[2].str()[0];
+        } else if (std::regex_search(line, matches, logPatternWithoutTimestamp)) {
+          // Format: [LEVEL]:
+          level = matches[1].str()[0];
+        }
+        
+        if (level != 0) {
+          int color = 0;
+          
+            switch (level) {
+              case 'T': color = 12; break; // Bright White
+              case 'D': color = 11; break; // Bright Cyan
+              case 'I': color = 10; break; // Bright Green
+              case 'W': color = 9; break;  // Bright Yellow
+              case 'E': color = 8; break;  // Bright Red
+            }
+          
+          if (color > 0) {
+            // Find the position of the level letter in the original string
+            size_t levelPos;
+            if (std::regex_search(line, matches, logPatternWithTimestamp)) {
+              // Format: [timestamp][LEVEL]: - find position after "]["
+              levelPos = line.find("][" + std::string(1, level) + "]:");
+              if (levelPos != std::string::npos) {
+                levelPos += 2; // Move past "]["
+              }
+            } else {
+              // Format: [LEVEL]: - find position after "["
+              levelPos = line.find("[" + std::string(1, level) + "]:");
+              if (levelPos != std::string::npos) {
+                levelPos += 1; // Move past "["
+              }
+            }
+            
+            if (levelPos != std::string::npos) {
+              // Print everything before the level letter
+              printw("%s", line.substr(0, levelPos).c_str());
+              
+              // Print level letter with color and bold
+              attron(COLOR_PAIR(color) | A_BOLD);
+              printw("%c", level);
+              attroff(COLOR_PAIR(color) | A_BOLD);
+              
+              // Print everything after the level letter
+              printw("%s", line.substr(levelPos + 1).c_str());
+            } else {
+              printw("%s", line.c_str());
+            }
+          } else {
+            printw("%s", line.c_str());
+          }
+        } else {
+          printw("%s", line.c_str());
+        }
+        
         displayRow++;
       }
     }

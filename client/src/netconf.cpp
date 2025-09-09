@@ -44,7 +44,8 @@ namespace netd::client {
   using netd::shared::Yang;
 
   // NetconfClient implementation
-  NetconfClient::NetconfClient() : session_(nullptr), connected_(false) {
+  NetconfClient::NetconfClient() : session_(nullptr), connected_(false), 
+                                   keepAliveRunning_(false), keepAliveEnabled_(true), keepAliveInterval_(120) {
   }
 
   NetconfClient::~NetconfClient() {
@@ -66,10 +67,23 @@ namespace netd::client {
 
     connected_ = true;
     logger.info("Connected to NETD server at " + socketPath);
+    
+    // Start keep-alive thread
+    if (keepAliveEnabled_) {
+      keepAliveRunning_ = true;
+      keepAliveThread_ = std::thread(&NetconfClient::keepAliveLoop, this);
+    }
+    
     return true;
   }
 
   void NetconfClient::disconnect() {
+    // Stop keep-alive thread
+    keepAliveRunning_ = false;
+    if (keepAliveThread_.joinable()) {
+      keepAliveThread_.join();
+    }
+    
     if (session_) {
       nc_session_free(session_, nullptr);
       session_ = nullptr;
@@ -160,5 +174,69 @@ namespace netd::client {
     return g_netconfClient ? g_netconfClient->isConnected() : false;
   }
 
+  // Keep-alive implementation
+  void NetconfClient::setKeepAliveEnabled(bool enabled) {
+    keepAliveEnabled_ = enabled;
+  }
+
+  void NetconfClient::setKeepAliveInterval(int seconds) {
+    keepAliveInterval_ = seconds;
+  }
+
+  void NetconfClient::keepAliveLoop() {
+    while (keepAliveRunning_ && connected_) {
+      // Sleep in smaller chunks to allow for quick exit
+      for (int i = 0; i < keepAliveInterval_ && keepAliveRunning_ && connected_; i++) {
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+      }
+      
+      if (keepAliveRunning_ && connected_ && keepAliveEnabled_) {
+        sendKeepAlive();
+      }
+    }
+  }
+
+  void NetconfClient::sendKeepAlive() {
+    if (!session_ || !connected_) {
+      return;
+    }
+    
+    auto &logger = netd::shared::Logger::getInstance();
+    
+    try {
+      // Send a simple <get> request with no filter to keep the session alive
+      struct nc_rpc *rpc = nc_rpc_get(nullptr, NC_WD_UNKNOWN, NC_PARAMTYPE_CONST);
+      if (!rpc) {
+        logger.warning("Failed to create keep-alive RPC");
+        return;
+      }
+      
+      // Send the RPC
+      uint64_t msg_id = 0;
+      int ret = nc_send_rpc(session_, rpc, 1000, &msg_id);
+      if (ret != NC_MSG_RPC) {
+        logger.warning("Failed to send keep-alive RPC");
+        nc_rpc_free(rpc);
+        return;
+      }
+      
+      // Wait for and discard the reply
+      struct lyd_node *envp = nullptr, *op = nullptr;
+      ret = nc_recv_reply(session_, rpc, msg_id, 1000, &envp, &op);
+      if (ret != NC_MSG_REPLY) {
+        logger.warning("Failed to receive keep-alive reply");
+      }
+      
+      // Clean up
+      lyd_free_tree(envp);
+      lyd_free_tree(op);
+      nc_rpc_free(rpc);
+      
+      logger.debug("Keep-alive sent successfully");
+      
+    } catch (const std::exception &e) {
+      logger.warning("Keep-alive failed: " + std::string(e.what()));
+    }
+  }
 
 } // namespace netd::client

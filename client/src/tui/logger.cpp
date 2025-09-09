@@ -57,25 +57,49 @@ namespace netd::client {
       throw std::runtime_error("TUI instance not set");
     }
 
-    // Format the log message with timestamp and level prefix
-    std::string timestamp = getCurrentTimestamp();
+    // Check if we should show timestamps (only if debug level >= 5)
+    bool showTimestamp = (g_tui_instance->getDebugLevel() >= 5);
+    
     std::string formatted_message;
-    switch (level) {
-      case netd::shared::LogLevel::TRACE:
-        formatted_message = "[" + timestamp + "][T]:" + message;
-        break;
-      case netd::shared::LogLevel::DEBUG:
-        formatted_message = "[" + timestamp + "][D]:" + message;
-        break;
-      case netd::shared::LogLevel::INFO:
-        formatted_message = "[" + timestamp + "][I]:" + message;
-        break;
-      case netd::shared::LogLevel::WARNING:
-        formatted_message = "[" + timestamp + "][W]:" + message;
-        break;
-      case netd::shared::LogLevel::ERROR:
-        formatted_message = "[" + timestamp + "][E]:" + message;
-        break;
+    if (showTimestamp) {
+      // Format the log message with timestamp and level prefix
+      std::string timestamp = getCurrentTimestamp();
+      switch (level) {
+        case netd::shared::LogLevel::TRACE:
+          formatted_message = "[" + timestamp + "][T]:" + message;
+          break;
+        case netd::shared::LogLevel::DEBUG:
+          formatted_message = "[" + timestamp + "][D]:" + message;
+          break;
+        case netd::shared::LogLevel::INFO:
+          formatted_message = "[" + timestamp + "][I]:" + message;
+          break;
+        case netd::shared::LogLevel::WARNING:
+          formatted_message = "[" + timestamp + "][W]:" + message;
+          break;
+        case netd::shared::LogLevel::ERROR:
+          formatted_message = "[" + timestamp + "][E]:" + message;
+          break;
+      }
+    } else {
+      // Format the log message with only level prefix (no timestamp)
+      switch (level) {
+        case netd::shared::LogLevel::TRACE:
+          formatted_message = "[T]:" + message;
+          break;
+        case netd::shared::LogLevel::DEBUG:
+          formatted_message = "[D]:" + message;
+          break;
+        case netd::shared::LogLevel::INFO:
+          formatted_message = "[I]:" + message;
+          break;
+        case netd::shared::LogLevel::WARNING:
+          formatted_message = "[W]:" + message;
+          break;
+        case netd::shared::LogLevel::ERROR:
+          formatted_message = "[E]:" + message;
+          break;
+      }
     }
 
     // Write to TUI using the appropriate method

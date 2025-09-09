@@ -45,11 +45,22 @@ namespace netd::client {
   void TUI::setupColors() {
     if (has_colors()) {
       start_color();
-      init_pair(1, COLOR_RED, COLOR_BLACK);
-      init_pair(2, COLOR_YELLOW, COLOR_BLACK);
-      init_pair(3, COLOR_BLUE, COLOR_BLACK);
-      init_pair(4, COLOR_GREEN, COLOR_BLACK);
-      init_pair(5, COLOR_MAGENTA, COLOR_BLACK);
+      // Use bright colors for better visibility
+      init_pair(1, COLOR_RED, COLOR_BLACK);        // Error - Red
+      init_pair(2, COLOR_YELLOW, COLOR_BLACK);     // Warning - Yellow  
+      init_pair(3, COLOR_BLUE, COLOR_BLACK);       // Blue
+      init_pair(4, COLOR_GREEN, COLOR_BLACK);      // Info - Green
+      init_pair(5, COLOR_MAGENTA, COLOR_BLACK);    // Magenta
+      init_pair(6, COLOR_WHITE, COLOR_BLACK);      // Trace - White
+      init_pair(7, COLOR_CYAN, COLOR_BLACK);       // Debug - Cyan
+      
+      // Try to use bright color variants if available
+      // Some terminals support bright colors (8-15) instead of regular (0-7)
+      init_pair(8, COLOR_RED + 8, COLOR_BLACK);     // Bright red for errors
+      init_pair(9, COLOR_YELLOW + 8, COLOR_BLACK);  // Bright yellow for warnings
+      init_pair(10, COLOR_GREEN + 8, COLOR_BLACK);  // Bright green for info
+      init_pair(11, COLOR_CYAN + 8, COLOR_BLACK);   // Bright cyan for debug
+      init_pair(12, COLOR_WHITE + 8, COLOR_BLACK);  // Bright white for trace
     }
   }
 
