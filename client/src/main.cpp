@@ -108,7 +108,11 @@ int main(int argc, char *argv[]) {
   
   // Start netconf client
   netd::client::NetconfClient client;
-  client.connect(socketPath);
+  if (client.connect(socketPath)) {
+    tui.setConnectionStatus("Connected to " + socketPath);
+  } else {
+    tui.setConnectionStatus("Failed to connect to " + socketPath);
+  }
   
   // Set up command processor
   netd::client::CommandProcessor processor(tui);

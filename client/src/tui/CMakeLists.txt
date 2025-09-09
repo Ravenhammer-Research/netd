@@ -8,6 +8,7 @@ set(TUI_SOURCES
   screen.cpp
   logger.cpp
   text.cpp
+  status.cpp
 )
 
 # Create TUI library

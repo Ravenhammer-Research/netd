@@ -71,6 +71,11 @@ namespace netd::client {
     void setCommandHandler(std::function<bool(const std::string &)> handler) {
       commandHandler_ = handler;
     }
+    
+    // Connection status
+    void setConnectionStatus(const std::string& status) {
+      connectionStatus_ = status;
+    }
 
     // Display methods (public for signal handler access)
     void putMessages();
@@ -103,6 +108,7 @@ namespace netd::client {
     std::function<bool(const std::string &)> commandHandler_;
     int commandHistoryPosition_;
     int scrollOffset_;
+    std::string connectionStatus_;
 
     // Curses helpers
     void setupCurses();
@@ -130,6 +136,12 @@ namespace netd::client {
     void redrawPrompt();
     void scrollMessages();
     void scrollMessagesDown();
+    
+    // Status bar functions
+    void putStatusBar();
+    void updateStatusBar(const std::string& message);
+    void clearStatusBar();
+    std::string getScrollInfo();
     
     // Key input handlers
     void handleBackspace();

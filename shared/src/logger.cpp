@@ -40,23 +40,28 @@ namespace netd::shared {
     auto &logger = Logger::getInstance();
     LogLevel logLevel;
     
-    switch (level) {
-    case LY_LLERR:
-      logLevel = LogLevel::ERROR;
-      break;
-    case LY_LLWRN:
-      logLevel = LogLevel::WARNING;
-      break;
-    case LY_LLVRB:
-    case LY_LLDBG:
+    // Check if this is a directory-related error that should be debug level
+    std::string message = std::string(msg);
+    if (message.find("Unable to use search directory") != std::string::npos) {
       logLevel = LogLevel::DEBUG;
-      break;
-    default:
-      logLevel = LogLevel::INFO;
-      break;
+    } else {
+      switch (level) {
+      case LY_LLERR:
+        logLevel = LogLevel::ERROR;
+        break;
+      case LY_LLWRN:
+        logLevel = LogLevel::WARNING;
+        break;
+      case LY_LLVRB:
+      case LY_LLDBG:
+        logLevel = LogLevel::DEBUG;
+        break;
+      default:
+        logLevel = LogLevel::INFO;
+        break;
+      }
     }
     
-    std::string message = std::string(msg);
     if (data_path) {
       message += " (data: " + std::string(data_path) + ")";
     }

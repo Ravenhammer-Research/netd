@@ -36,7 +36,7 @@ namespace netd::client {
   constexpr size_t MAX_HISTORY_SIZE = 10240;
 
   // Constructor and destructor
-  TUI::TUI() : initialized_(false), prompt_("netc> "), commandHistoryPosition_(-1), scrollOffset_(0) {}
+  TUI::TUI() : initialized_(false), prompt_("netc> "), commandHistoryPosition_(-1), scrollOffset_(0), connectionStatus_("Not connected") {}
 
   TUI::~TUI() { cleanup(); }
 
@@ -64,6 +64,9 @@ namespace netd::client {
     if (!initialized_) {
       throw std::runtime_error("TUI not initialized (runInteractive)");
     }
+
+    // Initial screen setup
+    redrawScreen();
 
     std::string line;
     while (true) {

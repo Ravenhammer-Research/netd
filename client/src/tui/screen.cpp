@@ -47,11 +47,14 @@ namespace netd::client {
   }
 
   int TUI::getMaxLines() {
-    return getScreenSizeY() - 1; // Leave room for prompt
+    int screenHeight = getScreenSizeY();
+    // Leave room for status bar (1 line) and prompt (1 line)
+    return screenHeight - 2;
   }
 
   void TUI::redrawScreen() {
     clear();
+    putStatusBar();
     putMessages();
     putPrompt();
     refresh();
@@ -69,15 +72,15 @@ namespace netd::client {
   // Message display - no state, calculate everything on the fly
   void TUI::putMessages() {
     int promptRow = getPromptRow();
-    int maxLines = promptRow;
+    int maxLines = promptRow - 1; // Account for status bar
     int screenWidth = getScreenSizeX();
     
     if (displayHistory_.empty()) {
       return;
     }
     
-    // Clear all message lines first
-    for (int row = 0; row < maxLines; row++) {
+    // Clear all message lines first (starting from line 1, after status bar)
+    for (int row = 1; row <= maxLines; row++) {
       move(row, 0);
       clrtoeol();
     }
@@ -112,7 +115,7 @@ namespace netd::client {
           return; // No more space
         }
         
-        int targetRow = maxLines - 1 - displayRow;
+        int targetRow = maxLines - displayRow; // Account for status bar offset
         move(targetRow, 0);
         clrtoeol();
         printw("%s", wrapped_lines[j].c_str());
