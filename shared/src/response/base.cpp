@@ -25,12 +25,15 @@
  * SUCH DAMAGE.
  */
 
-#include <libnetconf2/messages_server.h>
-#include <libnetconf2/netconf.h>
 #include <shared/include/marshalling/error.hpp>
 #include <shared/include/response/base.hpp>
+#include <shared/include/exception.hpp>
+#include <sstream>
 
 namespace netd::shared::response {
+
+  // NOTE: This base class contains stubbed implementations for interface compliance only.
+  // The actual functionality should be implemented in derived classes, not here.
 
   Response::Response() {
     error = nullptr;
@@ -54,81 +57,31 @@ namespace netd::shared::response {
   }
 
   // Convenience methods for common error types
-  void Response::setProtocolError(netd::shared::marshalling::ErrorTag tag,
-                                  const std::string &message) {
-    auto err = std::make_unique<netd::shared::marshalling::Error>(
-        netd::shared::marshalling::ErrorType::PROTOCOL, tag,
-        netd::shared::marshalling::ErrorSeverity::ERROR);
-    if (!message.empty()) {
-      err->setMessage(message);
-    }
-    error = std::move(err);
+  // NOTE: These methods should NOT be implemented in base class - they are stubbed for interface compliance only
+  void Response::setProtocolError([[maybe_unused]] netd::shared::marshalling::ErrorTag tag,
+                                  [[maybe_unused]] const std::string &message) {
+    throw netd::shared::NotImplementedError("Response::setProtocolError not implemented");
   }
 
-  void Response::setApplicationError(netd::shared::marshalling::ErrorTag tag,
-                                     const std::string &message) {
-    auto err = std::make_unique<netd::shared::marshalling::Error>(
-        netd::shared::marshalling::ErrorType::APPLICATION, tag,
-        netd::shared::marshalling::ErrorSeverity::ERROR);
-    if (!message.empty()) {
-      err->setMessage(message);
-    }
-    error = std::move(err);
+  void Response::setApplicationError([[maybe_unused]] netd::shared::marshalling::ErrorTag tag,
+                                     [[maybe_unused]] const std::string &message) {
+    throw netd::shared::NotImplementedError("Response::setApplicationError not implemented");
   }
 
-  void Response::setRpcError(netd::shared::marshalling::ErrorTag tag,
-                             const std::string &message) {
-    auto err = std::make_unique<netd::shared::marshalling::Error>(
-        netd::shared::marshalling::ErrorType::RPC, tag,
-        netd::shared::marshalling::ErrorSeverity::ERROR);
-    if (!message.empty()) {
-      err->setMessage(message);
-    }
-    error = std::move(err);
+  void Response::setRpcError([[maybe_unused]] netd::shared::marshalling::ErrorTag tag,
+                             [[maybe_unused]] const std::string &message) {
+    throw netd::shared::NotImplementedError("Response::setRpcError not implemented");
   }
 
-  void Response::setTransportError(netd::shared::marshalling::ErrorTag tag,
-                                   const std::string &message) {
-    auto err = std::make_unique<netd::shared::marshalling::Error>(
-        netd::shared::marshalling::ErrorType::TRANSPORT, tag,
-        netd::shared::marshalling::ErrorSeverity::ERROR);
-    if (!message.empty()) {
-      err->setMessage(message);
-    }
-    error = std::move(err);
+  void Response::setTransportError([[maybe_unused]] netd::shared::marshalling::ErrorTag tag,
+                                   [[maybe_unused]] const std::string &message) {
+    throw netd::shared::NotImplementedError("Response::setTransportError not implemented");
   }
 
-  // Convenience methods for common data types
-  void Response::setNetworkInstance(
-      std::unique_ptr<netd::shared::marshalling::NetworkInstance> instance) {
-    data = std::move(instance);
-  }
-
-  void
-  Response::setRoute(std::unique_ptr<netd::shared::marshalling::Route> route) {
-    data = std::move(route);
-  }
-
-  void Response::setInterface(
-      std::unique_ptr<netd::shared::marshalling::Interface> interface) {
-    data = std::move(interface);
-  }
-
-  // Value semantics overload for easier usage
-  void Response::setData(netd::shared::marshalling::Interface interface) {
-    data = std::make_unique<netd::shared::marshalling::Interface>(
-        std::move(interface));
-  }
-
-  // Default implementation of toNetconfReply
-  struct nc_server_reply *
-  Response::toNetconfReply(struct nc_session *session) const {
-    if (error) {
-      return nc_server_reply_err(nc_err(nc_session_get_ctx(session),
-                                        NC_ERR_OP_FAILED,
-                                        error->getMessage().c_str()));
-    }
-    return nc_server_reply_ok();
+  // Set YANG data tree
+  // NOTE: This method should NOT be implemented in base class - it is stubbed for interface compliance only
+  void Response::setData([[maybe_unused]] struct lyd_node *yang_data) {
+    throw netd::shared::NotImplementedError("Response::setData not implemented");
   }
 
 } // namespace netd::shared::response

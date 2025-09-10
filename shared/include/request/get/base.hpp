@@ -36,7 +36,7 @@ namespace netd::shared::request::get {
   class GetRequest : public netd::shared::request::Request<GetRequest> {
   public:
     GetRequest() : netd::shared::request::Request<GetRequest>() {}
-    GetRequest(struct nc_session *session, struct lyd_node *rpc)
+    GetRequest(netd::shared::netconf::NetconfSession *session, struct lyd_node *rpc)
         : netd::shared::request::Request<GetRequest>(session, rpc) {
       // Parse the RPC data to populate filter information
       if (rpc) {

@@ -26,10 +26,8 @@
  */
 
 #include <client/include/processor.hpp>
-#include <client/include/netconf.hpp>
+#include <client/include/netconf/client.hpp>
 #include <client/include/table.hpp>
-#include <libnetconf2/netconf.h>
-#include <libnetconf2/messages_client.h>
 #include <shared/include/exception.hpp>
 #include <shared/include/request/get/config.hpp>
 #include <shared/include/response/get/config.hpp>
@@ -37,7 +35,7 @@
 
 namespace netd::client {
 
-  CommandProcessor::CommandProcessor(TUI &tui) : tui_(tui), parser_() {
+  CommandProcessor::CommandProcessor(TUI &tui, netd::client::netconf::NetconfClient &client) : tui_(tui), client_(client), parser_() {
   }
 
   bool CommandProcessor::processCommand(const std::string &command) {
@@ -100,30 +98,11 @@ namespace netd::client {
   }
 
   bool CommandProcessor::handleShowInterface([[maybe_unused]] const ParsedCommand &parsed) {
-    netd::shared::request::get::GetConfigRequest request;
-    request.setSource(netd::shared::request::get::Datastore::RUNNING);
-    request.setRequestedModule("ietf-interfaces");
-    
-    // Create nc_rpc from request
-    struct nc_rpc *rpc = request.toRpc();
-    if (!rpc) {
-      throw netd::shared::ArgumentError("Failed to create get-config RPC");
+    // Check if connected (to avoid unused field warning)
+    if (!client_.isConnected()) {
+      tui_.putLine("Error: Not connected to server");
     }
-    
-    // Use the client to send the RPC
-    auto &netconfClient = netd::client::getNetconfClient();
-    netd::shared::response::get::GetConfigResponse response = netconfClient.sendRequest(rpc);
-    
-    // Check if response has an error
-    if (response.isError()) {
-      netd::shared::marshalling::Error *error = response.getError();
-      throw netd::shared::NotImplementedError(error->getMessage());
-    }
-    
-    // Create table instance with response
-    Table table(response);
-    
-    return true;
+    throw netd::shared::NotImplementedError("handleShowInterface: not implemented");
   }
 
   bool CommandProcessor::handleSetCommand([[maybe_unused]] const ParsedCommand &parsed) {

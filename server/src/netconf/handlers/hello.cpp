@@ -32,27 +32,21 @@
 #include <shared/include/logger.hpp>
 #include <shared/include/request/hello.hpp>
 #include <shared/include/response/hello.hpp>
+#include <shared/include/yang.hpp>
 
 namespace netd::server::netconf::handlers {
 
   std::unique_ptr<netd::shared::response::HelloResponse>
   RpcHandler::handleHelloRequest(
       std::unique_ptr<netd::shared::request::HelloRequest> /* request */) {
-    try {
-      auto &logger = netd::shared::Logger::getInstance();
-      auto response = std::make_unique<netd::shared::response::HelloResponse>();
+    auto &logger = netd::shared::Logger::getInstance();
+    auto response = std::make_unique<netd::shared::response::HelloResponse>();
 
-      logger.info("Handling hello request");
+    logger.info("Handling hello request");
 
-      // For now, return a simple OK response
-      // TODO: Implement actual hello request handling
-      return response;
-    } catch (const std::exception &e) {
-      auto response = std::make_unique<netd::shared::response::HelloResponse>();
-      response->setProtocolError(
-          netd::shared::marshalling::ErrorTag::OPERATION_FAILED, e.what());
-      return response;
-    }
+    // The HelloResponse::toYang() method will automatically use dynamic capabilities
+    // from the Yang class, so we just need to return the response
+    return response;
   }
-
+  
 } // namespace netd::server::netconf::handlers

@@ -28,15 +28,6 @@
 #ifndef NETD_SERVER_NETCONF_BASE_HPP
 #define NETD_SERVER_NETCONF_BASE_HPP
 
-#include <libnetconf2/messages_server.h>
-#include <libnetconf2/netconf.h>
-#include <libnetconf2/server_config.h>
-#include <libnetconf2/session_server.h>
-#include <libyang/libyang.h>
-#include <memory>
-#include <shared/include/yang.hpp>
-#include <string>
-
 namespace netd::server::netconf {
 
   class Server {
@@ -49,45 +40,8 @@ namespace netd::server::netconf {
     virtual void stop() = 0;
     bool isRunning() const;
 
-    // Session management
-    struct nc_session *acceptSession();
-    void closeSession(struct nc_session *session);
-
-    // RPC handling
-    virtual struct nc_server_reply *handleRpc(struct nc_session *session,
-                                              struct lyd_node *rpc);
-
-    // Specific RPC request handlers
-    virtual struct nc_server_reply *handleGetRequest(struct nc_session *session,
-                                                     struct lyd_node *rpc);
-    virtual struct nc_server_reply *
-    handleGetConfigRequest(struct nc_session *session, struct lyd_node *rpc);
-    virtual struct nc_server_reply *
-    handleEditConfigRequest(struct nc_session *session, struct lyd_node *rpc);
-    virtual struct nc_server_reply *
-    handleCopyConfigRequest(struct nc_session *session, struct lyd_node *rpc);
-    virtual struct nc_server_reply *
-    handleDeleteConfigRequest(struct nc_session *session, struct lyd_node *rpc);
-    virtual struct nc_server_reply *
-    handleLockRequest(struct nc_session *session, struct lyd_node *rpc);
-    virtual struct nc_server_reply *
-    handleUnlockRequest(struct nc_session *session, struct lyd_node *rpc);
-    virtual struct nc_server_reply *
-    handleDiscardRequest(struct nc_session *session, struct lyd_node *rpc);
-    virtual struct nc_server_reply *
-    handleCloseSessionRequest(struct nc_session *session, struct lyd_node *rpc);
-    virtual struct nc_server_reply *
-    handleKillSessionRequest(struct nc_session *session, struct lyd_node *rpc);
-    virtual struct nc_server_reply *
-    handleValidateRequest(struct nc_session *session, struct lyd_node *rpc);
-    virtual struct nc_server_reply *
-    handleHelloRequest(struct nc_session *session, struct lyd_node *rpc);
-    virtual struct nc_server_reply *
-    handleCommitRequest(struct nc_session *session, struct lyd_node *rpc);
-
   protected:
     bool running_;
-    struct nc_pollsession *ps_;
   };
 
 } // namespace netd::server::netconf

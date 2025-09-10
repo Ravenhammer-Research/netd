@@ -26,31 +26,26 @@
  */
 
 #include <chrono>
-#include <csignal>
 #include <iostream>
 #include <server/include/netconf/server.hpp>
+#include <server/include/signal.hpp>
 #include <shared/include/logger.hpp>
+#include <shared/include/yang.hpp>
+#include <libyang/libyang.h>
 #include <thread>
 #include <unistd.h>
 #include <getopt.h>
 #include <string>
 
-// Global flag for graceful shutdown
-static volatile bool g_running = true;
-
-void signalHandler(int signal) {
-  if (signal == SIGINT || signal == SIGTERM) {
-    g_running = false;
-  }
-}
-
 void printUsage(const char *progname) {
   std::cerr << "Usage: " << progname << " [options]\n";
   std::cerr << "Options:\n";
   std::cerr << "  -s <path>    Socket path (default: /tmp/netd.sock)\n";
-  std::cerr << "  -d           Enable warning logging\n";
-  std::cerr << "  -dd          Enable info logging\n";
-  std::cerr << "  -ddd         Enable debug logging\n";
+  std::cerr << "  -d           DEBUG\n";
+  std::cerr << "  -dd          DEBUG + TRACE\n";
+  std::cerr << "  -ddd         DEBUG + TRACE + TIMESTAMP\n";
+  std::cerr << "  -dddd        DEBUG + TRACE + TIMESTAMP + YANG\n";
+  std::cerr << "  -l           List available YANG modules and exit\n";
   std::cerr << "  -h           Show this help message\n";
 }
 
@@ -63,13 +58,17 @@ int main(int argc, char *argv[]) {
   
   // Parse command line options
   int opt;
-  while ((opt = getopt(argc, argv, "s:dh")) != -1) {
+  bool listModules = false;
+  while ((opt = getopt(argc, argv, "s:dlh")) != -1) {
     switch (opt) {
     case 's':
       socketPath = optarg;
       break;
     case 'd':
       debugLevel++;
+      break;
+    case 'l':
+      listModules = true;
       break;
     case 'h':
       printUsage(argv[0]);
@@ -84,43 +83,106 @@ int main(int argc, char *argv[]) {
   switch (debugLevel) {
   case 0:
     logger.setLogLevel(netd::shared::LogLevel::ERROR);
+    ly_log_level(LY_LLERR);
     break;
   case 1:
-    logger.setLogLevel(netd::shared::LogLevel::WARNING);
+    logger.setLogLevel(netd::shared::LogLevel::DEBUG);
+    ly_log_level(LY_LLERR);
     break;
   case 2:
-    logger.setLogLevel(netd::shared::LogLevel::INFO);
+    logger.setLogLevel(netd::shared::LogLevel::TRACE);
+    ly_log_level(LY_LLERR);
     break;
   case 3:
-    logger.setLogLevel(netd::shared::LogLevel::DEBUG);
+    logger.setLogLevel(netd::shared::LogLevel::TRACE);
+    ly_log_level(LY_LLERR);
+    logger.setTimestampEnabled(true);
+    break;
+  case 4:
+    logger.setLogLevel(netd::shared::LogLevel::YANG);
+    ly_log_level(LY_LLDBG);
+    logger.setTimestampEnabled(true);
+    logger.setYangDebugGroups(LY_LDGDICT | LY_LDGXPATH | LY_LDGDEPSETS);
     break;
   default:
-    logger.setLogLevel(netd::shared::LogLevel::TRACE);
+    logger.setLogLevel(netd::shared::LogLevel::YANG);
+    ly_log_level(LY_LLDBG);
+    logger.setTimestampEnabled(true);
+    logger.setYangDebugGroups(LY_LDGDICT | LY_LDGXPATH | LY_LDGDEPSETS);
     break;
+  }
+
+  // Initialize YANG manager
+  try {
+    netd::shared::Yang::getInstance();
+    if (!listModules) {
+      logger.info("YANG manager initialized successfully");
+    }
+  } catch (const std::exception &e) {
+    logger.error("Failed to initialize YANG manager: " + std::string(e.what()));
+    return 1;
+  }
+
+  // Handle list modules option
+  if (listModules) {
+    auto &yang = netd::shared::Yang::getInstance();
+    ly_ctx *ctx = yang.getContext();
+    
+    if (!ctx) {
+      std::cerr << "Error: YANG context not initialized\n";
+      return 1;
+    }
+    
+    std::cout << "Available YANG modules:\n";
+    std::cout << "======================\n\n";
+    
+    uint32_t index = 0;
+    const struct lys_module *iter = nullptr;
+    int count = 0;
+    
+    while ((iter = ly_ctx_get_module_iter(ctx, &index)) != nullptr) {
+      count++;
+      std::cout << "Module: " << iter->name;
+      if (iter->revision) {
+        std::cout << "@" << iter->revision;
+      }
+      std::cout << "\n";
+      
+      if (iter->dsc) {
+        std::cout << "  Description: " << iter->dsc << "\n";
+      }
+      
+      if (iter->org) {
+        std::cout << "  Organization: " << iter->org << "\n";
+      }
+      
+      if (iter->contact) {
+        std::cout << "  Contact: " << iter->contact << "\n";
+      }
+      
+      std::cout << "\n";
+    }
+    
+    std::cout << "Total modules loaded: " << count << "\n";
+    return 0;
   }
 
   // Set up signal handlers for graceful shutdown
-  signal(SIGINT, signalHandler);
-  signal(SIGTERM, signalHandler);
+  netd::server::setupSignalHandlers();
 
-  // Start NETCONF server
-  if (!netd::server::netconf::startNetconfServer(socketPath)) {
+  // Create and start NETCONF server
+  netd::server::netconf::NetconfServer server(socketPath);
+  if (!server.start()) {
+    netd::server::cleanupSignalHandlers();
     return 1;
   }
-  // Run the server in a separate thread so we can handle signals
-  std::thread serverThread([]() { netd::server::netconf::runNetconfServer(); });
 
-  // Main loop - just wait for shutdown signal
-  while (g_running) {
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
-  }
-
-  // Stop the server and wait for thread to finish
-  netd::server::netconf::stopNetconfServer();
-  serverThread.join();
+  // Run the server (this will accept connections and process them)
+  server.run();
 
   // Graceful shutdown
-  netd::server::netconf::stopNetconfServer();
+  server.stop();
+  netd::server::cleanupSignalHandlers();
 
   return 0;
 }

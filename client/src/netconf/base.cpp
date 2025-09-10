@@ -14,6 +14,7 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
  * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
  * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
@@ -25,34 +26,51 @@
  * SUCH DAMAGE.
  */
 
-#include <libnetconf2/messages_server.h>
-#include <libnetconf2/netconf.h>
-#include <libyang/libyang.h>
-#include <server/include/netconf/handlers.hpp>
+#include <client/include/netconf/base.hpp>
 #include <shared/include/logger.hpp>
-#include <shared/include/request/kill.hpp>
-#include <shared/include/response/kill.hpp>
+#include <shared/include/exception.hpp>
 
-namespace netd::server::netconf::handlers {
+namespace netd::client::netconf {
 
-  std::unique_ptr<netd::shared::response::KillResponse>
-  RpcHandler::handleKillSessionRequest(
-      std::unique_ptr<netd::shared::request::KillRequest> /* request */) {
+  NetconfBase::NetconfBase() : initialized_(false) {
+  }
+
+  NetconfBase::~NetconfBase() {
+    cleanup();
+  }
+
+  bool NetconfBase::initialize() {
+    if (initialized_) {
+      return true;
+    }
+
     try {
-      auto &logger = netd::shared::Logger::getInstance();
-      auto response = std::make_unique<netd::shared::response::KillResponse>();
-
-      logger.info("Handling kill-session request");
-
-      // For now, return a simple OK response
-      // TODO: Implement actual kill-session request handling
-      return response;
-    } catch (const std::exception &e) {
-      auto response = std::make_unique<netd::shared::response::KillResponse>();
-      response->setProtocolError(
-          netd::shared::marshalling::ErrorTag::OPERATION_FAILED, e.what());
-      return response;
+      // Create a YANG context
+      ly_ctx* ctx = nullptr;
+      LY_ERR err = ly_ctx_new(nullptr, 0, &ctx);
+      if (err != LY_SUCCESS || !ctx) {
+        return false;
+      }
+      
+      // Create a session with the context
+      session_ = std::make_unique<netd::shared::netconf::NetconfSession>(ctx);
+      initialized_ = true;
+      return true;
+    } catch (const std::exception& e) {
+      return false;
     }
   }
 
-} // namespace netd::server::netconf::handlers
+  void NetconfBase::cleanup() {
+    if (session_) {
+      session_.reset();
+    }
+    initialized_ = false;
+  }
+
+
+  bool NetconfBase::isInitialized() const {
+    return initialized_;
+  }
+
+} // namespace netd::client::netconf

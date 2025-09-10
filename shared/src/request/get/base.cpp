@@ -39,7 +39,7 @@ namespace netd::shared::request::get {
   using netd::shared::NotImplementedError;
 
   lyd_node *GetRequest::toYang([[maybe_unused]] ly_ctx *ctx) const {
-    throw NotImplementedError("toYang method not implemented");
+    throw netd::shared::NotImplementedError("GetRequest::toYang not implemented");
   }
 
 
@@ -131,47 +131,62 @@ namespace netd::shared::request::get {
         logger.info("parseRpcData: Filter node has NO schema (opaque node)");
       }
       
-      // Try to access attributes from opaque node
-      const struct lyd_node_opaq *opaqNode = (const struct lyd_node_opaq *)filterNode;
+      // Get filter type and select from metadata (like libnetconf2 does)
+      logger.info("parseRpcData: Checking filter metadata for type and select attributes");
       
-      // Debug: Check if attributes exist
-      if (opaqNode->attr) {
-        logger.info("parseRpcData: Filter node has attributes");
-      } else {
-        logger.info("parseRpcData: Filter node has NO attributes");
-      }
-      
-      // Debug: Check if metadata exists
+      // Process metadata like libnetconf2 does
       if (filterNode->meta) {
         logger.info("parseRpcData: Filter node has metadata");
         const struct lyd_meta *meta = filterNode->meta;
         while (meta) {
-          const char *metaValue = lyd_get_meta_value(meta);
-          logger.info("parseRpcData: Found metadata: " + std::string(meta->name ? meta->name : "null") + 
-                     " = " + std::string(metaValue ? metaValue : "null"));
+          if (meta->name) {
+            const char *metaValue = lyd_get_meta_value(meta);
+            std::string metaName(meta->name);
+            std::string metaVal(metaValue ? metaValue : "null");
+            logger.info("parseRpcData: Found metadata: " + metaName + " = " + metaVal);
+            
+            if (strcmp(meta->name, "type") == 0) {
+              filterType_ = metaValue ? std::string(metaValue) : "";
+              logger.info("parseRpcData: Set filterType to: " + filterType_);
+            } else if (strcmp(meta->name, "select") == 0) {
+              filterSelect_ = metaValue ? std::string(metaValue) : "";
+              logger.info("parseRpcData: Set filterSelect to: " + filterSelect_);
+            }
+          }
           meta = meta->next;
         }
       } else {
         logger.info("parseRpcData: Filter node has NO metadata");
       }
       
-      // Get filter type and select from metadata (since this is a schema node)
-      if (filterNode->meta) {
-        const struct lyd_meta *meta = filterNode->meta;
-        while (meta) {
-          const char *metaValue = lyd_get_meta_value(meta);
-          logger.info("parseRpcData: Processing metadata: " + std::string(meta->name ? meta->name : "null") + 
-                     " = " + std::string(metaValue ? metaValue : "null"));
-          
-          if (meta->name && strcmp(meta->name, "type") == 0) {
-            filterType_ = std::string(metaValue ? metaValue : "");
-            logger.info("parseRpcData: Set filterType to: " + filterType_);
-          } else if (meta->name && strcmp(meta->name, "select") == 0) {
-            filterSelect_ = std::string(metaValue ? metaValue : "");
-            logger.info("parseRpcData: Set filterSelect to: " + filterSelect_);
-          }
-          
-          meta = meta->next;
+      // Also try to get the filter content as XML to extract yang-library info
+      char *filterXml = nullptr;
+      if (lyd_print_mem(&filterXml, filterNode, LYD_XML, 0) == LY_SUCCESS && filterXml) {
+        logger.info("parseRpcData: Filter XML content: " + std::string(filterXml));
+        
+        // Check if this contains yang-library
+        std::string filterContent(filterXml);
+        if (filterContent.find("yang-library") != std::string::npos ||
+            filterContent.find("ietf-yang-library") != std::string::npos) {
+          logger.info("parseRpcData: Found yang-library in filter content!");
+          // Set the filter select to the XML content for yanglib detection
+          filterSelect_ = filterContent;
+        }
+        
+        free(filterXml);
+      }
+      
+      // Handle different filter types
+      if (filterType_ == "subtree") {
+        logger.info("parseRpcData: Detected subtree filter - assuming yang-library request");
+        filterSelect_ = "yang-library";
+      } else if (filterType_ == "xpath") {
+        logger.info("parseRpcData: Detected XPath filter");
+        // For XPath filters, check if the select contains yang-library
+        if (filterSelect_.find("ietf-yang-library") != std::string::npos ||
+            filterSelect_.find("yang-library") != std::string::npos) {
+          logger.info("parseRpcData: Found yang-library in XPath filter");
+          filterSelect_ = "yang-library";
         }
       }
     }
@@ -181,8 +196,7 @@ namespace netd::shared::request::get {
   GetRequest::fromYang([[maybe_unused]] const ly_ctx *ctx,
                        const lyd_node *node) {
     if (!node) {
-      throw NotImplementedError(
-          "Invalid YANG node provided to GetRequest::fromYang");
+      throw netd::shared::ArgumentError("Invalid YANG node provided to GetRequest::fromYang");
     }
 
     auto request = std::make_unique<GetRequest>();

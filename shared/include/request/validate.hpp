@@ -8,7 +8,7 @@ namespace netd::shared::request {
   class ValidateRequest : public Request<ValidateRequest> {
   public:
     ValidateRequest() : Request<ValidateRequest>() {}
-    ValidateRequest(struct nc_session *session, struct lyd_node *rpc)
+    ValidateRequest(netd::shared::netconf::NetconfSession *session, struct lyd_node *rpc)
         : Request<ValidateRequest>(session, rpc) {}
     virtual ~ValidateRequest() = default;
 

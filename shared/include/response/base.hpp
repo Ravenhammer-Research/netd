@@ -28,15 +28,12 @@
 #ifndef NETD_RESPONSE_BASE_HPP
 #define NETD_RESPONSE_BASE_HPP
 
-#include <libnetconf2/messages_server.h>
-#include <libnetconf2/netconf.h>
+#include <libyang/libyang.h>
 #include <memory>
 #include <shared/include/base/serialization.hpp>
 #include <shared/include/marshalling/data.hpp>
 #include <shared/include/marshalling/error.hpp>
-#include <shared/include/marshalling/interface.hpp>
-#include <shared/include/marshalling/network.hpp>
-#include <shared/include/marshalling/route.hpp>
+#include <shared/include/netconf/session.hpp>
 #include <string>
 
 namespace netd::shared::response {
@@ -53,10 +50,6 @@ namespace netd::shared::response {
     virtual std::unique_ptr<Response> fromYang(const ly_ctx *ctx,
                                                const lyd_node *node) = 0;
 
-    // Virtual method with default implementation for converting to NETCONF
-    // reply
-    virtual struct nc_server_reply *
-    toNetconfReply(struct nc_session *session) const;
 
     // Error and data properties for flexible initialization
     std::unique_ptr<netd::shared::marshalling::Error> error = nullptr;
@@ -70,8 +63,8 @@ namespace netd::shared::response {
       data = std::move(d);
     }
 
-    // Value semantics overload for easier usage
-    void setData(netd::shared::marshalling::Interface interface);
+    // Set YANG data tree
+    void setData(struct lyd_node *yang_data);
 
     netd::shared::marshalling::Error *getError() const { return error.get(); }
     netd::shared::marshalling::Data *getData() const { return data.get(); }
@@ -89,12 +82,6 @@ namespace netd::shared::response {
     void setTransportError(netd::shared::marshalling::ErrorTag tag,
                            const std::string &message = "");
 
-    // Convenience methods for common data types
-    void setNetworkInstance(
-        std::unique_ptr<netd::shared::marshalling::NetworkInstance> instance);
-    void setRoute(std::unique_ptr<netd::shared::marshalling::Route> route);
-    void setInterface(
-        std::unique_ptr<netd::shared::marshalling::Interface> interface);
   };
 
 } // namespace netd::shared::response

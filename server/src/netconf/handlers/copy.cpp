@@ -38,23 +38,15 @@ namespace netd::server::netconf::handlers {
   std::unique_ptr<netd::shared::response::CopyConfigResponse>
   RpcHandler::handleCopyConfigRequest(
       std::unique_ptr<netd::shared::request::CopyConfigRequest> /* request */) {
-    try {
-      auto &logger = netd::shared::Logger::getInstance();
-      auto response =
-          std::make_unique<netd::shared::response::CopyConfigResponse>();
+    auto &logger = netd::shared::Logger::getInstance();
+    auto response =
+        std::make_unique<netd::shared::response::CopyConfigResponse>();
 
-      logger.info("Handling copy-config request");
+    logger.info("Handling copy-config request");
 
-      // For now, return a simple OK response
-      // TODO: Implement actual copy-config request handling
-      return response;
-    } catch (const std::exception &e) {
-      auto response =
-          std::make_unique<netd::shared::response::CopyConfigResponse>();
-      response->setProtocolError(
-          netd::shared::marshalling::ErrorTag::OPERATION_FAILED, e.what());
-      return response;
-    }
+    // For now, return a simple OK response
+    // TODO: Implement actual copy-config request handling
+    return response;
   }
 
 } // namespace netd::server::netconf::handlers

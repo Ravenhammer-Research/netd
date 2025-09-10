@@ -28,14 +28,42 @@
 #ifndef NETD_SERVER_NETCONF_SERVER_HPP
 #define NETD_SERVER_NETCONF_SERVER_HPP
 
+#include <shared/include/netconf/session.hpp>
+#include <server/include/netconf/rpc.hpp>
+#include <shared/include/yang.hpp>
+#include <server/include/netconf/base.hpp>
+#include <shared/include/netconf/unix.hpp>
+#include <server/include/netconf/handlers.hpp>
+#include <memory>
 #include <string>
+#include <atomic>
+#include <thread>
+#include <vector>
 
 namespace netd::server::netconf {
 
-  // Server management functions
-  bool startNetconfServer(const std::string &socketPath);
-  void stopNetconfServer();
-  void runNetconfServer();
+  class NetconfServer : public Server {
+  public:
+    NetconfServer(const std::string& socket_path);
+    ~NetconfServer();
+
+    bool start() override;
+    void stop() override;
+    void run();
+    bool isRunning() const { return running_; }
+
+  private:
+    std::string socket_path_;
+    std::atomic<bool> running_;
+    std::unique_ptr<netd::server::netconf::NetconfRpc> rpc_handler_;
+    std::unique_ptr<netd::shared::netconf::UnixTransport> transport_;
+    std::vector<std::thread> session_threads_;
+    
+    // Server management
+    void acceptNewSessions();
+    void processSession(std::unique_ptr<netd::shared::netconf::NetconfSession> session, int client_socket);
+    void cleanupSessions();
+  };
 
 } // namespace netd::server::netconf
 

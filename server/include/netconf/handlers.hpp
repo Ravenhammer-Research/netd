@@ -28,15 +28,10 @@
 #ifndef NETD_SERVER_NETCONF_HANDLERS_HPP
 #define NETD_SERVER_NETCONF_HANDLERS_HPP
 
-#include <libnetconf2/messages_server.h>
-#include <libnetconf2/netconf.h>
-#include <libnetconf2/server_config.h>
-#include <libnetconf2/session_server.h>
 #include <libyang/libyang.h>
 #include <memory>
 #include <shared/include/interface/base/ether.hpp>
 #include <shared/include/request/base.hpp>
-#include <shared/include/request/close.hpp>
 #include <shared/include/request/commit.hpp>
 #include <shared/include/request/copy.hpp>
 #include <shared/include/request/delete.hpp>
@@ -45,10 +40,11 @@
 #include <shared/include/request/get/base.hpp>
 #include <shared/include/request/get/config.hpp>
 #include <shared/include/request/hello.hpp>
-#include <shared/include/request/kill.hpp>
 #include <shared/include/request/lock.hpp>
 #include <shared/include/request/unlock.hpp>
 #include <shared/include/request/validate.hpp>
+#include <shared/include/request/session/destroy.hpp>
+#include <shared/include/request/session/close.hpp>
 #include <shared/include/response/base.hpp>
 #include <shared/include/response/close.hpp>
 #include <shared/include/response/commit.hpp>
@@ -59,7 +55,6 @@
 #include <shared/include/response/get/base.hpp>
 #include <shared/include/response/get/config.hpp>
 #include <shared/include/response/hello.hpp>
-#include <shared/include/response/kill.hpp>
 #include <shared/include/response/lock.hpp>
 #include <shared/include/response/unlock.hpp>
 #include <shared/include/response/validate.hpp>
@@ -110,15 +105,6 @@ namespace netd::server::netconf::handlers {
     handleDiscardRequest(
         std::unique_ptr<netd::shared::request::DiscardRequest> request);
 
-    // Close-session request handler
-    static std::unique_ptr<netd::shared::response::CloseResponse>
-    handleCloseSessionRequest(
-        std::unique_ptr<netd::shared::request::CloseRequest> request);
-
-    // Kill-session request handler
-    static std::unique_ptr<netd::shared::response::KillResponse>
-    handleKillSessionRequest(
-        std::unique_ptr<netd::shared::request::KillRequest> request);
 
     // Validate request handler
     static std::unique_ptr<netd::shared::response::ValidateResponse>
@@ -130,10 +116,22 @@ namespace netd::server::netconf::handlers {
     handleHelloRequest(
         std::unique_ptr<netd::shared::request::HelloRequest> request);
 
+    // Send server hello message
+    static void sendServerHello(netd::shared::netconf::NetconfSession& session);
+
     // Commit request handler
     static std::unique_ptr<netd::shared::response::CommitResponse>
     handleCommitRequest(
         std::unique_ptr<netd::shared::request::CommitRequest> request);
+
+    // Session management handlers
+    static std::unique_ptr<netd::shared::response::CloseResponse>
+    handleDestroySessionRequest(
+        std::unique_ptr<netd::shared::request::session::DestroyRequest> request);
+
+    static std::unique_ptr<netd::shared::response::CloseResponse>
+    handleCloseSessionRequest(
+        std::unique_ptr<netd::shared::request::session::CloseRequest> request);
 
   private:
     // Interface-specific handler function

@@ -25,56 +25,25 @@
  * SUCH DAMAGE.
  */
 
-#include <libnetconf2/netconf.h>
-#include <libnetconf2/server_config.h>
-#include <libnetconf2/session_server.h>
-#include <memory>
-#include <shared/include/logger.hpp>
-#include <string>
+#ifndef NETD_REQUEST_SESSION_DESTROY_HPP
+#define NETD_REQUEST_SESSION_DESTROY_HPP
 
-namespace netd::server::netconf {
+#include <shared/include/request/base.hpp>
 
-  using netd::shared::Logger;
+namespace netd::shared::request::session {
 
-  class UnixTransport {
-  private:
-    std::string socketPath_;
-    bool listening_;
-
+  class DestroyRequest : public Request<DestroyRequest> {
   public:
-    UnixTransport() : listening_(false) {}
+    DestroyRequest() : Request<DestroyRequest>() {}
+    DestroyRequest(netd::shared::netconf::NetconfSession *session, struct lyd_node *rpc)
+        : Request<DestroyRequest>(session, rpc) {}
+    virtual ~DestroyRequest() = default;
 
-    ~UnixTransport() { stop(); }
-
-    bool start(const std::string &socketPath) {
-      auto &logger = Logger::getInstance();
-
-      socketPath_ = socketPath;
-
-      // Add Unix socket endpoint
-      if (nc_server_add_endpt_unix_socket_listen("netd", socketPath.c_str(),
-                                                 0666, -1, -1) != 0) {
-        logger.error("Failed to add Unix socket endpoint: " + socketPath);
-        return false;
-      }
-
-      listening_ = true;
-      logger.info("Unix transport started on " + socketPath);
-      return true;
-    }
-
-    void stop() {
-      if (!listening_)
-        return;
-
-      auto &logger = Logger::getInstance();
-      listening_ = false;
-      logger.info("Unix transport stopped");
-    }
-
-    bool isListening() const { return listening_; }
-
-    const std::string &getSocketPath() const { return socketPath_; }
+    lyd_node *toYang(ly_ctx *ctx) const override;
+    std::unique_ptr<DestroyRequest> fromYang(const ly_ctx *ctx,
+                                             const lyd_node *node) override;
   };
 
-} // namespace netd::server::netconf
+} // namespace netd::shared::request::session
+
+#endif // NETD_REQUEST_SESSION_DESTROY_HPP

@@ -1,14 +1,12 @@
 # Request sources
 set(REQUEST_SOURCES
     base.cpp
-    close.cpp
     commit.cpp
     copy.cpp
     delete.cpp
     discard.cpp
     edit.cpp
     hello.cpp
-    kill.cpp
     lock.cpp
     unlock.cpp
     validate.cpp
@@ -16,6 +14,9 @@ set(REQUEST_SOURCES
 
 # Add get subdirectory
 add_subdirectory(get)
+
+# Add session subdirectory
+add_subdirectory(session)
 
 # Create netd_shared_request static library
 add_library(netd_shared_request STATIC ${REQUEST_SOURCES})
@@ -31,4 +32,5 @@ target_compile_definitions(netd_shared_request PRIVATE
 # Link sub-libraries
 target_link_libraries(netd_shared_request PRIVATE
     netd_shared_request_get
+    netd_shared_request_session
 )

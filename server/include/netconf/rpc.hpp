@@ -25,37 +25,25 @@
  * SUCH DAMAGE.
  */
 
-#ifndef NETD_REQUEST_GET_YANGLIB_HPP
-#define NETD_REQUEST_GET_YANGLIB_HPP
+#ifndef NETD_NETCONF_RPC_HPP
+#define NETD_NETCONF_RPC_HPP
 
-#include <shared/include/request/base.hpp>
+#include <libyang/libyang.h>
+#include <memory>
+#include <string>
+#include <shared/include/netconf/session.hpp>
 
-namespace netd::shared::request::get {
+namespace netd::server::netconf {
 
-  class GetYanglibRequest
-      : public netd::shared::request::Request<GetYanglibRequest> {
+  class NetconfRpc {
   public:
-    GetYanglibRequest() : netd::shared::request::Request<GetYanglibRequest>() {}
-    GetYanglibRequest(struct nc_session *session, struct lyd_node *rpc)
-        : netd::shared::request::Request<GetYanglibRequest>(session, rpc) {}
-    virtual ~GetYanglibRequest() = default;
+    NetconfRpc();
+    ~NetconfRpc() = default;
 
-    // Override base methods
-    lyd_node *toYang(ly_ctx *ctx) const override;
-    std::unique_ptr<GetYanglibRequest> fromYang(const ly_ctx *ctx,
-                                                const lyd_node *node) override;
-
-    // Access methods for filter information
-    bool hasYanglibFilter() const { return hasFilter_; }
-    std::string getYanglibFilterType() const { return filterType_; }
-    std::string getYanglibFilterSelect() const { return filterSelect_; }
-
-  private:
-    bool hasFilter_ = false;
-    std::string filterType_;
-    std::string filterSelect_;
+    // Main RPC processing method
+    std::string handleRpc(const std::string& xml, netd::shared::netconf::NetconfSession& session);
   };
 
-} // namespace netd::shared::request::get
+} // namespace netd::server::netconf
 
-#endif // NETD_REQUEST_GET_YANGLIB_HPP
+#endif // NETD_NETCONF_RPC_HPP

@@ -31,6 +31,7 @@
 #include <libyang/libyang.h>
 #include <server/include/store/startup.hpp>
 #include <shared/include/logger.hpp>
+#include <shared/include/yang.hpp>
 
 namespace netd::server::store::startup {
 
@@ -153,6 +154,68 @@ namespace netd::server::store::startup {
     }
 
     return false;
+  }
+
+  void StartupStore::populateFromSystem() {
+    auto &logger = netd::shared::Logger::getInstance();
+    logger.info("Discovering system interfaces and populating startup store...");
+    
+    try {
+      // Get all interfaces from the system
+      auto interfaces = netd::freebsd::interface::Interface::getAllInterfaces();
+      logger.info("Discovered " + std::to_string(interfaces.size()) + " interfaces");
+      
+      // Get the YANG context
+      struct ly_ctx *ctx = netd::shared::Yang::getInstance().getContext();
+      if (!ctx) {
+        logger.error("No YANG context available for interface serialization");
+        return;
+      }
+      
+      // Create a root data tree for interfaces
+      lyd_node *interfacesTree = nullptr;
+      bool firstInterface = true;
+      
+      for (const auto &interface : interfaces) {
+        // Serialize each interface to YANG
+        lyd_node *interfaceNode = interface->toYang(ctx);
+        if (interfaceNode) {
+          if (firstInterface) {
+            // First interface - create the interfaces container
+            if (lyd_new_opaq2(nullptr, ctx, "interfaces", nullptr, nullptr,
+                              "urn:ietf:params:xml:ns:yang:ietf-interfaces",
+                              &interfacesTree) == LY_SUCCESS) {
+              lyd_insert_child(interfacesTree, interfaceNode);
+              firstInterface = false;
+            } else {
+              lyd_free_tree(interfaceNode);
+              logger.error("Failed to create interfaces container");
+            }
+          } else {
+            // Add subsequent interfaces to the container
+            lyd_insert_child(interfacesTree, interfaceNode);
+          }
+        } else {
+          logger.warning("Failed to serialize interface " + interface->getName() + " to YANG");
+        }
+      }
+      
+      // Add the interfaces tree to the startup store
+      if (interfacesTree) {
+        if (add(interfacesTree)) {
+          logger.info("Successfully populated startup store with " + 
+                     std::to_string(interfaces.size()) + " interfaces");
+        } else {
+          logger.error("Failed to add interfaces to startup store");
+          lyd_free_tree(interfacesTree);
+        }
+      } else {
+        logger.warning("No interfaces found to populate startup store");
+      }
+      
+    } catch (const std::exception &e) {
+      logger.error("Exception during interface discovery: " + std::string(e.what()));
+    }
   }
 
 } // namespace netd::server::store::startup

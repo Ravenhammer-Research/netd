@@ -36,7 +36,7 @@ namespace netd::shared::request {
   class EditConfigRequest : public Request<EditConfigRequest> {
   public:
     EditConfigRequest() : Request<EditConfigRequest>() {}
-    EditConfigRequest(struct nc_session *session, struct lyd_node *rpc)
+    EditConfigRequest(netd::shared::netconf::NetconfSession *session, struct lyd_node *rpc)
         : Request<EditConfigRequest>(session, rpc) {}
     virtual ~EditConfigRequest() = default;
 

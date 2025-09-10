@@ -31,6 +31,7 @@
 #include <libyang/libyang.h>
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace netd::shared {
 
@@ -48,12 +49,17 @@ namespace netd::shared {
     bool loadSchema(const std::string &schemaPath);
     bool loadSchemaByName(const std::string &name,
                           const std::string &revision = "");
+    const struct lys_module *getModule(const std::string &name, 
+                                       const std::string &revision = "") const;
 
     // Utility functions for YANG data conversion
     static std::string yangToXml(const lyd_node *node);
     static std::string yangToJson(const lyd_node *node);
     static lyd_node *xmlToYang(ly_ctx *ctx, const std::string &xml);
     static lyd_node *jsonToYang(ly_ctx *ctx, const std::string &json);
+
+    // NETCONF capabilities
+    std::vector<std::string> getCapabilities() const;
 
   protected:
     // Protected constructor for singleton

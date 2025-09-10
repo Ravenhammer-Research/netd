@@ -31,6 +31,7 @@
 #include <client/include/parser.hpp>
 #include <client/include/table.hpp>
 #include <client/include/tui.hpp>
+#include <client/include/netconf/client.hpp>
 #include <string>
 #include <vector>
 
@@ -38,11 +39,12 @@ namespace netd::client {
 
   class CommandProcessor {
   public:
-    CommandProcessor(TUI &tui);
+    CommandProcessor(TUI &tui, netd::client::netconf::NetconfClient &client);
     bool processCommand(const std::string &command);
 
   private:
     TUI &tui_;
+    netd::client::netconf::NetconfClient &client_;
     CommandParser parser_;
 
     bool handleShowCommand(const ParsedCommand &parsed);

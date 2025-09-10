@@ -25,57 +25,38 @@
  * SUCH DAMAGE.
  */
 
-#ifndef NETD_RESPONSE_GET_YANGLIB_HPP
-#define NETD_RESPONSE_GET_YANGLIB_HPP
+#ifndef NETD_REQUEST_GET_LIBRARY_HPP
+#define NETD_REQUEST_GET_LIBRARY_HPP
 
-#include <shared/include/response/get/base.hpp>
-#include <string>
-#include <vector>
+#include <shared/include/request/base.hpp>
 
-namespace netd::shared::response::get {
+namespace netd::shared::request::get {
 
-  struct YangModule {
-    std::string name;
-    std::string revision;
-    std::string namespace_;
-    std::vector<std::string> features;
-    std::vector<std::string> deviations;
-  };
-
-  class GetYanglibResponse : public netd::shared::response::get::GetResponse {
+  class GetLibraryRequest
+      : public netd::shared::request::Request<GetLibraryRequest> {
   public:
-    GetYanglibResponse();
-    GetYanglibResponse(GetYanglibResponse &&other) noexcept;
-    GetYanglibResponse &operator=(GetYanglibResponse &&other) noexcept;
-    virtual ~GetYanglibResponse();
+    GetLibraryRequest() : netd::shared::request::Request<GetLibraryRequest>() {}
+    GetLibraryRequest(netd::shared::netconf::NetconfSession *session, struct lyd_node *rpc)
+        : netd::shared::request::Request<GetLibraryRequest>(session, rpc) {}
+    virtual ~GetLibraryRequest() = default;
 
     // Override base methods
     lyd_node *toYang(ly_ctx *ctx) const override;
-    std::unique_ptr<Response> fromYang(const ly_ctx *ctx,
-                                       const lyd_node *node) override;
-    struct nc_server_reply *
-    toNetconfReply(struct nc_session *session) const override;
-    
-    // Override with RPC node parameter
-    struct nc_server_reply *
-    toNetconfReply(struct nc_session *session, struct lyd_node *rpc) const;
+    std::unique_ptr<GetLibraryRequest> fromYang(const ly_ctx *ctx,
+                                                const lyd_node *node) override;
 
-    // Methods to add YANG modules
-    void addModule(const YangModule &module);
-    void addModule(const std::string &name, const std::string &revision,
-                   const std::string &namespace_);
-
-    // Method to set pre-built YANG library data
-    void setYanglibData(struct lyd_node *data);
-
-    // Access methods
-    const std::vector<YangModule> &getModules() const { return modules_; }
+    // Access methods for filter information
+    bool hasLibraryFilter() const { return hasLibraryFilter_; }
+    std::string getLibraryFilterType() const { return libraryFilterType_; }
+    std::string getLibraryFilterSelect() const { return filterSelect_; }
 
   private:
-    std::vector<YangModule> modules_;
-    struct lyd_node *yanglibData_ = nullptr;  // Pre-built YANG library data
+    std::string filterType_;
+    std::string filterSelect_;
+    bool hasLibraryFilter_ = false;
+    std::string libraryFilterType_;
   };
 
-} // namespace netd::shared::response::get
+} // namespace netd::shared::request::get
 
-#endif // NETD_RESPONSE_GET_YANGLIB_HPP
+#endif // NETD_REQUEST_GET_LIBRARY_HPP

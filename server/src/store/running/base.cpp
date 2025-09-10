@@ -40,38 +40,37 @@ namespace netd::server::store::running {
 
   bool RunningStore::load() {
     auto &logger = netd::shared::Logger::getInstance();
-    logger.info("Loading running configuration from startup store");
+    logger.info("Loading running configuration");
 
     try {
-      // Copy data from startup store to running store
+      // First, try to load running store from disk
+      // TODO: Implement disk loading for running store
+      logger.info("No disk file found for running store, copying from startup store");
+
+      // If no disk file, copy from startup store
       auto &startupStore =
           netd::server::store::startup::StartupStore::getInstance();
 
-      // Load startup configuration first
-      if (!startupStore.load()) {
-        logger.error("Failed to load startup configuration");
-        return false;
+      // Get startup store data (should be populated by populateFromSystem)
+      lyd_node *startupTree = startupStore.getDataTree();
+      
+      // If startup store is empty, then there are no interfaces to configure
+      if (!startupTree) {
+        logger.info("Startup store is empty - no network interfaces to configure");
+        return true; // Empty running store is valid
       }
 
       // Clone the startup data tree for running store
-      lyd_node *startupTree = startupStore.getDataTree();
-      if (startupTree) {
-        lyd_node *runningTree = nullptr;
-        LY_ERR err = lyd_dup_single(startupTree, nullptr, LYD_DUP_RECURSIVE,
-                                    &runningTree);
-        if (err == LY_SUCCESS && runningTree) {
-          setDataTree(runningTree);
-          logger.info(
-              "Successfully copied startup configuration to running store");
-          return true;
-        } else {
-          logger.error("Failed to duplicate startup configuration");
-          return false;
-        }
-      } else {
-        logger.warning(
-            "No startup configuration found, creating empty running store");
+      lyd_node *runningTree = nullptr;
+      LY_ERR err = lyd_dup_single(startupTree, nullptr, LYD_DUP_RECURSIVE,
+                                  &runningTree);
+      if (err == LY_SUCCESS && runningTree) {
+        setDataTree(runningTree);
+        logger.info("Successfully copied startup configuration to running store");
         return true;
+      } else {
+        logger.error("Failed to duplicate startup configuration");
+        return false;
       }
 
     } catch (const std::exception &e) {

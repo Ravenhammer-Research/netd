@@ -41,66 +41,57 @@ namespace netd::server::netconf::handlers {
   std::unique_ptr<netd::shared::response::EditConfigResponse>
   RpcHandler::handleEditConfigRequest(
       std::unique_ptr<netd::shared::request::EditConfigRequest> request) {
-    try {
-      auto &logger = netd::shared::Logger::getInstance();
-      auto response =
-          std::make_unique<netd::shared::response::EditConfigResponse>();
+    auto &logger = netd::shared::Logger::getInstance();
+    auto response =
+        std::make_unique<netd::shared::response::EditConfigResponse>();
 
-      logger.info("Handling edit-config request");
+    logger.info("Handling edit-config request");
 
-      // Get the target datastore
-      auto target = request->getTarget();
+    // Get the target datastore
+    auto target = request->getTarget();
 
-      // Clone the whole RPC request for the store
-      lyd_node *rpcData = nullptr;
-      LY_ERR err = lyd_dup_single(request->getRpc(), nullptr, LYD_DUP_RECURSIVE,
-                                  &rpcData);
-      if (err != LY_SUCCESS || !rpcData) {
-        response->setProtocolError(
-            netd::shared::marshalling::ErrorTag::OPERATION_FAILED,
-            "Failed to clone RPC data");
-        return response;
-      }
-
-      // Get the appropriate store based on target and write the whole RPC
-      switch (target) {
-      case netd::shared::request::get::Datastore::RUNNING: {
-        auto &runningStore =
-            netd::server::store::running::RunningStore::getInstance();
-        runningStore.setDataTree(rpcData);
-        break;
-      }
-      case netd::shared::request::get::Datastore::CANDIDATE: {
-        auto &candidateStore =
-            netd::server::store::candidate::CandidateStore::getInstance();
-        candidateStore.setDataTree(rpcData);
-        break;
-      }
-      case netd::shared::request::get::Datastore::STARTUP: {
-        lyd_free_tree(rpcData);
-        response->setProtocolError(
-            netd::shared::marshalling::ErrorTag::OPERATION_FAILED,
-            "Startup store is read-only");
-        return response;
-      }
-      default: {
-        lyd_free_tree(rpcData);
-        response->setProtocolError(
-            netd::shared::marshalling::ErrorTag::OPERATION_FAILED,
-            "Unknown datastore target");
-        return response;
-      }
-      }
-
-      return response;
-
-    } catch (const std::exception &e) {
-      auto response =
-          std::make_unique<netd::shared::response::EditConfigResponse>();
+    // Clone the whole RPC request for the store
+    lyd_node *rpcData = nullptr;
+    LY_ERR err = lyd_dup_single(request->getRpc(), nullptr, LYD_DUP_RECURSIVE,
+                                &rpcData);
+    if (err != LY_SUCCESS || !rpcData) {
       response->setProtocolError(
-          netd::shared::marshalling::ErrorTag::OPERATION_FAILED, e.what());
+          netd::shared::marshalling::ErrorTag::OPERATION_FAILED,
+          "Failed to clone RPC data");
       return response;
     }
+
+    // Get the appropriate store based on target and write the whole RPC
+    switch (target) {
+    case netd::shared::request::get::Datastore::RUNNING: {
+      auto &runningStore =
+          netd::server::store::running::RunningStore::getInstance();
+      runningStore.setDataTree(rpcData);
+      break;
+    }
+    case netd::shared::request::get::Datastore::CANDIDATE: {
+      auto &candidateStore =
+          netd::server::store::candidate::CandidateStore::getInstance();
+      candidateStore.setDataTree(rpcData);
+      break;
+    }
+    case netd::shared::request::get::Datastore::STARTUP: {
+      lyd_free_tree(rpcData);
+      response->setProtocolError(
+          netd::shared::marshalling::ErrorTag::OPERATION_FAILED,
+          "Startup store is read-only");
+      return response;
+    }
+    default: {
+      lyd_free_tree(rpcData);
+      response->setProtocolError(
+          netd::shared::marshalling::ErrorTag::OPERATION_FAILED,
+          "Unknown datastore target");
+      return response;
+    }
+    }
+
+    return response;
   }
 
 } // namespace netd::server::netconf::handlers

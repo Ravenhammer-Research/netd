@@ -25,39 +25,35 @@
  * SUCH DAMAGE.
  */
 
-#include <libnetconf2/messages_server.h>
-#include <libnetconf2/netconf.h>
-#include <libyang/libyang.h>
-#include <server/include/netconf/handlers.hpp>
-#include <shared/include/logger.hpp>
-#include <shared/include/request/close.hpp>
-#include <shared/include/response/close.hpp>
+#include <shared/include/netconf/http.hpp>
+#include <shared/include/exception.hpp>
 
-namespace netd::server::netconf::handlers {
+namespace netd::shared::netconf {
 
-  std::unique_ptr<netd::shared::response::CloseResponse>
-  RpcHandler::handleCloseSessionRequest(
-      std::unique_ptr<netd::shared::request::CloseRequest> request) {
-    try {
-      auto &logger = netd::shared::Logger::getInstance();
-      auto response = std::make_unique<netd::shared::response::CloseResponse>();
+  HTTPTransport::HTTPTransport() : address_(""), port_(0), listening_(false) {}
 
-      logger.info("Handling close-session request");
-
-      // Set session termination reason to indicate normal close by client
-      // This matches the libnetconf2 default implementation
-      struct nc_session *session = request->getSession();
-      if (session) {
-        nc_session_set_term_reason(session, NC_SESSION_TERM_CLOSED);
-      }
-      
-      return response;
-    } catch (const std::exception &e) {
-      auto response = std::make_unique<netd::shared::response::CloseResponse>();
-      response->setProtocolError(
-          netd::shared::marshalling::ErrorTag::OPERATION_FAILED, e.what());
-      return response;
-    }
+  HTTPTransport::~HTTPTransport() { 
+    stop(); 
   }
 
-} // namespace netd::server::netconf::handlers
+  bool HTTPTransport::start([[maybe_unused]] const std::string &address, [[maybe_unused]] int port) {
+    throw netd::shared::NotImplementedError("HTTPTransport::start not implemented");
+  }
+
+  void HTTPTransport::stop() {
+    throw netd::shared::NotImplementedError("HTTPTransport::stop not implemented");
+  }
+
+  bool HTTPTransport::isListening() const { 
+    throw netd::shared::NotImplementedError("HTTPTransport::isListening not implemented");
+  }
+
+  const std::string &HTTPTransport::getAddress() const { 
+    throw netd::shared::NotImplementedError("HTTPTransport::getAddress not implemented");
+  }
+
+  int HTTPTransport::getPort() const {
+    throw netd::shared::NotImplementedError("HTTPTransport::getPort not implemented");
+  }
+
+} // namespace netd::shared::netconf

@@ -42,7 +42,7 @@ namespace netd::shared::request::get {
       : public netd::shared::request::Request<GetConfigRequest> {
   public:
     GetConfigRequest() : netd::shared::request::Request<GetConfigRequest>() {}
-    GetConfigRequest(struct nc_session *session, struct lyd_node *rpc)
+    GetConfigRequest(netd::shared::netconf::NetconfSession *session, struct lyd_node *rpc)
         : netd::shared::request::Request<GetConfigRequest>(session, rpc) {}
     virtual ~GetConfigRequest() = default;
 
@@ -58,10 +58,14 @@ namespace netd::shared::request::get {
     // Requested module access
     std::string getRequestedModule() const { return requestedModule_; }
     void setRequestedModule(const std::string &module) { requestedModule_ = module; }
+    
+    // Interfaces filter access
+    bool hasInterfacesFilter() const { return hasInterfacesFilter_; }
 
   private:
     Datastore source_ = Datastore::RUNNING; // Default to running datastore
     std::string requestedModule_ = "all";   // Store the requested module name
+    bool hasInterfacesFilter_ = false;      // Track if this is an interfaces filter request
   };
 
 } // namespace netd::shared::request::get

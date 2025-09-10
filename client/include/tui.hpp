@@ -85,6 +85,10 @@ namespace netd::client {
     int getDebugLevel() const {
       return debugLevel_;
     }
+    
+    bool isDestroying() const {
+      return destroying_;
+    }
 
     // Display methods (public for signal handler access)
     void putMessages();
@@ -119,6 +123,7 @@ namespace netd::client {
     int scrollOffset_;
     std::string connectionStatus_;
     int debugLevel_;
+    bool destroying_; // Flag to prevent logging during destruction
 
     // Curses helpers
     void setupCurses();

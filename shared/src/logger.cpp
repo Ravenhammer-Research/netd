@@ -27,6 +27,8 @@
 
 #include <iomanip>
 #include <iostream>
+#include <chrono>
+#include <ctime>
 #include <shared/include/logger.hpp>
 #include <shared/include/exception.hpp>
 #include <libyang/log.h>
@@ -54,7 +56,7 @@ namespace netd::shared {
         break;
       case LY_LLVRB:
       case LY_LLDBG:
-        logLevel = LogLevel::DEBUG;
+        logLevel = LogLevel::YANG;
         break;
       default:
         logLevel = LogLevel::INFO;
@@ -83,39 +85,10 @@ namespace netd::shared {
     }
   }
 
-  // libnetconf2 log callback
-  void libnetconf2_log_callback(const struct nc_session * /* session */, NC_VERB_LEVEL level, const char *msg) {
-    auto &logger = Logger::getInstance();
-
-    switch (level) {
-    case NC_VERB_ERROR:
-    logger.log(LogLevel::ERROR, std::string(msg));
-      break;
-    case NC_VERB_WARNING:
-      logger.log(LogLevel::WARNING, std::string(msg));
-      break;
-    case NC_VERB_VERBOSE:
-    case NC_VERB_DEBUG:
-    case NC_VERB_DEBUG_LOWLVL:
-      logger.log(LogLevel::DEBUG, std::string(msg));
-      break;
-    default:
-      logger.log(LogLevel::INFO, std::string(msg));
-      break;
-    }
-
-    // Capture and print stack trace for errors
-    if (level == NC_VERB_ERROR) {
-      void *array[20];
-      size_t size = backtrace(array, 20);
-      std::vector<void*> stackTrace(array, array + size);
-      logger.trace(netd::shared::NetdException::getStackTraceString(stackTrace));
-    }
-  }
 
   Logger::Logger() {
     // Set up default console logging
-    setCallback([](LogLevel level, const std::string &message) {
+    setCallback([this](LogLevel level, const std::string &message) {
       const char *levelStr = "UNK";
       switch (level) {
       case LogLevel::TRACE:
@@ -133,18 +106,36 @@ namespace netd::shared {
       case LogLevel::ERROR:
         levelStr = "[E]: ";
         break;
+      case LogLevel::NETCONF:
+        levelStr = "[N]: ";
+        break;
+      case LogLevel::YANG:
+        levelStr = "[Y]: ";
+        break;
+      }
+      
+      if (timestampEnabled_) {
+        auto now = std::chrono::system_clock::now();
+        auto time_t = std::chrono::system_clock::to_time_t(now);
+        auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+            now.time_since_epoch()) % 1000;
+        
+        std::cerr << std::put_time(std::localtime(&time_t), "%Y%m%d%H%M%S");
+        std::cerr << std::setfill('0') << std::setw(3) << ms.count() << " ";
       }
       
       std::cerr << levelStr << message << std::endl;
     });
     
-    // Set up libyang and libnetconf2 log callbacks
+    // Set up libyang log callbacks
     ly_set_log_clb(libyang_log_callback);
-    nc_set_print_clb_session(libnetconf2_log_callback);
     
-    // Set log levels for libyang and libnetconf2
-    ly_log_level(LY_LLDBG);  // Enable all libyang messages including debug
-    nc_verbosity(NC_VERB_DEBUG);  // Enable all libnetconf2 messages including debug
+    // Set default log levels for libyang (will be overridden by main.cpp)
+    ly_log_level(LY_LLERR);  // Default to error only
+    ly_log_dbg_groups(0);  // No debug groups by default
+    ly_log_options(LY_LOLOG | LY_LOSTORE);  // Log messages and store all errors/warnings
+    
+    // libssh verbosity removed - no longer using libnetconf2
   }
 
   Logger &Logger::getInstance() {
@@ -181,8 +172,24 @@ namespace netd::shared {
     log(LogLevel::ERROR, message);
   }
 
+  void Logger::netconf(const std::string &message) {
+    log(LogLevel::NETCONF, message);
+  }
+
+  void Logger::yang(const std::string &message) {
+    log(LogLevel::YANG, message);
+  }
+
   void Logger::setLogLevel(LogLevel level) {
     currentLogLevel_ = level;
+  }
+
+  void Logger::setYangDebugGroups(uint32_t groups) {
+    ly_log_dbg_groups(groups);
+  }
+
+  void Logger::setTimestampEnabled(bool enabled) {
+    timestampEnabled_ = enabled;
   }
 
 } // namespace netd::shared

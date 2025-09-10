@@ -39,52 +39,47 @@ namespace netd::server::netconf::handlers {
   std::unique_ptr<netd::shared::response::CommitResponse>
   RpcHandler::handleCommitRequest(
       std::unique_ptr<netd::shared::request::CommitRequest> /* request */) {
-    try {
-      auto &logger = netd::shared::Logger::getInstance();
-      auto response =
-          std::make_unique<netd::shared::response::CommitResponse>();
+    auto &logger = netd::shared::Logger::getInstance();
+    auto response =
+        std::make_unique<netd::shared::response::CommitResponse>();
 
-      logger.info("Handling commit request");
+    logger.info("Handling commit request");
 
-      // Get the candidate and running stores
-      auto &candidateStore =
-          netd::server::store::candidate::CandidateStore::getInstance();
-      auto &runningStore =
-          netd::server::store::running::RunningStore::getInstance();
+    // Get the candidate and running stores
+    auto &candidateStore =
+        netd::server::store::candidate::CandidateStore::getInstance();
+    auto &runningStore =
+        netd::server::store::running::RunningStore::getInstance();
 
-      // Get the candidate configuration
-      auto candidateData = candidateStore.getDataTree();
-      if (!candidateData) {
-        response->setProtocolError(
-            netd::shared::marshalling::ErrorTag::OPERATION_FAILED,
-            "No candidate configuration to commit");
-        return response;
-      }
-
-      // Clone the candidate data for the running store
-      lyd_node *runningData = nullptr;
-      LY_ERR err = lyd_dup_single(candidateData, nullptr, LYD_DUP_RECURSIVE,
-                                  &runningData);
-      if (err != LY_SUCCESS || !runningData) {
-        response->setProtocolError(
-            netd::shared::marshalling::ErrorTag::OPERATION_FAILED,
-            "Failed to clone candidate configuration");
-        return response;
-      }
-
-      // Set the running configuration
-      runningStore.setDataTree(runningData);
-
-      logger.info("Successfully committed candidate configuration to running");
-      return response;
-
-    } catch (const std::exception &e) {
-      auto response =
-          std::make_unique<netd::shared::response::CommitResponse>();
-      response->setProtocolError(
-          netd::shared::marshalling::ErrorTag::OPERATION_FAILED, e.what());
+    // Get the candidate configuration
+    auto candidateData = candidateStore.getDataTree();
+    if (!candidateData) {
+      response->error = std::make_unique<netd::shared::marshalling::Error>(
+          netd::shared::marshalling::ErrorType::PROTOCOL,
+          netd::shared::marshalling::ErrorTag::OPERATION_FAILED,
+          netd::shared::marshalling::ErrorSeverity::ERROR);
+      response->error->setMessage("No candidate configuration to commit");
       return response;
     }
+
+    // Clone the candidate data for the running store
+    lyd_node *runningData = nullptr;
+    LY_ERR err = lyd_dup_single(candidateData, nullptr, LYD_DUP_RECURSIVE,
+                                &runningData);
+    if (err != LY_SUCCESS || !runningData) {
+      response->error = std::make_unique<netd::shared::marshalling::Error>(
+          netd::shared::marshalling::ErrorType::PROTOCOL,
+          netd::shared::marshalling::ErrorTag::OPERATION_FAILED,
+          netd::shared::marshalling::ErrorSeverity::ERROR);
+      response->error->setMessage("Failed to clone candidate configuration");
+      return response;
+    }
+
+    // Set the running configuration
+    runningStore.setDataTree(runningData);
+
+    logger.info("Successfully committed candidate configuration to running");
+    return response;
   }
 
 } // namespace netd::server::netconf::handlers

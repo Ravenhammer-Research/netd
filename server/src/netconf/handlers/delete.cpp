@@ -39,23 +39,15 @@ namespace netd::server::netconf::handlers {
   RpcHandler::handleDeleteConfigRequest(
       std::unique_ptr<
           netd::shared::request::DeleteConfigRequest> /* request */) {
-    try {
-      auto &logger = netd::shared::Logger::getInstance();
-      auto response =
-          std::make_unique<netd::shared::response::DeleteConfigResponse>();
+    auto &logger = netd::shared::Logger::getInstance();
+    auto response =
+        std::make_unique<netd::shared::response::DeleteConfigResponse>();
 
-      logger.info("Handling delete-config request");
+    logger.info("Handling delete-config request");
 
-      // For now, return a simple OK response
-      // TODO: Implement actual delete-config request handling
-      return response;
-    } catch (const std::exception &e) {
-      auto response =
-          std::make_unique<netd::shared::response::DeleteConfigResponse>();
-      response->setProtocolError(
-          netd::shared::marshalling::ErrorTag::OPERATION_FAILED, e.what());
-      return response;
-    }
+    // For now, return a simple OK response
+    // TODO: Implement actual delete-config request handling
+    return response;
   }
 
 } // namespace netd::server::netconf::handlers

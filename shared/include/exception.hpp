@@ -74,6 +74,12 @@ namespace netd::shared {
         : NetdException(message) {}
   };
 
+  class RpcException : public NetdException {
+  public:
+    explicit RpcException(const std::string &message)
+        : NetdException(message) {}
+  };
+
 } // namespace netd::shared
 
 #endif // NETD_EXCEPTION_HPP

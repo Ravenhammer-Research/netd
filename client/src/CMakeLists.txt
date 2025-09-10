@@ -1,14 +1,10 @@
-# Client library sources (excluding main.cpp)
-set(CLIENT_LIB_SOURCES
-    netconf.cpp
+# Create netd_client static library
+add_library(netd_client STATIC
     parser.cpp
     processor.cpp
     table.cpp
     terminal.cpp
 )
-
-# Create netd_client static library
-add_library(netd_client STATIC ${CLIENT_LIB_SOURCES})
 
 # Set include directories
 target_include_directories(netd_client PRIVATE ${GLOBAL_INCLUDE_DIRS})
@@ -18,11 +14,14 @@ target_compile_definitions(netd_client PRIVATE
     YANG_DIR="${YANG_DIR}"
 )
 
-# Add TUI subdirectory
+# Add subdirectories
+add_subdirectory(netconf)
 add_subdirectory(tui)
 
 # Link libraries
 target_link_libraries(netd_client PRIVATE
+    netd_shared_netconf
     netd_client_parser
+    netd_client_netconf
     netd_tui
 )

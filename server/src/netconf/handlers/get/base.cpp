@@ -32,8 +32,8 @@
 #include <server/include/netconf/handlers.hpp>
 #include <shared/include/logger.hpp>
 #include <shared/include/exception.hpp>
-#include <shared/include/request/get/yanglib.hpp>
-#include <shared/include/response/get/yanglib.hpp>
+#include <shared/include/request/get/library.hpp>
+#include <shared/include/response/get/library.hpp>
 #include <shared/include/yang.hpp>
 
 namespace netd::server::netconf::handlers {
@@ -42,27 +42,27 @@ namespace netd::server::netconf::handlers {
   std::unique_ptr<netd::shared::response::get::GetResponse>
   RpcHandler::handleGetRequest(
       std::unique_ptr<netd::shared::request::get::GetRequest> request) {
-    
     auto &logger = netd::shared::Logger::getInstance();
     logger.info("handleGetRequest: Processing get request");
-    logger.info("hasFilter: " + std::string(request->hasFilter() ? "true" : "false"));
-    if (request->hasFilter()) {
-      logger.info("filterType: " + request->getFilterType());
-      logger.info("filterSelect: " + request->getFilterSelect());
-    }
     
     // Check if this is a YANG library request by examining the filter
-    // The client sends: <filter type="xpath" select="/yanglib:*"/>
-    // libyang expands yanglib: to ietf-yang-library:
-    if (request->hasFilter() && 
-        request->getFilterType() == "xpath" && 
-        (request->getFilterSelect().find("yanglib:") != std::string::npos ||
-         request->getFilterSelect().find("ietf-yang-library:") != std::string::npos)) {
-      
+    bool isYanglibRequest = false;
+    
+    if (request->hasFilter() && (request->getFilterType() == "subtree" || request->getFilterType() == "xpath")) {
+      // Check if the filter contains yang-library
+      std::string filterSelect = request->getFilterSelect();
+      if (filterSelect.find("yang-library") != std::string::npos ||
+          filterSelect.find("ietf-yang-library") != std::string::npos) {
+        isYanglibRequest = true;
+        logger.info("handleGetRequest: Detected yang-library filter in " + request->getFilterType());
+      }
+    }
+    
+    if (isYanglibRequest) {
       logger.info("handleGetRequest: Detected YANG library request, processing...");
       
       // Create a YANG library response
-      auto yanglibResponse = std::make_unique<netd::shared::response::get::GetYanglibResponse>();
+      auto libraryResponse = std::make_unique<netd::shared::response::get::GetLibraryResponse>();
       
       // Get the YANG context to generate YANG library data
       auto &yang = netd::shared::Yang::getInstance();
@@ -71,20 +71,23 @@ namespace netd::server::netconf::handlers {
       if (ctx) {
         // Use libyang's built-in function to generate YANG library data
         struct lyd_node *yanglibData = nullptr;
-        // Temporarily disable ly_ctx_get_yanglib_data to use fallback method
-        if (false && ly_ctx_get_yanglib_data(ctx, &yanglibData, "ietf-yang-library@2019-01-04") == LY_SUCCESS && yanglibData) {
+        // Use the change count as the content-id parameter
+        uint32_t changeCount = ly_ctx_get_change_count(ctx);
+        if (ly_ctx_get_yanglib_data(ctx, &yanglibData, "%u", changeCount) == LY_SUCCESS && yanglibData) {
+          logger.info("handleGetRequest: Generated YANG library data successfully");
           // The yanglibData contains the complete YANG library structure
           // We can use this directly in the response
-          yanglibResponse->setYanglibData(yanglibData);
+          libraryResponse->setLibraryData(yanglibData);
         } else {
-          throw netd::shared::NotImplementedError("YANG library data generation not implemented");
+          logger.error("handleGetRequest: Failed to generate YANG library data");
+          throw netd::shared::NotImplementedError("YANG library data generation failed");
         }
       } else {
         throw netd::shared::NotImplementedError("YANG context not available");
       }
       
       // Convert to base GetResponse
-      return std::move(yanglibResponse);
+      return std::move(libraryResponse);
     }
     
     // For other get requests, throw not implemented

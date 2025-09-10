@@ -34,13 +34,11 @@ set(ENV{PKG_CONFIG_PATH} "/usr/local/lib/pkgconfig/")
 message(STATUS "PKG_CONFIG_PATH: $ENV{PKG_CONFIG_PATH}")
 
 pkg_check_modules(LIBYANG REQUIRED libyang)
-pkg_check_modules(LIBNETCONF2 REQUIRED libnetconf2)
 
 # Define global include directories
 set(GLOBAL_INCLUDE_DIRS
     ${CMAKE_SOURCE_DIR}
     ${LIBYANG_INCLUDE_DIRS}
-    ${LIBNETCONF2_INCLUDE_DIRS}
 )
 
 # Define YANG directory
@@ -62,15 +60,14 @@ target_include_directories(netd PRIVATE ${GLOBAL_INCLUDE_DIRS})
 
 # Link libraries
 message(STATUS "LIBYANG_LIBRARIES: ${LIBYANG_LIBRARIES}")
-message(STATUS "LIBNETCONF2_LIBRARIES: ${LIBNETCONF2_LIBRARIES}")
 target_link_libraries(netd PRIVATE
     ${LIBYANG_LIBRARIES}
-    ${LIBNETCONF2_LIBRARIES}
     netd_shared
     netd_server
     netd_freebsd
     pthread
     execinfo
+    expat
 )
 
 # Create netd client executable
@@ -87,12 +84,13 @@ target_compile_definitions(netc PRIVATE
 # Link libraries
 target_link_libraries(netc PRIVATE
     ${LIBYANG_LIBRARIES}
-    ${LIBNETCONF2_LIBRARIES}
     netd_shared
     netd_client
+    netd_client_netconf
     curses
     pthread
     execinfo
+    expat
 )
 
 message(STATUS "=== NETD CMake Configuration Complete ===")

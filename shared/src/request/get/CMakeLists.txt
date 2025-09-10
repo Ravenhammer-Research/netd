@@ -2,7 +2,7 @@
 set(GET_REQUEST_SOURCES
     base.cpp
     config.cpp
-    yanglib.cpp
+    library.cpp
 )
 
 # Create netd_shared_request_get static library

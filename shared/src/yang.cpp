@@ -57,17 +57,12 @@ namespace netd::shared {
     // Set up search paths for YANG modules
     ly_ctx_set_searchdir(ctx_, YANG_DIR "/standard/ietf/RFC");
     ly_ctx_set_searchdir(ctx_, YANG_DIR "/standard/iana/");
-    ly_ctx_set_searchdir(ctx_, "/usr/local/share/yang/modules/libyang");
-    ly_ctx_set_searchdir(ctx_, "/usr/local/share/yang/modules/libnetconf2");
-    ly_ctx_set_searchdir(ctx_, "/usr/share/yang/modules/libyang");
-    ly_ctx_set_searchdir(ctx_, "/usr/share/yang/modules/libnetconf2");
+    // ly_ctx_set_searchdir(ctx_, "/usr/local/share/yang/modules/libyang");
+    // ly_ctx_set_searchdir(ctx_, "/usr/local/share/yang/modules/libnetconf2");
+    // ly_ctx_set_searchdir(ctx_, "/usr/share/yang/modules/libyang");
+    // ly_ctx_set_searchdir(ctx_, "/usr/share/yang/modules/libnetconf2");
 
-    // Load essential NETCONF modules
-    struct lys_module *netconf_module = ly_ctx_load_module(ctx_, "ietf-netconf", nullptr, nullptr);
-    if (!netconf_module) {
-      auto &logger = Logger::getInstance();
-      logger.error("Failed to load ietf-netconf module");
-    }
+    // NETCONF modules will be loaded in loadStandardSchemas()
 
     // Load standard schemas
     loadStandardSchemas();
@@ -97,7 +92,7 @@ namespace netd::shared {
       return false;
     }
 
-    logger.info("Loaded YANG schema: " + schemaPath);
+    logger.debug("Loaded YANG schema: " + schemaPath);
     return true;
   }
 
@@ -130,7 +125,7 @@ namespace netd::shared {
       return false;
     }
 
-    logger.info("Loaded YANG schema: " + std::string(localfile));
+    logger.debug("Loaded YANG schema: " + std::string(localfile));
     free(localfile);
     return true;
   }
@@ -143,32 +138,52 @@ namespace netd::shared {
         // Basic types first
         {"ietf-inet-types", "2013-07-15"},
         {"ietf-yang-types", "2013-07-15"},
+        
+        // IETF interfaces (required by iana-if-type)
+        {"ietf-interfaces", "2018-02-20"},
+        
+        // IANA interface types (required for interface type identities)
+        {"iana-if-type", "2023-01-26"},
 
         // IANA modules for TLS and SSH (using actual installed versions)
-        {"iana-tls-cipher-suite-algs", "2022-06-16"},
-        {"iana-ssh-public-key-algs", "2022-06-16"},
-        {"iana-ssh-encryption-algs", "2022-06-16"},
-        {"iana-ssh-key-exchange-algs", "2022-06-16"},
-        {"iana-ssh-mac-algs", "2022-06-16"},
+        {"iana-tls-cipher-suite-algs", "2024-10-16"},
+        {"iana-ssh-public-key-algs", "2024-10-16"},
+        {"iana-ssh-encryption-algs", "2024-10-16"},
+        {"iana-ssh-key-exchange-algs", "2024-10-16"},
+        {"iana-ssh-mac-algs", "2024-10-16"},
 
         // Crypto and keystore modules
-        {"ietf-crypto-types", "2023-12-28"},
-        {"ietf-keystore", "2023-12-28"},
+        {"ietf-crypto-types", "2024-10-10"},
+        {"ietf-keystore", "2024-10-10"},
 
         // TLS and SSH common modules
-        {"ietf-tls-common", "2023-12-28"},
-        {"ietf-ssh-common", "2023-12-28"},
+        {"ietf-tls-common", "2024-10-10"},
+        {"ietf-ssh-common", "2024-10-10"},
 
         // TCP and transport modules
-        {"ietf-tcp-common", "2023-12-28"},
-        {"ietf-tcp-server", "2023-12-28"},
-        {"ietf-ssh-server", "2023-12-28"},
-        {"ietf-tls-server", "2023-12-28"},
+        {"ietf-tcp-common", "2024-10-10"},
+        {"ietf-tcp-server", "2024-10-10"},
+        {"ietf-ssh-server", "2024-10-10"},
+        {"ietf-tls-server", "2024-10-10"},
+        {"ietf-truststore", "2024-10-10"},
 
-        // NETCONF modules
-        {"ietf-netconf", "2013-09-29"},
+        // YANG library and datastores (dependencies for NETCONF)
+        {"ietf-yang-library", "2019-01-04"},
+        {"ietf-datastores", "2018-02-14"},
+
+        // NETCONF modules (dependencies first)
         {"ietf-netconf-acm", "2018-02-14"},
-        {"ietf-netconf-server", "2023-12-28"},
+        {"ietf-netconf", "2011-06-01"},
+        {"ietf-netconf-monitoring", "2010-10-04"},
+        {"ietf-netconf-partial-lock", "2009-10-19"},
+        {"ietf-netconf-time", "2016-01-26"},
+        {"ietf-netconf-with-defaults", "2011-06-01"},
+        {"ietf-netconf-nmda", "2019-01-07"},
+
+        // RESTCONF modules
+        {"ietf-restconf", "2017-01-26"},
+        {"ietf-restconf-monitoring", "2017-01-26"},
+        {"ietf-restconf-subscribed-notifications", "2019-11-17"},
 
         {"ietf-ip", "2018-02-22"},
         {"ietf-network-instance", "2019-01-21"},
@@ -180,9 +195,12 @@ namespace netd::shared {
         {"ietf-routing", "2018-03-13"}};
 
     for (const auto &schema : standardSchemas) {
+      logger.debug("Loading schema: " + schema.first + "@" + schema.second);
       if (!loadSchemaByName(schema.first, schema.second)) {
         logger.warning("Failed to load standard schema: " + schema.first + "@" +
                        schema.second);
+      } else {
+        logger.debug("Successfully loaded schema: " + schema.first + "@" + schema.second);
       }
     }
   }
@@ -246,6 +264,110 @@ namespace netd::shared {
     }
 
     return node;
+  }
+
+  const struct lys_module *Yang::getModule(const std::string &name, 
+                                           const std::string &revision) const {
+    auto &logger = Logger::getInstance();
+    
+    if (!ctx_) {
+      logger.error("YANG context not initialized");
+      return nullptr;
+    }
+    
+    // Try to load the module if it's not already loaded
+    if (name == "ietf-netconf" && revision == "2011-06-01") {
+      logger.debug("Attempting to load ietf-netconf module on demand");
+      const_cast<Yang*>(this)->loadSchemaByName(name, revision);
+    }
+
+    // Get the module
+    const struct lys_module *mod = ly_ctx_get_module(ctx_, name.c_str(), 
+                                                     revision.empty() ? nullptr : revision.c_str());
+    
+    if (!mod) {
+      logger.error("Failed to get module: " + name + (revision.empty() ? "" : "@" + revision));
+      
+      // Debug: List all loaded modules
+      logger.debug("Available modules:");
+      uint32_t index = 0;
+      const struct lys_module *iter = nullptr;
+      while ((iter = ly_ctx_get_module_iter(ctx_, &index)) != nullptr) {
+        logger.debug("  Module: " + std::string(iter->name) + "@" + (iter->revision ? iter->revision : "no-revision"));
+      }
+    } else {
+      logger.debug("Successfully retrieved module: " + name + "@" + (mod->revision ? mod->revision : "no-revision"));
+    }
+    
+    return mod;
+  }
+
+  std::vector<std::string> Yang::getCapabilities() const {
+    std::vector<std::string> capabilities;
+    auto &logger = Logger::getInstance();
+    
+    if (!ctx_) {
+      logger.error("YANG context not initialized");
+      return capabilities;
+    }
+
+    // Base capabilities (always present)
+    capabilities.push_back("urn:ietf:params:netconf:base:1.0");
+    capabilities.push_back("urn:ietf:params:netconf:base:1.1");
+
+    // Check ietf-netconf module features
+    const struct lys_module *netconf_mod = ly_ctx_get_module_implemented(ctx_, "ietf-netconf");
+    if (netconf_mod) {
+      if (lys_feature_value(netconf_mod, "writable-running") == LY_SUCCESS) {
+        capabilities.push_back("urn:ietf:params:netconf:capability:writable-running:1.0");
+      }
+      if (lys_feature_value(netconf_mod, "candidate") == LY_SUCCESS) {
+        capabilities.push_back("urn:ietf:params:netconf:capability:candidate:1.0");
+        if (lys_feature_value(netconf_mod, "confirmed-commit") == LY_SUCCESS) {
+          capabilities.push_back("urn:ietf:params:netconf:capability:confirmed-commit:1.1");
+        }
+      }
+      if (lys_feature_value(netconf_mod, "rollback-on-error") == LY_SUCCESS) {
+        capabilities.push_back("urn:ietf:params:netconf:capability:rollback-on-error:1.0");
+      }
+      if (lys_feature_value(netconf_mod, "validate") == LY_SUCCESS) {
+        capabilities.push_back("urn:ietf:params:netconf:capability:validate:1.1");
+      }
+      if (lys_feature_value(netconf_mod, "startup") == LY_SUCCESS) {
+        capabilities.push_back("urn:ietf:params:netconf:capability:startup:1.0");
+      }
+      if (lys_feature_value(netconf_mod, "xpath") == LY_SUCCESS) {
+        capabilities.push_back("urn:ietf:params:netconf:capability:xpath:1.0");
+      }
+    }
+
+    // Check other module-based capabilities
+    const struct lys_module *with_defaults_mod = ly_ctx_get_module_implemented(ctx_, "ietf-netconf-with-defaults");
+    if (with_defaults_mod) {
+      capabilities.push_back("urn:ietf:params:netconf:capability:with-defaults:1.0");
+    }
+
+    const struct lys_module *yanglib_mod = ly_ctx_get_module_implemented(ctx_, "ietf-yang-library");
+    if (yanglib_mod) {
+      if (yanglib_mod->revision && !strcmp(yanglib_mod->revision, "2019-01-04")) {
+        capabilities.push_back("urn:ietf:params:netconf:capability:yang-library:1.1");
+      } else {
+        capabilities.push_back("urn:ietf:params:netconf:capability:yang-library:1.0");
+      }
+    }
+
+    const struct lys_module *notifications_mod = ly_ctx_get_module_implemented(ctx_, "ietf-notifications");
+    if (notifications_mod) {
+      capabilities.push_back("urn:ietf:params:netconf:capability:notification:1.0");
+    }
+
+    const struct lys_module *interleave_mod = ly_ctx_get_module_implemented(ctx_, "ietf-interleave");
+    if (interleave_mod) {
+      capabilities.push_back("urn:ietf:params:netconf:capability:interleave:1.0");
+    }
+
+    logger.debug("Generated " + std::to_string(capabilities.size()) + " NETCONF capabilities");
+    return capabilities;
   }
 
 } // namespace netd::shared

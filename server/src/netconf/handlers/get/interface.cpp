@@ -45,30 +45,8 @@ namespace netd::server::netconf::handlers {
   
   std::unique_ptr<netd::shared::response::get::GetConfigResponse>
   RpcHandler::handleGetInterfaceRequest(
-      std::unique_ptr<netd::shared::request::get::GetConfigRequest> request) {
-    // Create response object on stack
-    netd::shared::response::get::GetConfigResponse response;
-
-    // Get the source datastore from the request
-    auto source = request->getSource();
-
-    // Get the appropriate store based on source
-    netd::server::store::Store *store [[maybe_unused]] = nullptr;
-    switch (source) {
-    case netd::shared::request::get::Datastore::RUNNING:
-      store = &netd::server::store::running::RunningStore::getInstance();
-      break;
-    case netd::shared::request::get::Datastore::CANDIDATE:
-      store = &netd::server::store::candidate::CandidateStore::getInstance();
-      break;
-    case netd::shared::request::get::Datastore::STARTUP:
-      store = &netd::server::store::startup::StartupStore::getInstance();
-      break;
-    default:
-      throw netd::shared::ConfigurationError("Unknown datastore source");
-    }
-    
-    throw NotImplementedError("handleGetInterfaceRequest method not implemented");
+      [[maybe_unused]] std::unique_ptr<netd::shared::request::get::GetConfigRequest> request) {
+    throw netd::shared::NotImplementedError("RpcHandler::handleGetInterfaceRequest not implemented");
   }
 
 } // namespace netd::server::netconf::handlers

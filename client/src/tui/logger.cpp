@@ -56,9 +56,14 @@ namespace netd::client {
     if (!g_tui_instance) {
       throw std::runtime_error("TUI instance not set");
     }
+    
+    // Don't log if TUI is being destroyed
+    if (g_tui_instance->isDestroying()) {
+      return;
+    }
 
-    // Check if we should show timestamps (only if debug level >= 5)
-    bool showTimestamp = (g_tui_instance->getDebugLevel() >= 5);
+    // Check if we should show timestamps (only if debug level >= 3, i.e., -ddd)
+    bool showTimestamp = (g_tui_instance->getDebugLevel() >= 3);
     
     std::string formatted_message;
     if (showTimestamp) {
@@ -80,6 +85,10 @@ namespace netd::client {
         case netd::shared::LogLevel::ERROR:
           formatted_message = "[" + timestamp + "][E]:" + message;
           break;
+        case netd::shared::LogLevel::NETCONF:
+          return;
+        case netd::shared::LogLevel::YANG:
+          return;
       }
     } else {
       // Format the log message with only level prefix (no timestamp)
@@ -99,6 +108,9 @@ namespace netd::client {
         case netd::shared::LogLevel::ERROR:
           formatted_message = "[E]:" + message;
           break;
+        case netd::shared::LogLevel::NETCONF:         
+        case netd::shared::LogLevel::YANG:
+          return;          
       }
     }
 

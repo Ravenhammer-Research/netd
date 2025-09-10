@@ -28,12 +28,11 @@
 #ifndef NETD_REQUEST_BASE_HPP
 #define NETD_REQUEST_BASE_HPP
 
-#include <libnetconf2/netconf.h>
-#include <libnetconf2/session_client.h>
 #include <libyang/libyang.h>
 #include <memory>
 #include <shared/include/base/serialization.hpp>
 #include <shared/include/marshalling/filter.hpp>
+#include <shared/include/netconf/session.hpp>
 #include <string>
 
 namespace netd::shared::request {
@@ -44,7 +43,7 @@ namespace netd::shared::request {
   template <typename T> class Request {
   public:
     Request() = default;
-    Request(struct nc_session *session, struct lyd_node *rpc)
+    Request(netd::shared::netconf::NetconfSession *session, struct lyd_node *rpc)
         : session_(session), rpc_(rpc) {}
     virtual ~Request() = default;
 
@@ -55,17 +54,17 @@ namespace netd::shared::request {
     
     // Convert to XML string
     std::string toXml() const;
-    struct nc_rpc *toRpc() const;
+    std::string toRpcXml() const;
 
     // Session and RPC accessors
-    struct nc_session *getSession() const { return session_; }
+    netd::shared::netconf::NetconfSession *getSession() const { return session_; }
     struct lyd_node *getRpc() const { return rpc_; }
-    void setSession(struct nc_session *session) { session_ = session; }
+    void setSession(netd::shared::netconf::NetconfSession *session) { session_ = session; }
     void setRpc(struct lyd_node *rpc) { rpc_ = rpc; }
 
   protected:
     // NETCONF session and RPC node
-    struct nc_session *session_ = nullptr;
+    netd::shared::netconf::NetconfSession *session_ = nullptr;
     struct lyd_node *rpc_ = nullptr;
 
     // RPC request properties

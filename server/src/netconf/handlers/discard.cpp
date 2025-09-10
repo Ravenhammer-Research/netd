@@ -39,27 +39,19 @@ namespace netd::server::netconf::handlers {
   std::unique_ptr<netd::shared::response::DiscardResponse>
   RpcHandler::handleDiscardRequest(
       std::unique_ptr<netd::shared::request::DiscardRequest> /* request */) {
-    try {
-      auto &logger = netd::shared::Logger::getInstance();
-      auto response =
-          std::make_unique<netd::shared::response::DiscardResponse>();
+    auto &logger = netd::shared::Logger::getInstance();
+    auto response =
+        std::make_unique<netd::shared::response::DiscardResponse>();
 
-      logger.info("Handling discard-changes request");
+    logger.info("Handling discard-changes request");
 
-      // Clear the candidate configuration
-      auto &candidateStore =
-          netd::server::store::candidate::CandidateStore::getInstance();
-      candidateStore.clear();
+    // Clear the candidate configuration
+    auto &candidateStore =
+        netd::server::store::candidate::CandidateStore::getInstance();
+    candidateStore.clear();
 
-      logger.info("Successfully discarded candidate configuration changes");
-      return response;
-    } catch (const std::exception &e) {
-      auto response =
-          std::make_unique<netd::shared::response::DiscardResponse>();
-      response->setProtocolError(
-          netd::shared::marshalling::ErrorTag::OPERATION_FAILED, e.what());
-      return response;
-    }
+    logger.info("Successfully discarded candidate configuration changes");
+    return response;
   }
 
 } // namespace netd::server::netconf::handlers

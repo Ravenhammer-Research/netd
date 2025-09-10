@@ -35,7 +35,7 @@ namespace netd::shared::request {
   class UnlockRequest : public Request<UnlockRequest> {
   public:
     UnlockRequest() : Request<UnlockRequest>() {}
-    UnlockRequest(struct nc_session *session, struct lyd_node *rpc)
+    UnlockRequest(netd::shared::netconf::NetconfSession *session, struct lyd_node *rpc)
         : Request<UnlockRequest>(session, rpc) {}
     virtual ~UnlockRequest() = default;
 

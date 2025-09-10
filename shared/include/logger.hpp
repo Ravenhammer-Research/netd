@@ -34,7 +34,7 @@
 
 namespace netd::shared {
 
-  enum class LogLevel { TRACE, DEBUG, INFO, WARNING, ERROR };
+  enum class LogLevel { TRACE, DEBUG, INFO, WARNING, ERROR, NETCONF, YANG };
 
   class Logger {
   public:
@@ -50,8 +50,12 @@ namespace netd::shared {
     void info(const std::string &message);
     void warning(const std::string &message);
     void error(const std::string &message);
+    void netconf(const std::string &message);
+    void yang(const std::string &message);
     
     void setLogLevel(LogLevel level);
+    void setYangDebugGroups(uint32_t groups);
+    void setTimestampEnabled(bool enabled);
 
   private:
     Logger();
@@ -61,6 +65,7 @@ namespace netd::shared {
 
     Callback callback_;
     LogLevel currentLogLevel_ = LogLevel::ERROR;
+    bool timestampEnabled_ = false;
   };
 
 } // namespace netd::shared

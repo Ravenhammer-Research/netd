@@ -25,7 +25,7 @@
  * SUCH DAMAGE.
  */
 
-#include <client/include/netconf.hpp>
+#include <client/include/netconf/client.hpp>
 #include <client/include/parser.hpp>
 #include <client/include/processor.hpp>
 #include <client/include/table.hpp>
@@ -44,9 +44,9 @@ void printUsage(const char *progname) {
   std::cerr << "Usage: " << progname << " [options]\n";
   std::cerr << "Options:\n";
   std::cerr << "  -s <path>    Socket path (default: /tmp/netd.sock)\n";
-  std::cerr << "  -d           Enable warning logging\n";
-  std::cerr << "  -dd          Enable info logging\n";
-  std::cerr << "  -ddd         Enable debug logging\n";
+  std::cerr << "  -d           Enable debug logging\n";
+  std::cerr << "  -dd          Enable debug and trace logging\n";
+  std::cerr << "  -ddd         Enable debug, trace, and timestamps\n";
   std::cerr << "  -h           Show this help message\n";
 }
 
@@ -94,19 +94,19 @@ int main(int argc, char *argv[]) {
   // Set log level based on debug flags
   switch (debugLevel) {
   case 0:
-    logger.setLogLevel(netd::shared::LogLevel::ERROR);
+    logger.setLogLevel(netd::shared::LogLevel::INFO); // Default: INFO, WARNING, ERROR
     break;
   case 1:
-    logger.setLogLevel(netd::shared::LogLevel::WARNING);
+    logger.setLogLevel(netd::shared::LogLevel::DEBUG); // -d: DEBUG and above
     break;
   case 2:
-    logger.setLogLevel(netd::shared::LogLevel::INFO);
+    logger.setLogLevel(netd::shared::LogLevel::TRACE); // -dd: TRACE and above
     break;
   case 3:
-    logger.setLogLevel(netd::shared::LogLevel::DEBUG);
+    logger.setLogLevel(netd::shared::LogLevel::TRACE); // -ddd: TRACE and above + timestamps
     break;
   default:
-    logger.setLogLevel(netd::shared::LogLevel::TRACE);
+    logger.setLogLevel(netd::shared::LogLevel::TRACE); // More than 3: same as -ddd
     break;
   }
   
@@ -125,15 +125,23 @@ int main(int argc, char *argv[]) {
   showStartupInfo(tui);
   
   // Start netconf client
-  netd::client::NetconfClient client;
-  if (client.connect(socketPath)) {
-    tui.setConnectionStatus("Connected to " + socketPath);
-  } else {
-    tui.setConnectionStatus("Disconnected");
-  }
+  netd::client::netconf::NetconfClient client;
+  
+  // Try to connect in background thread
+  std::thread connect_thread([&client, &tui, socketPath]() {
+    if (client.connect(socketPath)) {
+      tui.setConnectionStatus("Connected to " + socketPath);
+    } else {
+      tui.setConnectionStatus("Disconnected");
+    }
+  });
+  connect_thread.detach();
+  
+  // Show initial status
+  tui.setConnectionStatus("Connecting...");
   
   // Set up command processor
-  netd::client::CommandProcessor processor(tui);
+  netd::client::CommandProcessor processor(tui, client);
   tui.setCommandHandler([&processor](const std::string &command) -> bool {
     return processor.processCommand(command);
   });

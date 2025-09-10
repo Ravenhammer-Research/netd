@@ -54,7 +54,9 @@ namespace netd::server::store::running {
   protected:
     // Protected constructor for singleton
     RunningStore() = default;
-    virtual ~RunningStore() = default;
+    virtual ~RunningStore() {
+      clear(); // Ensure cleanup on destruction
+    }
 
     // Protected member for derived classes
     std::fstream fileStream_;

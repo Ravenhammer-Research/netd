@@ -43,7 +43,13 @@ namespace netd::client {
   void TUI::putPrompt() {
     move(getPromptRow(), 0);
     clrtoeol();
-    printw("%s", prompt_.c_str());
+    
+    // Print "netc" in bold, then ">" in normal formatting
+    attron(A_BOLD);
+    printw("netc");
+    attroff(A_BOLD);
+    printw("> ");
+    
     refresh();
   }
 

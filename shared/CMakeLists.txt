@@ -30,6 +30,7 @@ target_compile_definitions(netd_shared PRIVATE
 target_link_libraries(netd_shared PRIVATE
     netd_shared_interface
     netd_shared_marshalling
+    netd_shared_netconf
     netd_shared_request
     netd_shared_response
 )

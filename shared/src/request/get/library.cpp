@@ -29,7 +29,7 @@
 #include <libyang/libyang.h>
 #include <libyang/tree_data.h>
 #include <shared/include/exception.hpp>
-#include <shared/include/request/get/yanglib.hpp>
+#include <shared/include/request/get/library.hpp>
 #include <shared/include/yang.hpp>
 
 namespace netd::shared::request::get {
@@ -37,38 +37,40 @@ namespace netd::shared::request::get {
   using netd::shared::ArgumentError;
   using netd::shared::NotImplementedError;
 
-  lyd_node *GetYanglibRequest::toYang(ly_ctx *ctx) const {
+  lyd_node *GetLibraryRequest::toYang(ly_ctx *ctx) const {
     if (!ctx) {
       throw netd::shared::ArgumentError("toYang: ctx is null");
     }
 
-    // Create get element directly (nc_rpc_act_generic_xml will wrap it in <rpc>)
+    // Get the ietf-netconf module
+    const struct lys_module *mod = ly_ctx_get_module(ctx, "ietf-netconf", "2011-06-01");
+    if (!mod) {
+      throw netd::shared::ArgumentError("toYang: ietf-netconf module not found");
+    }
+
+    // Create get element
     lyd_node *getNode = nullptr;
-    if (lyd_new_opaq2(nullptr, ctx, "get", nullptr, nullptr,
-                      "urn:ietf:params:xml:ns:netconf:base:1.0",
-                      &getNode) != LY_SUCCESS) {
+    if (lyd_new_inner(nullptr, mod, "get", 0, &getNode) != LY_SUCCESS) {
       throw netd::shared::ArgumentError("toYang: failed to create get element");
     }
 
     // Add filter if present
-    if (hasYanglibFilter()) {
+    if (hasLibraryFilter()) {
       lyd_node *filterNode = nullptr;
-      if (lyd_new_opaq2(getNode, ctx, "filter", nullptr, nullptr,
-                        "urn:ietf:params:xml:ns:netconf:base:1.0",
-                        &filterNode) != LY_SUCCESS) {
+      if (lyd_new_inner(getNode, mod, "filter", 0, &filterNode) != LY_SUCCESS) {
         lyd_free_tree(getNode);
         throw netd::shared::ArgumentError("toYang: failed to create filter element");
       }
 
       // Add type attribute to filter
-      if (lyd_new_attr(filterNode, nullptr, "type", getYanglibFilterType().c_str(), nullptr) != LY_SUCCESS) {
+      if (lyd_new_attr(filterNode, nullptr, "type", getLibraryFilterType().c_str(), nullptr) != LY_SUCCESS) {
         lyd_free_tree(getNode);
         throw netd::shared::ArgumentError("toYang: failed to add type attribute to filter");
       }
 
       // Add select attribute for xpath filters
-      if (getYanglibFilterType() == "xpath" && !getYanglibFilterSelect().empty()) {
-        if (lyd_new_attr(filterNode, nullptr, "select", getYanglibFilterSelect().c_str(), nullptr) != LY_SUCCESS) {
+      if (getLibraryFilterType() == "xpath" && !getLibraryFilterSelect().empty()) {
+        if (lyd_new_attr(filterNode, nullptr, "select", getLibraryFilterSelect().c_str(), nullptr) != LY_SUCCESS) {
           lyd_free_tree(getNode);
           throw netd::shared::ArgumentError("toYang: failed to add select attribute to filter");
         }
@@ -78,61 +80,10 @@ namespace netd::shared::request::get {
     return getNode;
   }
 
-  std::unique_ptr<GetYanglibRequest>
-  GetYanglibRequest::fromYang([[maybe_unused]] const ly_ctx *ctx,
-                              const lyd_node *node) {
-    if (!node) {
-      throw ArgumentError("Invalid YANG node provided to GetYanglibRequest::fromYang");
-    }
-
-    auto request = std::make_unique<GetYanglibRequest>();
-
-    // Find the get node
-    lyd_node *getNode = lyd_child(node);
-    while (getNode && strcmp(lyd_node_schema(getNode)->name, "get") != 0) {
-      getNode = getNode->next;
-    }
-
-    if (!getNode) {
-      throw ArgumentError("get node not found");
-    }
-
-    // Look for filter element
-    lyd_node *filterNode = lyd_child(getNode);
-    while (filterNode && strcmp(lyd_node_schema(filterNode)->name, "filter") != 0) {
-      filterNode = filterNode->next;
-    }
-
-    if (filterNode) {
-      request->hasFilter_ = true;
-      
-      // Cast to opaque node to access attributes
-      const struct lyd_node_opaq *opaqNode = (const struct lyd_node_opaq *)filterNode;
-      
-      // Get filter type attribute by iterating through attributes
-      const struct lyd_attr *attr = opaqNode->attr;
-      while (attr) {
-        if (strcmp(attr->name.name, "type") == 0) {
-          request->filterType_ = std::string(attr->value);
-          break;
-        }
-        attr = attr->next;
-      }
-
-      // Get select attribute for xpath filters
-      if (request->filterType_ == "xpath") {
-        attr = opaqNode->attr;
-        while (attr) {
-          if (strcmp(attr->name.name, "select") == 0) {
-            request->filterSelect_ = std::string(attr->value);
-            break;
-          }
-          attr = attr->next;
-        }
-      }
-    }
-
-    return request;
+  std::unique_ptr<GetLibraryRequest>
+  GetLibraryRequest::fromYang([[maybe_unused]] const ly_ctx *ctx,
+                              [[maybe_unused]] const lyd_node *node) {
+    throw netd::shared::NotImplementedError("GetLibraryRequest::fromYang not implemented");
   }
 
 } // namespace netd::shared::request::get

@@ -50,7 +50,9 @@ namespace netd::server::store::candidate {
   protected:
     // Protected constructor for singleton
     CandidateStore() = default;
-    virtual ~CandidateStore() = default;
+    virtual ~CandidateStore() {
+      clear(); // Ensure cleanup on destruction
+    }
 
     // Helper method to apply configuration to system
     bool applyConfigurationToSystem(lyd_node *configTree);

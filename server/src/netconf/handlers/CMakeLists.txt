@@ -1,13 +1,11 @@
 # Handler sources
 set(HANDLER_SOURCES
-    close.cpp
     commit.cpp
     copy.cpp
     delete.cpp
     discard.cpp
     edit.cpp
     hello.cpp
-    kill.cpp
     lock.cpp
     unlock.cpp
     validate.cpp
@@ -15,6 +13,9 @@ set(HANDLER_SOURCES
 
 # Add get subdirectory
 add_subdirectory(get)
+
+# Add session subdirectory
+add_subdirectory(session)
 
 # Create netd_server_netconf_handlers static library
 add_library(netd_server_netconf_handlers STATIC ${HANDLER_SOURCES})
@@ -30,4 +31,5 @@ target_compile_definitions(netd_server_netconf_handlers PRIVATE
 # Link libraries
 target_link_libraries(netd_server_netconf_handlers PRIVATE
     netd_server_netconf_handlers_get
+    netd_server_netconf_handlers_session
 )

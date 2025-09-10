@@ -1,6 +1,7 @@
 # Server sources
 set(SERVER_SOURCES
     src/lib.cpp
+    src/signal.cpp
 )
 
 # Add subdirectories

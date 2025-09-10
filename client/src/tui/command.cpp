@@ -36,9 +36,12 @@ namespace netd::client {
   constexpr size_t MAX_HISTORY_SIZE = 10240;
 
   // Constructor and destructor
-  TUI::TUI() : initialized_(false), prompt_("netc> "), commandHistoryPosition_(-1), scrollOffset_(0), connectionStatus_("Not connected"), debugLevel_(0) {}
+  TUI::TUI() : initialized_(false), prompt_("netc> "), commandHistoryPosition_(-1), scrollOffset_(0), connectionStatus_("Not connected"), debugLevel_(0), destroying_(false) {}
 
-  TUI::~TUI() { cleanup(); }
+  TUI::~TUI() { 
+    destroying_ = true;
+    cleanup(); 
+  }
 
   // Core TUI functions
   bool TUI::initialize() {
@@ -54,7 +57,7 @@ namespace netd::client {
     initializeLogger();
     
     // Test that logger is working
-    netd::shared::Logger::getInstance().info("TUI Logger initialized successfully");
+    netd::shared::Logger::getInstance().debug("TUI Logger initialized successfully");
     
     initialized_ = true;
     return true;

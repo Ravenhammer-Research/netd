@@ -25,60 +25,27 @@
  * SUCH DAMAGE.
  */
 
-#ifndef NETD_CLIENT_NETCONF_HPP
-#define NETD_CLIENT_NETCONF_HPP
+#ifndef NETD_SERVER_SIGNAL_HPP
+#define NETD_SERVER_SIGNAL_HPP
 
-#include <shared/include/request/edit.hpp>
-#include <shared/include/request/get/base.hpp>
-#include <shared/include/request/get/config.hpp>
-#include <shared/include/response/get/config.hpp>
-#include <libnetconf2/netconf.h>
-#include <string>
-#include <thread>
-#include <atomic>
-#include <chrono>
+namespace netd::server {
 
-namespace netd::client {
+/**
+ * Check if the server should continue running
+ * @return true if server should continue, false if shutdown requested
+ */
+bool isRunning();
 
-  // Connection management
-  bool connectToServer(const std::string &socketPath = "/var/run/netd.sock");
-  void disconnectFromServer();
-  bool isConnectedToServer();
+/**
+ * Set up signal handlers for graceful shutdown
+ */
+void setupSignalHandlers();
 
+/**
+ * Clean up signal handlers
+ */
+void cleanupSignalHandlers();
 
-  // Client class
-  class NetconfClient {
-  public:
-    NetconfClient();
-    ~NetconfClient();
-    
-    bool connect(const std::string &socketPath = "/tmp/netd.sock");
-    void disconnect();
-    bool isConnected() const;
-    struct nc_session *getSession() const;
-    
-    netd::shared::response::get::GetConfigResponse sendRequest(struct nc_rpc *rpc);
-    
-    // Keep-alive control
-    void setKeepAliveEnabled(bool enabled);
-    void setKeepAliveInterval(int seconds);
+} // namespace netd::server
 
-  private:
-    struct nc_session *session_;
-    bool connected_;
-    
-    // Keep-alive mechanism
-    std::thread keepAliveThread_;
-    std::atomic<bool> keepAliveRunning_;
-    std::atomic<bool> keepAliveEnabled_;
-    int keepAliveInterval_; // seconds
-    
-    void keepAliveLoop();
-    void sendKeepAlive();
-  };
-  
-  NetconfClient &getNetconfClient();
-
-} // namespace netd::client
-
-#endif // NETD_CLIENT_NETCONF_HPP
+#endif // NETD_SERVER_SIGNAL_HPP
