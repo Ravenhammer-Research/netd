@@ -28,14 +28,16 @@
 #include <client/include/netconf/client.hpp>
 #include <client/include/parser.hpp>
 #include <client/include/processor.hpp>
-#include <client/include/table.hpp>
 #include <client/include/tui.hpp>
+#include <shared/include/lldp/client.hpp>
 #include <iostream>
 #include <shared/include/exception.hpp>
 #include <shared/include/logger.hpp>
 #include <sstream>
 #include <string>
 #include <thread>
+#include <chrono>
+#include <iomanip>
 #include <unistd.h>
 #include <getopt.h>
 #include <vector>
@@ -44,13 +46,14 @@ void printUsage(const char *progname) {
   std::cerr << "Usage: " << progname << " [options]\n";
   std::cerr << "Options:\n";
   std::cerr << "  -s <path>    Socket path (default: /tmp/netd.sock)\n";
+  std::cerr << "  -L           List LLDP neighbors and exit\n";
   std::cerr << "  -d           Enable debug logging\n";
   std::cerr << "  -dd          Enable debug and trace logging\n";
   std::cerr << "  -ddd         Enable debug, trace, and timestamps\n";
   std::cerr << "  -h           Show this help message\n";
 }
 
-void showStartupInfo(netd::client::TUI& tui) {
+void showStartupInfo(netd::client::tui::TUI& tui) {
   tui.putLine("NetD Client 1.0");
   tui.putLine(" ");
   tui.putLine("Copyright (c) 2025 RavenHammer Research. All rights reserved.");
@@ -59,22 +62,83 @@ void showStartupInfo(netd::client::TUI& tui) {
   tui.putLine(" ");
   tui.putLine("  FreeBSD - Copyright (c) The Regents of the University of California.");
   tui.putLine("           All rights reserved.");
-  tui.putLine("  libnetconf2 - Copyright (c) 2015-2020, CESNET. All rights reserved.");
   tui.putLine("  libyang - Copyright (c) 2015-2025, CESNET. All rights reserved.");
   tui.putLine(" ");
+}
+
+int listLLDPNeighbors() {
+  try {
+    // Initialize LLDP client
+    netd::shared::lldp::Client lldp_client;
+    if (!lldp_client.initialize()) {
+      std::cerr << "Failed to initialize LLDP client" << std::endl;
+      return 1;
+    }
+    
+    // Do immediate discovery (no background thread)
+    if (!lldp_client.discoverOnce()) {
+      std::cerr << "Failed to discover LLDP neighbors" << std::endl;
+      return 1;
+    }
+    
+    // Get discovered services
+    auto services = lldp_client.getDiscoveredServices();
+    
+    if (services.empty()) {
+      std::cout << "No LLDP neighbors found." << std::endl;
+    } else {
+      // Print table header
+      std::cout << std::left;
+      std::cout << std::setw(20) << "SERVICE" 
+                << std::setw(12) << "TYPE" 
+                << std::setw(20) << "HOSTNAME" 
+                << std::setw(15) << "ADDRESS" 
+                << std::setw(15) << "INTERFACE" << std::endl;
+      std::cout << std::string(82, '-') << std::endl;
+      
+      // Print table rows
+      for (const auto& service : services) {
+        std::string type_str = (service.getServiceType() == netd::shared::lldp::ServiceType::NETD_SERVER ? "SERVER" : "CLIENT");
+        std::string address_str = "";
+        
+        auto addresses = service.getAddressStrings();
+        if (!addresses.empty()) {
+          address_str = addresses[0]; // Show first address only
+        }
+        
+        std::cout << std::setw(20) << service.getServiceName()
+                  << std::setw(12) << type_str
+                  << std::setw(20) << service.getHostname()
+                  << std::setw(15) << address_str
+                  << std::setw(15) << service.getInterfaceName() << std::endl;
+      }
+    }
+    
+    // Cleanup
+    lldp_client.cleanup();
+    
+    return 0;
+  } catch (const std::exception& e) {
+    std::cerr << "Error listing LLDP neighbors: " << e.what() << std::endl;
+    return 1;
+  }
 }
 
 int main(int argc, char *argv[]) {
   // Default values
   std::string socketPath = "/tmp/netd.sock";
   int debugLevel = 0;  // 0=error only, 1=warning, 2=info, 3=debug
+  bool listLLDP = false;
   
   // Parse command line options
   int opt;
-  while ((opt = getopt(argc, argv, "s:dh")) != -1) {
+  while ((opt = getopt(argc, argv, "s:Ldh")) != -1) {
     switch (opt) {
     case 's':
       socketPath = optarg;
+      break;
+    case 'L':
+      listLLDP = true;
       break;
     case 'd':
       debugLevel++;
@@ -86,6 +150,11 @@ int main(int argc, char *argv[]) {
       printUsage(argv[0]);
       return 1;
     }
+  }
+  
+  // Handle LLDP listing
+  if (listLLDP) {
+    return listLLDPNeighbors();
   }
   
   // Get logger instance and set log level
@@ -111,7 +180,7 @@ int main(int argc, char *argv[]) {
   }
   
   // Initialize TUI
-  netd::client::TUI tui;
+  netd::client::tui::TUI tui;
   if (!tui.initialize()) {
     std::cerr << "Failed to initialize TUI" << std::endl;
     return 1;
@@ -124,15 +193,16 @@ int main(int argc, char *argv[]) {
   // Show startup information
   showStartupInfo(tui);
   
-  // Start netconf client
-  netd::client::netconf::NetconfClient client;
+  // Get netconf client singleton
+  auto& client = netd::client::netconf::NetconfClient::getInstance();
   
   // Try to connect in background thread
   std::thread connect_thread([&client, &tui, socketPath]() {
-    if (client.connect(socketPath)) {
+    try {
+      client.connect(socketPath);
       tui.setConnectionStatus("Connected to " + socketPath);
-    } else {
-      tui.setConnectionStatus("Disconnected");
+    } catch (const std::exception& e) {
+      tui.setConnectionStatus("Disconnected: " + std::string(e.what()));
     }
   });
   connect_thread.detach();

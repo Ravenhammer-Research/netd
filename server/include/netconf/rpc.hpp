@@ -25,25 +25,21 @@
  * SUCH DAMAGE.
  */
 
-#ifndef NETD_NETCONF_RPC_HPP
-#define NETD_NETCONF_RPC_HPP
+#ifndef NETD_SERVER_NETCONF_RPC_HPP
+#define NETD_SERVER_NETCONF_RPC_HPP
 
-#include <libyang/libyang.h>
-#include <memory>
+#include <shared/include/netconf/rpc.hpp>
+#include <istream>
 #include <string>
-#include <shared/include/netconf/session.hpp>
 
 namespace netd::server::netconf {
 
-  class NetconfRpc {
+  class ServerRpc : public netd::shared::netconf::Rpc {
   public:
-    NetconfRpc();
-    ~NetconfRpc() = default;
-
-    // Main RPC processing method
-    std::string handleRpc(const std::string& xml, netd::shared::netconf::NetconfSession& session);
+    static std::istream* processRequest(lyd_node* data, int message_id, netd::shared::netconf::NetconfOperation operation, netd::shared::netconf::NetconfSession* session);
+    static std::istream* processReply(lyd_node* data, int message_id, netd::shared::netconf::NetconfSession* session);
   };
 
 } // namespace netd::server::netconf
 
-#endif // NETD_NETCONF_RPC_HPP
+#endif // NETD_SERVER_NETCONF_RPC_HPP

@@ -34,7 +34,7 @@
 
 #define MAX_LINES 1000
 
-namespace netd::client {
+namespace netd::client::tui {
 
   class TUI {
   public:
@@ -198,6 +198,6 @@ namespace netd::client {
     void advanceHistoryPosition();
   };
 
-} // namespace netd::client
+} // namespace netd::client::tui
 
 #endif // NETD_CLIENT_TUI_HPP

@@ -1,5 +1,8 @@
 # Add subdirectories
 add_subdirectory(interface)
+if(LLDP_FOUND)
+    add_subdirectory(lldp)
+endif()
 add_subdirectory(marshalling)
 add_subdirectory(netconf)
 add_subdirectory(request)

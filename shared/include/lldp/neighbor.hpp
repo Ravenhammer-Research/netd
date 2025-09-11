@@ -25,35 +25,53 @@
  * SUCH DAMAGE.
  */
 
-#include <shared/include/netconf/http.hpp>
-#include <shared/include/exception.hpp>
+#pragma once
 
-namespace netd::shared::netconf {
+#include <lldpctl.h>
+#include <lldp-const.h>
+#include <shared/include/address.hpp>
+#include <string>
+#include <vector>
+#include <memory>
+#include <chrono>
 
-  HTTPTransport::HTTPTransport() : address_(""), port_(0), listening_(false) {}
+namespace netd::shared::lldp {
 
-  HTTPTransport::~HTTPTransport() { 
-    stop(); 
-  }
+// Forward declaration
+class ServiceInfo;
 
-  bool HTTPTransport::start([[maybe_unused]] const std::string &address, [[maybe_unused]] int port) {
-    throw netd::shared::NotImplementedError("HTTPTransport::start not implemented");
-  }
+class Neighbor {
+public:
+    Neighbor(lldpctl_atom_t* neighbor_atom);
+    ~Neighbor();
 
-  void HTTPTransport::stop() {
-    throw netd::shared::NotImplementedError("HTTPTransport::stop not implemented");
-  }
+    // Basic neighbor information
+    std::string getChassisId() const;
+    std::string getPortId() const;
+    std::string getSystemName() const;
+    std::string getSystemDescription() const;
+    std::string getPortDescription() const;
+    
+    // Timing information
+    std::chrono::seconds getTTL() const;
+    std::chrono::system_clock::time_point getLastUpdate() const;
+    
+    // Service information
+    ServiceInfo getServiceInfo() const;
+    
+    // Address information
+    std::vector<std::unique_ptr<netd::shared::Address>> getManagementAddresses() const;
+    
+    // Validation
+    bool isValid() const;
 
-  bool HTTPTransport::isListening() const { 
-    throw netd::shared::NotImplementedError("HTTPTransport::isListening not implemented");
-  }
+private:
+    lldpctl_atom_t* neighbor_atom_;
+    
+    // Helper methods
+    std::string getStringValue(lldpctl_key_t key) const;
+    std::chrono::seconds getSecondsValue(lldpctl_key_t key) const;
+    ServiceInfo parseServiceTLV(const std::string& sysdesc) const;
+};
 
-  const std::string &HTTPTransport::getAddress() const { 
-    throw netd::shared::NotImplementedError("HTTPTransport::getAddress not implemented");
-  }
-
-  int HTTPTransport::getPort() const {
-    throw netd::shared::NotImplementedError("HTTPTransport::getPort not implemented");
-  }
-
-} // namespace netd::shared::netconf
+} // namespace netd::shared::lldp

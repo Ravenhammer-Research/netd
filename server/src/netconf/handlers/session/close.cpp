@@ -25,44 +25,17 @@
  * SUCH DAMAGE.
  */
 
-#include <libnetconf2/messages_server.h>
-#include <libnetconf2/netconf.h>
-#include <libyang/libyang.h>
 #include <server/include/netconf/handlers.hpp>
-#include <shared/include/logger.hpp>
+#include <shared/include/exception.hpp>
 #include <shared/include/request/session/close.hpp>
 #include <shared/include/response/close.hpp>
-#include <shared/include/netconf/session.hpp>
 
 namespace netd::server::netconf::handlers {
 
   std::unique_ptr<netd::shared::response::CloseResponse>
   RpcHandler::handleCloseSessionRequest(
-      std::unique_ptr<netd::shared::request::session::CloseRequest> request) {
-    auto &logger = netd::shared::Logger::getInstance();
-    auto response = std::make_unique<netd::shared::response::CloseResponse>();
-
-    logger.info("Handling close-session request");
-
-    // Get the session from the request
-    auto session = request->getSession();
-    if (!session) {
-      logger.error("No session found in close-session request");
-      response->setProtocolError(netd::shared::marshalling::ErrorTag::OPERATION_FAILED,
-                                "No session found in close-session request");
-      return response;
-    }
-
-    // Close the session gracefully
-    session->close();
-    
-    // Remove session from session manager
-    auto &sessionManager = netd::shared::netconf::SessionManager::getInstance();
-    sessionManager.removeSession(session->getSessionId());
-
-    logger.info("Session closed: " + std::to_string(session->getSessionId()));
-
-    return response;
+      std::unique_ptr<netd::shared::request::session::CloseRequest> request [[maybe_unused]]) {
+    throw netd::shared::NotImplementedError("Close session handler not implemented");
   }
 
 } // namespace netd::server::netconf::handlers

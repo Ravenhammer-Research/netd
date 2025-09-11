@@ -25,25 +25,18 @@
  * SUCH DAMAGE.
  */
 
-#ifndef NETD_SERVER_NETCONF_DTLS_HPP
-#define NETD_SERVER_NETCONF_DTLS_HPP
+#include <server/include/netconf/rpc.hpp>
+#include <shared/include/exception.hpp>
+#include <istream>
+#include <string>
 
-#include <shared/include/netconf/tls.hpp>
+namespace netd::server::netconf {
 
-namespace netd::shared::netconf {
+  std::istream* ServerRpc::processReply(lyd_node* data, int message_id, netd::shared::netconf::NetconfSession* session) {
+    (void)data;
+    (void)message_id;
+    (void)session;
+    throw netd::shared::NotImplementedError("ServerRpc::processReply not implemented");
+  }
 
-  class DTLSTransport : public TLSTransport {
-  public:
-    DTLSTransport();
-    ~DTLSTransport();
-
-    bool start(const std::string &address, int port) override;
-    void stop() override;
-    bool isListening() const override;
-    const std::string &getAddress() const override;
-    int getPort() const override;
-  };
-
-} // namespace netd::shared::netconf
-
-#endif // NETD_SERVER_NETCONF_DTLS_HPP
+} // namespace netd::server::netconf

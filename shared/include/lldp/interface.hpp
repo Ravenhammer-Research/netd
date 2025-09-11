@@ -25,29 +25,33 @@
  * SUCH DAMAGE.
  */
 
-#ifndef NETD_CLIENT_NETCONF_REPLY_HPP
-#define NETD_CLIENT_NETCONF_REPLY_HPP
+#pragma once
 
-#include <shared/include/netconf/session.hpp>
+#include <lldpctl.h>
+#include <lldp-const.h>
+#include <shared/include/address.hpp>
 #include <string>
+#include <vector>
+#include <map>
+#include <memory>
+#include <sys/socket.h>
+#include <net/if.h>
+#include <ifaddrs.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
 
-namespace netd::client::netconf {
+namespace netd::shared::lldp {
 
-  class NetconfReply {
-  public:
-    NetconfReply();
-    virtual ~NetconfReply();
+class Interface {
+public:
+    Interface(lldpctl_conn_t* connection);
+    ~Interface();
 
-    // Process RPC reply and return response
-    std::string processReply(const std::string& xml_reply, 
-                            netd::shared::netconf::NetconfSession* session);
+    std::vector<std::string> getLLDPInterfaces() const;
+    std::map<std::string, std::unique_ptr<netd::shared::Address>> getLinkLocalAddresses() const;
 
-  private:
-    // Helper methods for processing different reply types
-    std::string extractRpcReplyData(const std::string& rpc_reply_xml);
-    std::string processHelloReply(const std::string& hello_xml);
-  };
+private:
+    lldpctl_conn_t* connection_;
+};
 
-} // namespace netd::client::netconf
-
-#endif // NETD_CLIENT_NETCONF_REPLY_HPP
+} // namespace netd::shared::lldp

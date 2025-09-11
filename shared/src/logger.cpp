@@ -81,7 +81,7 @@ namespace netd::shared {
       void *array[20];
       size_t size = backtrace(array, 20);
       std::vector<void*> stackTrace(array, array + size);
-      logger.trace(netd::shared::NetdException::getStackTraceString(stackTrace));
+      logger.trace(netd::shared::NetdError::getStackTraceString(stackTrace));
     }
   }
 

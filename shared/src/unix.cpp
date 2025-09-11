@@ -25,7 +25,7 @@
  * SUCH DAMAGE.
  */
 
-#include <shared/include/netconf/unix.hpp>
+#include <shared/include/unix.hpp>
 #include <shared/include/logger.hpp>
 #include <sys/socket.h>
 #include <sys/un.h>
@@ -36,7 +36,7 @@
 #include <sys/select.h>
 #include <regex>
 
-namespace netd::shared::netconf {
+namespace netd::shared {
 
   UnixTransport::UnixTransport() : listening_(false), server_socket_(-1) {}
 
@@ -311,4 +311,4 @@ namespace netd::shared::netconf {
     return true;
   }
 
-} // namespace netd::shared::netconf
+} // namespace netd::shared

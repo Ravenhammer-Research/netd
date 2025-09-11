@@ -31,7 +31,7 @@
 #include <curses.h>
 #include <algorithm>
 
-namespace netd::client {
+namespace netd::client::tui {
 
   constexpr size_t MAX_HISTORY_SIZE = 10240;
 
@@ -108,12 +108,12 @@ namespace netd::client {
           if (!commandHandler_(line)) {
             break;
           }
-        } catch (const netd::shared::NetdException &e) {
+        } catch (const netd::shared::NetdError &e) {
           // Handle exceptions gracefully
           putLine("Error: " + std::string(e.what()));
           
           // Log stack trace
-          netd::shared::Logger::getInstance().trace("Stack trace: " + netd::shared::NetdException::getStackTraceString(e.getStackTrace()));
+          netd::shared::Logger::getInstance().trace("Stack trace: " + netd::shared::NetdError::getStackTraceString(e.getStackTrace()));
         } 
       }
     }
@@ -149,4 +149,4 @@ namespace netd::client {
     }
   }
 
-} // namespace netd::client
+} // namespace netd::client::tui

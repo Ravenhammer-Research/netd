@@ -35,10 +35,11 @@
 
 #include <shared/include/base/serialization.hpp>
 #include <shared/include/interface/tap.hpp>
+#include <shared/include/backend.hpp>
 
 namespace netd::freebsd::interface {
 
-  class TapInterface : public netd::shared::interface::TapInterface {
+  class TapInterface : public netd::shared::interface::TapInterface, public netd::shared::BaseNativeBackend {
   public:
     TapInterface();
     explicit TapInterface(const std::string &name);

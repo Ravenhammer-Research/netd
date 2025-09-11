@@ -30,7 +30,7 @@
 #include <algorithm>
 #include <regex>
 
-namespace netd::client {
+namespace netd::client::tui {
 
   // Screen dimension helpers - use getmaxyx directly, no state
   int TUI::getScreenSizeX() {
@@ -206,4 +206,4 @@ namespace netd::client {
     resizeTerminal();
   }
 
-} // namespace netd::client
+} // namespace netd::client::tui

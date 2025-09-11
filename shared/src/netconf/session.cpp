@@ -35,15 +35,11 @@
 
 namespace netd::shared::netconf {
 
-  // Static member initialization
-  std::atomic<uint64_t> NetconfSession::next_session_id_{1};
-
-  NetconfSession::NetconfSession(ly_ctx* ctx)
-      : ctx_(ctx), message_id_counter_(0), connected_(true) {
-    session_id_ = next_session_id_++;
+  NetconfSession::NetconfSession(ly_ctx* ctx, int socket, SocketType socket_type)
+      : ctx_(ctx), message_id_counter_(0), connected_(true), socket_(socket), socket_type_(socket_type) {
     
     auto &logger = Logger::getInstance();
-    logger.info("Created new NETCONF session with ID: " + std::to_string(session_id_));
+    logger.info("Created new NETCONF session with socket: " + std::to_string(socket));
   }
 
   NetconfSession::~NetconfSession() {
@@ -58,76 +54,17 @@ namespace netd::shared::netconf {
     if (connected_) {
       connected_ = false;
       
-      auto &logger = Logger::getInstance();
-      logger.info("Closed NETCONF session ID: " + std::to_string(session_id_));
-    }
-  }
-
-
-  // SessionManager implementation
-  SessionManager& SessionManager::getInstance() {
-    static SessionManager instance;
-    return instance;
-  }
-
-  void SessionManager::addSession(std::unique_ptr<NetconfSession> session) {
-    std::lock_guard<std::mutex> lock(sessions_mutex_);
-    sessions_.push_back(std::move(session));
-    
-    auto &logger = Logger::getInstance();
-    logger.info("Added session to manager. Total sessions: " + std::to_string(sessions_.size()));
-  }
-
-  void SessionManager::removeSession(uint64_t session_id) {
-    std::lock_guard<std::mutex> lock(sessions_mutex_);
-    
-    auto it = std::find_if(sessions_.begin(), sessions_.end(),
-                          [session_id](const std::unique_ptr<NetconfSession>& session) {
-                            return session->getSessionId() == session_id;
-                          });
-    
-    if (it != sessions_.end()) {
-      (*it)->close();
-      sessions_.erase(it);
+      // Close the socket if it's valid
+      if (socket_ >= 0) {
+        ::close(socket_);
+        socket_ = -1;
+      }
       
       auto &logger = Logger::getInstance();
-      logger.info("Removed session " + std::to_string(session_id) + 
-                 ". Total sessions: " + std::to_string(sessions_.size()));
+      logger.info("Closed NETCONF session with socket: " + std::to_string(socket_));
     }
   }
 
-  NetconfSession* SessionManager::getSession(uint64_t session_id) {
-    std::lock_guard<std::mutex> lock(sessions_mutex_);
-    
-    auto it = std::find_if(sessions_.begin(), sessions_.end(),
-                          [session_id](const std::unique_ptr<NetconfSession>& session) {
-                            return session->getSessionId() == session_id;
-                          });
-    
-    return (it != sessions_.end()) ? it->get() : nullptr;
-  }
 
-  std::vector<NetconfSession*> SessionManager::getAllSessions() {
-    std::lock_guard<std::mutex> lock(sessions_mutex_);
-    
-    std::vector<NetconfSession*> result;
-    for (const auto& session : sessions_) {
-      result.push_back(session.get());
-    }
-    
-    return result;
-  }
-
-  void SessionManager::closeAllSessions() {
-    std::lock_guard<std::mutex> lock(sessions_mutex_);
-    
-    for (auto& session : sessions_) {
-      session->close();
-    }
-    sessions_.clear();
-    
-    auto &logger = Logger::getInstance();
-    logger.info("Closed all NETCONF sessions");
-  }
 
 } // namespace netd::shared::netconf

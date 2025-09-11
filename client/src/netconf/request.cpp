@@ -25,35 +25,19 @@
  * SUCH DAMAGE.
  */
 
-#include <shared/include/netconf/tls.hpp>
+#include <client/include/netconf/rpc.hpp>
 #include <shared/include/exception.hpp>
 
-namespace netd::shared::netconf {
+namespace netd::client::netconf {
 
-  TLSTransport::TLSTransport() : address_(""), port_(0), listening_(false) {}
-
-  TLSTransport::~TLSTransport() { 
-    stop(); 
+  std::istream* ClientRpc::processRequest(lyd_node* data, int message_id, netd::shared::netconf::NetconfOperation operation, netd::shared::netconf::NetconfSession* session) {
+    // Suppress unused parameter warnings
+    (void)data;
+    (void)message_id;
+    (void)operation;
+    (void)session;
+    
+    throw netd::shared::NotImplementedError("ClientRpc::processRequest not implemented");
   }
 
-  bool TLSTransport::start([[maybe_unused]] const std::string &address, [[maybe_unused]] int port) {
-    throw netd::shared::NotImplementedError("TLSTransport::start not implemented");
-  }
-
-  void TLSTransport::stop() {
-    throw netd::shared::NotImplementedError("TLSTransport::stop not implemented");
-  }
-
-  bool TLSTransport::isListening() const { 
-    throw netd::shared::NotImplementedError("TLSTransport::isListening not implemented");
-  }
-
-  const std::string &TLSTransport::getAddress() const { 
-    throw netd::shared::NotImplementedError("TLSTransport::getAddress not implemented");
-  }
-
-  int TLSTransport::getPort() const {
-    throw netd::shared::NotImplementedError("TLSTransport::getPort not implemented");
-  }
-
-} // namespace netd::shared::netconf
+} // namespace netd::client::netconf

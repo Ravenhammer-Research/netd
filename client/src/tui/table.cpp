@@ -25,27 +25,10 @@
  * SUCH DAMAGE.
  */
 
-#ifndef NETD_CLIENT_TABLE_HPP
-#define NETD_CLIENT_TABLE_HPP
+#include <client/include/tui.hpp>
+#include <shared/include/exception.hpp>
 
-#include <map>
-#include <string>
-#include <vector>
+namespace netd::client::tui {
 
-// Forward declaration
-namespace netd::shared::response::get {
-  class GetConfigResponse;
-}
 
-namespace netd::client {
-
-  class Table {
-  public:
-    Table();
-    Table(const netd::shared::response::get::GetConfigResponse &response);
-    ~Table() = default;
-  };
-
-} // namespace netd::client
-
-#endif // NETD_CLIENT_TABLE_HPP
+} // namespace netd::client::tui

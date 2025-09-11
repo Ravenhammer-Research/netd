@@ -35,10 +35,11 @@
 
 #include <shared/include/base/serialization.hpp>
 #include <shared/include/interface/ppp.hpp>
+#include <shared/include/backend.hpp>
 
 namespace netd::freebsd::interface {
 
-  class PppInterface : public netd::shared::interface::PppInterface {
+  class PppInterface : public netd::shared::interface::PppInterface, public netd::shared::BaseNativeBackend {
   public:
     PppInterface();
     explicit PppInterface(const std::string &name);

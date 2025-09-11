@@ -31,43 +31,101 @@
 #include <libyang/libyang.h>
 #include <string>
 #include <memory>
+#include <istream>
+#include <map>
+#include <shared/include/exception.hpp>
+#include <shared/include/netconf/session.hpp>
 
 namespace netd::shared::netconf {
 
-  class RpcData {
-  public:
-    RpcData(lyd_node* node);
-    ~RpcData();
-
-    // Convert to XML string
-    std::string toString() const;
-
-    // Get the underlying YANG node
-    lyd_node* getNode() const { return node_; }
-
-  private:
-    lyd_node* node_;
+  enum class NetconfVersion {
+    VERSION_10,
+    VERSION_11
   };
+
+  enum class NetconfOperation {
+    GET,
+    GET_CONFIG,
+    EDIT_CONFIG,
+    COPY_CONFIG,
+    DELETE_CONFIG,
+    LOCK,
+    UNLOCK,
+    CLOSE_SESSION,
+    KILL_SESSION,
+    COMMIT,
+    DISCARD_CHANGES,
+    VALIDATE,
+    CANCEL_COMMIT
+  };
+
+  // Convert enum to string for XML operation names
+  constexpr const char* operationToString(NetconfOperation op) {
+    switch (op) {
+      case NetconfOperation::GET: return "get";
+      case NetconfOperation::GET_CONFIG: return "get-config";
+      case NetconfOperation::EDIT_CONFIG: return "edit-config";
+      case NetconfOperation::COPY_CONFIG: return "copy-config";
+      case NetconfOperation::DELETE_CONFIG: return "delete-config";
+      case NetconfOperation::LOCK: return "lock";
+      case NetconfOperation::UNLOCK: return "unlock";
+      case NetconfOperation::CLOSE_SESSION: return "close-session";
+      case NetconfOperation::KILL_SESSION: return "kill-session";
+      case NetconfOperation::COMMIT: return "commit";
+      case NetconfOperation::DISCARD_CHANGES: return "discard-changes";
+      case NetconfOperation::VALIDATE: return "validate";
+      case NetconfOperation::CANCEL_COMMIT: return "cancel-commit";
+      default: return nullptr;
+    }
+  }
+
+  // Static map for string to operation conversion
+  inline const std::map<std::string, NetconfOperation> operation_map = {
+    {"get", NetconfOperation::GET},
+    {"get-config", NetconfOperation::GET_CONFIG},
+    {"edit-config", NetconfOperation::EDIT_CONFIG},
+    {"copy-config", NetconfOperation::COPY_CONFIG},
+    {"delete-config", NetconfOperation::DELETE_CONFIG},
+    {"lock", NetconfOperation::LOCK},
+    {"unlock", NetconfOperation::UNLOCK},
+    {"close-session", NetconfOperation::CLOSE_SESSION},
+    {"kill-session", NetconfOperation::KILL_SESSION},
+    {"commit", NetconfOperation::COMMIT},
+    {"discard-changes", NetconfOperation::DISCARD_CHANGES},
+    {"validate", NetconfOperation::VALIDATE},
+    {"cancel-commit", NetconfOperation::CANCEL_COMMIT}
+  };
+
+  // Convert string to enum for parsing
+  inline NetconfOperation stringToOperation(const std::string& op_str) {
+    auto it = operation_map.find(op_str);
+    if (it != operation_map.end()) {
+      return it->second;
+    }
+    throw netd::shared::RpcError("Invalid operation name: " + op_str);
+  }
+
 
   class Rpc {
   public:
+    // Static methods to be implemented by derived classes
+    static std::istream* processRpc(std::istream& rpc_stream, NetconfSession* session);
+    static std::istream* processRequest(lyd_node* data, int message_id, NetconfOperation operation, NetconfSession* session);
+    static std::istream* processReply(lyd_node* data, int message_id, NetconfSession* session);
+
     // Create RPC request envelope with child data
-    static std::unique_ptr<RpcData> createRpcRequest(ly_ctx* ctx, 
-                                                    const std::string& message_id,
-                                                    const std::string& operation_name,
-                                                    lyd_node* child_data = nullptr);
+    static std::istream* createRpcRequest(NetconfSession* session,
+                                         NetconfOperation operation,
+                                         lyd_node* child_data = nullptr);
 
     // Create RPC reply envelope with child data
-    static std::unique_ptr<RpcData> createRpcReply(ly_ctx* ctx,
-                                                  const std::string& message_id,
-                                                  lyd_node* child_data = nullptr);
+    static std::istream* createRpcReply(NetconfSession* session,
+                                       lyd_node* child_data = nullptr);
 
-    // Extract data from RPC envelope (handles both <rpc> and <rpc-reply>)
-    static lyd_node* extractFromEnvelope(const std::string& rpc_xml);
+    virtual ~Rpc() = default;
 
   private:
-    Rpc() = delete;
-    ~Rpc() = delete;
+    Rpc() = default;
   };
 
 } // namespace netd::shared::netconf

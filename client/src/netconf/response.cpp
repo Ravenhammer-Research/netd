@@ -25,20 +25,18 @@
  * SUCH DAMAGE.
  */
 
-#include <algorithm>
-#include <client/include/table.hpp>
-#include <iomanip>
-#include <sstream>
-#include <string>
-#include <shared/include/response/get/config.hpp>
+#include <client/include/netconf/rpc.hpp>
 #include <shared/include/exception.hpp>
 
-namespace netd::client {
+namespace netd::client::netconf {
 
-  Table::Table() {}
-
-  Table::Table([[maybe_unused]] const netd::shared::response::get::GetConfigResponse &response) {
-    throw netd::shared::NotImplementedError("Table::Table(const netd::shared::response::get::GetConfigResponse &response): not implemented");
+  std::istream* ClientRpc::processReply(lyd_node* data, int message_id, netd::shared::netconf::NetconfSession* session) {
+    // Suppress unused parameter warnings
+    (void)data;
+    (void)message_id;
+    (void)session;
+    
+    throw netd::shared::NotImplementedError("ClientRpc::processReply not implemented");
   }
- 
-} // namespace netd::client
+
+} // namespace netd::client::netconf

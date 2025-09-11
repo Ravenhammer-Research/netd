@@ -25,30 +25,44 @@
  * SUCH DAMAGE.
  */
 
-#ifndef NETD_SERVER_NETCONF_SCTP_HPP
-#define NETD_SERVER_NETCONF_SCTP_HPP
+#ifndef NETD_SERVER_NETCONF_UNIX_HPP
+#define NETD_SERVER_NETCONF_UNIX_HPP
 
 #include <string>
+#include <shared/include/transport.hpp>
 
-namespace netd::shared::netconf {
+namespace netd::shared {
 
-  class SCTPTransport {
+  class UnixTransport : public BaseTransport {
   private:
-    std::string address_;
-    [[maybe_unused]] int port_;
-    [[maybe_unused]] bool listening_;
+    std::string socketPath_;
+    bool listening_;
+    int server_socket_;
 
   public:
-    SCTPTransport();
-    ~SCTPTransport();
+    UnixTransport();
+    ~UnixTransport();
 
-    bool start(const std::string &address, int port);
-    void stop();
-    bool isListening() const;
-    const std::string &getAddress() const;
-    int getPort() const;
+    // BaseTransport interface
+    bool start(const std::string &address) override;
+    void stop() override;
+    bool isListening() const override;
+    int acceptConnection() override;
+    void closeConnection(int socket_fd) override;
+    bool sendData(int socket_fd, const std::string& data) override;
+    std::string receiveData(int socket_fd) override;
+    const std::string& getAddress() const override;
+
+    // Legacy methods for compatibility
+    const std::string &getSocketPath() const;
+    int getServerSocket() const;
+
+  private:
+    bool createServerSocket();
+    bool prepareSocketFile();
+    bool checkSocketDirectory();
   };
 
-} // namespace netd::shared::netconf
+} // namespace netd::shared
 
-#endif // NETD_SERVER_NETCONF_SCTP_HPP
+#endif // NETD_SERVER_NETCONF_UNIX_HPP

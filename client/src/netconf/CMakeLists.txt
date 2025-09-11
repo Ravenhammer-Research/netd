@@ -5,8 +5,8 @@ add_subdirectory(handlers)
 set(NETCONF_CLIENT_SOURCES
   base.cpp
   client.cpp
-  rpc.cpp
-  reply.cpp
+  request.cpp
+  response.cpp
 )
 
 # Create the netconf client library

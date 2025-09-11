@@ -28,19 +28,16 @@
 #ifndef NETD_CLIENT_NETCONF_RPC_HPP
 #define NETD_CLIENT_NETCONF_RPC_HPP
 
-#include <shared/include/netconf/session.hpp>
-#include <string>
+#include <shared/include/netconf/rpc.hpp>
+#include <istream>
 
 namespace netd::client::netconf {
 
-  class NetconfRpc {
+  class ClientRpc : public netd::shared::netconf::Rpc {
   public:
-    NetconfRpc();
-    ~NetconfRpc();
-
-    // Main RPC processing method
-    std::string processRpc(const std::string& xml_request, 
-                          netd::shared::netconf::NetconfSession* session);
+    // Override the shared RPC methods
+    static std::istream* processRequest(lyd_node* data, int message_id, netd::shared::netconf::NetconfOperation operation, netd::shared::netconf::NetconfSession* session);
+    static std::istream* processReply(lyd_node* data, int message_id, netd::shared::netconf::NetconfSession* session);
   };
 
 } // namespace netd::client::netconf

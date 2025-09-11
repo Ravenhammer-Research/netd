@@ -33,7 +33,7 @@
 
 namespace netd::shared {
 
-  NetdException::NetdException(const std::string &message)
+  NetdError::NetdError(const std::string &message)
       : std::runtime_error(message) {
     // Capture stack trace when exception is created
     void *array[20];
@@ -41,7 +41,7 @@ namespace netd::shared {
     stackTrace_.assign(array, array + size);
   }
 
-  std::string NetdException::getStackTraceString(const std::vector<void*> &stackTrace) {
+  std::string NetdError::getStackTraceString(const std::vector<void*> &stackTrace) {
     char **strings = backtrace_symbols(const_cast<void**>(stackTrace.data()), stackTrace.size());
 
     std::string stackTraceStr = "Stack trace:\n";

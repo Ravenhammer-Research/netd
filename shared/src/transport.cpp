@@ -25,25 +25,10 @@
  * SUCH DAMAGE.
  */
 
-#ifndef NETD_FREEBSD_INTERFACE_BASE_HPP
-#define NETD_FREEBSD_INTERFACE_BASE_HPP
+#include <shared/include/transport.hpp>
 
-#include <memory>
-#include <shared/include/interface/base/ether.hpp>
-#include <vector>
+namespace netd::shared {
 
-namespace netd::freebsd::interface {
+  // BaseTransport is an abstract base class - no implementation needed here
 
-  class Interface {
-  public:
-    Interface() = default;
-    virtual ~Interface() = default;
-
-    // Static interface discovery function
-    static std::vector<std::unique_ptr<netd::shared::interface::base::Ether>>
-    getAllInterfaces();
-  };
-
-} // namespace netd::freebsd::interface
-
-#endif // NETD_FREEBSD_INTERFACE_BASE_HPP
+} // namespace netd::shared

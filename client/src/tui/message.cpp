@@ -29,7 +29,7 @@
 #include <curses.h>
 #include <algorithm>
 
-namespace netd::client {
+namespace netd::client::tui {
 
   constexpr int MAX_MESSAGES = 1000;
 
@@ -110,4 +110,4 @@ namespace netd::client {
   }
 
 
-} // namespace netd::client
+} // namespace netd::client::tui

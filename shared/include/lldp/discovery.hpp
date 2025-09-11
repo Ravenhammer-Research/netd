@@ -25,30 +25,49 @@
  * SUCH DAMAGE.
  */
 
-#ifndef NETD_SERVER_NETCONF_TLS_HPP
-#define NETD_SERVER_NETCONF_TLS_HPP
+#pragma once
 
+#include <lldpctl.h>
+#include <lldp-const.h>
+#include <shared/include/lldp/info.hpp>
 #include <string>
+#include <vector>
+#include <map>
+#include <chrono>
+#include <mutex>
+#include <thread>
+#include <memory>
 
-namespace netd::shared::netconf {
+namespace netd::shared::lldp {
 
-  class TLSTransport {
-  private:
-    std::string address_;
-    [[maybe_unused]] int port_;
-    [[maybe_unused]] bool listening_;
+class Discovery {
+public:
+    Discovery(lldpctl_conn_t* connection);
+    ~Discovery();
 
-  public:
-    TLSTransport();
-    virtual ~TLSTransport();
+    bool start();
+    void stop();
+    bool isRunning() const { return running_; }
 
-    virtual bool start(const std::string &address, int port);
-    virtual void stop();
-    virtual bool isListening() const;
-    virtual const std::string &getAddress() const;
-    virtual int getPort() const;
-  };
+    std::vector<ServiceInfo> getDiscoveredServices() const;
+    std::vector<ServiceInfo> getDiscoveredServices(ServiceType service_type) const;
+    std::vector<ServiceInfo> getDiscoveredServices(const std::string& service_name) const;
 
-} // namespace netd::shared::netconf
+    bool processNeighbors();
+    bool discoverOnce();
 
-#endif // NETD_SERVER_NETCONF_TLS_HPP
+private:
+    void discoveryLoop();
+    ServiceInfo parseServiceTLV(const std::string& tlv_data) const;
+    ServiceType stringToServiceType(const std::string& type_str) const;
+    std::string serviceTypeToString(ServiceType type) const;
+
+    lldpctl_conn_t* connection_;
+    std::map<std::string, ServiceInfo> discovered_services_;
+    mutable std::mutex services_mutex_;
+    std::unique_ptr<std::thread> discovery_thread_;
+    bool running_;
+    bool stop_discovery_;
+};
+
+} // namespace netd::shared::lldp

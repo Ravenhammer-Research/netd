@@ -25,33 +25,56 @@
  * SUCH DAMAGE.
  */
 
-#include <shared/include/netconf/dtls.hpp>
-#include <shared/include/exception.hpp>
+#pragma once
 
-namespace netd::shared::netconf {
+#include <memory>
+#include <string>
+#include <vector>
+#include <map>
+#include "connection.hpp"
+#include "discovery.hpp"
+#include "service.hpp"
+#include "interface.hpp"
 
-  DTLSTransport::DTLSTransport() = default;
+namespace netd::shared::lldp {
 
-  DTLSTransport::~DTLSTransport() = default;
+class Client {
+public:
+    Client();
+    ~Client();
 
-  bool DTLSTransport::start([[maybe_unused]] const std::string &address, [[maybe_unused]] int port) {
-    throw netd::shared::NotImplementedError("DTLSTransport::start not implemented");
-  }
+    bool initialize();
+    void cleanup();
 
-  void DTLSTransport::stop() {
-    throw netd::shared::NotImplementedError("DTLSTransport::stop not implemented");
-  }
+    bool registerService(const std::string& service_name,
+                        ServiceType service_type,
+                        const std::string& hostname,
+                        uint16_t port,
+                        const std::string& interface_name = "",
+                        const std::map<std::string, std::string>& additional_info = {});
+    
+    bool unregisterService();
+    bool startDiscovery();
+    void stopDiscovery();
+    bool discoverOnce();
 
-  bool DTLSTransport::isListening() const { 
-    throw netd::shared::NotImplementedError("DTLSTransport::isListening not implemented");
-  }
+    std::vector<ServiceInfo> getDiscoveredServices() const;
+    std::vector<ServiceInfo> getDiscoveredServices(ServiceType service_type) const;
+    std::vector<ServiceInfo> getDiscoveredServices(const std::string& service_name) const;
 
-  const std::string &DTLSTransport::getAddress() const { 
-    throw netd::shared::NotImplementedError("DTLSTransport::getAddress not implemented");
-  }
+    std::vector<std::string> getLLDPInterfaces() const;
+    std::map<std::string, std::string> getLinkLocalAddresses() const;
 
-  int DTLSTransport::getPort() const {
-    throw netd::shared::NotImplementedError("DTLSTransport::getPort not implemented");
-  }
+    bool isInitialized() const { return initialized_; }
+    bool isRegistered() const;
+    bool isDiscoveryRunning() const;
 
-} // namespace netd::shared::netconf
+private:
+    std::unique_ptr<Connection> connection_;
+    std::unique_ptr<Discovery> discovery_;
+    std::unique_ptr<Service> service_;
+    std::unique_ptr<Interface> interface_;
+    bool initialized_;
+};
+
+} // namespace netd::shared::lldp

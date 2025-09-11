@@ -25,10 +25,11 @@
  * SUCH DAMAGE.
  */
 
-#include <shared/include/netconf/transport.hpp>
+#include <shared/include/backend.hpp>
 
-namespace netd::shared::netconf {
+namespace netd::shared {
 
-  // BaseTransport is an abstract base class - no implementation needed here
+  // BaseNativeBackend is a pure mix-in class with no implementation needed
+  // The virtual destructor ensures proper cleanup when used as a base class
 
-} // namespace netd::shared::netconf
+} // namespace netd::shared

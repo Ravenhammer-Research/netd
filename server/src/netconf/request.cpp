@@ -25,35 +25,19 @@
  * SUCH DAMAGE.
  */
 
-#include <shared/include/netconf/sctp.hpp>
+#include <server/include/netconf/rpc.hpp>
 #include <shared/include/exception.hpp>
+#include <istream>
+#include <string>
 
-namespace netd::shared::netconf {
+namespace netd::server::netconf {
 
-  SCTPTransport::SCTPTransport() : address_(""), port_(0), listening_(false) {}
-
-  SCTPTransport::~SCTPTransport() { 
-    stop(); 
+  std::istream* ServerRpc::processRequest(lyd_node* data, int message_id, netd::shared::netconf::NetconfOperation operation, netd::shared::netconf::NetconfSession* session) {
+    (void)data;
+    (void)message_id;
+    (void)operation;
+    (void)session;
+    throw netd::shared::NotImplementedError("ServerRpc::processRequest not implemented");
   }
 
-  bool SCTPTransport::start([[maybe_unused]] const std::string &address, [[maybe_unused]] int port) {
-    throw netd::shared::NotImplementedError("SCTPTransport::start not implemented");
-  }
-
-  void SCTPTransport::stop() {
-    throw netd::shared::NotImplementedError("SCTPTransport::stop not implemented");
-  }
-
-  bool SCTPTransport::isListening() const { 
-    throw netd::shared::NotImplementedError("SCTPTransport::isListening not implemented");
-  }
-
-  const std::string &SCTPTransport::getAddress() const { 
-    throw netd::shared::NotImplementedError("SCTPTransport::getAddress not implemented");
-  }
-
-  int SCTPTransport::getPort() const {
-    throw netd::shared::NotImplementedError("SCTPTransport::getPort not implemented");
-  }
-
-} // namespace netd::shared::netconf
+} // namespace netd::server::netconf

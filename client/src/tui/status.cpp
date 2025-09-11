@@ -31,7 +31,7 @@
 #include <iomanip>
 #include <sstream>
 
-namespace netd::client {
+namespace netd::client::tui {
 
   // Get scroll information string
   std::string TUI::getScrollInfo() {
@@ -179,4 +179,4 @@ namespace netd::client {
     clrtoeol();
   }
 
-} // namespace netd::client
+} // namespace netd::client::tui

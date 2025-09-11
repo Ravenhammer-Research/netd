@@ -39,30 +39,71 @@
 
 void printUsage(const char *progname) {
   std::cerr << "Usage: " << progname << " [options]\n";
-  std::cerr << "Options:\n";
-  std::cerr << "  -s <path>    Socket path (default: /tmp/netd.sock)\n";
-  std::cerr << "  -d           DEBUG\n";
-  std::cerr << "  -dd          DEBUG + TRACE\n";
-  std::cerr << "  -ddd         DEBUG + TRACE + TIMESTAMP\n";
-  std::cerr << "  -dddd        DEBUG + TRACE + TIMESTAMP + YANG\n";
-  std::cerr << "  -l           List available YANG modules and exit\n";
-  std::cerr << "  -h           Show this help message\n";
+  std::cerr << "Transport Options (choose one):\n";
+  std::cerr << "  --unix [path]     Unix domain socket (default: /tmp/netd.sock)\n";
+  std::cerr << "  --sctp [addr]     SCTP transport (default: bind all, port 19818)\n";
+  std::cerr << "  --http [addr]     HTTP transport (default: bind all, port 19818)\n";
+  std::cerr << "  --sctps [addr]    SCTP with DTLS (default: bind all, port 19819)\n";
+  std::cerr << "  --https [addr]    HTTP with TLS (default: bind all, port 19819)\n";
+  std::cerr << "Other Options:\n";
+  std::cerr << "  -d               DEBUG\n";
+  std::cerr << "  -dd              DEBUG + TRACE\n";
+  std::cerr << "  -ddd             DEBUG + TRACE + TIMESTAMP\n";
+  std::cerr << "  -dddd            DEBUG + TRACE + TIMESTAMP + YANG\n";
+  std::cerr << "  -l               List available YANG modules and exit\n";
+  std::cerr << "  -h               Show this help message\n";
 }
+
+// TransportType is now defined in shared/include/transport.hpp
 
 int main(int argc, char *argv[]) {
   auto &logger = netd::shared::Logger::getInstance();
   
   // Default values
-  std::string socketPath = "/tmp/netd.sock";
-  int debugLevel = 0;  // 0=error only, 1=warning, 2=info, 3=debug
+  netd::shared::TransportType transportType = netd::shared::TransportType::UNIX;
+  std::string bindAddress = "/tmp/netd.sock";
+  int port = 19818;
+  int debugLevel = 0;
   
   // Parse command line options
   int opt;
   bool listModules = false;
-  while ((opt = getopt(argc, argv, "s:dlh")) != -1) {
+  static struct option long_options[] = {
+    {"unix", optional_argument, 0, 1000},
+    {"sctp", optional_argument, 0, 1001},
+    {"http", optional_argument, 0, 1002},
+    {"sctps", optional_argument, 0, 1003},
+    {"https", optional_argument, 0, 1004},
+    {"help", no_argument, 0, 'h'},
+    {0, 0, 0, 0}
+  };
+  
+  int option_index = 0;
+  while ((opt = getopt_long(argc, argv, "dlh", long_options, &option_index)) != -1) {
     switch (opt) {
-    case 's':
-      socketPath = optarg;
+    case 1000: // --unix
+      transportType = netd::shared::TransportType::UNIX;
+      if (optarg) bindAddress = optarg;
+      break;
+    case 1001: // --sctp
+      transportType = netd::shared::TransportType::SCTP;
+      port = 19818;
+      if (optarg) bindAddress = optarg; else bindAddress = "::";
+      break;
+    case 1002: // --http
+      transportType = netd::shared::TransportType::HTTP;
+      port = 19818;
+      if (optarg) bindAddress = optarg; else bindAddress = "::";
+      break;
+    case 1003: // --sctps
+      transportType = netd::shared::TransportType::SCTPS;
+      port = 19819;
+      if (optarg) bindAddress = optarg; else bindAddress = "::";
+      break;
+    case 1004: // --https
+      transportType = netd::shared::TransportType::HTTPS;
+      port = 19819;
+      if (optarg) bindAddress = optarg; else bindAddress = "::";
       break;
     case 'd':
       debugLevel++;
@@ -171,8 +212,11 @@ int main(int argc, char *argv[]) {
   netd::server::setupSignalHandlers();
 
   // Create and start NETCONF server
-  netd::server::netconf::NetconfServer server(socketPath);
-  if (!server.start()) {
+  netd::server::netconf::NetconfServer server(transportType, bindAddress, port);
+  try {
+    server.start();
+  } catch (const std::exception& e) {
+    std::cerr << "Failed to start server: " << e.what() << std::endl;
     netd::server::cleanupSignalHandlers();
     return 1;
   }

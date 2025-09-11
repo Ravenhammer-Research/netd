@@ -29,32 +29,66 @@
 #define NETD_CLIENT_NETCONF_CLIENT_HPP
 
 #include <shared/include/netconf/session.hpp>
-#include <shared/include/netconf/unix.hpp>
+#include <shared/include/transport.hpp>
+#include <shared/include/exception.hpp>
 #include <memory>
 #include <string>
 #include <atomic>
+#include <thread>
+#include <chrono>
+#include <functional>
+
 
 namespace netd::client::netconf {
 
   class NetconfClient {
   public:
-    NetconfClient();
-    ~NetconfClient();
+    // Singleton access
+    static NetconfClient& getInstance();
+    
+    // Delete copy constructor and assignment operator
+    NetconfClient(const NetconfClient&) = delete;
+    NetconfClient& operator=(const NetconfClient&) = delete;
 
+    // Transport management
+    void setTransport(std::unique_ptr<netd::shared::BaseTransport> transport);
+    netd::shared::BaseTransport* getTransport() const;
+    
     // Connection management
-    bool connect(const std::string& socket_path);
+    void connect(const std::string& address) noexcept(false);
+    void connectWithRetry(const std::string& address, int max_retries = 5, int initial_delay_ms = 1000) noexcept(false);
     void disconnect();
     bool isConnected() const;
+    void startAutoReconnect(const std::string& address, int max_retries = 5, int initial_delay_ms = 1000);
+    void stopAutoReconnect();
     
-    // Raw socket communication methods
-    bool sendData(const void* data, size_t len);
-    std::string receiveData();
-    std::string readXmlMessage();
+    // Communication methods
+    void sendData(const std::string& data) noexcept(false);
+    std::string receiveData() noexcept(false);
+    
+    // NETCONF-specific methods
+    void sendRpc(std::istream& rpc_stream) noexcept(false);
+    std::string receiveRpcReply() noexcept(false);
     
   private:
-    std::unique_ptr<netd::shared::netconf::UnixTransport> transport_;
+    NetconfClient();
+    ~NetconfClient();
+    
+    std::unique_ptr<netd::shared::BaseTransport> transport_;
+    std::unique_ptr<netd::shared::netconf::NetconfSession> session_;
     std::atomic<bool> connected_;
-    int socket_fd_;
+    std::atomic<bool> auto_reconnect_enabled_;
+    std::atomic<bool> should_stop_reconnect_;
+    std::thread reconnect_thread_;
+    std::string connection_address_;
+    int connection_socket_fd_;
+    int max_retries_;
+    int initial_delay_ms_;
+    
+    void reconnectLoop();
+    void sleepWithBackoff(int attempt, int base_delay_ms);
+    void validateTransport() const noexcept(false);
+    void validateConnection() const noexcept(false);
   };
 
 } // namespace netd::client::netconf

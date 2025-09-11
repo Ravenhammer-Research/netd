@@ -5,7 +5,9 @@ add_subdirectory(handlers)
 add_library(netd_server_netconf STATIC
     base.cpp
     server.cpp
-    rpc.cpp
+    request.cpp
+    response.cpp
+    session.cpp
 )
 
 # Set include directories

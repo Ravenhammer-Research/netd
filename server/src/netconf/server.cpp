@@ -26,168 +26,43 @@
  */
 
 #include <server/include/netconf/server.hpp>
-#include <server/include/netconf/base.hpp>
-#include <shared/include/netconf/unix.hpp>
-#include <server/include/signal.hpp>
-#include <shared/include/logger.hpp>
-#include <shared/include/yang.hpp>
-#include <shared/include/netconf/session.hpp>
-#include <sys/socket.h>
-#include <sys/un.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <errno.h>
-#include <cstring>
-#include <signal.h>
-#include <algorithm>
+#include <shared/include/exception.hpp>
 
 namespace netd::server::netconf {
 
-  NetconfServer::NetconfServer(const std::string& socket_path)
-      : socket_path_(socket_path), running_(false) {
-    rpc_handler_ = std::make_unique<netd::server::netconf::NetconfRpc>();
-    transport_ = std::make_unique<netd::shared::netconf::UnixTransport>();
+  NetconfServer::NetconfServer(netd::shared::TransportType transport_type, 
+                               const std::string& bind_address, 
+                               int port)
+      : transport_type_(transport_type), bind_address_(bind_address), port_(port), running_(false) {
+    (void)transport_type;
+    (void)bind_address;
+    (void)port;
+    throw netd::shared::NotImplementedError("NetconfServer constructor not implemented");
   }
 
   NetconfServer::~NetconfServer() {
-    stop();
+    // Destructor can be empty for stubbed implementation
+  }
+
+  std::unique_ptr<netd::shared::BaseTransport> NetconfServer::createTransport() {
+    throw netd::shared::NotImplementedError("createTransport not implemented");
   }
 
   bool NetconfServer::start() {
-    auto &logger = netd::shared::Logger::getInstance();
-
-    // Start the transport layer
-    if (!transport_->start(socket_path_)) {
-      logger.error("Failed to start transport layer");
-      return false;
-    }
-
-    running_ = true;
-    logger.info("NETCONF server started successfully on socket: " + socket_path_);
-    
-    return true;
+    throw netd::shared::NotImplementedError("NetconfServer start not implemented");
   }
 
   void NetconfServer::stop() {
-    if (!running_) {
-      return;
-    }
-        
-    auto &logger = netd::shared::Logger::getInstance();
-    running_ = false;
-
-    // Close all sessions
-    auto& session_manager = netd::shared::netconf::SessionManager::getInstance();
-    session_manager.closeAllSessions();
-
-    // Stop transport layer
-    transport_->stop();
-
-    // Wait for all session threads to finish
-    for (auto& thread : session_threads_) {
-      if (thread.joinable()) {
-        thread.join();
-      }
-    }
-    session_threads_.clear();
-
-    logger.info("NETCONF server stopped");
+    throw netd::shared::NotImplementedError("NetconfServer stop not implemented");
   }
 
   void NetconfServer::run() {
-    auto &logger = netd::shared::Logger::getInstance();
-    logger.info("Starting server main loop");
-
-    while (running_ && netd::server::isRunning()) {
-      acceptNewSessions();
-      cleanupSessions();
-      
-      // Small sleep to prevent busy waiting
-      usleep(10000); // 10ms
-    }
-    
-    logger.info("Server main loop exiting");
+    throw netd::shared::NotImplementedError("NetconfServer run not implemented");
   }
 
-  void NetconfServer::acceptNewSessions() {
-    int server_socket = transport_->getServerSocket();
-    if (server_socket < 0) {
-      return;
-    }
-
-    // Check for new connections (non-blocking)
-    fd_set readfds;
-    FD_ZERO(&readfds);
-    FD_SET(server_socket, &readfds);
-    
-    struct timeval timeout;
-    timeout.tv_sec = 0;
-    timeout.tv_usec = 0; // Non-blocking
-
-    int result = select(server_socket + 1, &readfds, nullptr, nullptr, &timeout);
-    if (result > 0 && FD_ISSET(server_socket, &readfds)) {
-      struct sockaddr_un client_addr;
-      socklen_t client_len = sizeof(client_addr);
-      
-      int client_socket = accept(server_socket, (struct sockaddr*)&client_addr, &client_len);
-      if (client_socket >= 0) {
-        auto &logger = netd::shared::Logger::getInstance();
-        logger.debug("New client connection accepted");
-        
-        // Start processing thread for this session
-        session_threads_.emplace_back([this, client_socket]() {
-          ly_ctx* ctx = netd::shared::Yang::getInstance().getContext();
-          auto session = std::make_unique<netd::shared::netconf::NetconfSession>(ctx);
-          
-          processSession(std::move(session), client_socket);
-        });
-      }
-    }
-  }
-
-  void NetconfServer::processSession(std::unique_ptr<netd::shared::netconf::NetconfSession> session, int client_socket) {
-    auto &logger = netd::shared::Logger::getInstance();
-    logger.debug("Processing session " + std::to_string(session->getSessionId()));
-
-    while (session->isConnected() && running_) {
-      try {
-        // Receive XML message using transport
-        std::string xml = transport_->receiveData(client_socket);
-        if (xml.empty()) {
-          break; // Connection closed
-        }
-
-        // Route all messages through handleRpc - it will handle hello, RPC, etc.
-        std::string response = rpc_handler_->handleRpc(xml, *session);
-        
-        // Send response using transport (response is already the complete RPC reply)
-        if (!response.empty()) {
-          transport_->sendData(client_socket, response);
-        }
-        
-      } catch (const std::exception& e) {
-        logger.error("Error processing session: " + std::string(e.what()));
-        break;
-      }
-    }
-
-    // Clean up session and connection
-    auto& session_manager = netd::shared::netconf::SessionManager::getInstance();
-    session_manager.removeSession(session->getSessionId());
-    session->close();
-    transport_->closeConnection(client_socket);
-    
-    logger.debug("Session " + std::to_string(session->getSessionId()) + " ended");
-  }
-
-  void NetconfServer::cleanupSessions() {
-    // Remove finished threads
-    session_threads_.erase(
-        std::remove_if(session_threads_.begin(), session_threads_.end(),
-                      [](std::thread& t) {
-                        return !t.joinable();
-                      }),
-        session_threads_.end());
+  void NetconfServer::handleClientSession(std::unique_ptr<netd::shared::netconf::NetconfSession> session) {
+    (void)session;
+    throw netd::shared::NotImplementedError("handleClientSession not implemented");
   }
 
 } // namespace netd::server::netconf

@@ -32,7 +32,7 @@
 #include <server/include/netconf/rpc.hpp>
 #include <shared/include/yang.hpp>
 #include <server/include/netconf/base.hpp>
-#include <shared/include/netconf/unix.hpp>
+#include <shared/include/transport.hpp>
 #include <server/include/netconf/handlers.hpp>
 #include <memory>
 #include <string>
@@ -44,7 +44,7 @@ namespace netd::server::netconf {
 
   class NetconfServer : public Server {
   public:
-    NetconfServer(const std::string& socket_path);
+    NetconfServer(netd::shared::TransportType transport_type, const std::string& bind_address, int port);
     ~NetconfServer();
 
     bool start() override;
@@ -53,16 +53,16 @@ namespace netd::server::netconf {
     bool isRunning() const { return running_; }
 
   private:
-    std::string socket_path_;
+    netd::shared::TransportType transport_type_ [[maybe_unused]];
+    std::string bind_address_ [[maybe_unused]];
+    int port_ [[maybe_unused]];
     std::atomic<bool> running_;
-    std::unique_ptr<netd::server::netconf::NetconfRpc> rpc_handler_;
-    std::unique_ptr<netd::shared::netconf::UnixTransport> transport_;
+    std::unique_ptr<netd::shared::BaseTransport> transport_;
     std::vector<std::thread> session_threads_;
     
     // Server management
-    void acceptNewSessions();
-    void processSession(std::unique_ptr<netd::shared::netconf::NetconfSession> session, int client_socket);
-    void cleanupSessions();
+    std::unique_ptr<netd::shared::BaseTransport> createTransport();
+    void handleClientSession(std::unique_ptr<netd::shared::netconf::NetconfSession> session);
   };
 
 } // namespace netd::server::netconf

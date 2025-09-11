@@ -25,36 +25,27 @@
  * SUCH DAMAGE.
  */
 
-#ifndef NETD_SERVER_NETCONF_TRANSPORT_HPP
-#define NETD_SERVER_NETCONF_TRANSPORT_HPP
+#pragma once
 
-#include <string>
+#include <lldpctl.h>
 #include <memory>
 
-namespace netd::shared::netconf {
+namespace netd::shared::lldp {
 
-  class BaseTransport {
-  public:
-    BaseTransport() = default;
-    virtual ~BaseTransport() = default;
+class Connection {
+public:
+    Connection();
+    ~Connection();
 
-    // Transport lifecycle
-    virtual bool start(const std::string& address) = 0;
-    virtual void stop() = 0;
-    virtual bool isListening() const = 0;
+    bool initialize();
+    void cleanup();
+    
+    bool isConnected() const { return connection_ != nullptr; }
+    lldpctl_conn_t* getConnection() const { return connection_; }
 
-    // Connection management
-    virtual int acceptConnection() = 0;
-    virtual void closeConnection(int socket_fd) = 0;
+private:
+    lldpctl_conn_t* connection_;
+    bool initialized_;
+};
 
-    // Communication
-    virtual bool sendData(int socket_fd, const std::string& data) = 0;
-    virtual std::string receiveData(int socket_fd) = 0;
-
-    // Transport properties
-    virtual const std::string& getAddress() const = 0;
-  };
-
-} // namespace netd::shared::netconf
-
-#endif // NETD_SERVER_NETCONF_TRANSPORT_HPP
+} // namespace netd::shared::lldp

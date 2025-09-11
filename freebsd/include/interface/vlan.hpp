@@ -35,10 +35,11 @@
 
 #include <shared/include/base/serialization.hpp>
 #include <shared/include/interface/vlan.hpp>
+#include <shared/include/backend.hpp>
 
 namespace netd::freebsd::interface {
 
-  class VlanInterface : public netd::shared::interface::VlanInterface {
+  class VlanInterface : public netd::shared::interface::VlanInterface, public netd::shared::BaseNativeBackend {
   public:
     VlanInterface();
     explicit VlanInterface(const std::string &name);

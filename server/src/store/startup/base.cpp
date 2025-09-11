@@ -25,7 +25,6 @@
  * SUCH DAMAGE.
  */
 
-#include <freebsd/include/interface/base.hpp>
 #include <freebsd/include/route.hpp>
 #include <freebsd/include/vrf.hpp>
 #include <libyang/libyang.h>
@@ -72,17 +71,9 @@ namespace netd::server::store::startup {
         return false;
       }
 
-      // Enumerate interfaces from FreeBSD system
-      auto interfaces = netd::freebsd::interface::Interface::getAllInterfaces();
-      for (const auto &iface : interfaces) {
-        if (iface) {
-          // Convert interface to YANG and add to tree
-          lyd_node *interfaceYang = iface->toYang(ctx);
-          if (interfaceYang) {
-            lyd_insert_child(root, interfaceYang);
-          }
-        }
-      }
+      // TODO: Enumerate interfaces from FreeBSD system
+      // Interface discovery needs to be implemented using specific interface types
+      // (EthernetInterface, BridgeInterface, etc.) since the base Interface class was removed
 
       // TODO: Enumerate routes from FreeBSD system
       // TODO: Enumerate VRFs from FreeBSD system
@@ -161,9 +152,10 @@ namespace netd::server::store::startup {
     logger.info("Discovering system interfaces and populating startup store...");
     
     try {
-      // Get all interfaces from the system
-      auto interfaces = netd::freebsd::interface::Interface::getAllInterfaces();
-      logger.info("Discovered " + std::to_string(interfaces.size()) + " interfaces");
+      // TODO: Get all interfaces from the system
+      // Interface discovery needs to be implemented using specific interface types
+      // (EthernetInterface, BridgeInterface, etc.) since the base Interface class was removed
+      logger.info("Interface discovery temporarily disabled - needs implementation with specific interface types");
       
       // Get the YANG context
       struct ly_ctx *ctx = netd::shared::Yang::getInstance().getContext();
@@ -172,46 +164,10 @@ namespace netd::server::store::startup {
         return;
       }
       
-      // Create a root data tree for interfaces
-      lyd_node *interfacesTree = nullptr;
-      bool firstInterface = true;
-      
-      for (const auto &interface : interfaces) {
-        // Serialize each interface to YANG
-        lyd_node *interfaceNode = interface->toYang(ctx);
-        if (interfaceNode) {
-          if (firstInterface) {
-            // First interface - create the interfaces container
-            if (lyd_new_opaq2(nullptr, ctx, "interfaces", nullptr, nullptr,
-                              "urn:ietf:params:xml:ns:yang:ietf-interfaces",
-                              &interfacesTree) == LY_SUCCESS) {
-              lyd_insert_child(interfacesTree, interfaceNode);
-              firstInterface = false;
-            } else {
-              lyd_free_tree(interfaceNode);
-              logger.error("Failed to create interfaces container");
-            }
-          } else {
-            // Add subsequent interfaces to the container
-            lyd_insert_child(interfacesTree, interfaceNode);
-          }
-        } else {
-          logger.warning("Failed to serialize interface " + interface->getName() + " to YANG");
-        }
-      }
-      
-      // Add the interfaces tree to the startup store
-      if (interfacesTree) {
-        if (add(interfacesTree)) {
-          logger.info("Successfully populated startup store with " + 
-                     std::to_string(interfaces.size()) + " interfaces");
-        } else {
-          logger.error("Failed to add interfaces to startup store");
-          lyd_free_tree(interfacesTree);
-        }
-      } else {
-        logger.warning("No interfaces found to populate startup store");
-      }
+      // TODO: Create a root data tree for interfaces
+      // Interface serialization needs to be implemented using specific interface types
+      // (EthernetInterface, BridgeInterface, etc.) since the base Interface class was removed
+      logger.info("Interface serialization temporarily disabled - needs implementation with specific interface types");
       
     } catch (const std::exception &e) {
       logger.error("Exception during interface discovery: " + std::string(e.what()));

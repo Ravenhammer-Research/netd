@@ -1,5 +1,31 @@
 cmake_minimum_required(VERSION 3.16)
+
+# Require Clang 18+ (for C++23 support)
+find_program(CMAKE_CXX_COMPILER clang++)
+if(NOT CMAKE_CXX_COMPILER)
+  message(FATAL_ERROR "Clang C++ compiler not found. Please install clang++ 18 or later")
+endif()
+
+find_program(CMAKE_C_COMPILER clang)
+if(NOT CMAKE_C_COMPILER)
+  message(FATAL_ERROR "Clang C compiler not found. Please install clang 18 or later")
+endif()
+
 project(netd)
+
+# Check Clang version (must be 18+)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+  if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "18.0")
+    message(FATAL_ERROR "Clang version ${CMAKE_CXX_COMPILER_VERSION} is too old. Please install Clang 18.0 or later")
+  endif()
+  message(STATUS "Clang version: ${CMAKE_CXX_COMPILER_VERSION} ✓")
+else()
+  message(FATAL_ERROR "Clang compiler required, but found: ${CMAKE_CXX_COMPILER_ID}")
+endif()
+
+# Set C++ standard
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 message(STATUS "=== NETD CMake Configuration ===")
 message(STATUS "CMAKE_SOURCE_DIR: ${CMAKE_SOURCE_DIR}")
@@ -7,17 +33,19 @@ message(STATUS "CMAKE_BINARY_DIR: ${CMAKE_BINARY_DIR}")
 message(STATUS "CMAKE_CXX_COMPILER: ${CMAKE_CXX_COMPILER}")
 message(STATUS "CMAKE_CXX_STANDARD: ${CMAKE_CXX_STANDARD}")
 
-# Set C++ standard
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
 # Set compile flags for hardening
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g3 -Wall -Wextra -Werror")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g3 -Wall -Wextra -Werror")
 
-# Additional hardening flags
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_FORTIFY_SOURCE=2 -fstack-protector-strong -fPIE -Wformat -Wformat-security")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_FORTIFY_SOURCE=2 -fstack-protector-strong -fPIE -Wformat -Wformat-security")
+# Additional hardening flags (Clang-compatible)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fstack-protector-strong -fPIE -Wformat -Wformat-security")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fstack-protector-strong -fPIE -Wformat -Wformat-security")
+
+# Add _FORTIFY_SOURCE only for GCC
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_FORTIFY_SOURCE=2")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_FORTIFY_SOURCE=2")
+endif()
 
 # Link hardening flags
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-z,relro -Wl,-z,now -pie")
@@ -35,11 +63,28 @@ message(STATUS "PKG_CONFIG_PATH: $ENV{PKG_CONFIG_PATH}")
 
 pkg_check_modules(LIBYANG REQUIRED libyang)
 
+# Check for LLDP support
+find_path(LLDP_INCLUDE_DIR lldpctl.h PATHS /usr/include /usr/local/include)
+find_library(LLDP_LIBRARY lldpctl PATHS /usr/lib /usr/local/lib)
+if(LLDP_INCLUDE_DIR AND LLDP_LIBRARY)
+    set(LLDP_FOUND TRUE)
+    message(STATUS "LLDP support found: ${LLDP_INCLUDE_DIR}, ${LLDP_LIBRARY}")
+    add_compile_definitions(HAVE_LLDP=1)
+else()
+    set(LLDP_FOUND FALSE)
+    message(STATUS "LLDP support not found - LLDP features will be disabled")
+endif()
+
 # Define global include directories
 set(GLOBAL_INCLUDE_DIRS
     ${CMAKE_SOURCE_DIR}
     ${LIBYANG_INCLUDE_DIRS}
 )
+
+# Add LLDP include directory if found
+if(LLDP_FOUND)
+    list(APPEND GLOBAL_INCLUDE_DIRS ${LLDP_INCLUDE_DIR})
+endif()
 
 # Define YANG directory
 set(YANG_DIR "${CMAKE_SOURCE_DIR}/yang/")
@@ -60,7 +105,7 @@ target_include_directories(netd PRIVATE ${GLOBAL_INCLUDE_DIRS})
 
 # Link libraries
 message(STATUS "LIBYANG_LIBRARIES: ${LIBYANG_LIBRARIES}")
-target_link_libraries(netd PRIVATE
+set(NETD_LIBRARIES
     ${LIBYANG_LIBRARIES}
     netd_shared
     netd_server
@@ -69,6 +114,13 @@ target_link_libraries(netd PRIVATE
     execinfo
     expat
 )
+
+# Add LLDP library if found
+if(LLDP_FOUND)
+    list(APPEND NETD_LIBRARIES ${LLDP_LIBRARY})
+endif()
+
+target_link_libraries(netd PRIVATE ${NETD_LIBRARIES})
 
 # Create netd client executable
 add_executable(netc client/src/main.cpp)
@@ -82,7 +134,7 @@ target_compile_definitions(netc PRIVATE
 )
 
 # Link libraries
-target_link_libraries(netc PRIVATE
+set(NETC_LIBRARIES
     ${LIBYANG_LIBRARIES}
     netd_shared
     netd_client
@@ -92,5 +144,12 @@ target_link_libraries(netc PRIVATE
     execinfo
     expat
 )
+
+# Add LLDP library if found
+if(LLDP_FOUND)
+    list(APPEND NETC_LIBRARIES ${LLDP_LIBRARY})
+endif()
+
+target_link_libraries(netc PRIVATE ${NETC_LIBRARIES})
 
 message(STATUS "=== NETD CMake Configuration Complete ===")

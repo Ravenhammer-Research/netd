@@ -35,7 +35,7 @@
 #include <iomanip>
 #include <sstream>
 
-namespace netd::client {
+namespace netd::client::tui {
 
   // Global TUI instance for logger callback
   static TUI* g_tui_instance = nullptr;
@@ -136,4 +136,4 @@ namespace netd::client {
     g_tui_instance = nullptr;
   }
 
-} // namespace netd::client
+} // namespace netd::client::tui

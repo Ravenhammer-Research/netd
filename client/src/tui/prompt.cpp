@@ -29,7 +29,7 @@
 #include <curses.h>
 #include <string>
 
-namespace netd::client {
+namespace netd::client::tui {
 
   // Prompt management
   int TUI::getPromptLength() {
@@ -159,4 +159,4 @@ namespace netd::client {
     }
   }
 
-} // namespace netd::client
+} // namespace netd::client::tui

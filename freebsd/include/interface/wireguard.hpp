@@ -35,11 +35,12 @@
 
 #include <shared/include/base/serialization.hpp>
 #include <shared/include/interface/wireguard.hpp>
+#include <shared/include/backend.hpp>
 
 namespace netd::freebsd::interface {
 
   class WireguardInterface
-      : public netd::shared::interface::WireguardInterface {
+      : public netd::shared::interface::WireguardInterface, public netd::shared::BaseNativeBackend {
   public:
     WireguardInterface();
     explicit WireguardInterface(const std::string &name);

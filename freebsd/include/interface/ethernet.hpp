@@ -35,10 +35,11 @@
 
 #include <shared/include/base/serialization.hpp>
 #include <shared/include/interface/ethernet.hpp>
+#include <shared/include/backend.hpp>
 
 namespace netd::freebsd::interface {
 
-  class EthernetInterface : public netd::shared::interface::EthernetInterface {
+  class EthernetInterface : public netd::shared::interface::EthernetInterface, public netd::shared::BaseNativeBackend {
   public:
     EthernetInterface();
     explicit EthernetInterface(const std::string &name);

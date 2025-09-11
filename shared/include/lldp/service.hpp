@@ -25,30 +25,46 @@
  * SUCH DAMAGE.
  */
 
-#ifndef NETD_SERVER_NETCONF_HTTP_HPP
-#define NETD_SERVER_NETCONF_HTTP_HPP
+#pragma once
 
+#include <lldpctl.h>
+#include <lldp-const.h>
 #include <string>
+#include <map>
+#include "discovery.hpp"
 
-namespace netd::shared::netconf {
+namespace netd::shared::lldp {
 
-  class HTTPTransport {
-  private:
-    std::string address_;
-    [[maybe_unused]] int port_;
-    [[maybe_unused]] bool listening_;
+class Service {
+public:
+    Service(lldpctl_conn_t* connection);
+    ~Service();
 
-  public:
-    HTTPTransport();
-    ~HTTPTransport();
+    bool registerService(const std::string& service_name,
+                        ServiceType service_type,
+                        const std::string& hostname,
+                        uint16_t port,
+                        const std::string& interface_name,
+                        const std::map<std::string, std::string>& additional_info);
+    
+    bool unregisterService();
+    bool isRegistered() const { return registered_; }
+    
+    bool sendAdvertisement();
 
-    bool start(const std::string &address, int port);
-    void stop();
-    bool isListening() const;
-    const std::string &getAddress() const;
-    int getPort() const;
-  };
+private:
+    std::string createServiceTLV(const ServiceInfo& service) const;
+    std::string serviceTypeToString(ServiceType type) const;
 
-} // namespace netd::shared::netconf
+    lldpctl_conn_t* connection_;
+    bool registered_;
+    std::string service_name_;
+    ServiceType service_type_;
+    std::string hostname_;
+    std::string ip_address_;
+    uint16_t port_;
+    std::string interface_name_;
+    std::map<std::string, std::string> additional_info_;
+};
 
-#endif // NETD_SERVER_NETCONF_HTTP_HPP
+} // namespace netd::shared::lldp

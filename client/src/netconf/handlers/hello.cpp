@@ -42,13 +42,13 @@ namespace netd::client::netconf {
 
     ly_ctx* ctx = session->getContext();
     if (!ctx) {
-      throw netd::shared::RpcException("No YANG context available in session");
+      throw netd::shared::RpcError("No YANG context available in session");
     }
 
     // Convert request to YANG tree
     lyd_node* request_tree = request.toYang(ctx);
     if (!request_tree) {
-      throw netd::shared::RpcException("Failed to convert hello request to YANG tree");
+      throw netd::shared::RpcError("Failed to convert hello request to YANG tree");
     }
 
     // Create response object

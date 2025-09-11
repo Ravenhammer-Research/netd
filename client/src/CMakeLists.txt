@@ -2,7 +2,6 @@
 add_library(netd_client STATIC
     parser.cpp
     processor.cpp
-    table.cpp
     terminal.cpp
 )
 

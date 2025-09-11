@@ -1,7 +1,6 @@
 # FreeBSD interface sources
 set(FREEBSD_INTERFACE_SOURCES
     80211.cpp
-    base.cpp
     bridge.cpp
     epair.cpp
     ethernet.cpp

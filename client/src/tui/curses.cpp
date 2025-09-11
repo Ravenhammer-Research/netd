@@ -30,7 +30,7 @@
 #include <signal.h>
 #include <unistd.h>
 
-namespace netd::client {
+namespace netd::client::tui {
 
   // Terminal initialization and cleanup
   void TUI::setupCurses() {
@@ -125,4 +125,4 @@ namespace netd::client {
     doupdate();
   }
 
-} // namespace netd::client
+} // namespace netd::client::tui

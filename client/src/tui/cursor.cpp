@@ -28,7 +28,7 @@
 #include <client/include/tui.hpp>
 #include <curses.h>
 
-namespace netd::client {
+namespace netd::client::tui {
 
   // Cursor management
   int TUI::getCursorX() {
@@ -75,4 +75,4 @@ namespace netd::client {
     refresh();
   }
 
-} // namespace netd::client
+} // namespace netd::client::tui

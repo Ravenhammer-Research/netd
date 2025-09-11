@@ -25,44 +25,44 @@
  * SUCH DAMAGE.
  */
 
-#ifndef NETD_SERVER_NETCONF_UNIX_HPP
-#define NETD_SERVER_NETCONF_UNIX_HPP
+#ifndef NETD_SERVER_NETCONF_TRANSPORT_HPP
+#define NETD_SERVER_NETCONF_TRANSPORT_HPP
 
 #include <string>
-#include <shared/include/netconf/transport.hpp>
+#include <memory>
 
-namespace netd::shared::netconf {
+namespace netd::shared {
 
-  class UnixTransport : public BaseTransport {
-  private:
-    std::string socketPath_;
-    bool listening_;
-    int server_socket_;
-
-  public:
-    UnixTransport();
-    ~UnixTransport();
-
-    // BaseTransport interface
-    bool start(const std::string &address) override;
-    void stop() override;
-    bool isListening() const override;
-    int acceptConnection() override;
-    void closeConnection(int socket_fd) override;
-    bool sendData(int socket_fd, const std::string& data) override;
-    std::string receiveData(int socket_fd) override;
-    const std::string& getAddress() const override;
-
-    // Legacy methods for compatibility
-    const std::string &getSocketPath() const;
-    int getServerSocket() const;
-
-  private:
-    bool createServerSocket();
-    bool prepareSocketFile();
-    bool checkSocketDirectory();
+  enum class TransportType {
+    UNIX,
+    SCTP,
+    HTTP,
+    SCTPS,
+    HTTPS
   };
 
-} // namespace netd::shared::netconf
+  class BaseTransport {
+  public:
+    BaseTransport() = default;
+    virtual ~BaseTransport() = default;
 
-#endif // NETD_SERVER_NETCONF_UNIX_HPP
+    // Transport lifecycle
+    virtual bool start(const std::string& address) = 0;
+    virtual void stop() = 0;
+    virtual bool isListening() const = 0;
+
+    // Connection management
+    virtual int acceptConnection() = 0;
+    virtual void closeConnection(int socket_fd) = 0;
+
+    // Communication
+    virtual bool sendData(int socket_fd, const std::string& data) = 0;
+    virtual std::string receiveData(int socket_fd) = 0;
+
+    // Transport properties
+    virtual const std::string& getAddress() const = 0;
+  };
+
+} // namespace netd::shared
+
+#endif // NETD_SERVER_NETCONF_TRANSPORT_HPP

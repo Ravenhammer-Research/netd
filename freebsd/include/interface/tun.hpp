@@ -35,10 +35,11 @@
 
 #include <shared/include/base/serialization.hpp>
 #include <shared/include/interface/tun.hpp>
+#include <shared/include/backend.hpp>
 
 namespace netd::freebsd::interface {
 
-  class TunInterface : public netd::shared::interface::TunInterface {
+  class TunInterface : public netd::shared::interface::TunInterface, public netd::shared::BaseNativeBackend {
   public:
     TunInterface();
     explicit TunInterface(const std::string &name);

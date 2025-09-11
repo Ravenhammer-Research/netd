@@ -27,7 +27,6 @@
 
 #include <client/include/processor.hpp>
 #include <client/include/netconf/client.hpp>
-#include <client/include/table.hpp>
 #include <shared/include/exception.hpp>
 #include <shared/include/request/get/config.hpp>
 #include <shared/include/response/get/config.hpp>
@@ -35,7 +34,7 @@
 
 namespace netd::client {
 
-  CommandProcessor::CommandProcessor(TUI &tui, netd::client::netconf::NetconfClient &client) : tui_(tui), client_(client), parser_() {
+  CommandProcessor::CommandProcessor(netd::client::tui::TUI &tui, netd::client::netconf::NetconfClient &client) : tui_(tui), client_(client), parser_() {
   }
 
   bool CommandProcessor::processCommand(const std::string &command) {

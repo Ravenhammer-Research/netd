@@ -32,24 +32,44 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <unordered_map>
 #include <atomic>
 #include <mutex>
 
 namespace netd::shared::netconf {
 
+  enum class SocketType {
+    UNIX,
+    HTTP,
+    SCTP,
+    HTTPS,
+    SCTPS
+  };
+
+  enum class SessionState {
+    INITIALIZING,
+    HELLO_SENT,
+    HELLO_RECEIVED,
+    ACTIVE,
+    CLOSING,
+    CLOSED
+  };
+
   class NetconfSession {
   public:
-    NetconfSession(ly_ctx* ctx);
+    NetconfSession(ly_ctx* ctx, int socket = -1, SocketType socket_type = SocketType::UNIX);
     ~NetconfSession();
 
     // Session management
     bool isConnected() const;
     void close();
+    void setState(SessionState state);
+    SessionState getState() const { return state_; }
     
-    // Session properties
-    uint64_t getSessionId() const { return session_id_; }
-    const std::string& getCapabilities() const { return capabilities_; }
-    void setCapabilities(const std::string& caps) { capabilities_ = caps; }
+    // Session properties (using socket as ID)
+    int getSessionId() const { return socket_; }
+    const std::vector<std::string>& getCapabilities() const { return capabilities_; }
+    void setCapabilities(const std::vector<std::string>& caps) { capabilities_ = caps; }
     
     // YANG context access
     ly_ctx* getContext() const { return ctx_; }
@@ -57,33 +77,21 @@ namespace netd::shared::netconf {
     // Message ID management
     uint64_t getNextMessageId() { return ++message_id_counter_; }
     
+    
+    // Socket management
+    int getSocket() const { return socket_; }
+    SocketType getSocketType() const { return socket_type_; }
 
   private:
-    uint64_t session_id_;
     ly_ctx* ctx_;
-    std::string capabilities_;
+    SessionState state_;
+    std::vector<std::string> capabilities_;
     std::atomic<uint64_t> message_id_counter_;
     bool connected_;
-    
-    static std::atomic<uint64_t> next_session_id_;
+    int socket_;
+    SocketType socket_type_;
   };
 
-  // Session manager for tracking active sessions
-  class SessionManager {
-  public:
-    static SessionManager& getInstance();
-    
-    void addSession(std::unique_ptr<NetconfSession> session);
-    void removeSession(uint64_t session_id);
-    NetconfSession* getSession(uint64_t session_id);
-    std::vector<NetconfSession*> getAllSessions();
-    void closeAllSessions();
-    
-  private:
-    SessionManager() = default;
-    std::vector<std::unique_ptr<NetconfSession>> sessions_;
-    std::mutex sessions_mutex_;
-  };
 
 } // namespace netd::shared::netconf
 

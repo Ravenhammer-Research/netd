@@ -30,12 +30,13 @@
 
 #include <memory>
 #include <shared/include/vrf.hpp>
+#include <shared/include/backend.hpp>
 #include <string>
 #include <vector>
 
 namespace netd::freebsd {
 
-  class VRF : public netd::shared::VRF {
+  class VRF : public netd::shared::VRF, public netd::shared::BaseNativeBackend {
   public:
     VRF();
     explicit VRF(uint32_t fibId);

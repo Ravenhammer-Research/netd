@@ -30,7 +30,7 @@
 #include <vector>
 #include <algorithm>
 
-namespace netd::client {
+namespace netd::client::tui {
 
   // Wrap text to fit within specified width
   std::vector<std::string> TUI::wrapText(const std::string &text, int width) {
@@ -149,4 +149,4 @@ namespace netd::client {
     }
   }
 
-} // namespace netd::client
+} // namespace netd::client::tui
