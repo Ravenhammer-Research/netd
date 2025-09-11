@@ -45,13 +45,13 @@ namespace netd::server::netconf {
     void removeSession(int session_id);
     netd::shared::netconf::NetconfSession* getSession(int session_id);
     std::vector<netd::shared::netconf::NetconfSession*> getAllSessions();
-    std::vector<netd::shared::netconf::NetconfSession*> getSessionsBySocketType(netd::shared::netconf::SocketType socket_type);
+    std::vector<netd::shared::netconf::NetconfSession*> getSessionsByTransportType(netd::shared::TransportType transport_type);
     void closeAllSessions();
-    void closeSessionsBySocketType(netd::shared::netconf::SocketType socket_type);
+    void closeSessionsByTransportType(netd::shared::TransportType transport_type);
     
     // Session statistics
     size_t getSessionCount() const;
-    size_t getSessionsBySocketTypeCount(netd::shared::netconf::SocketType socket_type) const;
+    size_t getSessionsByTransportTypeCount(netd::shared::TransportType transport_type) const;
     
     // Session lookup by client info (for server sessions)
     netd::shared::netconf::NetconfSession* findSessionByClient(const std::string& username, const std::string& host);

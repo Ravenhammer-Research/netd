@@ -33,6 +33,9 @@
 #include <shared/include/yang.hpp>
 #include <server/include/netconf/base.hpp>
 #include <shared/include/transport.hpp>
+#ifdef HAVE_LLDP
+#include <shared/include/lldp/client.hpp>
+#endif
 #include <server/include/netconf/handlers.hpp>
 #include <memory>
 #include <string>
@@ -59,10 +62,13 @@ namespace netd::server::netconf {
     std::atomic<bool> running_;
     std::unique_ptr<netd::shared::BaseTransport> transport_;
     std::vector<std::thread> session_threads_;
+#ifdef HAVE_LLDP
+    std::unique_ptr<netd::shared::lldp::Client> lldp_client_;
+#endif
     
     // Server management
     std::unique_ptr<netd::shared::BaseTransport> createTransport();
-    void handleClientSession(std::unique_ptr<netd::shared::netconf::NetconfSession> session);
+    void handleClientSession(int client_socket);
   };
 
 } // namespace netd::server::netconf

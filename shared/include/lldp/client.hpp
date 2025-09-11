@@ -31,10 +31,13 @@
 #include <string>
 #include <vector>
 #include <map>
-#include "connection.hpp"
-#include "discovery.hpp"
-#include "service.hpp"
-#include "interface.hpp"
+#include <shared/include/lldp/connection.hpp>
+#include <shared/include/lldp/interface.hpp>
+#include <shared/include/lldp/neighbor.hpp>
+#include <shared/include/lldp/chassis.hpp>
+#include <shared/include/lldp/port.hpp>
+#include <shared/include/lldp/config.hpp>
+#include <shared/include/lldp/custom.hpp>
 
 namespace netd::shared::lldp {
 
@@ -43,36 +46,24 @@ public:
     Client();
     ~Client();
 
-    bool initialize();
+    void initialize();
     void cleanup();
-
-    bool registerService(const std::string& service_name,
-                        ServiceType service_type,
-                        const std::string& hostname,
-                        uint16_t port,
-                        const std::string& interface_name = "",
-                        const std::map<std::string, std::string>& additional_info = {});
-    
-    bool unregisterService();
-    bool startDiscovery();
-    void stopDiscovery();
-    bool discoverOnce();
-
-    std::vector<ServiceInfo> getDiscoveredServices() const;
-    std::vector<ServiceInfo> getDiscoveredServices(ServiceType service_type) const;
-    std::vector<ServiceInfo> getDiscoveredServices(const std::string& service_name) const;
 
     std::vector<std::string> getLLDPInterfaces() const;
     std::map<std::string, std::string> getLinkLocalAddresses() const;
+    
+    // Get LLDP objects
+    std::vector<std::unique_ptr<Port>> getPorts() const;
+    std::unique_ptr<Port> getLocalPort() const;
+    std::vector<std::unique_ptr<Port>> getAllLocalPorts() const;
+    std::unique_ptr<Chassis> getLocalChassis() const;
+    std::unique_ptr<Config> getConfiguration() const;
+    std::unique_ptr<CustomTLVManager> getCustomTLVManager() const;
 
     bool isInitialized() const { return initialized_; }
-    bool isRegistered() const;
-    bool isDiscoveryRunning() const;
 
 private:
     std::unique_ptr<Connection> connection_;
-    std::unique_ptr<Discovery> discovery_;
-    std::unique_ptr<Service> service_;
     std::unique_ptr<Interface> interface_;
     bool initialized_;
 };

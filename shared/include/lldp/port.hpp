@@ -28,43 +28,46 @@
 #pragma once
 
 #include <lldpctl.h>
-#include <lldp-const.h>
 #include <string>
-#include <map>
-#include "discovery.hpp"
+#include <vector>
+#include <memory>
+#include <chrono>
+#include <shared/include/lldp/neighbor.hpp>
+#include <shared/include/lldp/chassis.hpp>
+#include <shared/include/lldp/custom.hpp>
+#include <shared/include/lldp/error.hpp>
 
 namespace netd::shared::lldp {
 
-class Service {
+class Port {
 public:
-    Service(lldpctl_conn_t* connection);
-    ~Service();
+    Port(lldpctl_atom_t* port_atom, lldpctl_conn_t* connection);
+    ~Port();
 
-    bool registerService(const std::string& service_name,
-                        ServiceType service_type,
-                        const std::string& hostname,
-                        uint16_t port,
-                        const std::string& interface_name,
-                        const std::map<std::string, std::string>& additional_info);
+    std::string getPortName() const;
+    std::string getPortId() const;
+    std::string getPortDescription() const;
+    int getPortIndex() const;
+    int getPortTTL() const;
+    int getPortAge() const;
+    std::vector<std::unique_ptr<Neighbor>> getNeighbors() const;
+    std::unique_ptr<Chassis> getChassis() const;
     
-    bool unregisterService();
-    bool isRegistered() const { return registered_; }
+    // Custom TLV operations
+    std::vector<std::unique_ptr<CustomTLV>> getCustomTLVs() const;
+    bool addCustomTLV(const std::string& oui, int oui_subtype, 
+                     const std::string& info_string, const std::string& operation = "add");
+    bool clearCustomTLVs();
     
-    bool sendAdvertisement();
+    bool isValid() const;
 
 private:
-    std::string createServiceTLV(const ServiceInfo& service) const;
-    std::string serviceTypeToString(ServiceType type) const;
-
+    lldpctl_atom_t* port_atom_;
     lldpctl_conn_t* connection_;
-    bool registered_;
-    std::string service_name_;
-    ServiceType service_type_;
-    std::string hostname_;
-    std::string ip_address_;
-    uint16_t port_;
-    std::string interface_name_;
-    std::map<std::string, std::string> additional_info_;
+    bool atom_modified_;
+    std::string getStringValue(lldpctl_key_t key) const;
+    int getIntValue(lldpctl_key_t key) const;
+    lldpctl_atom_t* getFreshPortAtom() const;
 };
 
 } // namespace netd::shared::lldp

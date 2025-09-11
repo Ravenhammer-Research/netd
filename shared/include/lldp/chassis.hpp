@@ -25,46 +25,33 @@
  * SUCH DAMAGE.
  */
 
-#include <shared/include/netconf/session.hpp>
-#include <shared/include/logger.hpp>
-#include <unistd.h>
-#include <sys/socket.h>
-#include <errno.h>
-#include <cstring>
-#include <algorithm>
+#pragma once
 
-namespace netd::shared::netconf {
+#include <lldpctl.h>
+#include <string>
+#include <vector>
+#include <memory>
+#include <shared/include/address.hpp>
 
-  NetconfSession::NetconfSession(ly_ctx* ctx, int socket, netd::shared::TransportType transport_type)
-      : ctx_(ctx), message_id_counter_(0), connected_(true), socket_(socket), transport_type_(transport_type) {
-    
-    auto &logger = Logger::getInstance();
-    logger.info("Created new NETCONF session with socket: " + std::to_string(socket));
-  }
+namespace netd::shared::lldp {
 
-  NetconfSession::~NetconfSession() {
-    close();
-  }
+class Chassis {
+public:
+    Chassis(lldpctl_atom_t* chassis_atom);
+    ~Chassis();
 
-  bool NetconfSession::isConnected() const {
-    return connected_;
-  }
+    std::string getChassisId() const;
+    std::string getChassisName() const;
+    std::string getChassisDescription() const;
+    int getCapabilitiesAvailable() const;
+    int getCapabilitiesEnabled() const;
+    std::vector<std::unique_ptr<netd::shared::Address>> getManagementAddresses() const;
+    bool isValid() const;
 
-  void NetconfSession::close() {
-    if (connected_) {
-      connected_ = false;
-      
-      // Close the socket if it's valid
-      if (socket_ >= 0) {
-        ::close(socket_);
-        socket_ = -1;
-      }
-      
-      auto &logger = Logger::getInstance();
-      logger.info("Closed NETCONF session with socket: " + std::to_string(socket_));
-    }
-  }
+private:
+    lldpctl_atom_t* chassis_atom_;
+    std::string getStringValue(lldpctl_key_t key) const;
+    int getIntValue(lldpctl_key_t key) const;
+};
 
-
-
-} // namespace netd::shared::netconf
+} // namespace netd::shared::lldp

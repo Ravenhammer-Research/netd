@@ -26,10 +26,7 @@
  */
 
 #include <shared/include/lldp/connection.hpp>
-#include <shared/include/logger.hpp>
-#include <unistd.h>
-#include <errno.h>
-#include <cstring>
+#include <shared/include/exception.hpp>
 
 namespace netd::shared::lldp {
 
@@ -43,40 +40,14 @@ Connection::~Connection() {
     cleanup();
 }
 
-bool Connection::initialize() {
-    auto& logger = Logger::getInstance();
-    
-    // Check if lldpd socket exists and is accessible
-    const char* lldpd_socket = "/var/run/lldpd.socket";
-    if (access(lldpd_socket, R_OK | W_OK) != 0) {
-        if (errno == ENOENT) {
-            logger.error("lldpd socket not found at " + std::string(lldpd_socket) + 
-                        " - make sure lldpd daemon is running");
-        } else if (errno == EACCES) {
-            logger.error("Permission denied accessing " + std::string(lldpd_socket) + 
-                        " - try running with sudo or check lldpd permissions");
-        } else {
-            logger.error("Cannot access " + std::string(lldpd_socket) + 
-                        " (" + std::string(strerror(errno)) + ")");
-        }
-        return false;
+void Connection::initialize() {
+    // Create connection with default callbacks (NULL parameters)
+    connection_ = lldpctl_new(nullptr, nullptr, nullptr);
+    if (!connection_) {
+        throw netd::shared::LLDPError("Failed to create LLDP connection");
     }
-    
-    try {
-        // Create connection with default callbacks (NULL parameters)
-        connection_ = lldpctl_new(nullptr, nullptr, nullptr);
-        if (!connection_) {
-            logger.warning("Failed to create LLDP connection");
-            return false;
-        }
 
-        initialized_ = true;
-        logger.info("LLDP connection initialized successfully");
-        return true;
-    } catch (const std::exception& e) {
-        logger.error("Exception during LLDP connection initialization: " + std::string(e.what()));
-        return false;
-    }
+    initialized_ = true;
 }
 
 void Connection::cleanup() {

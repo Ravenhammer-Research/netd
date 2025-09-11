@@ -97,10 +97,6 @@ namespace netd::client {
   }
 
   bool CommandProcessor::handleShowInterface([[maybe_unused]] const ParsedCommand &parsed) {
-    // Check if connected (to avoid unused field warning)
-    if (!client_.isConnected()) {
-      tui_.putLine("Error: Not connected to server");
-    }
     throw netd::shared::NotImplementedError("handleShowInterface: not implemented");
   }
 

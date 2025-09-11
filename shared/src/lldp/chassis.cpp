@@ -25,63 +25,53 @@
  * SUCH DAMAGE.
  */
 
-#include <shared/include/lldp/neighbor.hpp>
-#include <shared/include/logger.hpp>
+#include <shared/include/lldp/chassis.hpp>
 #include <arpa/inet.h>
 #include <netinet/in.h>
-#include <sstream>
 
 namespace netd::shared::lldp {
 
-Neighbor::Neighbor(lldpctl_atom_t* neighbor_atom)
-    : neighbor_atom_(neighbor_atom) {
-    if (neighbor_atom_) {
-        lldpctl_atom_inc_ref(neighbor_atom_);
+Chassis::Chassis(lldpctl_atom_t* chassis_atom)
+    : chassis_atom_(chassis_atom) {
+    if (chassis_atom_) {
+        lldpctl_atom_inc_ref(chassis_atom_);
     }
 }
 
-Neighbor::~Neighbor() {
-    if (neighbor_atom_) {
-        lldpctl_atom_dec_ref(neighbor_atom_);
+Chassis::~Chassis() {
+    if (chassis_atom_) {
+        lldpctl_atom_dec_ref(chassis_atom_);
     }
 }
 
-std::string Neighbor::getChassisId() const {
+std::string Chassis::getChassisId() const {
     return getStringValue(lldpctl_k_chassis_id);
 }
 
-std::string Neighbor::getPortId() const {
-    return getStringValue(lldpctl_k_port_id);
-}
-
-std::string Neighbor::getSystemName() const {
+std::string Chassis::getChassisName() const {
     return getStringValue(lldpctl_k_chassis_name);
 }
 
-std::string Neighbor::getSystemDescription() const {
+std::string Chassis::getChassisDescription() const {
     return getStringValue(lldpctl_k_chassis_descr);
 }
 
-std::string Neighbor::getPortDescription() const {
-    return getStringValue(lldpctl_k_port_descr);
+int Chassis::getCapabilitiesAvailable() const {
+    return getIntValue(lldpctl_k_chassis_cap_available);
 }
 
-std::chrono::seconds Neighbor::getTTL() const {
-    return getSecondsValue(lldpctl_k_port_ttl);
+int Chassis::getCapabilitiesEnabled() const {
+    return getIntValue(lldpctl_k_chassis_cap_enabled);
 }
 
-std::chrono::system_clock::time_point Neighbor::getLastUpdate() const {
-    return std::chrono::system_clock::now();
-}
-
-std::vector<std::unique_ptr<netd::shared::Address>> Neighbor::getManagementAddresses() const {
+std::vector<std::unique_ptr<netd::shared::Address>> Chassis::getManagementAddresses() const {
     std::vector<std::unique_ptr<netd::shared::Address>> addresses;
     
-    if (!neighbor_atom_) {
+    if (!chassis_atom_) {
         return addresses;
     }
     
-    lldpctl_atom_t* mgmt_addrs = lldpctl_atom_get(neighbor_atom_, lldpctl_k_chassis_mgmt);
+    lldpctl_atom_t* mgmt_addrs = lldpctl_atom_get(chassis_atom_, lldpctl_k_chassis_mgmt);
     if (!mgmt_addrs) {
         return addresses;
     }
@@ -111,28 +101,25 @@ std::vector<std::unique_ptr<netd::shared::Address>> Neighbor::getManagementAddre
     return addresses;
 }
 
-bool Neighbor::isValid() const {
-    return neighbor_atom_ != nullptr && 
-           !getChassisId().empty() && 
-           !getPortId().empty();
+bool Chassis::isValid() const {
+    return chassis_atom_ != nullptr && !getChassisId().empty();
 }
 
-std::string Neighbor::getStringValue(lldpctl_key_t key) const {
-    if (!neighbor_atom_) {
+std::string Chassis::getStringValue(lldpctl_key_t key) const {
+    if (!chassis_atom_) {
         return "";
     }
     
-    const char* value = lldpctl_atom_get_str(neighbor_atom_, key);
+    const char* value = lldpctl_atom_get_str(chassis_atom_, key);
     return value ? std::string(value) : "";
 }
 
-std::chrono::seconds Neighbor::getSecondsValue(lldpctl_key_t key) const {
-    if (!neighbor_atom_) {
-        return std::chrono::seconds(0);
+int Chassis::getIntValue(lldpctl_key_t key) const {
+    if (!chassis_atom_) {
+        return 0;
     }
     
-    int value = lldpctl_atom_get_int(neighbor_atom_, key);
-    return std::chrono::seconds(value);
+    return lldpctl_atom_get_int(chassis_atom_, key);
 }
 
 } // namespace netd::shared::lldp

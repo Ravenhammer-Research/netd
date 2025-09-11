@@ -38,20 +38,29 @@
 #include <string>
 
 void printUsage(const char *progname) {
-  std::cerr << "Usage: " << progname << " [options]\n";
-  std::cerr << "Transport Options (choose one):\n";
-  std::cerr << "  --unix [path]     Unix domain socket (default: /tmp/netd.sock)\n";
-  std::cerr << "  --sctp [addr]     SCTP transport (default: bind all, port 19818)\n";
-  std::cerr << "  --http [addr]     HTTP transport (default: bind all, port 19818)\n";
-  std::cerr << "  --sctps [addr]    SCTP with DTLS (default: bind all, port 19819)\n";
-  std::cerr << "  --https [addr]    HTTP with TLS (default: bind all, port 19819)\n";
-  std::cerr << "Other Options:\n";
-  std::cerr << "  -d               DEBUG\n";
-  std::cerr << "  -dd              DEBUG + TRACE\n";
-  std::cerr << "  -ddd             DEBUG + TRACE + TIMESTAMP\n";
-  std::cerr << "  -dddd            DEBUG + TRACE + TIMESTAMP + YANG\n";
-  std::cerr << "  -l               List available YANG modules and exit\n";
-  std::cerr << "  -h               Show this help message\n";
+  std::cerr << "\033[1mUsage:\033[0m " << progname << " [\033[3moptions\033[0m]\n\n";
+  std::cerr << "\033[1mTransport Options\033[0m (can be specified multiple times):\n";
+  std::cerr << "  \033[1m--unix\033[0m  [\033[3mpath\033[0m]             Unix domain socket\n";
+  std::cerr << "  \033[1m--sctp\033[0m  [\033[3maddr\033[0m]:[\033[3mport\033[0m]      SCTP transport \033[3m(not implemented)\033[0m\n";
+  std::cerr << "  \033[1m--http\033[0m  [\033[3maddr\033[0m]:[\033[3mport\033[0m]      HTTP transport \033[3m(not implemented)\033[0m\n";
+  std::cerr << "  \033[1m--sctps\033[0m [\033[3maddr\033[0m]:[\033[3mport\033[0m]      SCTP with DTLS \033[3m(not implemented)\033[0m\n";
+  std::cerr << "  \033[1m--https\033[0m [\033[3maddr\033[0m]:[\033[3mport\033[0m]      HTTP with TLS \033[3m (not implemented)\033[0m\n\n";
+  std::cerr << "\033[1mDebug Options\033[0m:\n";
+  std::cerr << "  \033[1m-d\033[0m                         Basic debug output\n";
+  std::cerr << "  \033[1m-dd\033[0m                        Basic debug + trace output\n";
+  std::cerr << "  \033[1m-q\033[0m                         Quiet mode (errors only)\n";
+  std::cerr << "  \033[1m--debug\033[0m                    Basic debug output\n";
+#ifdef HAVE_LLDP
+  std::cerr << "  \033[1m--debug-lldp\033[0m               LLDP debug output\n";
+#endif
+  std::cerr << "  \033[1m--debug-yang\033[0m               YANG debug output\n";
+  std::cerr << "  \033[1m--debug-yang-dict\033[0m          YANG dictionary debug\n";
+  std::cerr << "  \033[1m--debug-yang-xpath\033[0m         YANG XPath debug\n";
+  std::cerr << "  \033[1m--debug-yang-depsets\033[0m       YANG dependency sets debug\n";
+  std::cerr << "  \033[1m--debug-trace\033[0m              Application trace debug\n\n";
+  std::cerr << "\033[1mOther Options\033[0m:\n";
+  std::cerr << "  \033[1m-l\033[0m                         List available YANG modules and exit\n";
+  std::cerr << "  \033[1m-h\033[0m                         Show this help message\n";
 }
 
 // TransportType is now defined in shared/include/transport.hpp
@@ -63,23 +72,42 @@ int main(int argc, char *argv[]) {
   netd::shared::TransportType transportType = netd::shared::TransportType::UNIX;
   std::string bindAddress = "/tmp/netd.sock";
   int port = 19818;
-  int debugLevel = 0;
+  uint32_t logMask = netd::shared::LOG_DEFAULT;
   
   // Parse command line options
   int opt;
   bool listModules = false;
+  
+  // Handle -dd before main parsing (getopt doesn't handle -dd naturally)
+  for (int i = 1; i < argc; i++) {
+    if (strcmp(argv[i], "-dd") == 0) {
+      logMask |= static_cast<uint32_t>(netd::shared::LogMask::DEBUG);
+      logMask |= static_cast<uint32_t>(netd::shared::LogMask::DEBUG_TRACE);
+      // Replace -dd with -d so getopt can handle it normally
+      argv[i] = const_cast<char*>("-d");
+    }
+  }
   static struct option long_options[] = {
     {"unix", optional_argument, 0, 1000},
     {"sctp", optional_argument, 0, 1001},
     {"http", optional_argument, 0, 1002},
     {"sctps", optional_argument, 0, 1003},
     {"https", optional_argument, 0, 1004},
+    {"debug", no_argument, 0, 2000},
+#ifdef HAVE_LLDP
+    {"debug-lldp", no_argument, 0, 2001},
+#endif
+    {"debug-yang", no_argument, 0, 2002},
+    {"debug-yang-dict", no_argument, 0, 2003},
+    {"debug-yang-xpath", no_argument, 0, 2004},
+                {"debug-yang-depsets", no_argument, 0, 2005},
+                {"debug-trace", no_argument, 0, 2006},
     {"help", no_argument, 0, 'h'},
     {0, 0, 0, 0}
   };
   
   int option_index = 0;
-  while ((opt = getopt_long(argc, argv, "dlh", long_options, &option_index)) != -1) {
+  while ((opt = getopt_long(argc, argv, "dqlh", long_options, &option_index)) != -1) {
     switch (opt) {
     case 1000: // --unix
       transportType = netd::shared::TransportType::UNIX;
@@ -106,8 +134,36 @@ int main(int argc, char *argv[]) {
       if (optarg) bindAddress = optarg; else bindAddress = "::";
       break;
     case 'd':
-      debugLevel++;
+      // Legacy debug flag - add basic debug
+      logMask |= static_cast<uint32_t>(netd::shared::LogMask::DEBUG);
       break;
+    case 'q':
+      // Quiet mode - only error messages
+      logMask = static_cast<uint32_t>(netd::shared::LogMask::ERROR);
+      break;
+    case 2000: // --debug
+      logMask |= static_cast<uint32_t>(netd::shared::LogMask::DEBUG);
+      break;
+#ifdef HAVE_LLDP
+    case 2001: // --debug-lldp
+      logMask |= static_cast<uint32_t>(netd::shared::LogMask::DEBUG_LLDP);
+      break;
+#endif
+    case 2002: // --debug-yang
+      logMask |= static_cast<uint32_t>(netd::shared::LogMask::DEBUG_YANG);
+      break;
+    case 2003: // --debug-yang-dict
+      logMask |= static_cast<uint32_t>(netd::shared::LogMask::DEBUG_YANG_DICT);
+      break;
+    case 2004: // --debug-yang-xpath
+      logMask |= static_cast<uint32_t>(netd::shared::LogMask::DEBUG_YANG_XPATH);
+      break;
+                case 2005: // --debug-yang-depsets
+                  logMask |= static_cast<uint32_t>(netd::shared::LogMask::DEBUG_YANG_DEPSETS);
+                  break;
+                case 2006: // --debug-trace
+                  logMask |= static_cast<uint32_t>(netd::shared::LogMask::DEBUG_TRACE);
+                  break;
     case 'l':
       listModules = true;
       break;
@@ -120,37 +176,15 @@ int main(int argc, char *argv[]) {
     }
   }
   
-  // Set log level based on debug flags
-  switch (debugLevel) {
-  case 0:
-    logger.setLogLevel(netd::shared::LogLevel::ERROR);
-    ly_log_level(LY_LLERR);
-    break;
-  case 1:
-    logger.setLogLevel(netd::shared::LogLevel::DEBUG);
-    ly_log_level(LY_LLERR);
-    break;
-  case 2:
-    logger.setLogLevel(netd::shared::LogLevel::TRACE);
-    ly_log_level(LY_LLERR);
-    break;
-  case 3:
-    logger.setLogLevel(netd::shared::LogLevel::TRACE);
-    ly_log_level(LY_LLERR);
+  // Set log mask based on command line options
+  logger.setLogMask(logMask);
+  
+  // Enable timestamps if any debug is enabled
+  if (logMask & (static_cast<uint32_t>(netd::shared::LogMask::DEBUG) | 
+                 static_cast<uint32_t>(netd::shared::LogMask::DEBUG_LLDP) | 
+                 static_cast<uint32_t>(netd::shared::LogMask::DEBUG_YANG) |
+                 static_cast<uint32_t>(netd::shared::LogMask::DEBUG_TRACE))) {
     logger.setTimestampEnabled(true);
-    break;
-  case 4:
-    logger.setLogLevel(netd::shared::LogLevel::YANG);
-    ly_log_level(LY_LLDBG);
-    logger.setTimestampEnabled(true);
-    logger.setYangDebugGroups(LY_LDGDICT | LY_LDGXPATH | LY_LDGDEPSETS);
-    break;
-  default:
-    logger.setLogLevel(netd::shared::LogLevel::YANG);
-    ly_log_level(LY_LLDBG);
-    logger.setTimestampEnabled(true);
-    logger.setYangDebugGroups(LY_LDGDICT | LY_LDGXPATH | LY_LDGDEPSETS);
-    break;
   }
 
   // Initialize YANG manager

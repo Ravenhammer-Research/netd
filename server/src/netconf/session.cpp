@@ -97,12 +97,12 @@ namespace netd::server::netconf {
     logger.debug("Closed all NETCONF sessions");
   }
 
-  std::vector<netd::shared::netconf::NetconfSession*> SessionManager::getSessionsBySocketType(netd::shared::netconf::SocketType socket_type) {
+  std::vector<netd::shared::netconf::NetconfSession*> SessionManager::getSessionsByTransportType(netd::shared::TransportType transport_type) {
     std::lock_guard<std::mutex> lock(sessions_mutex_);
     
     std::vector<netd::shared::netconf::NetconfSession*> result;
     for (const auto& session : sessions_) {
-      if (session->getSocketType() == socket_type) {
+      if (session->getTransportType() == transport_type) {
         result.push_back(session.get());
       }
     }
@@ -110,12 +110,12 @@ namespace netd::server::netconf {
     return result;
   }
 
-  void SessionManager::closeSessionsBySocketType(netd::shared::netconf::SocketType socket_type) {
+  void SessionManager::closeSessionsByTransportType(netd::shared::TransportType transport_type) {
     std::lock_guard<std::mutex> lock(sessions_mutex_);
     
     auto it = sessions_.begin();
     while (it != sessions_.end()) {
-      if ((*it)->getSocketType() == socket_type) {
+      if ((*it)->getTransportType() == transport_type) {
         (*it)->close();
         it = sessions_.erase(it);
       } else {
@@ -124,12 +124,12 @@ namespace netd::server::netconf {
     }
   }
 
-  size_t SessionManager::getSessionsBySocketTypeCount(netd::shared::netconf::SocketType socket_type) const {
+  size_t SessionManager::getSessionsByTransportTypeCount(netd::shared::TransportType transport_type) const {
     std::lock_guard<std::mutex> lock(sessions_mutex_);
     
     size_t count = 0;
     for (const auto& session : sessions_) {
-      if (session->getSocketType() == socket_type) {
+      if (session->getTransportType() == transport_type) {
         count++;
       }
     }

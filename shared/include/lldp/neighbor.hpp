@@ -28,50 +28,33 @@
 #pragma once
 
 #include <lldpctl.h>
-#include <lldp-const.h>
-#include <shared/include/address.hpp>
 #include <string>
 #include <vector>
 #include <memory>
 #include <chrono>
+#include <shared/include/address.hpp>
 
 namespace netd::shared::lldp {
-
-// Forward declaration
-class ServiceInfo;
 
 class Neighbor {
 public:
     Neighbor(lldpctl_atom_t* neighbor_atom);
     ~Neighbor();
 
-    // Basic neighbor information
     std::string getChassisId() const;
     std::string getPortId() const;
     std::string getSystemName() const;
     std::string getSystemDescription() const;
     std::string getPortDescription() const;
-    
-    // Timing information
     std::chrono::seconds getTTL() const;
     std::chrono::system_clock::time_point getLastUpdate() const;
-    
-    // Service information
-    ServiceInfo getServiceInfo() const;
-    
-    // Address information
     std::vector<std::unique_ptr<netd::shared::Address>> getManagementAddresses() const;
-    
-    // Validation
     bool isValid() const;
 
 private:
     lldpctl_atom_t* neighbor_atom_;
-    
-    // Helper methods
     std::string getStringValue(lldpctl_key_t key) const;
     std::chrono::seconds getSecondsValue(lldpctl_key_t key) const;
-    ServiceInfo parseServiceTLV(const std::string& sysdesc) const;
 };
 
 } // namespace netd::shared::lldp

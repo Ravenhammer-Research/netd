@@ -85,8 +85,6 @@ namespace netd::client::tui {
         case netd::shared::LogLevel::ERROR:
           formatted_message = "[" + timestamp + "][E]:" + message;
           break;
-        case netd::shared::LogLevel::NETCONF:
-          return;
         case netd::shared::LogLevel::YANG:
           return;
       }
@@ -108,7 +106,6 @@ namespace netd::client::tui {
         case netd::shared::LogLevel::ERROR:
           formatted_message = "[E]:" + message;
           break;
-        case netd::shared::LogLevel::NETCONF:         
         case netd::shared::LogLevel::YANG:
           return;          
       }

@@ -92,7 +92,6 @@ namespace netd::shared {
       return false;
     }
 
-    logger.debug("Loaded YANG schema: " + schemaPath);
     return true;
   }
 
@@ -125,7 +124,6 @@ namespace netd::shared {
       return false;
     }
 
-    logger.debug("Loaded YANG schema: " + std::string(localfile));
     free(localfile);
     return true;
   }
@@ -195,12 +193,9 @@ namespace netd::shared {
         {"ietf-routing", "2018-03-13"}};
 
     for (const auto &schema : standardSchemas) {
-      logger.debug("Loading schema: " + schema.first + "@" + schema.second);
       if (!loadSchemaByName(schema.first, schema.second)) {
         logger.warning("Failed to load standard schema: " + schema.first + "@" +
                        schema.second);
-      } else {
-        logger.debug("Successfully loaded schema: " + schema.first + "@" + schema.second);
       }
     }
   }

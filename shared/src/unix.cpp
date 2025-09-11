@@ -34,6 +34,7 @@
 #include <errno.h>
 #include <cstring>
 #include <sys/select.h>
+#include <fcntl.h>
 #include <regex>
 
 namespace netd::shared {
@@ -73,7 +74,7 @@ namespace netd::shared {
     }
 
     listening_ = true;
-    logger.info("Unix transport started on " + socketPath_);
+    logger.info("NETCONF Unix transport started on " + socketPath_);
     return true;
   }
 
@@ -120,10 +121,23 @@ namespace netd::shared {
       return -1;
     }
 
+    // Make socket non-blocking temporarily
+    int flags = fcntl(server_socket_, F_GETFL, 0);
+    fcntl(server_socket_, F_SETFL, flags | O_NONBLOCK);
+
     struct sockaddr_un client_addr;
     socklen_t client_len = sizeof(client_addr);
     
     int client_socket = accept(server_socket_, (struct sockaddr*)&client_addr, &client_len);
+    
+    // Restore blocking mode
+    fcntl(server_socket_, F_SETFL, flags);
+    
+    if (client_socket < 0 && errno == EAGAIN) {
+      // No connection available
+      return -1;
+    }
+    
     return client_socket;
   }
 

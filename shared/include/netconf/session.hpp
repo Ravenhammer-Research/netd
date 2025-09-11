@@ -35,16 +35,10 @@
 #include <unordered_map>
 #include <atomic>
 #include <mutex>
+#include <shared/include/transport.hpp>
 
 namespace netd::shared::netconf {
 
-  enum class SocketType {
-    UNIX,
-    HTTP,
-    SCTP,
-    HTTPS,
-    SCTPS
-  };
 
   enum class SessionState {
     INITIALIZING,
@@ -57,7 +51,7 @@ namespace netd::shared::netconf {
 
   class NetconfSession {
   public:
-    NetconfSession(ly_ctx* ctx, int socket = -1, SocketType socket_type = SocketType::UNIX);
+    NetconfSession(ly_ctx* ctx, int socket = -1, netd::shared::TransportType transport_type = netd::shared::TransportType::UNIX);
     ~NetconfSession();
 
     // Session management
@@ -80,7 +74,7 @@ namespace netd::shared::netconf {
     
     // Socket management
     int getSocket() const { return socket_; }
-    SocketType getSocketType() const { return socket_type_; }
+    netd::shared::TransportType getTransportType() const { return transport_type_; }
 
   private:
     ly_ctx* ctx_;
@@ -89,7 +83,7 @@ namespace netd::shared::netconf {
     std::atomic<uint64_t> message_id_counter_;
     bool connected_;
     int socket_;
-    SocketType socket_type_;
+    netd::shared::TransportType transport_type_;
   };
 
 

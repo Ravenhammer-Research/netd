@@ -70,47 +70,52 @@ int listLLDPNeighbors() {
   try {
     // Initialize LLDP client
     netd::shared::lldp::Client lldp_client;
-    if (!lldp_client.initialize()) {
-      std::cerr << "Failed to initialize LLDP client" << std::endl;
+    try {
+      lldp_client.initialize();
+    } catch (const netd::shared::LLDPError& e) {
+      std::cerr << "Failed to initialize LLDP client: " << e.what() << std::endl;
       return 1;
     }
     
-    // Do immediate discovery (no background thread)
-    if (!lldp_client.discoverOnce()) {
-      std::cerr << "Failed to discover LLDP neighbors" << std::endl;
-      return 1;
-    }
+    // Get LLDP information
+    auto ports = lldp_client.getPorts();
+    auto link_local_addrs = lldp_client.getLinkLocalAddresses();
     
-    // Get discovered services
-    auto services = lldp_client.getDiscoveredServices();
+    std::cout << "LLDP Discovery Results:" << std::endl;
+    std::cout << "======================" << std::endl;
     
-    if (services.empty()) {
-      std::cout << "No LLDP neighbors found." << std::endl;
+    if (ports.empty()) {
+      std::cout << "No LLDP ports found." << std::endl;
     } else {
       // Print table header
       std::cout << std::left;
-      std::cout << std::setw(20) << "SERVICE" 
-                << std::setw(12) << "TYPE" 
-                << std::setw(20) << "HOSTNAME" 
-                << std::setw(15) << "ADDRESS" 
-                << std::setw(15) << "INTERFACE" << std::endl;
-      std::cout << std::string(82, '-') << std::endl;
+      std::cout << std::setw(20) << "PORT" 
+                << std::setw(20) << "DESCRIPTION" 
+                << std::setw(15) << "NEIGHBORS" 
+                << std::setw(15) << "TTL" << std::endl;
+      std::cout << std::string(70, '-') << std::endl;
       
       // Print table rows
-      for (const auto& service : services) {
-        std::string type_str = (service.getServiceType() == netd::shared::lldp::ServiceType::NETD_SERVER ? "SERVER" : "CLIENT");
-        std::string address_str = "";
-        
-        auto addresses = service.getAddressStrings();
-        if (!addresses.empty()) {
-          address_str = addresses[0]; // Show first address only
+      for (const auto& port : ports) {
+        if (port && port->isValid()) {
+          auto neighbors = port->getNeighbors();
+          std::string neighbor_count = std::to_string(neighbors.size());
+          std::string ttl = std::to_string(port->getPortTTL());
+          
+          std::cout << std::setw(20) << port->getPortName()
+                    << std::setw(20) << port->getPortDescription()
+                    << std::setw(15) << neighbor_count
+                    << std::setw(15) << ttl << std::endl;
         }
-        
-        std::cout << std::setw(20) << service.getServiceName()
-                  << std::setw(12) << type_str
-                  << std::setw(20) << service.getHostname()
-                  << std::setw(15) << address_str
-                  << std::setw(15) << service.getInterfaceName() << std::endl;
+      }
+    }
+    
+    // Show link-local addresses
+    if (!link_local_addrs.empty()) {
+      std::cout << "\nLink-local addresses:" << std::endl;
+      std::cout << "===================" << std::endl;
+      for (const auto& [interface_name, address] : link_local_addrs) {
+        std::cout << interface_name << ": " << address << std::endl;
       }
     }
     
@@ -160,23 +165,34 @@ int main(int argc, char *argv[]) {
   // Get logger instance and set log level
   auto &logger = netd::shared::Logger::getInstance();
   
-  // Set log level based on debug flags
+  // Set log mask based on debug flags
+  uint32_t logMask = netd::shared::LOG_DEFAULT;
   switch (debugLevel) {
   case 0:
-    logger.setLogLevel(netd::shared::LogLevel::INFO); // Default: INFO, WARNING, ERROR
+    logMask = netd::shared::LOG_DEFAULT; // Default: INFO, WARNING, ERROR
     break;
   case 1:
-    logger.setLogLevel(netd::shared::LogLevel::DEBUG); // -d: DEBUG and above
+    logMask |= static_cast<uint32_t>(netd::shared::LogMask::DEBUG); // -d: DEBUG and above
     break;
   case 2:
-    logger.setLogLevel(netd::shared::LogLevel::TRACE); // -dd: TRACE and above
+    logMask |= static_cast<uint32_t>(netd::shared::LogMask::DEBUG);
+    logMask |= static_cast<uint32_t>(netd::shared::LogMask::DEBUG_TRACE); // -dd: DEBUG + TRACE
     break;
   case 3:
-    logger.setLogLevel(netd::shared::LogLevel::TRACE); // -ddd: TRACE and above + timestamps
+    logMask |= static_cast<uint32_t>(netd::shared::LogMask::DEBUG);
+    logMask |= static_cast<uint32_t>(netd::shared::LogMask::DEBUG_TRACE); // -ddd: DEBUG + TRACE + timestamps
     break;
   default:
-    logger.setLogLevel(netd::shared::LogLevel::TRACE); // More than 3: same as -ddd
+    logMask |= static_cast<uint32_t>(netd::shared::LogMask::DEBUG);
+    logMask |= static_cast<uint32_t>(netd::shared::LogMask::DEBUG_TRACE); // More than 3: same as -ddd
     break;
+  }
+  
+  logger.setLogMask(logMask);
+  
+  // Enable timestamps if any debug is enabled
+  if (debugLevel > 0) {
+    logger.setTimestampEnabled(true);
   }
   
   // Initialize TUI

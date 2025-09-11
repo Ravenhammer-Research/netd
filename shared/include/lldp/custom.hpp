@@ -25,46 +25,45 @@
  * SUCH DAMAGE.
  */
 
-#include <shared/include/netconf/session.hpp>
-#include <shared/include/logger.hpp>
-#include <unistd.h>
-#include <sys/socket.h>
-#include <errno.h>
-#include <cstring>
-#include <algorithm>
+#pragma once
 
-namespace netd::shared::netconf {
+#include <lldpctl.h>
+#include <string>
+#include <vector>
 
-  NetconfSession::NetconfSession(ly_ctx* ctx, int socket, netd::shared::TransportType transport_type)
-      : ctx_(ctx), message_id_counter_(0), connected_(true), socket_(socket), transport_type_(transport_type) {
-    
-    auto &logger = Logger::getInstance();
-    logger.info("Created new NETCONF session with socket: " + std::to_string(socket));
-  }
+namespace netd::shared::lldp {
 
-  NetconfSession::~NetconfSession() {
-    close();
-  }
+class CustomTLV {
+public:
+    CustomTLV(lldpctl_atom_t* custom_tlv_atom);
+    ~CustomTLV();
 
-  bool NetconfSession::isConnected() const {
-    return connected_;
-  }
+    std::string getOUI() const;
+    int getOUISubtype() const;
+    std::string getOUIInfoString() const;
+    std::string getOperation() const;
+    bool isValid() const;
 
-  void NetconfSession::close() {
-    if (connected_) {
-      connected_ = false;
-      
-      // Close the socket if it's valid
-      if (socket_ >= 0) {
-        ::close(socket_);
-        socket_ = -1;
-      }
-      
-      auto &logger = Logger::getInstance();
-      logger.info("Closed NETCONF session with socket: " + std::to_string(socket_));
-    }
-  }
+private:
+    lldpctl_atom_t* custom_tlv_atom_;
+    std::string getStringValue(lldpctl_key_t key) const;
+    int getIntValue(lldpctl_key_t key) const;
+};
 
+class CustomTLVManager {
+public:
+    CustomTLVManager(lldpctl_conn_t* connection);
+    ~CustomTLVManager();
 
+    std::vector<std::unique_ptr<CustomTLV>> getCustomTLVs() const;
+    bool addCustomTLV(const std::string& oui, int oui_subtype, 
+                     const std::string& info_string, const std::string& operation = "");
+    bool clearCustomTLVs();
+    bool isValid() const;
 
-} // namespace netd::shared::netconf
+private:
+    lldpctl_conn_t* connection_;
+    lldpctl_atom_t* getCustomTLVsAtom() const;
+};
+
+} // namespace netd::shared::lldp

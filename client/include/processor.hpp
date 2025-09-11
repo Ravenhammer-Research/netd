@@ -43,7 +43,7 @@ namespace netd::client {
 
   private:
     netd::client::tui::TUI &tui_;
-    netd::client::netconf::NetconfClient &client_;
+    netd::client::netconf::NetconfClient &client_ [[maybe_unused]];
     CommandParser parser_;
 
     bool handleShowCommand(const ParsedCommand &parsed);

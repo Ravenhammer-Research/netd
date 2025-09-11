@@ -28,24 +28,53 @@
 #pragma once
 
 #include <lldpctl.h>
-#include <memory>
+#include <string>
 
 namespace netd::shared::lldp {
 
-class Connection {
+class Config {
 public:
-    Connection();
-    ~Connection();
+    Config(lldpctl_conn_t* connection);
+    ~Config();
 
-    void initialize();
-    void cleanup();
+    // System configuration
+    bool setHostname(const std::string& hostname);
+    bool setDescription(const std::string& description);
+    bool setPlatform(const std::string& platform);
     
-    bool isConnected() const { return connection_ != nullptr; }
-    lldpctl_conn_t* getConnection() const { return connection_; }
+    // LLDP configuration
+    bool setTxInterval(int interval);
+    bool setTxHold(int hold);
+    bool setReceiveOnly(bool receive_only);
+    bool setPaused(bool paused);
+    bool setFastStartEnabled(bool enabled);
+    bool setFastStartInterval(int interval);
+    
+    // Interface configuration
+    bool setInterfacePattern(const std::string& pattern);
+    bool setManagementPattern(const std::string& pattern);
+    bool setChassisIdPattern(const std::string& pattern);
+    bool setChassisIdString(const std::string& cid_string);
+    
+    // Capability configuration
+    bool setChassisCapAdvertise(bool advertise);
+    bool setChassisMgmtAdvertise(bool advertise);
+    bool setChassisCapOverride(bool override);
+    
+    // LLDP-MED configuration
+    bool setLldpMedNoInventory(bool no_inventory);
+    
+    // Port configuration
+    bool setLldpPortIdType(int type);
+    bool setLldpAgentType(int type);
+    bool setMaxNeighbors(int max_neighbors);
+    
+    bool isValid() const;
 
 private:
     lldpctl_conn_t* connection_;
-    bool initialized_;
+    bool setStringValue(lldpctl_key_t key, const std::string& value);
+    bool setIntValue(lldpctl_key_t key, int value);
 };
 
 } // namespace netd::shared::lldp

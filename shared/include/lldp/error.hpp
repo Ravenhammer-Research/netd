@@ -25,46 +25,26 @@
  * SUCH DAMAGE.
  */
 
-#include <shared/include/netconf/session.hpp>
-#include <shared/include/logger.hpp>
-#include <unistd.h>
-#include <sys/socket.h>
-#include <errno.h>
-#include <cstring>
-#include <algorithm>
+#ifndef NETD_SHARED_LLDP_ERROR_HPP
+#define NETD_SHARED_LLDP_ERROR_HPP
 
-namespace netd::shared::netconf {
+#include <lldpctl.h>
 
-  NetconfSession::NetconfSession(ly_ctx* ctx, int socket, netd::shared::TransportType transport_type)
-      : ctx_(ctx), message_id_counter_(0), connected_(true), socket_(socket), transport_type_(transport_type) {
-    
-    auto &logger = Logger::getInstance();
-    logger.info("Created new NETCONF session with socket: " + std::to_string(socket));
-  }
+namespace netd::shared::lldp {
 
-  NetconfSession::~NetconfSession() {
-    close();
-  }
+enum class LLDPErrorCode {
+    NONE = 0,
+    NOT_EXIST = LLDPCTL_ERR_NOT_EXIST,
+    BAD_VALUE = LLDPCTL_ERR_BAD_VALUE,
+    CANNOT_CONNECT = LLDPCTL_ERR_CANNOT_CONNECT,
+    INCORRECT_ATOM_TYPE = LLDPCTL_ERR_INCORRECT_ATOM_TYPE,
+    SERIALIZATION = LLDPCTL_ERR_SERIALIZATION,
+    WOULDBLOCK = LLDPCTL_ERR_WOULDBLOCK,
+    INVALID_STATE = LLDPCTL_ERR_INVALID_STATE
+};
 
-  bool NetconfSession::isConnected() const {
-    return connected_;
-  }
+const char* getLLDPErrorString(LLDPErrorCode error);
 
-  void NetconfSession::close() {
-    if (connected_) {
-      connected_ = false;
-      
-      // Close the socket if it's valid
-      if (socket_ >= 0) {
-        ::close(socket_);
-        socket_ = -1;
-      }
-      
-      auto &logger = Logger::getInstance();
-      logger.info("Closed NETCONF session with socket: " + std::to_string(socket_));
-    }
-  }
+} // namespace netd::shared::lldp
 
-
-
-} // namespace netd::shared::netconf
+#endif // NETD_SHARED_LLDP_ERROR_HPP

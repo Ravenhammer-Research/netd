@@ -1,11 +1,13 @@
 # LLDP client library
 set(LLDP_SOURCES
     connection.cpp
-    discovery.cpp
-    service.cpp
     interface.cpp
     neighbor.cpp
-    info.cpp
+    chassis.cpp
+    port.cpp
+    config.cpp
+    custom.cpp
+    error.cpp
     client.cpp
 )
 

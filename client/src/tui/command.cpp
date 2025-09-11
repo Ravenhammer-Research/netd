@@ -113,7 +113,7 @@ namespace netd::client::tui {
           putLine("Error: " + std::string(e.what()));
           
           // Log stack trace
-          netd::shared::Logger::getInstance().trace("Stack trace: " + netd::shared::NetdError::getStackTraceString(e.getStackTrace()));
+          netd::shared::Logger::getInstance().trace(e);
         } 
       }
     }

@@ -103,6 +103,16 @@ add_executable(netd server/src/main.cpp)
 # Set include directories
 target_include_directories(netd PRIVATE ${GLOBAL_INCLUDE_DIRS})
 
+# Set compile definitions for server
+target_compile_definitions(netd PRIVATE
+    YANG_DIR="${YANG_DIR}"
+)
+
+# Add LLDP-specific definitions if LLDP is found
+if(LLDP_FOUND)
+    target_compile_definitions(netd PRIVATE NETD_OUI="00:1b:21")
+endif()
+
 # Link libraries
 message(STATUS "LIBYANG_LIBRARIES: ${LIBYANG_LIBRARIES}")
 set(NETD_LIBRARIES

@@ -27,7 +27,7 @@
 
 #include <shared/include/lldp/interface.hpp>
 #include <shared/include/address.hpp>
-#include <shared/include/logger.hpp>
+#include <shared/include/exception.hpp>
 #include <algorithm>
 #include <cstring>
 #include <ifaddrs.h>
@@ -48,31 +48,28 @@ std::vector<std::string> Interface::getLLDPInterfaces() const {
     std::vector<std::string> interfaces;
     
     if (!connection_) {
-        return interfaces;
+        throw netd::shared::LLDPError("LLDP connection not available");
+    }
+    
+    lldpctl_atom_t* interfaces_atom = lldpctl_get_interfaces(connection_);
+    if (!interfaces_atom) {
+        lldpctl_error_t error = lldpctl_last_error(connection_);
+        if (error == LLDPCTL_ERR_CANNOT_CONNECT) {
+            throw netd::shared::LLDPError("Cannot connect to LLDP daemon - daemon not available");
+        } else {
+            throw netd::shared::LLDPError("Failed to get interfaces from LLDP daemon");
+        }
     }
 
-    try {
-        lldpctl_atom_t* interfaces_atom = lldpctl_get_interfaces(connection_);
-        if (!interfaces_atom) {
-            auto& logger = Logger::getInstance();
-            logger.warning("Failed to get LLDP interfaces");
-            return interfaces;
+    lldpctl_atom_t* interface_atom;
+    lldpctl_atom_foreach(interfaces_atom, interface_atom) {
+        const char* interface_name = lldpctl_atom_get_str(interface_atom, lldpctl_k_interface_name);
+        if (interface_name) {
+            interfaces.push_back(std::string(interface_name));
         }
-
-        lldpctl_atom_t* interface_atom;
-        lldpctl_atom_foreach(interfaces_atom, interface_atom) {
-            const char* interface_name = lldpctl_atom_get_str(interface_atom, lldpctl_k_interface_name);
-            if (interface_name) {
-                interfaces.push_back(std::string(interface_name));
-            }
-        }
-        
-        lldpctl_atom_dec_ref(interfaces_atom);
-    } catch (const std::exception& e) {
-        auto& logger = Logger::getInstance();
-        logger.error("Exception getting LLDP interfaces: " + std::string(e.what()));
     }
-
+    
+    lldpctl_atom_dec_ref(interfaces_atom);
     return interfaces;
 }
 
@@ -81,8 +78,6 @@ std::map<std::string, std::unique_ptr<netd::shared::Address>> Interface::getLink
     
     struct ifaddrs *ifaddrs_ptr, *ifa;
     if (getifaddrs(&ifaddrs_ptr) == -1) {
-        auto& logger = Logger::getInstance();
-        logger.error("Failed to get interface addresses");
         return link_local_addrs;
     }
 
@@ -93,12 +88,6 @@ std::map<std::string, std::unique_ptr<netd::shared::Address>> Interface::getLink
 
         std::string interface_name(ifa->ifa_name);
         
-        // Check if this is an LLDP interface
-        auto lldp_interfaces = getLLDPInterfaces();
-        if (std::find(lldp_interfaces.begin(), lldp_interfaces.end(), interface_name) == lldp_interfaces.end()) {
-            continue;
-        }
-
         // Check for IPv6 link-local addresses (fe80::/10)
         if (ifa->ifa_addr->sa_family == AF_INET6) {
             struct sockaddr_in6* addr6 = (struct sockaddr_in6*)ifa->ifa_addr;

@@ -25,49 +25,13 @@
  * SUCH DAMAGE.
  */
 
-#pragma once
-
+#include <shared/include/lldp/error.hpp>
 #include <lldpctl.h>
-#include <lldp-const.h>
-#include <shared/include/lldp/info.hpp>
-#include <string>
-#include <vector>
-#include <map>
-#include <chrono>
-#include <mutex>
-#include <thread>
-#include <memory>
 
 namespace netd::shared::lldp {
 
-class Discovery {
-public:
-    Discovery(lldpctl_conn_t* connection);
-    ~Discovery();
-
-    bool start();
-    void stop();
-    bool isRunning() const { return running_; }
-
-    std::vector<ServiceInfo> getDiscoveredServices() const;
-    std::vector<ServiceInfo> getDiscoveredServices(ServiceType service_type) const;
-    std::vector<ServiceInfo> getDiscoveredServices(const std::string& service_name) const;
-
-    bool processNeighbors();
-    bool discoverOnce();
-
-private:
-    void discoveryLoop();
-    ServiceInfo parseServiceTLV(const std::string& tlv_data) const;
-    ServiceType stringToServiceType(const std::string& type_str) const;
-    std::string serviceTypeToString(ServiceType type) const;
-
-    lldpctl_conn_t* connection_;
-    std::map<std::string, ServiceInfo> discovered_services_;
-    mutable std::mutex services_mutex_;
-    std::unique_ptr<std::thread> discovery_thread_;
-    bool running_;
-    bool stop_discovery_;
-};
+const char* getLLDPErrorString(LLDPErrorCode error) {
+    return lldpctl_strerror(static_cast<lldpctl_error_t>(error));
+}
 
 } // namespace netd::shared::lldp

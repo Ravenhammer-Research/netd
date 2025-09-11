@@ -18,6 +18,11 @@ target_compile_definitions(netd_server PRIVATE
     YANG_DIR="${YANG_DIR}"
 )
 
+# Add LLDP-specific definitions if LLDP is found
+if(LLDP_FOUND)
+    target_compile_definitions(netd_server PRIVATE NETD_OUI="00:1b:21")
+endif()
+
 # Link server sub-libraries
 target_link_libraries(netd_server PRIVATE
     netd_server_netconf
