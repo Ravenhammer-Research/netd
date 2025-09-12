@@ -2,6 +2,7 @@
 set(SHARED_SOURCES
     src/address.cpp
     src/exception.cpp
+    src/extension.cpp
     src/logger.cpp
     src/route.cpp
     src/vrf.cpp
@@ -44,6 +45,8 @@ target_sources(netd_shared PRIVATE ${SHARED_SOURCES})
 target_compile_definitions(netd_shared PRIVATE
     YANG_DIR="${YANG_DIR}"
     YANG_DEV_DIR="${YANG_DEV_DIR}"
+    EXTENSION_DIR="${EXTENSION_DIR}"
+    EXTENSION_DEV_DIR="${EXTENSION_DEV_DIR}"
     BUILD_ID="${BUILD_ID}"
     GIT_REVISION="${GIT_REVISION}"
     GIT_REVISION_LONG="${GIT_REVISION_LONG}"

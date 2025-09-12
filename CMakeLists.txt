@@ -177,6 +177,10 @@ endif()
 set(YANG_DIR "${CMAKE_INSTALL_PREFIX}/share/netd/yang/")
 set(YANG_DEV_DIR "${CMAKE_SOURCE_DIR}/yang/")
 
+# Define extension directories
+set(EXTENSION_DIR "${CMAKE_INSTALL_PREFIX}/lib/netd/extensions/")
+set(EXTENSION_DEV_DIR "${CMAKE_SOURCE_DIR}/extensions/")
+
 # Add subdirectories
 add_subdirectory(shared)
 add_subdirectory(server)
@@ -209,6 +213,8 @@ message(STATUS "  PKG_CONFIG_PATH: $ENV{PKG_CONFIG_PATH}")
 message(STATUS "  GLOBAL_INCLUDE_DIRS: ${GLOBAL_INCLUDE_DIRS}")
 message(STATUS "  YANG_DIR: ${YANG_DIR}")
 message(STATUS "  YANG_DEV_DIR: ${YANG_DEV_DIR}")
+message(STATUS "  EXTENSION_DIR: ${EXTENSION_DIR}")
+message(STATUS "  EXTENSION_DEV_DIR: ${EXTENSION_DEV_DIR}")
 message(STATUS "  GIT_REVISION: ${GIT_REVISION}")
 message(STATUS "  GIT_REVISION_LONG: ${GIT_REVISION_LONG}")
 message(STATUS "  BUILD_ID: ${BUILD_ID}")
@@ -373,6 +379,11 @@ install(DIRECTORY yang/
     PATTERN "*.sh"
 )
 
+# Create extension directory
+install(DIRECTORY DESTINATION lib/netd/extensions
+    COMPONENT shared
+)
+
 # Individual install targets
 add_custom_target(install_netc
     COMMAND ${CMAKE_COMMAND} -E echo "Installing netc client"
@@ -433,6 +444,7 @@ message(STATUS "  Binaries: ${CMAKE_INSTALL_PREFIX}/sbin/netd, ${CMAKE_INSTALL_P
 message(STATUS "  Libraries: ${CMAKE_INSTALL_PREFIX}/lib/netd/")
 message(STATUS "  Headers: ${CMAKE_INSTALL_PREFIX}/include/netd/")
 message(STATUS "  YANG files: ${CMAKE_INSTALL_PREFIX}/share/netd/yang/")
+message(STATUS "  Extensions: ${CMAKE_INSTALL_PREFIX}/lib/netd/extensions/")
 message(STATUS "  pkg-config: ${CMAKE_INSTALL_PREFIX}/lib/pkgconfig/netd-shared.pc")
 message(STATUS "  Uninstaller: ${CMAKE_INSTALL_PREFIX}/share/cmake/netd/uninstall.cmake")
 message(STATUS "")
