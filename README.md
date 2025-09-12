@@ -43,6 +43,7 @@ This means you can deploy NetD on everything from enterprise servers to single-b
 - **Interactive CLI**: Curses-based command-line interface with command completion
 - **FreeBSD Integration**: Native FreeBSD interface and routing management
 - **YANG Support**: Comprehensive YANG schema support with libyang integration
+- **LLDP Integration**: Link Layer Discovery Protocol support with custom TLV management
 - **Type Safety**: Strongly-typed C++ implementation with comprehensive error handling
 
 ## Architecture
@@ -148,8 +149,12 @@ graph TB
 
 - FreeBSD 14.0 or later
 - CMake 3.16 or later
-- libyang and libnetconf2 development packages
+- Clang 18+ (preferred) or GCC 11+ (fallback)
+- libyang development packages
+- OpenSSL development packages
+- ncurses development packages (client only, will be optional)
 - BSD lex(1) / yacc(1) for parser generation
+- Git (for build ID generation)
 
 ### Building
 
@@ -161,7 +166,7 @@ cd netd
 # Create build directory
 mkdir build && cd build
 
-# Configure with CMake
+# Configure with CMake (DEBUG build by default)
 cmake ..
 
 # Build the project
@@ -171,20 +176,63 @@ make
 sudo make install
 ```
 
+### Build Types
+
+NetD supports two build types:
+
+- **DEBUG** (default): Includes debug symbols, allows development YANG directory access
+- **RELEASE**: Optimized build with symbol stripping, requires clean git working directory
+
+```bash
+# DEBUG build (default)
+cmake -DCMAKE_BUILD_TYPE=DEBUG ..
+make
+
+# RELEASE build (requires clean working directory)
+cmake -DCMAKE_BUILD_TYPE=RELEASE ..
+make
+```
+
+### Installation Options
+
+```bash
+# Install everything
+make install
+
+# Install specific components
+make install_netc     # Client only
+make install_shared   # Shared libraries and headers
+make install_netd     # Server only
+make install_yang     # YANG files only
+
+# Uninstall
+make uninstall
+```
+
 ### Dependencies
 
 The following packages are required:
 
 ```bash
 # On FreeBSD
-pkg install cmake libpcre2
+pkg install cmake libpcre2 openssl ncurses
 
-# Build libyang and libnetconf2 from source
-# These are not yet available as FreeBSD packages
+# Build libyang from source (not yet available as FreeBSD package)
 git clone https://github.com/CESNET/libyang.git
-git clone https://github.com/CESNET/libnetconf2.git
-# Follow build instructions in each repository
+cd libyang
+mkdir build && cd build
+cmake ..
+make && sudo make install
 ```
+
+### Optional Dependencies
+
+- **LLDP**: For Link Layer Discovery Protocol support
+  ```bash
+  # Install lldpd and liblldpctl
+  pkg install lldpd
+  # Build liblldpctl from source if needed
+  ```
 
 
 ## Usage
@@ -192,10 +240,28 @@ git clone https://github.com/CESNET/libnetconf2.git
 ### Starting the Server
 
 ```bash
-# Start the NetD server
+# Start the NetD server (Unix domain socket by default)
 sudo ./netd
 
-# The server will listen on /var/run/netd.sock by default
+# The server will listen on /tmp/netd.sock by default
+
+# Available transport options
+./netd --unix /path/to/socket    # Unix domain socket
+./netd --sctp [addr]:[port]      # SCTP transport (not implemented)
+./netd --http [addr]:[port]      # HTTP transport (not implemented)
+./netd --sctps [addr]:[port]     # SCTP with DTLS (not implemented)
+./netd --https [addr]:[port]     # HTTP with TLS (not implemented)
+
+# Debug options
+./netd -d                         # Basic debug output
+./netd -dd                        # Debug + trace output
+./netd -q                         # Quiet mode (errors only)
+./netd --debug-lldp              # LLDP debug output
+./netd --debug-yang              # YANG debug output
+./netd --debug-trace             # Application trace debug
+
+# List available YANG modules
+./netd -l
 ```
 
 ### Using the Client
@@ -275,13 +341,22 @@ The server can be configured through command-line options:
 
 ```bash
 # Custom socket path
-./netd --socket /tmp/custom-netd.sock
+./netd --unix /tmp/custom-netd.sock
 
-# Custom YANG directory
-./netd --yang-dir /usr/local/share/yang
+# Debug logging options
+./netd -d                         # Basic debug output
+./netd --debug-lldp              # LLDP debug output
+./netd --debug-yang              # YANG debug output
+./netd --debug-yang-dict         # YANG dictionary debug
+./netd --debug-yang-xpath        # YANG XPath debug
+./netd --debug-yang-depsets      # YANG dependency sets debug
+./netd --debug-trace             # Application trace debug
 
-# Enable debug logging
-./netd --debug
+# Quiet mode (errors only)
+./netd -q
+
+# List available YANG modules
+./netd -l
 ```
 
 ### Client Configuration
@@ -351,18 +426,22 @@ find . -name "*.cpp" -type f | xargs clang-format19 --style=file -i
 ### Building from Source
 
 ```bash
-# Debug build
-cmake -DCMAKE_BUILD_TYPE=Debug ..
+# Debug build (default)
+cmake -DCMAKE_BUILD_TYPE=DEBUG ..
 make
 
-# Release build with optimizations
-cmake -DCMAKE_BUILD_TYPE=Release ..
+# Release build with optimizations (requires clean git working directory)
+cmake -DCMAKE_BUILD_TYPE=RELEASE ..
 make
 
 # Build specific components
 make netd          # Server only
 make netc          # Client only
 make netd_shared   # Shared library only
+
+# FreeBSD package creation (FreeBSD only)
+make freebsd_package_metadata  # Create package metadata only
+make freebsd_package          # Create complete package
 ```
 
 ## API Reference
@@ -485,8 +564,9 @@ Would you like to make this work along-side your QFX 5x00's in a meaningful capa
 
 ## Roadmap
 
+- [x] LLDP integration with custom TLV support
+- [x] FreeBSD package generation
 - [ ] SCTP protocol support
-- [ ] LLDPd integration
 - [ ] TACACS+ integration (starting with [robot527/tac_plus](https://github.com/robot527/tac_plus/), ietf-system-tacacs-plus@2021-08-05.yang)
 - [ ] NETCONF over SSH (RFC 6242)
 - [ ] NETCONF over TLS (RFC 8071)
@@ -501,7 +581,6 @@ Would you like to make this work along-side your QFX 5x00's in a meaningful capa
 ## Acknowledgments
 
 - **libyang**: YANG data modeling library
-- **libnetconf2**: NETCONF protocol implementation
 - **FreeBSD**: The underlying operating system
 - **IETF**: For NETCONF and YANG standards
 
