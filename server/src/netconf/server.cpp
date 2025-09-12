@@ -36,6 +36,10 @@
 #ifdef HAVE_LLDP
 #include <shared/include/lldp/client.hpp>
 #endif
+#ifdef HAVE_OPENSSL
+#include <shared/include/tls.hpp>
+#include <shared/include/dtls.hpp>
+#endif
 #include <unistd.h>
 #include <errno.h>
 #include <cstring>

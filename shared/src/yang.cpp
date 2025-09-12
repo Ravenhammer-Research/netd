@@ -26,6 +26,9 @@
  */
 
 #include <fstream>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <climits>
 #include <libyang/libyang.h>
 #include <libyang/parser_data.h>
 #include <libyang/parser_schema.h>
@@ -53,18 +56,39 @@ namespace netd::shared {
       logger.error("Failed to create libyang context");
       throw netd::shared::ConfigurationError("Failed to create libyang context");
     }
-
+    
     // Set up search paths for YANG modules
-    ly_ctx_set_searchdir(ctx_, YANG_DIR "/standard/ietf/RFC");
-    ly_ctx_set_searchdir(ctx_, YANG_DIR "/standard/iana/");
-    // ly_ctx_set_searchdir(ctx_, "/usr/local/share/yang/modules/libyang");
-    // ly_ctx_set_searchdir(ctx_, "/usr/local/share/yang/modules/libnetconf2");
-    // ly_ctx_set_searchdir(ctx_, "/usr/share/yang/modules/libyang");
-    // ly_ctx_set_searchdir(ctx_, "/usr/share/yang/modules/libnetconf2");
-
-    // NETCONF modules will be loaded in loadStandardSchemas()
-
-    // Load standard schemas
+    struct stat st;
+    auto &logger = Logger::getInstance();
+    
+    logger.info("YANG_DEV_DIR: " + std::string(YANG_DEV_DIR));
+    
+#ifdef DEBUG_BUILD
+    // Check if ../yang exists and is the same as YANG_DEV_DIR (DEBUG builds only)
+    if (stat("../yang", &st) == 0 && S_ISDIR(st.st_mode)) {
+        char realpath_yang[PATH_MAX];
+        char realpath_dev[PATH_MAX];
+        if (realpath("../yang", realpath_yang) != nullptr && 
+            realpath(YANG_DEV_DIR, realpath_dev) != nullptr &&
+            strcmp(realpath_yang, realpath_dev) == 0) {
+            ly_ctx_set_searchdir(ctx_, YANG_DEV_DIR "/standard/ietf/RFC");
+            ly_ctx_set_searchdir(ctx_, YANG_DEV_DIR "/standard/iana/");
+        } else {
+            throw netd::shared::YangSchemaError(ctx_);
+        }
+    } else {
+        throw netd::shared::YangSchemaError(ctx_);
+    }
+#else
+    // RELEASE builds - only use YANG_DIR
+    if (stat(YANG_DIR, &st) == 0 && S_ISDIR(st.st_mode)) {
+        ly_ctx_set_searchdir(ctx_, YANG_DIR "/standard/ietf/RFC");
+        ly_ctx_set_searchdir(ctx_, YANG_DIR "/standard/iana/");
+    } else {
+        throw netd::shared::YangSchemaError(ctx_);
+    }
+#endif
+  
     loadStandardSchemas();
   }
 

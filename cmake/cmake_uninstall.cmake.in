@@ -1,0 +1,53 @@
+# Uninstall script for netd
+# This script removes all files that were installed by the install targets
+
+if(NOT EXISTS "@CMAKE_INSTALL_PREFIX@/share/cmake/netd/install_manifest.txt")
+    message(FATAL_ERROR "Cannot find install manifest: @CMAKE_INSTALL_PREFIX@/share/cmake/netd/install_manifest.txt")
+endif()
+
+file(READ "@CMAKE_INSTALL_PREFIX@/share/cmake/netd/install_manifest.txt" files)
+string(REGEX REPLACE "\n" ";" files "${files}")
+
+foreach(file ${files})
+    message(STATUS "Uninstalling: $ENV{DESTDIR}${file}")
+    if(EXISTS "$ENV{DESTDIR}${file}")
+        exec_program(
+            "@CMAKE_COMMAND@" ARGS "-E remove \"$ENV{DESTDIR}${file}\""
+            OUTPUT_VARIABLE rm_out
+            RETURN_VALUE rm_retval
+        )
+        if(NOT "${rm_retval}" STREQUAL 0)
+            message(FATAL_ERROR "Problem when removing \"$ENV{DESTDIR}${file}\"")
+        endif()
+    else()
+        message(STATUS "File \"$ENV{DESTDIR}${file}\" does not exist.")
+    endif()
+endforeach()
+
+# Remove empty directories
+set(dirs_to_remove
+    "@CMAKE_INSTALL_PREFIX@/sbin"
+    "@CMAKE_INSTALL_PREFIX@/bin"
+    "@CMAKE_INSTALL_PREFIX@/lib/netd"
+    "@CMAKE_INSTALL_PREFIX@/lib/pkgconfig"
+    "@CMAKE_INSTALL_PREFIX@/include/netd"
+    "@CMAKE_INSTALL_PREFIX@/share/netd/yang"
+    "@CMAKE_INSTALL_PREFIX@/share/netd"
+)
+
+foreach(dir ${dirs_to_remove})
+    if(EXISTS "$ENV{DESTDIR}${dir}")
+        exec_program(
+            "@CMAKE_COMMAND@" ARGS "-E remove_directory \"$ENV{DESTDIR}${dir}\""
+            OUTPUT_VARIABLE rm_out
+            RETURN_VALUE rm_retval
+        )
+        if(NOT "${rm_retval}" STREQUAL 0)
+            message(STATUS "Could not remove directory \"$ENV{DESTDIR}${dir}\" (may not be empty)")
+        else()
+            message(STATUS "Removed directory: $ENV{DESTDIR}${dir}")
+        endif()
+    endif()
+endforeach()
+
+message(STATUS "Uninstall completed")
