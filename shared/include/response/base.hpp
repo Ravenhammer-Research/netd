@@ -31,9 +31,10 @@
 #include <libyang/libyang.h>
 #include <memory>
 #include <shared/include/base/serialization.hpp>
-#include <shared/include/marshalling/data.hpp>
 #include <shared/include/marshalling/error.hpp>
 #include <shared/include/netconf/session.hpp>
+#include <shared/include/xml/base.hpp>
+#include <shared/include/xml/envelope.hpp>
 #include <string>
 
 namespace netd::shared::response {
@@ -49,25 +50,27 @@ namespace netd::shared::response {
     virtual lyd_node *toYang(ly_ctx *ctx) const = 0;
     virtual std::unique_ptr<Response> fromYang(const ly_ctx *ctx,
                                                const lyd_node *node) = 0;
+    
+    // Create RPC reply envelope from this response
+    virtual std::unique_ptr<netd::shared::xml::RpcEnvelope> toRpcEnvelope(
+        std::shared_ptr<netd::shared::xml::RpcEnvelope> request_envelope,
+        ly_ctx *ctx) const;
 
 
     // Error and data properties for flexible initialization
     std::unique_ptr<netd::shared::marshalling::Error> error = nullptr;
-    std::unique_ptr<netd::shared::marshalling::Data> data = nullptr;
+    struct lyd_node* data = nullptr;
 
     // Helper methods for initialization
     void setError(std::unique_ptr<netd::shared::marshalling::Error> err) {
       error = std::move(err);
     }
-    void setData(std::unique_ptr<netd::shared::marshalling::Data> d) {
-      data = std::move(d);
+    void setData(struct lyd_node* yang_data) {
+      data = yang_data;
     }
 
-    // Set YANG data tree
-    void setData(struct lyd_node *yang_data);
-
     netd::shared::marshalling::Error *getError() const { return error.get(); }
-    netd::shared::marshalling::Data *getData() const { return data.get(); }
+    struct lyd_node* getData() const { return data; }
     
     // Check if response has an error
     bool isError() const { return error != nullptr; }

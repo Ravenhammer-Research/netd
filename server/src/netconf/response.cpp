@@ -32,9 +32,8 @@
 
 namespace netd::server::netconf {
 
-  std::istream* ServerRpc::processReply(lyd_node* data, int message_id, netd::shared::netconf::NetconfSession* session) {
-    (void)data;
-    (void)message_id;
+  void ServerRpc::processReply(netd::shared::RpcRxStream& rpc_stream, netd::shared::netconf::NetconfSession* session) {
+    (void)rpc_stream;
     (void)session;
     throw netd::shared::NotImplementedError("ServerRpc::processReply not implemented");
   }

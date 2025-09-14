@@ -35,6 +35,7 @@
 #include <map>
 #include <shared/include/exception.hpp>
 #include <shared/include/netconf/session.hpp>
+#include <shared/include/stream.hpp>
 
 namespace netd::shared::netconf {
 
@@ -109,18 +110,10 @@ namespace netd::shared::netconf {
   class Rpc {
   public:
     // Static methods to be implemented by derived classes
-    static std::istream* processRpc(std::istream& rpc_stream, NetconfSession* session);
-    static std::istream* processRequest(lyd_node* data, int message_id, NetconfOperation operation, NetconfSession* session);
-    static std::istream* processReply(lyd_node* data, int message_id, NetconfSession* session);
+    static void processRpc(RpcRxStream& rpc_stream, NetconfSession* session);
+    static void processRequest(RpcRxStream& rpc_stream, NetconfSession* session);
+    static void processReply(RpcRxStream& rpc_stream, NetconfSession* session);
 
-    // Create RPC request envelope with child data
-    static std::istream* createRpcRequest(NetconfSession* session,
-                                         NetconfOperation operation,
-                                         lyd_node* child_data = nullptr);
-
-    // Create RPC reply envelope with child data
-    static std::istream* createRpcReply(NetconfSession* session,
-                                       lyd_node* child_data = nullptr);
 
     virtual ~Rpc() = default;
 

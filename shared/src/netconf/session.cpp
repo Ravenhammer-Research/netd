@@ -27,6 +27,7 @@
 
 #include <shared/include/netconf/session.hpp>
 #include <shared/include/logger.hpp>
+#include <shared/include/request/hello.hpp>
 #include <unistd.h>
 #include <sys/socket.h>
 #include <errno.h>
@@ -36,7 +37,7 @@
 namespace netd::shared::netconf {
 
   NetconfSession::NetconfSession(ly_ctx* ctx, int socket, netd::shared::TransportType transport_type)
-      : ctx_(ctx), message_id_counter_(0), connected_(true), socket_(socket), transport_type_(transport_type) {
+      : ctx_(ctx), message_id_counter_(0), connected_(true), socket_(socket), user_id_(0), transport_type_(transport_type) {
     
     auto &logger = Logger::getInstance();
     logger.info("Created new NETCONF session with socket: " + std::to_string(socket));
@@ -56,15 +57,29 @@ namespace netd::shared::netconf {
       
       // Close the socket if it's valid
       if (socket_ >= 0) {
+        auto &logger = Logger::getInstance();
+        logger.info("Closed NETCONF session with socket: " + std::to_string(socket_));
         ::close(socket_);
         socket_ = -1;
       }
-      
-      auto &logger = Logger::getInstance();
-      logger.info("Closed NETCONF session with socket: " + std::to_string(socket_));
     }
   }
 
+  void NetconfSession::processHelloRequest(const netd::shared::request::HelloRequest& hello_request) {
+    auto &logger = Logger::getInstance();
+    logger.info("Processing hello request for session: " + std::to_string(socket_));
+    
+    // Update session state to indicate hello was received
+    setState(SessionState::HELLO_RECEIVED);
+    
+    // Extract and store client capabilities from the hello request
+    setCapabilities(hello_request.getCapabilities());
+    
+    logger.debug("Hello request processed successfully");
+  }
 
+  void NetconfSession::setState(SessionState state) {
+    state_ = state;
+  }
 
 } // namespace netd::shared::netconf

@@ -312,6 +312,55 @@ namespace netd::shared {
         : LLDPError(message) {}
   };
 
+  // XML-related exceptions
+  class XmlError : public NetdError {
+  public:
+    explicit XmlError(const std::string &message)
+        : NetdError(message) {}
+  };
+
+  class XmlParseError : public XmlError {
+  public:
+    explicit XmlParseError(const std::string &message)
+        : XmlError(message) {}
+  };
+
+  class XmlValidationError : public XmlError {
+  public:
+    explicit XmlValidationError(const std::string &message)
+        : XmlError(message) {}
+  };
+
+  class XmlSerializationError : public XmlError {
+  public:
+    explicit XmlSerializationError(const std::string &message)
+        : XmlError(message) {}
+  };
+
+  class XmlNamespaceError : public XmlError {
+  public:
+    explicit XmlNamespaceError(const std::string &message)
+        : XmlError(message) {}
+  };
+
+  class XmlSchemaError : public XmlError {
+  public:
+    explicit XmlSchemaError(const std::string &message)
+        : XmlError(message) {}
+  };
+
+  class XmlEncodingError : public XmlError {
+  public:
+    explicit XmlEncodingError(const std::string &message)
+        : XmlError(message) {}
+  };
+
+  class XmlMalformedError : public XmlError {
+  public:
+    explicit XmlMalformedError(const std::string &message)
+        : XmlError(message) {}
+  };
+
 } // namespace netd::shared
 
 #endif // NETD_EXCEPTION_HPP

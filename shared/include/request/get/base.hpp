@@ -30,6 +30,8 @@
 
 #include <shared/include/request/base.hpp>
 #include <shared/include/logger.hpp>
+#include <shared/include/xml/base.hpp>
+#include <shared/include/xml/envelope.hpp>
 
 namespace netd::shared::request::get {
 
@@ -49,9 +51,11 @@ namespace netd::shared::request::get {
     virtual ~GetRequest() = default;
 
     // Override base methods
-    lyd_node *toYang(ly_ctx *ctx) const override;
-    std::unique_ptr<GetRequest> fromYang(const ly_ctx *ctx,
-                                         const lyd_node *node) override;
+    lyd_node *toYang(ly_ctx *ctx) const;
+    static std::unique_ptr<GetRequest> fromYang(const ly_ctx *ctx,
+                                                const lyd_node *node);
+    static std::unique_ptr<GetRequest> fromRpcEnvelope(const ly_ctx *ctx,
+                                                      std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope);
 
     // Access methods for filter information
     bool hasFilter() const { return hasFilter_; }

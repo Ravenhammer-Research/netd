@@ -28,6 +28,8 @@
 #include <shared/include/marshalling/error.hpp>
 #include <shared/include/response/base.hpp>
 #include <shared/include/exception.hpp>
+#include <shared/include/xml/base.hpp>
+#include <shared/include/xml/envelope.hpp>
 #include <sstream>
 
 namespace netd::shared::response {
@@ -78,10 +80,30 @@ namespace netd::shared::response {
     throw netd::shared::NotImplementedError("Response::setTransportError not implemented");
   }
 
-  // Set YANG data tree
-  // NOTE: This method should NOT be implemented in base class - it is stubbed for interface compliance only
-  void Response::setData([[maybe_unused]] struct lyd_node *yang_data) {
-    throw netd::shared::NotImplementedError("Response::setData not implemented");
+  std::unique_ptr<netd::shared::xml::RpcEnvelope> Response::toRpcEnvelope(
+      std::shared_ptr<netd::shared::xml::RpcEnvelope> request_envelope,
+      ly_ctx *ctx) const {
+    if (!request_envelope) {
+      throw netd::shared::ArgumentError("Invalid request envelope provided to Response::toRpcEnvelope");
+    }
+    
+    // Get the response data
+    lyd_node* response_data = toYang(ctx);
+    
+    // Determine if this is an error response
+    netd::shared::xml::RpcType reply_type = isError() ? 
+        netd::shared::xml::RpcType::RPC_ERROR : 
+        netd::shared::xml::RpcType::RPC_REPLY;
+    
+    // Create the reply envelope with the same message ID and operation as the request
+    return netd::shared::xml::RpcEnvelope::toXml(
+        reply_type,
+        request_envelope->getMessageId(),
+        request_envelope->getOperation(),
+        nullptr, // No additional filter needed for responses
+        response_data,
+        ctx
+    );
   }
 
 } // namespace netd::shared::response

@@ -37,8 +37,7 @@ namespace netd::server::netconf::handlers {
 
   std::unique_ptr<netd::shared::response::DeleteConfigResponse>
   RpcHandler::handleDeleteConfigRequest(
-      std::unique_ptr<
-          netd::shared::request::DeleteConfigRequest> /* request */) {
+      netd::shared::request::DeleteConfigRequest* /* request */) {
     auto &logger = netd::shared::Logger::getInstance();
     auto response =
         std::make_unique<netd::shared::response::DeleteConfigResponse>();

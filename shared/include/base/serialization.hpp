@@ -46,6 +46,26 @@ namespace netd::shared::base {
     // YANG serialization
     virtual lyd_node *toYang(ly_ctx *ctx) const = 0;
     static T fromYang(const ly_ctx *ctx, const lyd_node *node);
+    
+    // XML string conversion
+    std::string toXmlString(ly_ctx *ctx) const {
+      auto yang_node = toYang(ctx);
+      if (!yang_node) {
+        throw std::runtime_error("Failed to create YANG node");
+      }
+      
+      char* xml_str = nullptr;
+      if (lyd_print_mem(&xml_str, yang_node, LYD_XML, LYD_PRINT_WITHSIBLINGS) != LY_SUCCESS) {
+        lyd_free_tree(yang_node);
+        throw std::runtime_error("Failed to convert YANG to XML");
+      }
+      
+      std::string result(xml_str);
+      free(xml_str);
+      lyd_free_tree(yang_node);
+      
+      return result;
+    }
   };
 
 } // namespace netd::shared::base

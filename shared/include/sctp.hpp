@@ -113,8 +113,15 @@ namespace netd::shared {
     bool isListening() const override;
     int acceptConnection() override;
     void closeConnection(int socket_fd) override;
+    bool connect(const std::string& address) override;
+    void disconnect() override;
+    int getSocket() const override;
     bool sendData(int socket_fd, const std::string& data) override;
     std::string receiveData(int socket_fd) override;
+    
+    // Cancellation support
+    void cancelOperation(int socket_fd) override;
+    
     const std::string& getAddress() const override;
     
     // Additional SCTP-specific methods

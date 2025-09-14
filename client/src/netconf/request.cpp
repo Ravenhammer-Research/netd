@@ -30,11 +30,9 @@
 
 namespace netd::client::netconf {
 
-  std::istream* ClientRpc::processRequest(lyd_node* data, int message_id, netd::shared::netconf::NetconfOperation operation, netd::shared::netconf::NetconfSession* session) {
+  void ClientRpc::processRequest(netd::shared::RpcRxStream& rpc_stream, netd::shared::netconf::NetconfSession* session) {
     // Suppress unused parameter warnings
-    (void)data;
-    (void)message_id;
-    (void)operation;
+    (void)rpc_stream;
     (void)session;
     
     throw netd::shared::NotImplementedError("ClientRpc::processRequest not implemented");

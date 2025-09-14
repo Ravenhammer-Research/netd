@@ -29,6 +29,8 @@
 #define NETD_REQUEST_GET_CONFIG_HPP
 
 #include <shared/include/request/base.hpp>
+#include <shared/include/xml/base.hpp>
+#include <shared/include/xml/envelope.hpp>
 
 namespace netd::shared::request::get {
 
@@ -47,9 +49,11 @@ namespace netd::shared::request::get {
     virtual ~GetConfigRequest() = default;
 
     // Override base methods
-    lyd_node *toYang(ly_ctx *ctx) const override;
-    std::unique_ptr<GetConfigRequest> fromYang(const ly_ctx *ctx,
-                                               const lyd_node *node) override;
+    lyd_node *toYang(ly_ctx *ctx) const ;
+    static std::unique_ptr<GetConfigRequest> fromYang(const ly_ctx *ctx,
+                                                     const lyd_node *node) ;
+    static std::unique_ptr<GetConfigRequest> fromRpcEnvelope(const ly_ctx *ctx,
+                                                            std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope) ;
 
     // Source datastore access
     Datastore getSource() const { return source_; }

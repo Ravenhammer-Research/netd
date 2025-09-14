@@ -57,6 +57,9 @@ namespace netd::server::netconf {
     netd::shared::netconf::NetconfSession* findSessionByClient(const std::string& username, const std::string& host);
     std::vector<netd::shared::netconf::NetconfSession*> findSessionsByClient(const std::string& username);
     
+    // Unix socket specific - find session by user ID
+    netd::shared::netconf::NetconfSession* findSessionByUserId(uid_t user_id);
+    
   private:
     SessionManager() = default;
     std::vector<std::unique_ptr<netd::shared::netconf::NetconfSession>> sessions_;

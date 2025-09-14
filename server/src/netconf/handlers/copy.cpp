@@ -37,7 +37,7 @@ namespace netd::server::netconf::handlers {
 
   std::unique_ptr<netd::shared::response::CopyConfigResponse>
   RpcHandler::handleCopyConfigRequest(
-      std::unique_ptr<netd::shared::request::CopyConfigRequest> /* request */) {
+      netd::shared::request::CopyConfigRequest* /* request */) {
     auto &logger = netd::shared::Logger::getInstance();
     auto response =
         std::make_unique<netd::shared::response::CopyConfigResponse>();

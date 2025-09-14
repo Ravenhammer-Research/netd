@@ -29,6 +29,8 @@
 #define NETD_REQUEST_UNLOCK_HPP
 
 #include <shared/include/request/base.hpp>
+#include <shared/include/xml/base.hpp>
+#include <shared/include/xml/envelope.hpp>
 
 namespace netd::shared::request {
 
@@ -40,9 +42,11 @@ namespace netd::shared::request {
     virtual ~UnlockRequest() = default;
 
     // Override base methods
-    lyd_node *toYang(ly_ctx *ctx) const override;
-    std::unique_ptr<UnlockRequest> fromYang(const ly_ctx *ctx,
-                                            const lyd_node *node) override;
+    lyd_node *toYang(ly_ctx *ctx) const ;
+    static std::unique_ptr<UnlockRequest> fromYang(const ly_ctx *ctx,
+                                                  const lyd_node *node) ;
+    static std::unique_ptr<UnlockRequest> fromRpcEnvelope(const ly_ctx *ctx,
+                                                         std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope) ;
   };
 
 } // namespace netd::shared::request

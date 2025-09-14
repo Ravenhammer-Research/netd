@@ -30,20 +30,18 @@
 
 #include <string>
 #include <memory>
-#include <shared/include/transport.hpp>
 
 namespace netd::shared {
 
   /**
-   * TLS Security Wrapper
+   * TLS Security Component
    * 
-   * This class provides TLS encryption/decryption as a security layer
-   * that wraps around any BaseTransport implementation. It follows the
-   * decorator pattern to add TLS security to existing transports.
+   * This class provides TLS encryption/decryption as a security component
+   * that can be consumed by transports. It provides TLS functionality
+   * without wrapping transports.
    */
-  class TLSSecurityWrapper {
+  class TLSSecurity {
   private:
-    std::unique_ptr<BaseTransport> transport_;
     std::string cert_file_;
     std::string key_file_;
     std::string ca_file_;
@@ -53,19 +51,17 @@ namespace netd::shared {
   public:
     /**
      * Constructor
-     * @param transport The underlying transport to wrap with TLS
      * @param cert_file Path to certificate file
      * @param key_file Path to private key file
      * @param ca_file Path to CA certificate file (optional)
      * @param verify_peer Whether to verify peer certificates
      */
-    TLSSecurityWrapper(std::unique_ptr<BaseTransport> transport,
-                      const std::string& cert_file,
-                      const std::string& key_file,
-                      const std::string& ca_file = "",
-                      bool verify_peer = true);
+    TLSSecurity(const std::string& cert_file,
+                const std::string& key_file,
+                const std::string& ca_file = "",
+                bool verify_peer = true);
     
-    ~TLSSecurityWrapper();
+    ~TLSSecurity();
 
     // TLS-specific methods
     bool initializeTLS();
@@ -83,9 +79,6 @@ namespace netd::shared {
     // Encrypted data operations
     virtual bool sendEncryptedData(int socket_fd, const std::string& data);
     virtual std::string receiveEncryptedData(int socket_fd);
-    
-    // Access to underlying transport
-    BaseTransport* getTransport() const;
     
     // Configuration
     void setVerifyPeer(bool verify);

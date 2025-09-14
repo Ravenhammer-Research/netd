@@ -34,13 +34,13 @@
 namespace netd::shared {
 
   /**
-   * DTLS Security Wrapper
+   * DTLS Security Component
    * 
-   * This class extends TLSSecurityWrapper to provide DTLS encryption/decryption
+   * This class extends TLSSecurity to provide DTLS encryption/decryption
    * for datagram-based transports. DTLS is particularly useful for UDP-based
    * transports and SCTP (RFC 6083).
    */
-  class DTLSSecurityWrapper : public TLSSecurityWrapper {
+  class DTLSSecurity : public TLSSecurity {
   private:
     uint32_t mtu_size_;
     bool cookie_exchange_enabled_;
@@ -50,21 +50,19 @@ namespace netd::shared {
   public:
     /**
      * Constructor
-     * @param transport The underlying transport to wrap with DTLS
      * @param cert_file Path to certificate file
      * @param key_file Path to private key file
      * @param ca_file Path to CA certificate file (optional)
      * @param verify_peer Whether to verify peer certificates
      * @param mtu_size Maximum transmission unit size (default 1500)
      */
-    DTLSSecurityWrapper(std::unique_ptr<BaseTransport> transport,
-                       const std::string& cert_file,
-                       const std::string& key_file,
-                       const std::string& ca_file = "",
-                       bool verify_peer = true,
-                       uint32_t mtu_size = 1500);
+    DTLSSecurity(const std::string& cert_file,
+                 const std::string& key_file,
+                 const std::string& ca_file = "",
+                 bool verify_peer = true,
+                 uint32_t mtu_size = 1500);
     
-    ~DTLSSecurityWrapper() = default;
+    ~DTLSSecurity();
 
     // DTLS-specific initialization (overrides TLS)
     bool initializeDTLS();

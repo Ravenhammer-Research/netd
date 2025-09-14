@@ -38,7 +38,7 @@ namespace netd::server::netconf::handlers {
 
   std::unique_ptr<netd::shared::response::HelloResponse>
   RpcHandler::handleHelloRequest(
-      std::unique_ptr<netd::shared::request::HelloRequest> /* request */) {
+      netd::shared::request::HelloRequest* /* request */) {
     auto &logger = netd::shared::Logger::getInstance();
     auto response = std::make_unique<netd::shared::response::HelloResponse>();
 

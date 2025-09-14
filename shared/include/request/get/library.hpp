@@ -29,6 +29,8 @@
 #define NETD_REQUEST_GET_LIBRARY_HPP
 
 #include <shared/include/request/base.hpp>
+#include <shared/include/xml/base.hpp>
+#include <shared/include/xml/envelope.hpp>
 
 namespace netd::shared::request::get {
 
@@ -41,9 +43,11 @@ namespace netd::shared::request::get {
     virtual ~GetLibraryRequest() = default;
 
     // Override base methods
-    lyd_node *toYang(ly_ctx *ctx) const override;
-    std::unique_ptr<GetLibraryRequest> fromYang(const ly_ctx *ctx,
-                                                const lyd_node *node) override;
+    lyd_node *toYang(ly_ctx *ctx) const ;
+    static std::unique_ptr<GetLibraryRequest> fromYang(const ly_ctx *ctx,
+                                                      const lyd_node *node) ;
+    static std::unique_ptr<GetLibraryRequest> fromRpcEnvelope(const ly_ctx *ctx,
+                                                             std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope) ;
 
     // Access methods for filter information
     bool hasLibraryFilter() const { return hasLibraryFilter_; }

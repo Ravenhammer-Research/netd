@@ -26,24 +26,24 @@
  */
 
 #include <client/include/tui.hpp>
+#include <client/include/netconf/client.hpp>
+#include <client/include/processor.hpp>
 #include <shared/include/logger.hpp>
 #include <shared/include/exception.hpp>
 #include <curses.h>
 #include <algorithm>
+#include <thread>
 
 namespace netd::client::tui {
 
   constexpr size_t MAX_HISTORY_SIZE = 10240;
 
-  // Constructor and destructor
-  TUI::TUI() : initialized_(false), prompt_("netc> "), commandHistoryPosition_(-1), scrollOffset_(0), connectionStatus_("Not connected"), debugLevel_(0), destroying_(false) {}
+  TUI::TUI() : initialized_(false), prompt_("netc> "), commandHistoryPosition_(-1), scrollOffset_(0), connectionStatus_("Not connected"), debugLevel_(0), destroying_(false), client_(nullptr) {}
 
   TUI::~TUI() { 
     destroying_ = true;
     cleanup(); 
   }
-
-  // Core TUI functions
   bool TUI::initialize() {
     if (initialized_) {
       return true;
@@ -52,78 +52,19 @@ namespace netd::client::tui {
     setupCurses();
     configureSignalHandler();
     
-    // Set up logger integration
     setLoggerInstance(this);
     initializeLogger();
     
-    // Test that logger is working
     netd::shared::Logger::getInstance().debug("TUI Logger initialized successfully");
     
     initialized_ = true;
     return true;
   }
 
-  void TUI::runInteractive() {
-    if (!initialized_) {
-      throw std::runtime_error("TUI not initialized (runInteractive)");
-    }
 
-    // Initial screen setup
-    redrawScreen();
-
-    std::string line;
-    while (true) {
-      // Check for terminal resize
-      int key = getch();
-      if (key == KEY_RESIZE) {
-        handleResize();
-        continue;
-      }
-      
-      // Put the key back if it's not a resize
-      ungetch(key);
-      
-      putPrompt();
-      line = readLine();
-      
-      if (line.empty()) {
-        continue;
-      }
-      
-      // Check for EOF marker (Ctrl+D)
-      if (line == "\x04") {
-        break;
-      }
-      
-      addToCommandHistory(line);
-      
-      if (commandHandler_) {
-        // Clear the prompt line before processing command
-        int promptRow = getPromptRow();
-        move(promptRow, 0);
-        clrtoeol();
-        refresh();
-        
-        try {
-          if (!commandHandler_(line)) {
-            break;
-          }
-        } catch (const netd::shared::NetdError &e) {
-          // Handle exceptions gracefully
-          putLine("Error: " + std::string(e.what()));
-          
-          // Log stack trace
-          netd::shared::Logger::getInstance().trace(e);
-        } 
-      }
-    }
-  }
-
-  // Command history management
   void TUI::addToCommandHistory(const std::string &command) {
     if (commandHistory_.empty() || commandHistory_.back() != command) {
       commandHistory_.push_back(command);
-      // Trim history if it gets too large
       while (commandHistory_.size() > MAX_HISTORY_SIZE) {
         commandHistory_.erase(commandHistory_.begin());
       }

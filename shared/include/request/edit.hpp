@@ -29,6 +29,8 @@
 #define NETD_REQUEST_EDIT_HPP
 
 #include <shared/include/request/base.hpp>
+#include <shared/include/xml/base.hpp>
+#include <shared/include/xml/envelope.hpp>
 #include <shared/include/request/get/config.hpp>
 
 namespace netd::shared::request {
@@ -41,9 +43,11 @@ namespace netd::shared::request {
     virtual ~EditConfigRequest() = default;
 
     // Override base methods
-    lyd_node *toYang(ly_ctx *ctx) const override;
-    std::unique_ptr<EditConfigRequest> fromYang(const ly_ctx *ctx,
-                                                const lyd_node *node) override;
+    lyd_node *toYang(ly_ctx *ctx) const ;
+    static std::unique_ptr<EditConfigRequest> fromYang(const ly_ctx *ctx,
+                                                      const lyd_node *node) ;
+    static std::unique_ptr<EditConfigRequest> fromRpcEnvelope(const ly_ctx *ctx,
+                                                             std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope) ;
 
     // Target datastore access
     netd::shared::request::get::Datastore getTarget() const { return target_; }

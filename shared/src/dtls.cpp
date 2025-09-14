@@ -27,134 +27,88 @@
 
 #include <shared/include/dtls.hpp>
 #include <shared/include/exception.hpp>
-#include <shared/include/logger.hpp>
 
 namespace netd::shared {
 
-  DTLSSecurityWrapper::DTLSSecurityWrapper(std::unique_ptr<BaseTransport> transport,
-                                          const std::string& cert_file,
-                                          const std::string& key_file,
-                                          const std::string& ca_file,
-                                          bool verify_peer,
-                                          uint32_t mtu_size)
-    : TLSSecurityWrapper(std::move(transport), cert_file, key_file, ca_file, verify_peer)
+  DTLSSecurity::DTLSSecurity(const std::string& cert_file,
+                            const std::string& key_file,
+                            const std::string& ca_file,
+                            bool verify_peer,
+                            uint32_t mtu_size)
+    : TLSSecurity(cert_file, key_file, ca_file, verify_peer)
     , mtu_size_(mtu_size)
     , cookie_exchange_enabled_(false)
-    , retransmission_timeout_(1000) // Default 1 second
+    , cookie_secret_("")
+    , retransmission_timeout_(1000)
   {
   }
 
-  bool DTLSSecurityWrapper::initializeDTLS() {
-    // Use the parent TLS initialization
-    if (!initializeTLS()) {
-      return false;
-    }
-
-    auto& logger = Logger::getInstance();
-    logger.info("DTLS security wrapper initialized (MTU: " + std::to_string(mtu_size_) + ")");
-    return true;
+  DTLSSecurity::~DTLSSecurity() {
+    cleanupDTLS();
   }
 
-  void DTLSSecurityWrapper::cleanupDTLS() {
-    // Use the parent TLS cleanup
-    cleanupTLS();
-    
-    auto& logger = Logger::getInstance();
-    logger.info("DTLS security wrapper cleaned up");
+  // DTLS-specific initialization (overrides TLS)
+  bool DTLSSecurity::initializeDTLS() {
+    throw netd::shared::NotImplementedError("DTLSSecurity::initializeDTLS not implemented");
   }
 
-  bool DTLSSecurityWrapper::isDTLSInitialized() const {
-    return isTLSInitialized();
+  void DTLSSecurity::cleanupDTLS() {
+    throw netd::shared::NotImplementedError("DTLSSecurity::cleanupDTLS not implemented");
   }
 
-  bool DTLSSecurityWrapper::performHandshake(int socket_fd, bool is_server) {
-    if (!isDTLSInitialized()) {
-      auto& logger = Logger::getInstance();
-      logger.error("DTLS not initialized, cannot perform handshake");
-      return false;
-    }
-
-    auto& logger = Logger::getInstance();
-    logger.info("Performing DTLS handshake on socket " + std::to_string(socket_fd) + 
-                " (server: " + (is_server ? "yes" : "no") + ")");
-    
-    // DTLS-specific handshake logic (connectionless)
-    // This would implement the DTLS handshake protocol
-    // For now, delegate to parent TLS handshake
-    return TLSSecurityWrapper::performHandshake(socket_fd, is_server);
+  bool DTLSSecurity::isDTLSInitialized() const {
+    throw netd::shared::NotImplementedError("DTLSSecurity::isDTLSInitialized not implemented");
   }
 
-  bool DTLSSecurityWrapper::sendEncryptedData(int socket_fd, const std::string& data) {
-    if (!isDTLSInitialized()) {
-      auto& logger = Logger::getInstance();
-      logger.error("DTLS not initialized, cannot send encrypted data");
-      return false;
-    }
-
-    // Check MTU size (DTLS-specific)
-    if (data.length() > mtu_size_) {
-      auto& logger = Logger::getInstance();
-      logger.warning("Data size (" + std::to_string(data.length()) + 
-                    ") exceeds MTU (" + std::to_string(mtu_size_) + ")");
-    }
-
-    auto& logger = Logger::getInstance();
-    logger.debug("Sending encrypted DTLS data on socket " + std::to_string(socket_fd) + 
-                 " (" + std::to_string(data.length()) + " bytes)");
-    
-    // Use parent TLS send with DTLS-specific handling
-    return TLSSecurityWrapper::sendEncryptedData(socket_fd, data);
+  // DTLS handshake (connectionless - overrides TLS)
+  bool DTLSSecurity::performHandshake(int socket_fd, bool is_server) {
+    (void)socket_fd; (void)is_server;
+    throw netd::shared::NotImplementedError("DTLSSecurity::performHandshake not implemented");
   }
 
-  std::string DTLSSecurityWrapper::receiveEncryptedData(int socket_fd) {
-    if (!isDTLSInitialized()) {
-      auto& logger = Logger::getInstance();
-      logger.error("DTLS not initialized, cannot receive encrypted data");
-      return "";
-    }
-
-    auto& logger = Logger::getInstance();
-    logger.debug("Receiving encrypted DTLS data from socket " + std::to_string(socket_fd));
-    
-    // Use parent TLS receive with DTLS-specific handling
-    return TLSSecurityWrapper::receiveEncryptedData(socket_fd);
+  // Encrypted data operations (overrides TLS with MTU awareness)
+  bool DTLSSecurity::sendEncryptedData(int socket_fd, const std::string& data) {
+    (void)socket_fd; (void)data;
+    throw netd::shared::NotImplementedError("DTLSSecurity::sendEncryptedData not implemented");
   }
 
-  void DTLSSecurityWrapper::setMTUSize(uint32_t mtu) {
-    mtu_size_ = mtu;
+  std::string DTLSSecurity::receiveEncryptedData(int socket_fd) {
+    (void)socket_fd;
+    throw netd::shared::NotImplementedError("DTLSSecurity::receiveEncryptedData not implemented");
   }
 
-  uint32_t DTLSSecurityWrapper::getMTUSize() const {
-    return mtu_size_;
+  // DTLS-specific configuration
+  void DTLSSecurity::setMTUSize(uint32_t mtu) {
+    (void)mtu;
+    throw netd::shared::NotImplementedError("DTLSSecurity::setMTUSize not implemented");
   }
 
-  bool DTLSSecurityWrapper::enableCookieExchange() {
-    cookie_exchange_enabled_ = true;
-    auto& logger = Logger::getInstance();
-    logger.info("DTLS cookie exchange enabled");
-    return true;
+  uint32_t DTLSSecurity::getMTUSize() const {
+    throw netd::shared::NotImplementedError("DTLSSecurity::getMTUSize not implemented");
   }
 
-  bool DTLSSecurityWrapper::setCookieSecret(const std::string& secret) {
-    cookie_secret_ = secret;
-    auto& logger = Logger::getInstance();
-    logger.info("DTLS cookie secret set (" + std::to_string(secret.length()) + " bytes)");
-    return true;
+  // DTLS-specific features
+  bool DTLSSecurity::enableCookieExchange() {
+    throw netd::shared::NotImplementedError("DTLSSecurity::enableCookieExchange not implemented");
   }
 
-  bool DTLSSecurityWrapper::setRetransmissionTimeout(uint32_t timeout_ms) {
-    retransmission_timeout_ = timeout_ms;
-    auto& logger = Logger::getInstance();
-    logger.info("DTLS retransmission timeout set to " + std::to_string(timeout_ms) + "ms");
-    return true;
+  bool DTLSSecurity::setCookieSecret(const std::string& secret) {
+    (void)secret;
+    throw netd::shared::NotImplementedError("DTLSSecurity::setCookieSecret not implemented");
   }
 
-  bool DTLSSecurityWrapper::isCookieExchangeEnabled() const {
-    return cookie_exchange_enabled_;
+  bool DTLSSecurity::setRetransmissionTimeout(uint32_t timeout_ms) {
+    (void)timeout_ms;
+    throw netd::shared::NotImplementedError("DTLSSecurity::setRetransmissionTimeout not implemented");
   }
 
-  uint32_t DTLSSecurityWrapper::getRetransmissionTimeout() const {
-    return retransmission_timeout_;
+  // Access to DTLS-specific state
+  bool DTLSSecurity::isCookieExchangeEnabled() const {
+    throw netd::shared::NotImplementedError("DTLSSecurity::isCookieExchangeEnabled not implemented");
+  }
+
+  uint32_t DTLSSecurity::getRetransmissionTimeout() const {
+    throw netd::shared::NotImplementedError("DTLSSecurity::getRetransmissionTimeout not implemented");
   }
 
 } // namespace netd::shared

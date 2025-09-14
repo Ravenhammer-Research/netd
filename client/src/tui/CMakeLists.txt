@@ -1,6 +1,7 @@
 # TUI module sources
 set(TUI_SOURCES
   command.cpp
+  interactive.cpp
   message.cpp
   prompt.cpp
   curses.cpp

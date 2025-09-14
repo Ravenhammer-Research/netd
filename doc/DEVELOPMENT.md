@@ -7,7 +7,6 @@ This document provides comprehensive information for developers working on NetD,
 - [Build System](#build-system)
 - [Architecture Overview](#architecture-overview)
 - [Coding Standards](#coding-standards)
-- [Testing](#testing)
 - [Debugging](#debugging)
 - [Contributing](#contributing)
 
@@ -17,7 +16,7 @@ This document provides comprehensive information for developers working on NetD,
 
 - **FreeBSD 14.0+** or compatible system
 - **CMake 3.16+**
-- **Clang 18+** (preferred) or **GCC 11+** (fallback)
+- **Clang 18+**
 - **libyang** development packages
 - **OpenSSL** development packages
 - **ncurses** development packages (client only)
@@ -55,7 +54,7 @@ Features:
 
 The build system automatically detects and configures:
 
-- **Compiler Selection**: Prefers Clang 18+ over GCC 11+
+- **Compiler Selection**: Uses Clang 18+
 - **Dependencies**: libyang, OpenSSL, ncurses, LLDP (optional)
 - **Build ID**: Generated from git hash with `-dirty` suffix if uncommitted changes
 
@@ -117,7 +116,6 @@ netd/
 - Common data types and utilities
 - YANG schema management
 - Request/response handling
-- Extension loading system
 
 #### FreeBSD Layer (`freebsd/`)
 - Native interface management
@@ -143,7 +141,6 @@ graph TB
     subgraph "Shared Layer"
         Types[Common Types]
         YANG[YANG Manager]
-        Extensions[Extension Loader]
     end
     
     subgraph "Platform Layer"
@@ -157,8 +154,7 @@ graph TB
     Handlers --> Store
     Store --> Types
     Types --> YANG
-    Types --> Extensions
-    Extensions --> Native
+    Types --> Native
     Native --> FreeBSD
 ```
 
@@ -204,128 +200,7 @@ std::shared_ptr<MyClass> shared = std::make_shared<MyClass>();
 MyClass* obj = new MyClass(); // Don't do this
 ```
 
-## Extension Development
 
-### Extension System Overview
-
-NetD supports loadable extensions for native backend implementations. Extensions are dynamically loaded shared libraries that provide OS-specific functionality.
-
-### Extension Types
-
-Currently supported:
-- **`NATIVE_BACKEND`**: Native backend implementations for OS-specific functionality
-
-### Creating an Extension
-
-#### 1. Header Structure
-
-```cpp
-#include <netd/shared/extension.hpp>
-
-class MyNativeBackend : public netd::shared::NetdExtension {
-public:
-    std::vector<netd::shared::ExtensionCapability> getCapabilities() const override;
-    netd::shared::ExtensionInfo getInfo() const override;
-    bool initialize() override;
-    void cleanup() override;
-    bool isCompatible(const std::string& netd_version) const override;
-};
-```
-
-#### 2. Implementation
-
-```cpp
-std::vector<netd::shared::ExtensionCapability> MyNativeBackend::getCapabilities() const {
-    return { netd::shared::ExtensionCapability::NATIVE_BACKEND };
-}
-
-netd::shared::ExtensionInfo MyNativeBackend::getInfo() const {
-    return {
-        "my-native-backend",
-        "1.0.0",
-        "My custom native backend",
-        getCapabilities(),
-        "Your Name",
-        "BSD-2-Clause"
-    };
-}
-
-bool MyNativeBackend::initialize() {
-    // Initialize your backend
-    return true;
-}
-
-void MyNativeBackend::cleanup() {
-    // Cleanup resources
-}
-
-bool MyNativeBackend::isCompatible(const std::string& netd_version) const {
-    // Check compatibility
-    return true;
-}
-```
-
-#### 3. Export Function
-
-```cpp
-extern "C" netd::shared::NetdExtension* createExtension() {
-    return new MyNativeBackend();
-}
-```
-
-#### 4. Build Configuration
-
-```cmake
-add_library(my_extension SHARED my_extension.cpp)
-target_link_libraries(my_extension netd_shared)
-target_include_directories(my_extension PRIVATE /usr/local/include)
-set_target_properties(my_extension PROPERTIES PREFIX "")
-```
-
-### Extension Loading
-
-Extensions are automatically loaded from:
-- **Development**: `extensions/` (relative to current directory)
-- **Production**: `/usr/local/lib/netd/extensions/`
-
-### Extension Lifecycle
-
-1. **Discovery**: NetD scans extension directories for `.so` files
-2. **Loading**: Each extension is loaded with `dlopen()`
-3. **Creation**: `createExtension()` function is called
-4. **Compatibility**: Version compatibility is checked
-5. **Initialization**: `initialize()` is called
-6. **Runtime**: Extension provides functionality
-7. **Cleanup**: `cleanup()` is called on shutdown
-
-## Testing
-
-### Unit Testing
-
-```bash
-# Run unit tests (when implemented)
-make test
-```
-
-### Integration Testing
-
-```bash
-# Start server
-sudo ./netd --debug
-
-# Test client connection
-./netc
-```
-
-### Debug Testing
-
-```bash
-# Enable debug logging
-./netd -d --debug-lldp --debug-yang
-
-# Enable trace logging
-./netd -dd
-```
 
 ## Debugging
 
@@ -380,14 +255,13 @@ sudo ./netd --debug
 1. **Fork** the repository
 2. **Create** a feature branch
 3. **Implement** your changes
-4. **Test** thoroughly
+4. **Debug** thoroughly
 5. **Format** code with clang-format
 6. **Submit** a pull request
 
 ### Code Review Process
 
 - All changes require review
-- Tests must pass
 - Code must be formatted
 - Documentation must be updated
 
@@ -407,7 +281,6 @@ Add LLDP custom TLV support
 
 - **Title**: Clear description of changes
 - **Description**: Detailed explanation of what was changed and why
-- **Testing**: Describe how changes were tested
 - **Breaking Changes**: Note any breaking changes
 
 ### Documentation
@@ -427,14 +300,12 @@ Add LLDP custom TLV support
 
 ### Compiler Detection
 
-The build system automatically detects and configures the best available compiler:
+The build system automatically detects and configures Clang:
 
 ```cmake
-# Prefer Clang 18+ over GCC 11+
+# Use Clang 18+
 if(CLANG_CXX_COMPILER AND CLANG_C_COMPILER)
     set(CMAKE_CXX_COMPILER ${CLANG_CXX_COMPILER})
-elseif(GCC_CXX_COMPILER AND GCC_C_COMPILER)
-    set(CMAKE_CXX_COMPILER ${GCC_CXX_COMPILER})
 endif()
 ```
 
@@ -481,7 +352,6 @@ cmake .. && make && sudo make install
 ```bash
 # Check compiler version
 clang++ --version  # Should be 18+
-g++ --version      # Should be 11+ (fallback)
 ```
 
 #### YANG Schema Issues
@@ -500,12 +370,6 @@ sudo chown root:wheel /tmp/netd.sock
 sudo chmod 600 /tmp/netd.sock
 ```
 
-#### Extension Loading
-```bash
-# Check extension directory
-ls -la /usr/local/lib/netd/extensions/
-./netd -d  # Check extension loading in logs
-```
 
 ## Performance Considerations
 

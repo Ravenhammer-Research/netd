@@ -14,7 +14,6 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
  * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
  * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
@@ -27,50 +26,9 @@
  */
 
 #include <client/include/netconf/base.hpp>
-#include <shared/include/logger.hpp>
-#include <shared/include/exception.hpp>
 
 namespace netd::client::netconf {
 
-  NetconfBase::NetconfBase() : initialized_(false) {
-  }
-
-  NetconfBase::~NetconfBase() {
-    cleanup();
-  }
-
-  bool NetconfBase::initialize() {
-    if (initialized_) {
-      return true;
-    }
-
-    try {
-      // Create a YANG context
-      ly_ctx* ctx = nullptr;
-      LY_ERR err = ly_ctx_new(nullptr, 0, &ctx);
-      if (err != LY_SUCCESS || !ctx) {
-        return false;
-      }
-      
-      // Create a session with the context
-      session_ = std::make_unique<netd::shared::netconf::NetconfSession>(ctx);
-      initialized_ = true;
-      return true;
-    } catch (const std::exception& e) {
-      return false;
-    }
-  }
-
-  void NetconfBase::cleanup() {
-    if (session_) {
-      session_.reset();
-    }
-    initialized_ = false;
-  }
-
-
-  bool NetconfBase::isInitialized() const {
-    return initialized_;
-  }
+  // Empty implementation - NetconfBase is now a pure mixin class
 
 } // namespace netd::client::netconf

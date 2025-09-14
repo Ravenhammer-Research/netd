@@ -12,6 +12,8 @@ set(SHARED_SOURCES
     src/unix.cpp
     src/http.cpp
     src/quic.cpp
+    src/stream.cpp
+    src/socket.cpp
 )
 
 # Add TLS/DTLS sources only if OpenSSL is found
@@ -74,6 +76,7 @@ target_link_libraries(netd_shared PRIVATE
     netd_shared_netconf
     netd_shared_request
     netd_shared_response
+    netd_shared_xml
 )
 
 # Add LLDP library if found

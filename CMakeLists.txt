@@ -160,6 +160,28 @@ else()
     message(STATUS "pthread support not found - threading disabled")
 endif()
 
+# Check for XML library (BSD XML preferred, Expat fallback)
+# Search for BSD XML in /usr/lib first (system library)
+find_library(XML_LIBRARY bsdxml PATHS /usr/lib NO_DEFAULT_PATH)
+if(XML_LIBRARY)
+    set(XML_FOUND TRUE)
+    set(XML_LIBRARY_TYPE "BSD XML")
+    message(STATUS "XML library (BSD XML) found: ${XML_LIBRARY}")
+    add_compile_definitions(HAVE_XML=1)
+else()
+    # Fallback to Expat if BSD XML not found
+    find_library(XML_LIBRARY expat)
+    if(XML_LIBRARY)
+        set(XML_FOUND TRUE)
+        set(XML_LIBRARY_TYPE "Expat")
+        message(STATUS "XML library (Expat) found: ${XML_LIBRARY}")
+        add_compile_definitions(HAVE_XML=1)
+    else()
+        set(XML_FOUND FALSE)
+        message(FATAL_ERROR "No XML library found - neither BSD XML nor Expat available")
+    endif()
+endif()
+
 # Define global include directories
 set(GLOBAL_INCLUDE_DIRS
     ${CMAKE_SOURCE_DIR}
@@ -231,6 +253,9 @@ endif()
 if(PTHREAD_FOUND)
     message(STATUS "  PTHREAD_LIBRARY: ${PTHREAD_LIBRARY}")
 endif()
+if(XML_FOUND)
+    message(STATUS "  XML_LIBRARY (${XML_LIBRARY_TYPE}): ${XML_LIBRARY}")
+endif()
 message(STATUS "")
 set(NETD_LIBRARIES
     ${LIBYANG_LIBRARIES}
@@ -253,6 +278,11 @@ endif()
 # Add pthread library if found
 if(PTHREAD_FOUND)
     list(APPEND NETD_LIBRARIES ${PTHREAD_LIBRARY})
+endif()
+
+# Add XML library (required)
+if(XML_FOUND)
+    list(APPEND NETD_LIBRARIES ${XML_LIBRARY})
 endif()
 
 target_link_libraries(netd PRIVATE ${NETD_LIBRARIES})
@@ -292,6 +322,11 @@ endif()
 # Add pthread library if found
 if(PTHREAD_FOUND)
     list(APPEND NETC_LIBRARIES ${PTHREAD_LIBRARY})
+endif()
+
+# Add XML library (required)
+if(XML_FOUND)
+    list(APPEND NETC_LIBRARIES ${XML_LIBRARY})
 endif()
 
 target_link_libraries(netc PRIVATE ${NETC_LIBRARIES})

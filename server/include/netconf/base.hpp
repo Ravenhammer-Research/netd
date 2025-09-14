@@ -28,20 +28,43 @@
 #ifndef NETD_SERVER_NETCONF_BASE_HPP
 #define NETD_SERVER_NETCONF_BASE_HPP
 
+#include <memory>
+#include <string>
+#include <iomanip>
+#include <sstream>
+#ifdef HAVE_LLDP
+#include <shared/include/lldp/client.hpp>
+#endif
+
 namespace netd::server::netconf {
 
+  /**
+   * @brief Base mixin class for NETCONF server functionality
+   * 
+   * This class serves as a mixin that can be inherited by other classes
+   * to provide NETCONF server capabilities through multiple inheritance.
+   * Includes LLDP functionality when available.
+   */
   class Server {
   public:
-    Server();
-    virtual ~Server();
+    Server() = default;
+    virtual ~Server() = default;
 
-    // Server lifecycle methods
-    virtual bool start() = 0;
-    virtual void stop() = 0;
-    bool isRunning() const;
+    /**
+     * @brief Initialize LLDP client and configuration
+     * @return true if LLDP initialization successful or not available, false on error
+     */
+    virtual bool initializeLLDP();
+
+    /**
+     * @brief Cleanup LLDP client
+     */
+    virtual void cleanupLLDP();
 
   protected:
-    bool running_;
+#ifdef HAVE_LLDP
+    std::unique_ptr<netd::shared::lldp::Client> lldp_client_;
+#endif
   };
 
 } // namespace netd::server::netconf

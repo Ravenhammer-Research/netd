@@ -1,11 +1,7 @@
 # Marshalling sources
 set(MARSHALLING_SOURCES
-    data.cpp
     error.cpp
     filter.cpp
-    interface.cpp
-    network.cpp
-    route.cpp
 )
 
 # Create netd_shared_marshalling static library

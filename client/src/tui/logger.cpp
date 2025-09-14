@@ -40,16 +40,6 @@ namespace netd::client::tui {
   // Global TUI instance for logger callback
   static TUI* g_tui_instance = nullptr;
 
-  // Get current timestamp as string
-  std::string getCurrentTimestamp() {
-    auto now = std::chrono::system_clock::now();
-    auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(
-        now.time_since_epoch()) % 1000000000;
-    
-    std::ostringstream oss;
-    oss << std::setfill('0') << std::setw(9) << ns.count();
-    return oss.str();
-  }
 
   // Custom logger callback function
   void tui_logger_callback(netd::shared::LogLevel level, const std::string& message) {
@@ -62,53 +52,25 @@ namespace netd::client::tui {
       return;
     }
 
-    // Check if we should show timestamps (only if debug level >= 3, i.e., -ddd)
-    bool showTimestamp = (g_tui_instance->getDebugLevel() >= 3);
-    
     std::string formatted_message;
-    if (showTimestamp) {
-      // Format the log message with timestamp and level prefix
-      std::string timestamp = getCurrentTimestamp();
-      switch (level) {
-        case netd::shared::LogLevel::TRACE:
-          formatted_message = "[" + timestamp + "][T]:" + message;
-          break;
-        case netd::shared::LogLevel::DEBUG:
-          formatted_message = "[" + timestamp + "][D]:" + message;
-          break;
-        case netd::shared::LogLevel::INFO:
-          formatted_message = "[" + timestamp + "][I]:" + message;
-          break;
-        case netd::shared::LogLevel::WARNING:
-          formatted_message = "[" + timestamp + "][W]:" + message;
-          break;
-        case netd::shared::LogLevel::ERROR:
-          formatted_message = "[" + timestamp + "][E]:" + message;
-          break;
-        case netd::shared::LogLevel::YANG:
-          return;
-      }
-    } else {
-      // Format the log message with only level prefix (no timestamp)
-      switch (level) {
-        case netd::shared::LogLevel::TRACE:
-          formatted_message = "[T]:" + message;
-          break;
-        case netd::shared::LogLevel::DEBUG:
-          formatted_message = "[D]:" + message;
-          break;
-        case netd::shared::LogLevel::INFO:
-          formatted_message = "[I]:" + message;
-          break;
-        case netd::shared::LogLevel::WARNING:
-          formatted_message = "[W]:" + message;
-          break;
-        case netd::shared::LogLevel::ERROR:
-          formatted_message = "[E]:" + message;
-          break;
-        case netd::shared::LogLevel::YANG:
-          return;          
-      }
+    switch (level) {
+      case netd::shared::LogLevel::TRACE:
+        formatted_message = "[T]: " + message;
+        break;
+      case netd::shared::LogLevel::DEBUG:
+        formatted_message = "[D]: " + message;
+        break;
+      case netd::shared::LogLevel::INFO:
+        formatted_message = "[I]: " + message;
+        break;
+      case netd::shared::LogLevel::WARNING:
+        formatted_message = "[W]: " + message;
+        break;
+      case netd::shared::LogLevel::ERROR:
+        formatted_message = "[E]: " + message;
+        break;
+      case netd::shared::LogLevel::YANG:
+        return;          
     }
 
     // Write to TUI using the appropriate method

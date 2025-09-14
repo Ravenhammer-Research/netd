@@ -31,6 +31,7 @@
 #include <shared/include/request/get/config.hpp>
 #include <shared/include/response/get/config.hpp>
 #include <shared/include/yang.hpp>
+#include <client/include/tui.hpp>
 
 namespace netd::client {
 
@@ -53,18 +54,36 @@ namespace netd::client {
       return false; // Signal to exit the interactive loop
     }
 
-    switch (parsed.command) {
-    case CommandType::SHOW:
-      return handleShowCommand(parsed);
-    case CommandType::SET:
-      return handleSetCommand(parsed);
-    case CommandType::DELETE:
-      return handleDeleteCommand(parsed);
-    case CommandType::COMMIT:
-      return handleCommitCommand(parsed);
-    default:
-      tui_.putLine("Unknown command type");
-      return false;
+    // Connect, execute command, then disconnect
+    try {
+      client_.connect();
+      
+      bool result = false;
+      switch (parsed.command) {
+      case CommandType::SHOW:
+        result = handleShowCommand(parsed);
+        break;
+      case CommandType::SET:
+        result = handleSetCommand(parsed);
+        break;
+      case CommandType::DELETE:
+        result = handleDeleteCommand(parsed);
+        break;
+      case CommandType::COMMIT:
+        result = handleCommitCommand(parsed);
+        break;
+      default:
+        tui_.putLine("Unknown command type");
+        result = false;
+      }
+      
+      client_.disconnect(false); // Disconnect transport but don't close session
+      return result;
+      
+    } catch (const std::exception& e) {
+      tui_.putLine("Command failed: " + std::string(e.what()));
+      client_.disconnect(false); // Ensure disconnect even on error, don't close session
+      return true; // Continue the interactive loop
     }
   }
 

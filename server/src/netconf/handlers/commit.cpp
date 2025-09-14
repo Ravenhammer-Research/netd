@@ -38,7 +38,7 @@ namespace netd::server::netconf::handlers {
 
   std::unique_ptr<netd::shared::response::CommitResponse>
   RpcHandler::handleCommitRequest(
-      std::unique_ptr<netd::shared::request::CommitRequest> /* request */) {
+      netd::shared::request::CommitRequest* /* request */) {
     auto &logger = netd::shared::Logger::getInstance();
     auto response =
         std::make_unique<netd::shared::response::CommitResponse>();

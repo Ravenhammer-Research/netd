@@ -330,63 +330,18 @@ namespace netd::shared {
       return capabilities;
     }
 
-    // Base capabilities (always present)
-    capabilities.push_back("urn:ietf:params:netconf:base:1.0");
-    capabilities.push_back("urn:ietf:params:netconf:base:1.1");
-
-    // Check ietf-netconf module features
-    const struct lys_module *netconf_mod = ly_ctx_get_module_implemented(ctx_, "ietf-netconf");
-    if (netconf_mod) {
-      if (lys_feature_value(netconf_mod, "writable-running") == LY_SUCCESS) {
-        capabilities.push_back("urn:ietf:params:netconf:capability:writable-running:1.0");
+    // Get capabilities from all loaded modules
+    const struct lys_module *mod = nullptr;
+    uint32_t idx = 0;
+    
+    while ((mod = ly_ctx_get_module_iter(ctx_, &idx)) != nullptr) {
+      if (mod->name && mod->ns) {
+        // Add module capability using namespace
+        capabilities.push_back(std::string(mod->ns));
       }
-      if (lys_feature_value(netconf_mod, "candidate") == LY_SUCCESS) {
-        capabilities.push_back("urn:ietf:params:netconf:capability:candidate:1.0");
-        if (lys_feature_value(netconf_mod, "confirmed-commit") == LY_SUCCESS) {
-          capabilities.push_back("urn:ietf:params:netconf:capability:confirmed-commit:1.1");
-        }
-      }
-      if (lys_feature_value(netconf_mod, "rollback-on-error") == LY_SUCCESS) {
-        capabilities.push_back("urn:ietf:params:netconf:capability:rollback-on-error:1.0");
-      }
-      if (lys_feature_value(netconf_mod, "validate") == LY_SUCCESS) {
-        capabilities.push_back("urn:ietf:params:netconf:capability:validate:1.1");
-      }
-      if (lys_feature_value(netconf_mod, "startup") == LY_SUCCESS) {
-        capabilities.push_back("urn:ietf:params:netconf:capability:startup:1.0");
-      }
-      if (lys_feature_value(netconf_mod, "xpath") == LY_SUCCESS) {
-        capabilities.push_back("urn:ietf:params:netconf:capability:xpath:1.0");
-      }
-    }
-
-    // Check other module-based capabilities
-    const struct lys_module *with_defaults_mod = ly_ctx_get_module_implemented(ctx_, "ietf-netconf-with-defaults");
-    if (with_defaults_mod) {
-      capabilities.push_back("urn:ietf:params:netconf:capability:with-defaults:1.0");
-    }
-
-    const struct lys_module *yanglib_mod = ly_ctx_get_module_implemented(ctx_, "ietf-yang-library");
-    if (yanglib_mod) {
-      if (yanglib_mod->revision && !strcmp(yanglib_mod->revision, "2019-01-04")) {
-        capabilities.push_back("urn:ietf:params:netconf:capability:yang-library:1.1");
-      } else {
-        capabilities.push_back("urn:ietf:params:netconf:capability:yang-library:1.0");
-      }
-    }
-
-    const struct lys_module *notifications_mod = ly_ctx_get_module_implemented(ctx_, "ietf-notifications");
-    if (notifications_mod) {
-      capabilities.push_back("urn:ietf:params:netconf:capability:notification:1.0");
-    }
-
-    const struct lys_module *interleave_mod = ly_ctx_get_module_implemented(ctx_, "ietf-interleave");
-    if (interleave_mod) {
-      capabilities.push_back("urn:ietf:params:netconf:capability:interleave:1.0");
     }
 
     logger.debug("Generated " + std::to_string(capabilities.size()) + " NETCONF capabilities");
     return capabilities;
   }
-
 } // namespace netd::shared

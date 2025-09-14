@@ -33,6 +33,8 @@
 #include <shared/include/base/serialization.hpp>
 #include <shared/include/marshalling/filter.hpp>
 #include <shared/include/netconf/session.hpp>
+#include <shared/include/xml/base.hpp>
+#include <shared/include/xml/envelope.hpp>
 #include <string>
 
 namespace netd::shared::request {
@@ -40,7 +42,7 @@ namespace netd::shared::request {
   // Source datastore enumeration
   enum class Source { RUNNING, CANDIDATE, STARTUP };
 
-  template <typename T> class Request {
+  template <typename T> class Request : public netd::shared::base::Serialization<Request<T>> {
   public:
     Request() = default;
     Request(netd::shared::netconf::NetconfSession *session, struct lyd_node *rpc)
@@ -49,8 +51,10 @@ namespace netd::shared::request {
 
     // Pure virtual methods that must be implemented by subclasses
     virtual lyd_node *toYang(ly_ctx *ctx) const = 0;
-    virtual std::unique_ptr<T> fromYang(const ly_ctx *ctx,
-                                        const lyd_node *node) = 0;
+    static std::unique_ptr<T> fromYang(const ly_ctx *ctx,
+                                       const lyd_node *node);
+    static std::unique_ptr<T> fromRpcEnvelope(const ly_ctx *ctx,
+                                              std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope);
     
     // Convert to XML string
     std::string toXml() const;
@@ -66,6 +70,7 @@ namespace netd::shared::request {
     // NETCONF session and RPC node
     netd::shared::netconf::NetconfSession *session_ = nullptr;
     struct lyd_node *rpc_ = nullptr;
+    std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope_ = nullptr;
 
     // RPC request properties
     std::string messageId = "1";

@@ -31,6 +31,9 @@
 #include <functional>
 #include <string>
 #include <vector>
+#include <memory>
+#include <thread>
+#include <client/include/netconf/client.hpp>
 
 #define MAX_LINES 1000
 
@@ -64,7 +67,7 @@ namespace netd::client::tui {
     const std::vector<std::string>& getDisplayHistory() const;
 
     // Interactive mode
-    void runInteractive();
+    void runInteractive(std::function<bool(const std::string &)> commandHandler);
     void setPrompt(const std::string &prompt) { prompt_ = prompt; }
 
     // Command processing
@@ -124,6 +127,7 @@ namespace netd::client::tui {
     std::string connectionStatus_;
     int debugLevel_;
     bool destroying_; // Flag to prevent logging during destruction
+    std::unique_ptr<netd::client::netconf::NetconfClient> client_;
 
     // Curses helpers
     void setupCurses();

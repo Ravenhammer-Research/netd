@@ -33,13 +33,9 @@
 #include <shared/include/yang.hpp>
 #include <server/include/netconf/base.hpp>
 #include <shared/include/transport.hpp>
-#ifdef HAVE_LLDP
-#include <shared/include/lldp/client.hpp>
-#endif
 #include <server/include/netconf/handlers.hpp>
 #include <memory>
 #include <string>
-#include <atomic>
 #include <thread>
 #include <vector>
 
@@ -50,25 +46,26 @@ namespace netd::server::netconf {
     NetconfServer(netd::shared::TransportType transport_type, const std::string& bind_address, int port);
     ~NetconfServer();
 
-    bool start() override;
-    void stop() override;
+    bool start();
+    void stop();
     void run();
-    bool isRunning() const { return running_; }
+    bool isListening() const;
 
   private:
     netd::shared::TransportType transport_type_ [[maybe_unused]];
     std::string bind_address_ [[maybe_unused]];
     int port_ [[maybe_unused]];
-    std::atomic<bool> running_;
     std::unique_ptr<netd::shared::BaseTransport> transport_;
     std::vector<std::thread> session_threads_;
-#ifdef HAVE_LLDP
-    std::unique_ptr<netd::shared::lldp::Client> lldp_client_;
-#endif
     
     // Server management
     std::unique_ptr<netd::shared::BaseTransport> createTransport();
-    void handleClientSession(int client_socket);
+    void accept();
+    void sendHello(const netd::shared::ClientSocket& client_socket, netd::shared::netconf::NetconfSession* session);
+    netd::shared::netconf::NetconfSession* handleClientSession(const netd::shared::ClientSocket& client_socket);
+    void rpcRequestReceiveWait(netd::shared::RpcRxStream& rpc_stream, netd::shared::netconf::NetconfSession* session);
+    void processRpcRequest(netd::shared::netconf::NetconfSession& session, const std::string& data);
+    void sendErrorResponse(int client_socket, const std::string& error_message);
   };
 
 } // namespace netd::server::netconf

@@ -3,6 +3,7 @@ add_library(netd_client STATIC
     parser.cpp
     processor.cpp
     terminal.cpp
+    lldp.cpp
 )
 
 # Set include directories

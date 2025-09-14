@@ -31,7 +31,6 @@
 #include <server/include/netconf/handlers.hpp>
 #include <shared/include/exception.hpp>
 #include <shared/include/logger.hpp>
-#include <shared/include/marshalling/interface.hpp>
 #include <shared/include/request/get/config.hpp>
 #include <shared/include/response/get/config.hpp>
 
@@ -39,7 +38,7 @@ namespace netd::server::netconf::handlers {
 
   std::unique_ptr<netd::shared::response::get::GetConfigResponse>
   RpcHandler::handleGetConfigRequest(
-      [[maybe_unused]] std::unique_ptr<netd::shared::request::get::GetConfigRequest> request) {
+      [[maybe_unused]] netd::shared::request::get::GetConfigRequest* request) {
     throw netd::shared::NotImplementedError("RpcHandler::handleGetConfigRequest not implemented");
   }
 

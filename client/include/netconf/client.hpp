@@ -28,67 +28,70 @@
 #ifndef NETD_CLIENT_NETCONF_CLIENT_HPP
 #define NETD_CLIENT_NETCONF_CLIENT_HPP
 
-#include <shared/include/netconf/session.hpp>
-#include <shared/include/transport.hpp>
-#include <shared/include/exception.hpp>
 #include <memory>
 #include <string>
-#include <atomic>
-#include <thread>
-#include <chrono>
-#include <functional>
-
+#include <shared/include/transport.hpp>
+#include <shared/include/netconf/session.hpp>
+#include <client/include/netconf/base.hpp>
 
 namespace netd::client::netconf {
 
-  class NetconfClient {
+  class NetconfClient : public NetconfBase {
   public:
-    // Singleton access
-    static NetconfClient& getInstance();
+    /**
+     * @brief Constructs a NetconfClient for the specified server
+     * @param transport_type Type of transport to use
+     * @param server_address Address of the server (path for UNIX, hostname for others)
+     * @param port Port number (ignored for UNIX transport)
+     */
+    NetconfClient(netd::shared::TransportType transport_type, 
+                  const std::string& server_address, 
+                  int port = 0);
     
-    // Delete copy constructor and assignment operator
-    NetconfClient(const NetconfClient&) = delete;
-    NetconfClient& operator=(const NetconfClient&) = delete;
-
-    // Transport management
-    void setTransport(std::unique_ptr<netd::shared::BaseTransport> transport);
-    netd::shared::BaseTransport* getTransport() const;
-    
-    // Connection management
-    void connect(const std::string& address) noexcept(false);
-    void connectWithRetry(const std::string& address, int max_retries = 5, int initial_delay_ms = 1000) noexcept(false);
-    void disconnect();
-    bool isConnected() const;
-    void startAutoReconnect(const std::string& address, int max_retries = 5, int initial_delay_ms = 1000);
-    void stopAutoReconnect();
-    
-    // Communication methods
-    void sendData(const std::string& data) noexcept(false);
-    std::string receiveData() noexcept(false);
-    
-    // NETCONF-specific methods
-    void sendRpc(std::istream& rpc_stream) noexcept(false);
-    std::string receiveRpcReply() noexcept(false);
-    
-  private:
-    NetconfClient();
+    /**
+     * @brief Destructor - automatically disconnects if connected
+     */
     ~NetconfClient();
-    
+
+    /**
+     * @brief Connects to the NETCONF server
+     * @return true if connection successful, false otherwise
+     * @throws TransportError if connection fails
+     */
+    bool connect();
+
+    /**
+     * @brief Disconnects from the NETCONF server
+     * @param close_session Whether to close the NETCONF session (true) or just disconnect transport (false)
+     */
+    void disconnect(bool close_session = true);
+
+    /**
+     * @brief Checks if the client is connected to the server
+     * @return true if connected, false otherwise
+     */
+    bool isConnected() const;
+
+
+    /**
+     * @brief Gets the current NETCONF session
+     * @return Pointer to the session, or nullptr if not connected
+     */
+    netd::shared::netconf::NetconfSession* getSession() const;
+
+    /**
+     * @brief Handles the server session in a loop, processing incoming RPC messages
+     * This method runs continuously until the session is disconnected
+     */
+    void handleServerSession();
+
+  private:
+    netd::shared::TransportType transport_type_;
+    std::string server_address_;
+    int port_;
+    bool connected_;
     std::unique_ptr<netd::shared::BaseTransport> transport_;
     std::unique_ptr<netd::shared::netconf::NetconfSession> session_;
-    std::atomic<bool> connected_;
-    std::atomic<bool> auto_reconnect_enabled_;
-    std::atomic<bool> should_stop_reconnect_;
-    std::thread reconnect_thread_;
-    std::string connection_address_;
-    int connection_socket_fd_;
-    int max_retries_;
-    int initial_delay_ms_;
-    
-    void reconnectLoop();
-    void sleepWithBackoff(int attempt, int base_delay_ms);
-    void validateTransport() const noexcept(false);
-    void validateConnection() const noexcept(false);
   };
 
 } // namespace netd::client::netconf

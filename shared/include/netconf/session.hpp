@@ -37,6 +37,11 @@
 #include <mutex>
 #include <shared/include/transport.hpp>
 
+// Forward declaration
+namespace netd::shared::request {
+  class HelloRequest;
+}
+
 namespace netd::shared::netconf {
 
 
@@ -62,6 +67,8 @@ namespace netd::shared::netconf {
     
     // Session properties (using socket as ID)
     int getSessionId() const { return socket_; }
+    uid_t getUserId() const { return user_id_; }
+    void setUserId(uid_t user_id) { user_id_ = user_id; }
     const std::vector<std::string>& getCapabilities() const { return capabilities_; }
     void setCapabilities(const std::vector<std::string>& caps) { capabilities_ = caps; }
     
@@ -71,9 +78,12 @@ namespace netd::shared::netconf {
     // Message ID management
     uint64_t getNextMessageId() { return ++message_id_counter_; }
     
+    // Hello request processing
+    void processHelloRequest(const netd::shared::request::HelloRequest& hello_request);
     
     // Socket management
     int getSocket() const { return socket_; }
+    void updateSocket(int new_socket) { socket_ = new_socket; }
     netd::shared::TransportType getTransportType() const { return transport_type_; }
 
   private:
@@ -83,6 +93,7 @@ namespace netd::shared::netconf {
     std::atomic<uint64_t> message_id_counter_;
     bool connected_;
     int socket_;
+    uid_t user_id_;
     netd::shared::TransportType transport_type_;
   };
 

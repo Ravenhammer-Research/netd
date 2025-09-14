@@ -30,6 +30,8 @@
 
 #include <string>
 #include <memory>
+#include <iostream>
+#include <functional>
 
 namespace netd::shared {
 
@@ -46,6 +48,12 @@ namespace netd::shared {
     BaseTransport() = default;
     virtual ~BaseTransport() = default;
 
+    // Factory method for creating transports
+    static std::unique_ptr<BaseTransport> create(TransportType type);
+    
+    // Address formatting for different transport types
+    static std::string formatAddress(TransportType type, const std::string& bind_address, int port);
+
     // Transport lifecycle
     virtual bool start(const std::string& address) = 0;
     virtual void stop() = 0;
@@ -55,9 +63,18 @@ namespace netd::shared {
     virtual int acceptConnection() = 0;
     virtual void closeConnection(int socket_fd) = 0;
 
+    // Client-side methods
+    virtual bool connect(const std::string& address) = 0;
+    virtual void disconnect() = 0;
+    virtual int getSocket() const = 0;
+
     // Communication
     virtual bool sendData(int socket_fd, const std::string& data) = 0;
     virtual std::string receiveData(int socket_fd) = 0;
+    virtual bool hasData(int socket_fd) = 0;
+    
+    // Cancellation support
+    virtual void cancelOperation(int socket_fd) = 0;
 
     // Transport properties
     virtual const std::string& getAddress() const = 0;

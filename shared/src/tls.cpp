@@ -27,148 +27,79 @@
 
 #include <shared/include/tls.hpp>
 #include <shared/include/exception.hpp>
-#include <shared/include/logger.hpp>
 
 namespace netd::shared {
 
-  TLSSecurityWrapper::TLSSecurityWrapper(std::unique_ptr<BaseTransport> transport,
-                                        const std::string& cert_file,
-                                        const std::string& key_file,
-                                        const std::string& ca_file,
-                                        bool verify_peer)
-    : transport_(std::move(transport))
-    , cert_file_(cert_file)
+  TLSSecurity::TLSSecurity(const std::string& cert_file,
+                          const std::string& key_file,
+                          const std::string& ca_file,
+                          bool verify_peer)
+    : cert_file_(cert_file)
     , key_file_(key_file)
     , ca_file_(ca_file)
     , verify_peer_(verify_peer)
     , initialized_(false)
   {
-    if (!transport_) {
-      throw std::invalid_argument("Transport cannot be null");
-    }
   }
 
-  TLSSecurityWrapper::~TLSSecurityWrapper() {
+  TLSSecurity::~TLSSecurity() {
     cleanupTLS();
   }
 
-  bool TLSSecurityWrapper::initializeTLS() {
-    if (initialized_) {
-      return true;
-    }
-
-    auto& logger = Logger::getInstance();
-    
-    // Load certificates
-    if (!loadCertificate(cert_file_)) {
-      logger.error("Failed to load TLS certificate: " + cert_file_);
-      return false;
-    }
-
-    if (!loadPrivateKey(key_file_)) {
-      logger.error("Failed to load TLS private key: " + key_file_);
-      return false;
-    }
-
-    if (!ca_file_.empty() && !loadCAFile(ca_file_)) {
-      logger.error("Failed to load CA file: " + ca_file_);
-      return false;
-    }
-
-    initialized_ = true;
-    logger.info("TLS security wrapper initialized");
-    return true;
+  // TLS-specific methods
+  bool TLSSecurity::initializeTLS() {
+    throw netd::shared::NotImplementedError("TLSSecurity::initializeTLS not implemented");
   }
 
-  void TLSSecurityWrapper::cleanupTLS() {
-    if (initialized_) {
-      auto& logger = Logger::getInstance();
-      logger.info("TLS security wrapper cleaned up");
-      initialized_ = false;
-    }
+  void TLSSecurity::cleanupTLS() {
+    throw netd::shared::NotImplementedError("TLSSecurity::cleanupTLS not implemented");
   }
 
-  bool TLSSecurityWrapper::isTLSInitialized() const {
-    return initialized_;
+  bool TLSSecurity::isTLSInitialized() const {
+    throw netd::shared::NotImplementedError("TLSSecurity::isTLSInitialized not implemented");
   }
 
-  bool TLSSecurityWrapper::loadCertificate(const std::string& cert_file) {
-    // Placeholder for certificate loading
-    auto& logger = Logger::getInstance();
-    logger.info("Loading TLS certificate: " + cert_file);
-    return true;
+  // Certificate management
+  bool TLSSecurity::loadCertificate(const std::string& cert_file) {
+    (void)cert_file;
+    throw netd::shared::NotImplementedError("TLSSecurity::loadCertificate not implemented");
   }
 
-  bool TLSSecurityWrapper::loadPrivateKey(const std::string& key_file) {
-    // Placeholder for private key loading
-    auto& logger = Logger::getInstance();
-    logger.info("Loading TLS private key: " + key_file);
-    return true;
+  bool TLSSecurity::loadPrivateKey(const std::string& key_file) {
+    (void)key_file;
+    throw netd::shared::NotImplementedError("TLSSecurity::loadPrivateKey not implemented");
   }
 
-  bool TLSSecurityWrapper::loadCAFile(const std::string& ca_file) {
-    // Placeholder for CA file loading
-    auto& logger = Logger::getInstance();
-    logger.info("Loading TLS CA file: " + ca_file);
-    return true;
+  bool TLSSecurity::loadCAFile(const std::string& ca_file) {
+    (void)ca_file;
+    throw netd::shared::NotImplementedError("TLSSecurity::loadCAFile not implemented");
   }
 
-  bool TLSSecurityWrapper::performHandshake(int socket_fd, bool is_server) {
-    if (!initialized_) {
-      auto& logger = Logger::getInstance();
-      logger.error("TLS not initialized, cannot perform handshake");
-      return false;
-    }
-
-    auto& logger = Logger::getInstance();
-    logger.info("Performing TLS handshake on socket " + std::to_string(socket_fd) + 
-                " (server: " + (is_server ? "yes" : "no") + ")");
-    
-    // Placeholder for TLS handshake
-    return true;
+  // TLS handshake
+  bool TLSSecurity::performHandshake(int socket_fd, bool is_server) {
+    (void)socket_fd; (void)is_server;
+    throw netd::shared::NotImplementedError("TLSSecurity::performHandshake not implemented");
   }
 
-  bool TLSSecurityWrapper::sendEncryptedData(int socket_fd, const std::string& data) {
-    if (!initialized_) {
-      auto& logger = Logger::getInstance();
-      logger.error("TLS not initialized, cannot send encrypted data");
-      return false;
-    }
-
-    // Placeholder for encrypted data sending
-    auto& logger = Logger::getInstance();
-    logger.debug("Sending encrypted data on socket " + std::to_string(socket_fd) + 
-                 " (" + std::to_string(data.length()) + " bytes)");
-    
-    // For now, just pass through to underlying transport
-    return transport_->sendData(socket_fd, data);
+  // Encrypted data operations
+  bool TLSSecurity::sendEncryptedData(int socket_fd, const std::string& data) {
+    (void)socket_fd; (void)data;
+    throw netd::shared::NotImplementedError("TLSSecurity::sendEncryptedData not implemented");
   }
 
-  std::string TLSSecurityWrapper::receiveEncryptedData(int socket_fd) {
-    if (!initialized_) {
-      auto& logger = Logger::getInstance();
-      logger.error("TLS not initialized, cannot receive encrypted data");
-      return "";
-    }
-
-    // Placeholder for encrypted data receiving
-    auto& logger = Logger::getInstance();
-    logger.debug("Receiving encrypted data from socket " + std::to_string(socket_fd));
-    
-    // For now, just pass through to underlying transport
-    return transport_->receiveData(socket_fd);
+  std::string TLSSecurity::receiveEncryptedData(int socket_fd) {
+    (void)socket_fd;
+    throw netd::shared::NotImplementedError("TLSSecurity::receiveEncryptedData not implemented");
   }
 
-  BaseTransport* TLSSecurityWrapper::getTransport() const {
-    return transport_.get();
+  // Configuration
+  void TLSSecurity::setVerifyPeer(bool verify) {
+    (void)verify;
+    throw netd::shared::NotImplementedError("TLSSecurity::setVerifyPeer not implemented");
   }
 
-  void TLSSecurityWrapper::setVerifyPeer(bool verify) {
-    verify_peer_ = verify;
-  }
-
-  bool TLSSecurityWrapper::getVerifyPeer() const {
-    return verify_peer_;
+  bool TLSSecurity::getVerifyPeer() const {
+    throw netd::shared::NotImplementedError("TLSSecurity::getVerifyPeer not implemented");
   }
 
 } // namespace netd::shared

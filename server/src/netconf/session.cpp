@@ -136,4 +136,16 @@ namespace netd::server::netconf {
     return count;
   }
 
+  netd::shared::netconf::NetconfSession* SessionManager::findSessionByUserId(uid_t user_id) {
+    std::lock_guard<std::mutex> lock(sessions_mutex_);
+    
+    for (const auto& session : sessions_) {
+      if (session->getUserId() == user_id) {
+        return session.get();
+      }
+    }
+    
+    return nullptr;
+  }
+
 } // namespace netd::server::netconf

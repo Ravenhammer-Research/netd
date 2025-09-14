@@ -29,7 +29,7 @@
 #include <client/include/parser.hpp>
 #include <client/include/processor.hpp>
 #include <client/include/tui.hpp>
-#include <shared/include/lldp/client.hpp>
+#include <client/include/lldp.hpp>
 #include <iostream>
 #include <shared/include/exception.hpp>
 #include <shared/include/logger.hpp>
@@ -37,20 +37,34 @@
 #include <string>
 #include <thread>
 #include <chrono>
-#include <iomanip>
 #include <unistd.h>
 #include <getopt.h>
 #include <vector>
 
 void printUsage(const char *progname) {
-  std::cerr << "Usage: " << progname << " [options]\n";
-  std::cerr << "Options:\n";
-  std::cerr << "  -s <path>    Socket path (default: /tmp/netd.sock)\n";
-  std::cerr << "  -L           List LLDP neighbors and exit\n";
-  std::cerr << "  -d           Enable debug logging\n";
-  std::cerr << "  -dd          Enable debug and trace logging\n";
-  std::cerr << "  -ddd         Enable debug, trace, and timestamps\n";
-  std::cerr << "  -h           Show this help message\n";
+  std::cerr << "\033[1mUsage:\033[0m " << progname << " [\033[3moptions\033[0m]\n\n";
+  std::cerr << "\033[1mTransport Options\033[0m:\n";
+  std::cerr << "  \033[1m--unix\033[0m  [\033[3mpath\033[0m]             Unix domain socket (default: /tmp/netd.sock)\n";
+  std::cerr << "  \033[1m--sctp\033[0m  [\033[3maddr\033[0m]:[\033[3mport\033[0m]      SCTP transport \033[3m(not implemented)\033[0m\n";
+  std::cerr << "  \033[1m--http\033[0m  [\033[3maddr\033[0m]:[\033[3mport\033[0m]      HTTP transport \033[3m(not implemented)\033[0m\n";
+  std::cerr << "  \033[1m--sctps\033[0m [\033[3maddr\033[0m]:[\033[3mport\033[0m]      SCTP with DTLS \033[3m(not implemented)\033[0m\n";
+  std::cerr << "  \033[1m--https\033[0m [\033[3maddr\033[0m]:[\033[3mport\033[0m]      HTTP with TLS \033[3m (not implemented)\033[0m\n\n";
+  std::cerr << "\033[1mDebug Options\033[0m:\n";
+  std::cerr << "  \033[1m-d\033[0m                         Basic debug output\n";
+  std::cerr << "  \033[1m-dd\033[0m                        Basic debug + trace output\n";
+  std::cerr << "  \033[1m-q\033[0m                         Quiet mode (errors only)\n";
+  std::cerr << "  \033[1m--debug\033[0m                    Basic debug output\n";
+#ifdef HAVE_LLDP
+  std::cerr << "  \033[1m--debug-lldp\033[0m               LLDP debug output\n";
+#endif
+  std::cerr << "  \033[1m--debug-yang\033[0m               YANG debug output\n";
+  std::cerr << "  \033[1m--debug-yang-dict\033[0m          YANG dictionary debug\n";
+  std::cerr << "  \033[1m--debug-yang-xpath\033[0m         YANG XPath debug\n";
+  std::cerr << "  \033[1m--debug-yang-depsets\033[0m       YANG dependency sets debug\n";
+  std::cerr << "  \033[1m--debug-trace\033[0m              Application trace debug\n\n";
+  std::cerr << "\033[1mOther Options\033[0m:\n";
+  std::cerr << "  \033[1m-L\033[0m                         List LLDP neighbors and exit\n";
+  std::cerr << "  \033[1m-h\033[0m                         Show this help message\n";
 }
 
 void showStartupInfo(netd::client::tui::TUI& tui) {
@@ -66,87 +80,103 @@ void showStartupInfo(netd::client::tui::TUI& tui) {
   tui.putLine(" ");
 }
 
-int listLLDPNeighbors() {
-  try {
-    // Initialize LLDP client
-    netd::shared::lldp::Client lldp_client;
-    try {
-      lldp_client.initialize();
-    } catch (const netd::shared::LLDPError& e) {
-      std::cerr << "Failed to initialize LLDP client: " << e.what() << std::endl;
-      return 1;
-    }
-    
-    // Get LLDP information
-    auto ports = lldp_client.getPorts();
-    auto link_local_addrs = lldp_client.getLinkLocalAddresses();
-    
-    std::cout << "LLDP Discovery Results:" << std::endl;
-    std::cout << "======================" << std::endl;
-    
-    if (ports.empty()) {
-      std::cout << "No LLDP ports found." << std::endl;
-    } else {
-      // Print table header
-      std::cout << std::left;
-      std::cout << std::setw(20) << "PORT" 
-                << std::setw(20) << "DESCRIPTION" 
-                << std::setw(15) << "NEIGHBORS" 
-                << std::setw(15) << "TTL" << std::endl;
-      std::cout << std::string(70, '-') << std::endl;
-      
-      // Print table rows
-      for (const auto& port : ports) {
-        if (port && port->isValid()) {
-          auto neighbors = port->getNeighbors();
-          std::string neighbor_count = std::to_string(neighbors.size());
-          std::string ttl = std::to_string(port->getPortTTL());
-          
-          std::cout << std::setw(20) << port->getPortName()
-                    << std::setw(20) << port->getPortDescription()
-                    << std::setw(15) << neighbor_count
-                    << std::setw(15) << ttl << std::endl;
-        }
-      }
-    }
-    
-    // Show link-local addresses
-    if (!link_local_addrs.empty()) {
-      std::cout << "\nLink-local addresses:" << std::endl;
-      std::cout << "===================" << std::endl;
-      for (const auto& [interface_name, address] : link_local_addrs) {
-        std::cout << interface_name << ": " << address << std::endl;
-      }
-    }
-    
-    // Cleanup
-    lldp_client.cleanup();
-    
-    return 0;
-  } catch (const std::exception& e) {
-    std::cerr << "Error listing LLDP neighbors: " << e.what() << std::endl;
-    return 1;
-  }
-}
 
 int main(int argc, char *argv[]) {
+  auto &logger = netd::shared::Logger::getInstance();
+  
   // Default values
-  std::string socketPath = "/tmp/netd.sock";
-  int debugLevel = 0;  // 0=error only, 1=warning, 2=info, 3=debug
+  netd::shared::TransportType transportType = netd::shared::TransportType::UNIX;
+  std::string bindAddress = "/tmp/netd.sock";
+  uint32_t logMask = netd::shared::LOG_DEFAULT;
   bool listLLDP = false;
   
   // Parse command line options
   int opt;
-  while ((opt = getopt(argc, argv, "s:Ldh")) != -1) {
+  
+  // Handle -dd before main parsing (getopt doesn't handle -dd naturally)
+  for (int i = 1; i < argc; i++) {
+    if (strcmp(argv[i], "-dd") == 0) {
+      logMask |= static_cast<uint32_t>(netd::shared::LogMask::DEBUG);
+      logMask |= static_cast<uint32_t>(netd::shared::LogMask::DEBUG_TRACE);
+      // Replace -dd with -d so getopt can handle it normally
+      argv[i] = const_cast<char*>("-d");
+    }
+  }
+  static struct option long_options[] = {
+    {"unix", optional_argument, 0, 1000},
+    {"sctp", optional_argument, 0, 1001},
+    {"http", optional_argument, 0, 1002},
+    {"sctps", optional_argument, 0, 1003},
+    {"https", optional_argument, 0, 1004},
+    {"debug", no_argument, 0, 2000},
+#ifdef HAVE_LLDP
+    {"debug-lldp", no_argument, 0, 2001},
+#endif
+    {"debug-yang", no_argument, 0, 2002},
+    {"debug-yang-dict", no_argument, 0, 2003},
+    {"debug-yang-xpath", no_argument, 0, 2004},
+    {"debug-yang-depsets", no_argument, 0, 2005},
+    {"debug-trace", no_argument, 0, 2006},
+    {"help", no_argument, 0, 'h'},
+    {0, 0, 0, 0}
+  };
+  
+  int option_index = 0;
+  while ((opt = getopt_long(argc, argv, "dqlLh", long_options, &option_index)) != -1) {
     switch (opt) {
-    case 's':
-      socketPath = optarg;
+    case 1000: // --unix
+      transportType = netd::shared::TransportType::UNIX;
+      if (optarg) bindAddress = optarg;
+      break;
+    case 1001: // --sctp
+      transportType = netd::shared::TransportType::SCTP;
+      if (optarg) bindAddress = optarg; else bindAddress = "::";
+      break;
+    case 1002: // --http
+      transportType = netd::shared::TransportType::HTTP;
+      if (optarg) bindAddress = optarg; else bindAddress = "::";
+      break;
+    case 1003: // --sctps
+      transportType = netd::shared::TransportType::SCTPS;
+      if (optarg) bindAddress = optarg; else bindAddress = "::";
+      break;
+    case 1004: // --https
+      transportType = netd::shared::TransportType::HTTPS;
+      if (optarg) bindAddress = optarg; else bindAddress = "::";
+      break;
+    case 'd':
+      // Legacy debug flag - add basic debug
+      logMask |= static_cast<uint32_t>(netd::shared::LogMask::DEBUG);
+      break;
+    case 'q':
+      // Quiet mode - only error messages
+      logMask = static_cast<uint32_t>(netd::shared::LogMask::ERROR);
+      break;
+    case 2000: // --debug
+      logMask |= static_cast<uint32_t>(netd::shared::LogMask::DEBUG);
+      break;
+#ifdef HAVE_LLDP
+    case 2001: // --debug-lldp
+      logMask |= static_cast<uint32_t>(netd::shared::LogMask::DEBUG_LLDP);
+      break;
+#endif
+    case 2002: // --debug-yang
+      logMask |= static_cast<uint32_t>(netd::shared::LogMask::DEBUG_YANG);
+      break;
+    case 2003: // --debug-yang-dict
+      logMask |= static_cast<uint32_t>(netd::shared::LogMask::DEBUG_YANG_DICT);
+      break;
+    case 2004: // --debug-yang-xpath
+      logMask |= static_cast<uint32_t>(netd::shared::LogMask::DEBUG_YANG_XPATH);
+      break;
+    case 2005: // --debug-yang-depsets
+      logMask |= static_cast<uint32_t>(netd::shared::LogMask::DEBUG_YANG_DEPSETS);
+      break;
+    case 2006: // --debug-trace
+      logMask |= static_cast<uint32_t>(netd::shared::LogMask::DEBUG_TRACE);
       break;
     case 'L':
       listLLDP = true;
-      break;
-    case 'd':
-      debugLevel++;
       break;
     case 'h':
       printUsage(argv[0]);
@@ -157,82 +187,51 @@ int main(int argc, char *argv[]) {
     }
   }
   
-  // Handle LLDP listing
   if (listLLDP) {
     return listLLDPNeighbors();
   }
   
-  // Get logger instance and set log level
-  auto &logger = netd::shared::Logger::getInstance();
-  
-  // Set log mask based on debug flags
-  uint32_t logMask = netd::shared::LOG_DEFAULT;
-  switch (debugLevel) {
-  case 0:
-    logMask = netd::shared::LOG_DEFAULT; // Default: INFO, WARNING, ERROR
-    break;
-  case 1:
-    logMask |= static_cast<uint32_t>(netd::shared::LogMask::DEBUG); // -d: DEBUG and above
-    break;
-  case 2:
-    logMask |= static_cast<uint32_t>(netd::shared::LogMask::DEBUG);
-    logMask |= static_cast<uint32_t>(netd::shared::LogMask::DEBUG_TRACE); // -dd: DEBUG + TRACE
-    break;
-  case 3:
-    logMask |= static_cast<uint32_t>(netd::shared::LogMask::DEBUG);
-    logMask |= static_cast<uint32_t>(netd::shared::LogMask::DEBUG_TRACE); // -ddd: DEBUG + TRACE + timestamps
-    break;
-  default:
-    logMask |= static_cast<uint32_t>(netd::shared::LogMask::DEBUG);
-    logMask |= static_cast<uint32_t>(netd::shared::LogMask::DEBUG_TRACE); // More than 3: same as -ddd
-    break;
-  }
-  
+  // Set log mask based on command line options
   logger.setLogMask(logMask);
   
   // Enable timestamps if any debug is enabled
-  if (debugLevel > 0) {
+  if (logMask & (static_cast<uint32_t>(netd::shared::LogMask::DEBUG) | 
+                 static_cast<uint32_t>(netd::shared::LogMask::DEBUG_LLDP) | 
+                 static_cast<uint32_t>(netd::shared::LogMask::DEBUG_YANG) |
+                 static_cast<uint32_t>(netd::shared::LogMask::DEBUG_TRACE))) {
     logger.setTimestampEnabled(true);
   }
   
-  // Initialize TUI
   netd::client::tui::TUI tui;
   if (!tui.initialize()) {
     std::cerr << "Failed to initialize TUI" << std::endl;
     return 1;
   }
   
-  // Set up logger integration AFTER TUI is initialized
   tui.setLoggerInstance(&tui);
-  tui.setDebugLevel(debugLevel);
   
-  // Show startup information
   showStartupInfo(tui);
   
-  // Get netconf client singleton
-  auto& client = netd::client::netconf::NetconfClient::getInstance();
+  auto client = std::make_unique<netd::client::netconf::NetconfClient>(
+      transportType, bindAddress);
   
-  // Try to connect in background thread
-  std::thread connect_thread([&client, &tui, socketPath]() {
-    try {
-      client.connect(socketPath);
-      tui.setConnectionStatus("Connected to " + socketPath);
-    } catch (const std::exception& e) {
-      tui.setConnectionStatus("Disconnected: " + std::string(e.what()));
-    }
-  });
-  connect_thread.detach();
+  try {
+    // Connect on startup to verify server availability
+    client->connect();
+    tui.setConnectionStatus("Server available at " + bindAddress);
+    client->disconnect(false); // Disconnect transport but don't close session after verification
+    
+  } catch (const std::exception& e) {
+    tui.setConnectionStatus("Server unavailable: " + std::string(e.what()));
+  }
   
-  // Show initial status
-  tui.setConnectionStatus("Connecting...");
+  tui.redrawScreen();
   
-  // Set up command processor
-  netd::client::CommandProcessor processor(tui, client);
-  tui.setCommandHandler([&processor](const std::string &command) -> bool {
+  netd::client::CommandProcessor processor(tui, *client);
+  
+  tui.runInteractive([&processor](const std::string &command) -> bool {
     return processor.processCommand(command);
   });
-  
-  tui.runInteractive();
 
   return 0;
 }

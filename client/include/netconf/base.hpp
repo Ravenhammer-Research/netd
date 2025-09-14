@@ -28,28 +28,18 @@
 #ifndef NETD_CLIENT_NETCONF_BASE_HPP
 #define NETD_CLIENT_NETCONF_BASE_HPP
 
-#include <shared/include/netconf/session.hpp>
-#include <memory>
-#include <string>
-
 namespace netd::client::netconf {
 
+  /**
+   * @brief Empty mixin class for NETCONF client functionality
+   * 
+   * This class serves as a pure mixin that can be inherited by other classes
+   * to provide NETCONF client capabilities through multiple inheritance.
+   */
   class NetconfBase {
   public:
-    NetconfBase();
-    virtual ~NetconfBase();
-
-    // Base functionality
-    virtual bool initialize();
-    virtual void cleanup();
-    
-    
-    // Connection state
-    virtual bool isInitialized() const;
-    
-  protected:
-    bool initialized_;
-    std::unique_ptr<netd::shared::netconf::NetconfSession> session_;
+    NetconfBase() = default;
+    virtual ~NetconfBase() = default;
   };
 
 } // namespace netd::client::netconf

@@ -40,7 +40,7 @@ namespace netd::server::netconf::handlers {
 
   std::unique_ptr<netd::shared::response::EditConfigResponse>
   RpcHandler::handleEditConfigRequest(
-      std::unique_ptr<netd::shared::request::EditConfigRequest> request) {
+      netd::shared::request::EditConfigRequest* request) {
     auto &logger = netd::shared::Logger::getInstance();
     auto response =
         std::make_unique<netd::shared::response::EditConfigResponse>();

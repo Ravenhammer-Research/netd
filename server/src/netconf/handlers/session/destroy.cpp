@@ -34,7 +34,7 @@ namespace netd::server::netconf::handlers {
 
   std::unique_ptr<netd::shared::response::CloseResponse>
   RpcHandler::handleDestroySessionRequest(
-      std::unique_ptr<netd::shared::request::session::DestroyRequest> request [[maybe_unused]]) {
+      netd::shared::request::session::DestroyRequest* request [[maybe_unused]]) {
     throw netd::shared::NotImplementedError("Destroy session handler not implemented");
   }
 

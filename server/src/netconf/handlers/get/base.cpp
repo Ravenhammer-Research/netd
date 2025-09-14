@@ -41,7 +41,7 @@ namespace netd::server::netconf::handlers {
 
   std::unique_ptr<netd::shared::response::get::GetResponse>
   RpcHandler::handleGetRequest(
-      std::unique_ptr<netd::shared::request::get::GetRequest> request) {
+      netd::shared::request::get::GetRequest* request) {
     auto &logger = netd::shared::Logger::getInstance();
     logger.info("handleGetRequest: Processing get request");
     
