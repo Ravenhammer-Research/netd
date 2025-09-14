@@ -36,6 +36,7 @@
 #include <shared/include/exception.hpp>
 #include <shared/include/netconf/session.hpp>
 #include <shared/include/stream.hpp>
+#include <shared/include/socket.hpp>
 
 namespace netd::shared::netconf {
 
@@ -113,7 +114,10 @@ namespace netd::shared::netconf {
     static void processRpc(RpcRxStream& rpc_stream, NetconfSession* session);
     static void processRequest(RpcRxStream& rpc_stream, NetconfSession* session);
     static void processReply(RpcRxStream& rpc_stream, NetconfSession* session);
-
+    
+    // Shared hello message functionality
+    static void sendHelloToServer(const ClientSocket& client_socket, NetconfSession* session);
+    static void sendHelloToClient(const ClientSocket& client_socket, NetconfSession* session);
 
     virtual ~Rpc() = default;
 

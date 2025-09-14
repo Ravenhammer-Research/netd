@@ -25,49 +25,15 @@
  * SUCH DAMAGE.
  */
 
-#pragma once
+#include <shared/include/expect/interface.hpp>
+#include <shared/include/logger.hpp>
+#include <libyang/libyang.h>
 
-#include <memory>
-#include <string>
-#include <vector>
+namespace netd::shared::expect {
 
-namespace netd::client {
+  InterfaceResponse InterfaceExpect::convertFromYang(lyd_node* response_node) {
+    (void)response_node; // Suppress unused parameter warning
+    throw std::runtime_error("InterfaceExpect::convertFromYang not implemented");
+  }
 
-  enum class CommandType { SHOW, SET, DELETE, COMMIT, QUIT, UNKNOWN };
-
-  enum class TargetType { INTERFACE, VRF, ROUTE, UNKNOWN };
-
-  struct ParsedCommand {
-    CommandType command;
-    TargetType target;
-    std::vector<std::string> arguments;
-
-    ParsedCommand()
-        : command(CommandType::UNKNOWN), target(TargetType::UNKNOWN) {}
-  };
-
-  class CommandParser {
-  public:
-    CommandParser();
-    ~CommandParser();
-
-    // Parse a command string and return the parsed result
-    ParsedCommand parse(const std::string &command);
-
-    // Check if the command is valid
-    bool isValid(const std::string &command);
-
-  private:
-    // Internal parsing methods for different command types
-    ParsedCommand parseShowCommand(const std::string &command);
-    ParsedCommand parseSetCommand(const std::string &command);
-    ParsedCommand parseDeleteCommand(const std::string &command);
-    ParsedCommand parseCommitCommand(const std::string &command);
-
-    // Helper methods
-    std::vector<std::string> tokenize(const std::string &command);
-    CommandType getCommandType(const std::string &cmd);
-    TargetType getTargetType(const std::string &target);
-  };
-
-} // namespace netd::client
+} // namespace netd::shared::expect

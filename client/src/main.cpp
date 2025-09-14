@@ -26,8 +26,7 @@
  */
 
 #include <client/include/netconf/client.hpp>
-#include <client/include/parser.hpp>
-#include <client/include/processor.hpp>
+#include <client/include/processor/parser.hpp>
 #include <client/include/tui.hpp>
 #include <client/include/lldp.hpp>
 #include <iostream>
@@ -45,8 +44,6 @@ void printUsage(const char *progname) {
   std::cerr << "\033[1mUsage:\033[0m " << progname << " [\033[3moptions\033[0m]\n\n";
   std::cerr << "\033[1mTransport Options\033[0m:\n";
   std::cerr << "  \033[1m--unix\033[0m  [\033[3mpath\033[0m]             Unix domain socket (default: /tmp/netd.sock)\n";
-  std::cerr << "  \033[1m--sctp\033[0m  [\033[3maddr\033[0m]:[\033[3mport\033[0m]      SCTP transport \033[3m(not implemented)\033[0m\n";
-  std::cerr << "  \033[1m--http\033[0m  [\033[3maddr\033[0m]:[\033[3mport\033[0m]      HTTP transport \033[3m(not implemented)\033[0m\n";
   std::cerr << "  \033[1m--sctps\033[0m [\033[3maddr\033[0m]:[\033[3mport\033[0m]      SCTP with DTLS \033[3m(not implemented)\033[0m\n";
   std::cerr << "  \033[1m--https\033[0m [\033[3maddr\033[0m]:[\033[3mport\033[0m]      HTTP with TLS \033[3m (not implemented)\033[0m\n\n";
   std::cerr << "\033[1mDebug Options\033[0m:\n";
@@ -72,11 +69,15 @@ void showStartupInfo(netd::client::tui::TUI& tui) {
   tui.putLine(" ");
   tui.putLine("Copyright (c) 2025 RavenHammer Research. All rights reserved.");
   tui.putLine(" ");
-  tui.putLine("Credits:");
+  tui.putLine("Third-Party Licenses:");
   tui.putLine(" ");
   tui.putLine("  FreeBSD - Copyright (c) The Regents of the University of California.");
-  tui.putLine("           All rights reserved.");
+  tui.putLine("           All rights reserved. BSD License.");
   tui.putLine("  libyang - Copyright (c) 2015-2025, CESNET. All rights reserved.");
+  tui.putLine("           BSD License.");
+  tui.putLine("  lldpd   - Copyright (c) 2008-2017, Vincent Bernat <vincent@bernat.im>");
+  tui.putLine("           ISC License. See LICENSE.txt from your application");
+  tui.putLine("           distribution for details.");
   tui.putLine(" ");
 }
 
@@ -104,8 +105,6 @@ int main(int argc, char *argv[]) {
   }
   static struct option long_options[] = {
     {"unix", optional_argument, 0, 1000},
-    {"sctp", optional_argument, 0, 1001},
-    {"http", optional_argument, 0, 1002},
     {"sctps", optional_argument, 0, 1003},
     {"https", optional_argument, 0, 1004},
     {"debug", no_argument, 0, 2000},
@@ -127,14 +126,6 @@ int main(int argc, char *argv[]) {
     case 1000: // --unix
       transportType = netd::shared::TransportType::UNIX;
       if (optarg) bindAddress = optarg;
-      break;
-    case 1001: // --sctp
-      transportType = netd::shared::TransportType::SCTP;
-      if (optarg) bindAddress = optarg; else bindAddress = "::";
-      break;
-    case 1002: // --http
-      transportType = netd::shared::TransportType::HTTP;
-      if (optarg) bindAddress = optarg; else bindAddress = "::";
       break;
     case 1003: // --sctps
       transportType = netd::shared::TransportType::SCTPS;
@@ -227,7 +218,7 @@ int main(int argc, char *argv[]) {
   
   tui.redrawScreen();
   
-  netd::client::CommandProcessor processor(tui, *client);
+  netd::client::processor::CommandProcessor processor(tui, *client);
   
   tui.runInteractive([&processor](const std::string &command) -> bool {
     return processor.processCommand(command);

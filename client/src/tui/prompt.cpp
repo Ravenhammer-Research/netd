@@ -31,6 +31,19 @@
 
 namespace netd::client::tui {
 
+  // Character constants
+  constexpr char TAB_KEY = '\t';
+  constexpr char NEWLINE_KEY = '\n';
+  constexpr char CARRIAGE_RETURN_KEY = '\r';
+  constexpr char CTRL_D_MARKER = '\x04';
+  constexpr char BACKSPACE_KEY = 127;
+  constexpr char PRINTABLE_CHAR_MIN = 32;
+  constexpr char PRINTABLE_CHAR_MAX = 126;
+  
+  // String literals
+  constexpr const char* PROMPT_PREFIX = "netc";
+  constexpr const char* PROMPT_SUFFIX = "> ";
+
   // Prompt management
   int TUI::getPromptLength() {
     return static_cast<int>(prompt_.length());
@@ -46,9 +59,9 @@ namespace netd::client::tui {
     
     // Print "netc" in bold, then ">" in normal formatting
     attron(A_BOLD);
-    printw("netc");
+    printw(PROMPT_PREFIX);
     attroff(A_BOLD);
-    printw("> ");
+    printw(PROMPT_SUFFIX);
     
     refresh();
   }
@@ -89,7 +102,7 @@ namespace netd::client::tui {
         putPrompt();
         putCurrentLine(line);
         continue;
-      } else if (key == '\n' || key == '\r') {
+      } else if (key == NEWLINE_KEY || key == CARRIAGE_RETURN_KEY) {
         break;
       } else if (key == ERR) {
         // Check if this is EOF by trying to read again with a timeout
@@ -99,7 +112,7 @@ namespace netd::client::tui {
         
         if (next_key == ERR) {
           // EOF (Ctrl+D) - return special marker to signal exit
-          return "\x04"; // CTRL_D_MARKER
+          return std::string(1, CTRL_D_MARKER);
         }
         // Otherwise put the key back and continue
         ungetch(next_key);
@@ -116,12 +129,21 @@ namespace netd::client::tui {
         redrawScreen();
         putPrompt();
         putCurrentLine(line);
-      } else if (key == KEY_BACKSPACE || key == 127) {
+      } else if (key == KEY_BACKSPACE || key == BACKSPACE_KEY) {
         if (!line.empty()) {
           line.pop_back();
           backspaceAtCursor();
         }
-      } else if (key >= 32 && key <= 126) {
+      } else if (key == TAB_KEY) {
+        // Handle tab completion
+        if (!line.empty()) {
+          std::string completed = completeCommandContextual(line);
+          // Always redraw the line after tab completion to ensure it's visible
+          clearCurrentLine();
+          line = completed;
+          putCurrentLine(line);
+        }
+      } else if (key >= PRINTABLE_CHAR_MIN && key <= PRINTABLE_CHAR_MAX) {
         line += static_cast<char>(key);
         addch(key);
         refresh();
@@ -136,7 +158,7 @@ namespace netd::client::tui {
   }
 
   std::string TUI::formatReturnValue(bool ctrl_d_exit, const std::string &result) {
-    return ctrl_d_exit ? std::string(1, 0x04) : result; // 0x04 is CTRL_D_MARKER
+    return ctrl_d_exit ? std::string(1, CTRL_D_MARKER) : result;
   }
 
   void TUI::handleKeyInput(int key) {
@@ -153,6 +175,9 @@ namespace netd::client::tui {
         break;
       case KEY_RIGHT:
         // Handle right arrow for cursor movement
+        break;
+      case TAB_KEY:  // Tab key
+        // Handle tab completion
         break;
       default:
         break;

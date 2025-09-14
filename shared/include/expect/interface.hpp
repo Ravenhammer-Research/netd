@@ -25,64 +25,52 @@
  * SUCH DAMAGE.
  */
 
-#include <client/include/tui.hpp>
-#include <client/include/netconf/client.hpp>
-#include <client/include/processor/parser.hpp>
-#include <shared/include/logger.hpp>
-#include <shared/include/exception.hpp>
-#include <curses.h>
-#include <thread>
+#ifndef NETD_SHARED_EXPECT_INTERFACE_HPP
+#define NETD_SHARED_EXPECT_INTERFACE_HPP
 
-namespace netd::client::tui {
+#include <vector>
+#include <string>
+#include <shared/include/expect/base.hpp>
+#include <libyang/libyang.h>
 
-  void TUI::runInteractive(std::function<bool(const std::string &)> commandHandler) {
-    if (!initialized_) {
-      throw std::runtime_error("TUI not initialized (runInteractive)");
-    }
+namespace netd::shared::expect {
 
-    commandHandler_ = commandHandler;
-    redrawScreen();
+  /**
+   * @brief Response data structure for interface list
+   */
+  struct InterfaceResponse {
+    std::vector<std::string> interface_names;
+  };
 
-    std::string line;
-    while (true) {
-      int key = getch();
-      if (key == KEY_RESIZE) {
-        handleResize();
-        continue;
-      }
-      
-      ungetch(key);
-      
-      putPrompt();
-      line = readLine();
-      
-      if (line.empty()) {
-        continue;
-      }
-      
-      if (line == "\x04") {
-        break;
-      }
-      
-      addToCommandHistory(line);
-      
-      if (commandHandler_) {
-        int promptRow = getPromptRow();
-        move(promptRow, 0);
-        clrtoeol();
-        refresh();
-        
-        try {
-          if (!commandHandler_(line)) {
-            break;
-          }
-        } catch (const netd::shared::NetdError &e) {
-          putLine("Error: " + std::string(e.what()));
-          
-          netd::shared::Logger::getInstance().trace(e);
-        } 
-      }
-    }
-  }
+  /**
+   * @brief Specialized Expect class for interface responses
+   */
+  class InterfaceExpect : public Expect<InterfaceResponse> {
+  public:
+    using CallbackType = std::function<void(const InterfaceResponse&)>;
 
-} // namespace netd::client::tui
+    /**
+     * @brief Constructor
+     * @param callback The callback function to call when interface response is received
+     * @param message_id The NETCONF message ID to expect
+     * @param session_id The NETCONF session ID
+     * @param ttl Time to live in seconds (default: 8 seconds)
+     */
+    InterfaceExpect(CallbackType callback,
+                   const std::string& message_id,
+                   const std::string& session_id,
+                   std::chrono::seconds ttl = std::chrono::seconds(8))
+        : Expect<InterfaceResponse>(callback, message_id, session_id, ttl) {}
+
+  private:
+    /**
+     * @brief Convert YANG node to InterfaceResponse
+     * @param response_node The YANG response node
+     * @return The converted interface response data
+     */
+    InterfaceResponse convertFromYang(lyd_node* response_node);
+  };
+
+} // namespace netd::shared::expect
+
+#endif // NETD_SHARED_EXPECT_INTERFACE_HPP

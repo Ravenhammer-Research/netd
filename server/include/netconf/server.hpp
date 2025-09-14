@@ -61,7 +61,6 @@ namespace netd::server::netconf {
     // Server management
     std::unique_ptr<netd::shared::BaseTransport> createTransport();
     void accept();
-    void sendHello(const netd::shared::ClientSocket& client_socket, netd::shared::netconf::NetconfSession* session);
     netd::shared::netconf::NetconfSession* handleClientSession(const netd::shared::ClientSocket& client_socket);
     void rpcRequestReceiveWait(netd::shared::RpcRxStream& rpc_stream, netd::shared::netconf::NetconfSession* session);
     void processRpcRequest(netd::shared::netconf::NetconfSession& session, const std::string& data);

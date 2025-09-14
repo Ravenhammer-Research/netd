@@ -84,6 +84,13 @@ namespace netd::shared::xml {
     return hello;
   }
 
+  std::unique_ptr<HelloToServer> HelloToServer::toXml([[maybe_unused]] uint32_t sessionId, const std::vector<std::string>& capabilities, [[maybe_unused]] const struct ly_ctx* ctx) {
+    auto hello = std::make_unique<HelloToServer>();
+    hello->capabilities_ = capabilities;
+    
+    return hello;
+  }
+
   std::stringstream HelloToServer::toXmlStream([[maybe_unused]] const struct ly_ctx* ctx) const {
     std::stringstream xml;
     xml << XmlHeader::toString();

@@ -25,64 +25,46 @@
  * SUCH DAMAGE.
  */
 
-#include <client/include/tui.hpp>
-#include <client/include/netconf/client.hpp>
-#include <client/include/processor/parser.hpp>
+#include <shared/include/expect/base.hpp>
 #include <shared/include/logger.hpp>
-#include <shared/include/exception.hpp>
-#include <curses.h>
-#include <thread>
 
-namespace netd::client::tui {
+namespace netd::shared::expect {
 
-  void TUI::runInteractive(std::function<bool(const std::string &)> commandHandler) {
-    if (!initialized_) {
-      throw std::runtime_error("TUI not initialized (runInteractive)");
-    }
-
-    commandHandler_ = commandHandler;
-    redrawScreen();
-
-    std::string line;
-    while (true) {
-      int key = getch();
-      if (key == KEY_RESIZE) {
-        handleResize();
-        continue;
-      }
-      
-      ungetch(key);
-      
-      putPrompt();
-      line = readLine();
-      
-      if (line.empty()) {
-        continue;
-      }
-      
-      if (line == "\x04") {
-        break;
-      }
-      
-      addToCommandHistory(line);
-      
-      if (commandHandler_) {
-        int promptRow = getPromptRow();
-        move(promptRow, 0);
-        clrtoeol();
-        refresh();
-        
-        try {
-          if (!commandHandler_(line)) {
-            break;
-          }
-        } catch (const netd::shared::NetdError &e) {
-          putLine("Error: " + std::string(e.what()));
-          
-          netd::shared::Logger::getInstance().trace(e);
-        } 
-      }
-    }
+  ExpectBase::ExpectBase(const std::string& message_id, 
+                         const std::string& session_id, 
+                         std::chrono::seconds ttl)
+      : message_id_(message_id), session_id_(session_id), ttl_(ttl), 
+        creation_time_(std::chrono::steady_clock::now()) {
   }
 
-} // namespace netd::client::tui
+  bool ExpectBase::matchesMessageId(const std::string& message_id) const {
+    return message_id_ == message_id;
+  }
+
+  bool ExpectBase::matchesSessionId(const std::string& session_id) const {
+    return session_id_ == session_id;
+  }
+
+  bool ExpectBase::isExpired() const {
+    auto now = std::chrono::steady_clock::now();
+    auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(now - creation_time_);
+    return elapsed >= ttl_;
+  }
+
+  std::chrono::steady_clock::time_point ExpectBase::getCreationTime() const {
+    return creation_time_;
+  }
+
+  std::chrono::seconds ExpectBase::getTtl() const {
+    return ttl_;
+  }
+
+  const std::string& ExpectBase::getMessageId() const {
+    return message_id_;
+  }
+
+  const std::string& ExpectBase::getSessionId() const {
+    return session_id_;
+  }
+
+} // namespace netd::shared::expect

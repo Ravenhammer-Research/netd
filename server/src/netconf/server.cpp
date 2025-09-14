@@ -8,7 +8,6 @@
 #include <shared/include/logger.hpp>
 #include <shared/include/yang.hpp>
 #include <server/include/signal.hpp>
-#include <shared/include/xml/hello.hpp>
 #include <shared/include/request/hello.hpp>
 #include <shared/include/unix.hpp>
 #ifdef HAVE_OPENSSL
@@ -107,7 +106,7 @@ namespace netd::server::netconf {
         try {
           netd::shared::ClientSocket client_socket_obj(client_socket);
           auto session = this->handleClientSession(client_socket_obj);
-          this->sendHello(client_socket_obj, session);
+          netd::shared::netconf::Rpc::sendHelloToClient(client_socket_obj, session);
           netd::shared::RpcRxStream rpc_stream(client_socket_obj);
           this->rpcRequestReceiveWait(rpc_stream, session);
           client_socket_obj.close();
@@ -121,29 +120,6 @@ namespace netd::server::netconf {
     }
   }
 
-  void NetconfServer::sendHello(
-    const netd::shared::ClientSocket& client_socket, 
-    netd::shared::netconf::NetconfSession* session) {
-    
-    if (!session) {
-      throw netd::shared::ArgumentError("session not found");
-    }
-
-    auto yang_ctx = session->getContext();
-    
-    auto capabilities = netd::shared::Yang::getInstance().getCapabilities();
-    auto hello = netd::shared::xml::HelloToClient::toXml(
-      session->getSessionId(), 
-      capabilities, 
-      yang_ctx);
-    
-    std::string xml_str = hello->toString(yang_ctx);
-    
-    netd::shared::RpcTxStream tx_stream(const_cast<netd::shared::ClientSocket&>(client_socket));
-    
-    tx_stream << xml_str;
-    tx_stream.flush();
-  }
 
   netd::shared::netconf::NetconfSession* NetconfServer::handleClientSession(
     const netd::shared::ClientSocket& client_socket) {

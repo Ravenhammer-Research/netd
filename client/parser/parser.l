@@ -28,6 +28,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "parser.h"
 
 %}
@@ -42,8 +43,11 @@
 "show"                   { return SHOW; }
 "commit"                 { return COMMIT; }
 "edit"                   { return EDIT; }
+"quit"                   { return QUIT; }
+"exit"                   { return QUIT; }
 
 "interfaces"             { return INTERFACES; }
+"interface"              { return INTERFACES; }
 "routing-instances"      { return ROUTING_INSTANCES; }
 "routing-options"        { return ROUTING_OPTIONS; }
 
@@ -97,18 +101,18 @@
 
 "all"                    { return ALL; }
 
-[a-z]+-[0-9]+\/[0-9]+\/[0-9]+ { return INTERFACE_NAME; }
+[a-z]+-[0-9]+\/[0-9]+\/[0-9]+ { yylval.string = strdup(yytext); return INTERFACE_NAME; }
 
-[0-9]+                   { return NUMBER; }
+[0-9]+                   { yylval.number = atoi(yytext); return NUMBER; }
 
-[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\/[0-9]+ { return IP_CIDR; }
-[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+ { return IP_ADDRESS; }
+[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\/[0-9]+ { yylval.string = strdup(yytext); return IP_CIDR; }
+[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+ { yylval.string = strdup(yytext); return IP_ADDRESS; }
 
-[A-Za-z_][A-Za-z0-9_]*  { return IDENTIFIER; }
+[A-Za-z_][A-Za-z0-9_]*  { yylval.string = strdup(yytext); return IDENTIFIER; }
 
-\"[^"]*\"               { return STRING; }
+\"[^"]*\"               { yylval.string = strdup(yytext); return STRING; }
 
-[0-9]+g                  { return SPEED_VALUE; }
+[0-9]+g                  { yylval.string = strdup(yytext); return SPEED_VALUE; }
 
 \[                      { return LBRACKET; }
 \]                      { return RBRACKET; }

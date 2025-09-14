@@ -71,12 +71,14 @@ namespace netd::shared::xml {
 
     // Generate HelloToServer from parameters
     static std::unique_ptr<HelloToServer> toXml(lyd_node* lyd_data, const struct ly_ctx* ctx);
+    static std::unique_ptr<HelloToServer> toXml(uint32_t sessionId, const std::vector<std::string>& capabilities, const struct ly_ctx* ctx);
 
     // Override XMLTree methods
     std::stringstream toXmlStream(const struct ly_ctx* ctx) const override;
     
-    // Getters
+    // Getters and setters
     const std::vector<std::string>& getCapabilities() const { return capabilities_; }
+    void setCapabilities(const std::vector<std::string>& caps) { capabilities_ = caps; }
   };
 
 } // namespace netd::shared::xml

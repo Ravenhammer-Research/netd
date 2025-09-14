@@ -25,64 +25,50 @@
  * SUCH DAMAGE.
  */
 
-#include <client/include/tui.hpp>
+#ifndef NETD_CLIENT_PROCESSOR_PARSER_HPP
+#define NETD_CLIENT_PROCESSOR_PARSER_HPP
+
+#include <string>
+#include <memory>
 #include <client/include/netconf/client.hpp>
-#include <client/include/processor/parser.hpp>
-#include <shared/include/logger.hpp>
-#include <shared/include/exception.hpp>
-#include <curses.h>
-#include <thread>
+#include <client/include/tui.hpp>
+#include <client/include/processor/command.hpp>
 
-namespace netd::client::tui {
+namespace netd::client::processor {
 
-  void TUI::runInteractive(std::function<bool(const std::string &)> commandHandler) {
-    if (!initialized_) {
-      throw std::runtime_error("TUI not initialized (runInteractive)");
-    }
+  class CommandProcessor {
+  public:
+    /**
+     * @brief Constructs a CommandProcessor
+     * @param tui Reference to the TUI interface
+     * @param client Reference to the NETCONF client
+     */
+    CommandProcessor(netd::client::tui::TUI& tui, netd::client::netconf::NetconfClient& client);
 
-    commandHandler_ = commandHandler;
-    redrawScreen();
+    /**
+     * @brief Destructor
+     */
+    ~CommandProcessor();
 
-    std::string line;
-    while (true) {
-      int key = getch();
-      if (key == KEY_RESIZE) {
-        handleResize();
-        continue;
-      }
-      
-      ungetch(key);
-      
-      putPrompt();
-      line = readLine();
-      
-      if (line.empty()) {
-        continue;
-      }
-      
-      if (line == "\x04") {
-        break;
-      }
-      
-      addToCommandHistory(line);
-      
-      if (commandHandler_) {
-        int promptRow = getPromptRow();
-        move(promptRow, 0);
-        clrtoeol();
-        refresh();
-        
-        try {
-          if (!commandHandler_(line)) {
-            break;
-          }
-        } catch (const netd::shared::NetdError &e) {
-          putLine("Error: " + std::string(e.what()));
-          
-          netd::shared::Logger::getInstance().trace(e);
-        } 
-      }
-    }
-  }
+    /**
+     * @brief Processes a command string using yacc/lex parser
+     * @param command The command string to process
+     * @return true if command was processed successfully, false to exit
+     */
+    bool processCommand(const std::string& command);
 
-} // namespace netd::client::tui
+  private:
+    netd::client::tui::TUI& tui_;
+    netd::client::netconf::NetconfClient& client_;
+
+    /**
+     * @brief Handles parsed command execution
+     * @param command_type The type of command that was parsed
+     * @return true if command was handled successfully
+     */
+    bool handleParsedCommand(const Command& command);
+  };
+
+} // namespace netd::client::processor
+
+#endif // NETD_CLIENT_PROCESSOR_PARSER_HPP

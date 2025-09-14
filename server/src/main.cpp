@@ -41,8 +41,6 @@ void printUsage(const char *progname) {
   std::cerr << "\033[1mUsage:\033[0m " << progname << " [\033[3moptions\033[0m]\n\n";
   std::cerr << "\033[1mTransport Options\033[0m (can be specified multiple times):\n";
   std::cerr << "  \033[1m--unix\033[0m  [\033[3mpath\033[0m]             Unix domain socket\n";
-  std::cerr << "  \033[1m--sctp\033[0m  [\033[3maddr\033[0m]:[\033[3mport\033[0m]      SCTP transport \033[3m(not implemented)\033[0m\n";
-  std::cerr << "  \033[1m--http\033[0m  [\033[3maddr\033[0m]:[\033[3mport\033[0m]      HTTP transport \033[3m(not implemented)\033[0m\n";
   std::cerr << "  \033[1m--sctps\033[0m [\033[3maddr\033[0m]:[\033[3mport\033[0m]      SCTP with DTLS \033[3m(not implemented)\033[0m\n";
   std::cerr << "  \033[1m--https\033[0m [\033[3maddr\033[0m]:[\033[3mport\033[0m]      HTTP with TLS \033[3m (not implemented)\033[0m\n\n";
   std::cerr << "\033[1mDebug Options\033[0m:\n";
@@ -89,8 +87,6 @@ int main(int argc, char *argv[]) {
   }
   static struct option long_options[] = {
     {"unix", optional_argument, 0, 1000},
-    {"sctp", optional_argument, 0, 1001},
-    {"http", optional_argument, 0, 1002},
     {"sctps", optional_argument, 0, 1003},
     {"https", optional_argument, 0, 1004},
     {"debug", no_argument, 0, 2000},
@@ -112,16 +108,6 @@ int main(int argc, char *argv[]) {
     case 1000: // --unix
       transportType = netd::shared::TransportType::UNIX;
       if (optarg) bindAddress = optarg;
-      break;
-    case 1001: // --sctp
-      transportType = netd::shared::TransportType::SCTP;
-      port = 19818;
-      if (optarg) bindAddress = optarg; else bindAddress = "::";
-      break;
-    case 1002: // --http
-      transportType = netd::shared::TransportType::HTTP;
-      port = 19818;
-      if (optarg) bindAddress = optarg; else bindAddress = "::";
       break;
     case 1003: // --sctps
       transportType = netd::shared::TransportType::SCTPS;

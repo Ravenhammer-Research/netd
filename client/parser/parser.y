@@ -37,10 +37,36 @@ void yyerror(const char* s) {
     fprintf(stderr, "Parse error: %s\n", s);
 }
 
+// Action function declarations
+void set_command_action();
+void delete_command_action();
+void show_command_action();
+void commit_command_action();
+void edit_command_action();
+void set_interface_name(const char* name);
+void set_unit_number(int unit);
+void set_ip_address(const char* ip);
+void set_description(const char* desc);
+void set_vlan_id(int vlan);
+void set_speed_value(const char* speed);
+void set_identifier(const char* id);
+void set_string_value(const char* str);
+void set_vlan_tagging();
+void set_brief_mode();
+void set_detail_mode();
+void set_extensive_mode();
+void set_terse_mode();
+void quit_command_action();
+
 %}
 
+%union {
+    int number;
+    char* string;
+}
+
 /* Tokens */
-%token SET DELETE SHOW COMMIT EDIT
+%token SET DELETE SHOW COMMIT EDIT QUIT
 %token INTERFACES ROUTING_INSTANCES ROUTING_OPTIONS
 %token UNIT FAMILY INET ADDRESS DESCRIPTION ENCAPSULATION
 %token VLAN_ID SPEED VLAN_TAGGING ETHERNET_VLAN
@@ -49,8 +75,12 @@ void yyerror(const char* s) {
 %token OSPF BGP VERSION CONFIGURATION SYSTEM UPTIME CHASSIS
 %token LOG MESSAGES NEIGHBOR NEIGHBORS SUMMARY ARP NO_RESOLVE PROTOCOLS IPV6
 %token TERSE BRIEF DETAIL EXTENSIVE DISPLAY ALL
-%token INTERFACE_NAME NUMBER IP_CIDR IP_ADDRESS IDENTIFIER
-%token STRING SPEED_VALUE LBRACKET RBRACKET DOT
+%token <number> NUMBER
+%token <string> INTERFACE_NAME IP_CIDR IP_ADDRESS IDENTIFIER
+%token <string> STRING SPEED_VALUE LBRACKET RBRACKET DOT
+
+%type <number> NUMBER
+%type <string> INTERFACE_NAME IP_CIDR IP_ADDRESS IDENTIFIER STRING SPEED_VALUE
 
 %%
 
@@ -60,10 +90,12 @@ command: set_command
     | show_command
     | commit_command
     | edit_command
+    | quit_command
     ;
 
 /* SET commands */
 set_command: SET set_config
+    { set_command_action(); }
     ;
 
 set_config: interfaces_set
@@ -76,6 +108,7 @@ interfaces_set: INTERFACES interface_name unit_set
     ;
 
 unit_set: UNIT NUMBER unit_property_set
+    { set_unit_number($2); }
     ;
 
 unit_property_set: family_set
@@ -86,21 +119,26 @@ unit_property_set: family_set
     ;
 
 family_set: FAMILY INET ADDRESS IP_CIDR
+    { set_ip_address($4); }
     ;
 
 description_set: DESCRIPTION STRING
+    { set_description($2); }
     ;
 
 encapsulation_set: ENCAPSULATION ETHERNET_VLAN
     ;
 
 vlan_id_set: VLAN_ID NUMBER
+    { set_vlan_id($2); }
     ;
 
 speed_set: SPEED SPEED_VALUE
+    { set_speed_value($2); }
     ;
 
 interface_property_set: VLAN_TAGGING
+    { set_vlan_tagging(); }
     ;
 
 routing_instances_set: ROUTING_INSTANCES IDENTIFIER instance_property_set
@@ -118,6 +156,7 @@ routing_options_set: ROUTING_OPTIONS STATIC ROUTE IP_CIDR NEXT_HOP IP_ADDRESS
 
 /* DELETE commands */
 delete_command: DELETE delete_config
+    { delete_command_action(); }
     ;
 
 delete_config: interfaces_delete
@@ -166,6 +205,7 @@ routing_options_delete: ROUTING_OPTIONS STATIC ROUTE IP_CIDR NEXT_HOP IP_ADDRESS
 
 /* SHOW commands */
 show_command: SHOW show_config
+    { show_command_action(); }
     ;
 
 show_config: interfaces_show
@@ -185,7 +225,8 @@ show_config: interfaces_show
     | ipv6_neighbors_show
     ;
 
-interfaces_show: INTERFACES interface_name
+interfaces_show: INTERFACES
+    | INTERFACES interface_name
     | INTERFACES interface_name UNIT NUMBER
     | INTERFACES interface_name UNIT NUMBER family_show
     | INTERFACES interface_name UNIT NUMBER description_show
@@ -228,11 +269,19 @@ route_show: ROUTE TABLE IDENTIFIER DOT INET DOT NUMBER PROTOCOL STATIC
 
 /* COMMIT command */
 commit_command: COMMIT
+    { commit_command_action(); }
     ;
 
 /* EDIT command */
 edit_command: EDIT INTERFACES interface_name UNIT NUMBER
+    { edit_command_action(); }
     | EDIT ROUTING_INSTANCES IDENTIFIER
+    { edit_command_action(); }
+    ;
+
+/* QUIT command */
+quit_command: QUIT
+    { quit_command_action(); }
     ;
 
 /* Version commands */
@@ -287,9 +336,13 @@ ipv6_neighbors_show: IPV6 NEIGHBORS
 
 /* Display options */
 display_option: TERSE
+    { set_terse_mode(); }
     | BRIEF
+    { set_brief_mode(); }
     | DETAIL
+    { set_detail_mode(); }
     | EXTENSIVE
+    { set_extensive_mode(); }
     ;
 
 /* Protocol names */
@@ -300,6 +353,7 @@ protocol_name: OSPF
 
 /* Interface name */
 interface_name: INTERFACE_NAME
+    { set_interface_name($1); }
     ;
 
 %%

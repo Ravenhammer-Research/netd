@@ -32,7 +32,18 @@
 #include <string>
 #include <shared/include/transport.hpp>
 #include <shared/include/netconf/session.hpp>
+#include <shared/include/socket.hpp>
+#include <shared/include/stream.hpp>
 #include <client/include/netconf/base.hpp>
+
+// Forward declarations for request types
+namespace netd::shared::request::get {
+    class GetConfigRequest;
+}
+namespace netd::shared::request {
+    class CommitRequest;
+    class EditConfigRequest;
+}
 
 namespace netd::client::netconf {
 
@@ -79,11 +90,43 @@ namespace netd::client::netconf {
      */
     netd::shared::netconf::NetconfSession* getSession() const;
 
+
+    /**
+     * @brief Waits for and processes RPC responses from the server
+     * @param rpc_stream The RPC stream to read from
+     * @param session The NETCONF session
+     */
+    void rpcResponseReceiveWait(netd::shared::RpcRxStream& rpc_stream, netd::shared::netconf::NetconfSession* session);
+
     /**
      * @brief Handles the server session in a loop, processing incoming RPC messages
      * This method runs continuously until the session is disconnected
      */
     void handleServerSession();
+
+    /**
+     * @brief Sends a get-config request to the server
+     * @param request The get-config request to send
+     * @return The response data as a string
+     * @throws std::runtime_error if request fails
+     */
+    std::string sendRequest(const netd::shared::request::get::GetConfigRequest& request);
+
+    /**
+     * @brief Sends a commit request to the server
+     * @param request The commit request to send
+     * @return The response data as a string
+     * @throws std::runtime_error if request fails
+     */
+    std::string sendRequest(const netd::shared::request::CommitRequest& request);
+
+    /**
+     * @brief Sends an edit request to the server
+     * @param request The edit request to send
+     * @return The response data as a string
+     * @throws std::runtime_error if request fails
+     */
+    std::string sendRequest(const netd::shared::request::EditConfigRequest& request);
 
   private:
     netd::shared::TransportType transport_type_;

@@ -58,6 +58,11 @@ namespace netd::client::tui {
     void addToCommandHistory(const std::string &command);
     const std::vector<std::string>& getCommandHistory() const;
     
+    // Command completion
+    void setCompletions(const std::vector<std::string> &completions);
+    std::string completeCommand(const std::string &partial);
+    std::string completeCommandContextual(const std::string &command_line);
+    
     // Display history management
     void addToDisplayHistory(const std::string &message);
     void clearDisplayHistory();
@@ -121,6 +126,7 @@ namespace netd::client::tui {
     std::string prompt_;
     std::vector<std::string> commandHistory_;
     std::vector<std::string> displayHistory_;
+    std::vector<std::string> completions_;
     std::function<bool(const std::string &)> commandHandler_;
     int commandHistoryPosition_;
     int scrollOffset_;

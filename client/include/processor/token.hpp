@@ -25,39 +25,30 @@
  * SUCH DAMAGE.
  */
 
-#ifndef NETD_CLIENT_PROCESSOR_HPP
-#define NETD_CLIENT_PROCESSOR_HPP
+#ifndef NETD_CLIENT_PROCESSOR_TOKENS_HPP
+#define NETD_CLIENT_PROCESSOR_TOKENS_HPP
 
-#include <client/include/parser.hpp>
-#include <client/include/tui.hpp>
-#include <client/include/netconf/client.hpp>
 #include <string>
-#include <vector>
+#include <unordered_map>
 
-namespace netd::client {
+namespace netd::client::processor {
 
-  class CommandProcessor {
-  public:
-    CommandProcessor(netd::client::tui::TUI &tui, netd::client::netconf::NetconfClient &client);
-    bool processCommand(const std::string &command);
+class TokenMapper {
+public:
+    static std::string getTokenName(int token);
+    static int getTokenValue(const std::string& name);
+    static bool isCommandToken(int token);
+    static bool isInterfaceToken(int token);
+    static bool isRoutingToken(int token);
+    static bool isDisplayToken(int token);
+    static bool isProtocolToken(int token);
+    static bool isValueToken(int token);
+    
+private:
+    static const std::unordered_map<int, std::string> token_names_;
+    static const std::unordered_map<std::string, int> token_values_;
+};
 
-  private:
-    netd::client::tui::TUI &tui_;
-    netd::client::netconf::NetconfClient &client_ [[maybe_unused]];
-    CommandParser parser_;
+} // namespace netd::client::processor
 
-    bool handleShowCommand(const ParsedCommand &parsed);
-    bool handleSetCommand(const ParsedCommand &parsed);
-    bool handleDeleteCommand(const ParsedCommand &parsed);
-    bool handleCommitCommand(const ParsedCommand &parsed);
-    bool handleShowVrf(const ParsedCommand &parsed);
-    bool handleShowRoute(const ParsedCommand &parsed);
-    bool handleShowInterface(const ParsedCommand &parsed);
-    bool handleSetVrf(const ParsedCommand &parsed);
-    bool handleSetInterface(const ParsedCommand &parsed);
-    bool handleSetRoute(const ParsedCommand &parsed);
-  };
-
-} // namespace netd::client
-
-#endif // NETD_CLIENT_PROCESSOR_HPP
+#endif // NETD_CLIENT_PROCESSOR_TOKENS_HPP

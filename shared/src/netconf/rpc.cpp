@@ -4,6 +4,8 @@
 #include <shared/include/yang.hpp>
 #include <shared/include/xml/base.hpp>
 #include <shared/include/xml/envelope.hpp>
+#include <shared/include/xml/hello.hpp>
+#include <shared/include/socket.hpp>
 #include <libyang/libyang.h>
 #include <sstream>
 
@@ -37,6 +39,48 @@ namespace netd::shared::netconf {
     (void)rpc_stream;
     (void)session;
     throw netd::shared::NotImplementedError("processReply not implemented");
+  }
+
+  void Rpc::sendHelloToServer(const ClientSocket& client_socket, NetconfSession* session) {
+    if (!session) {
+      throw netd::shared::ArgumentError("session not found");
+    }
+
+    auto yang_ctx = session->getContext();
+    
+    auto capabilities = netd::shared::Yang::getInstance().getCapabilities();
+    auto hello = netd::shared::xml::HelloToServer::toXml(
+      session->getSessionId(), 
+      capabilities, 
+      yang_ctx);
+    
+    std::string xml_str = hello->toString(yang_ctx);
+    
+    RpcTxStream tx_stream(const_cast<ClientSocket&>(client_socket));
+    
+    tx_stream << xml_str;
+    tx_stream.flush();
+  }
+
+  void Rpc::sendHelloToClient(const ClientSocket& client_socket, NetconfSession* session) {
+    if (!session) {
+      throw netd::shared::ArgumentError("session not found");
+    }
+
+    auto yang_ctx = session->getContext();
+    
+    auto capabilities = netd::shared::Yang::getInstance().getCapabilities();
+    auto hello = netd::shared::xml::HelloToClient::toXml(
+      session->getSessionId(), 
+      capabilities, 
+      yang_ctx);
+    
+    std::string xml_str = hello->toString(yang_ctx);
+    
+    RpcTxStream tx_stream(const_cast<ClientSocket&>(client_socket));
+    
+    tx_stream << xml_str;
+    tx_stream.flush();
   }
   
 } // namespace netd::shared::netconf

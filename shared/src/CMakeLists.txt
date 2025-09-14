@@ -1,4 +1,5 @@
 # Add subdirectories
+add_subdirectory(expect)
 add_subdirectory(interface)
 if(LLDP_FOUND)
     add_subdirectory(lldp)

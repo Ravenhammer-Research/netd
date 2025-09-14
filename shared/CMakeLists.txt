@@ -71,6 +71,7 @@ target_include_directories(netd_shared PRIVATE ${GLOBAL_INCLUDE_DIRS})
 
 # Link sub-libraries
 target_link_libraries(netd_shared PRIVATE
+    netd_shared_expect
     netd_shared_interface
     netd_shared_marshalling
     netd_shared_netconf

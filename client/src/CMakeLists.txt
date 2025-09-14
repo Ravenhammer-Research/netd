@@ -1,8 +1,5 @@
 # Create netd_client static library
 add_library(netd_client STATIC
-    parser.cpp
-    processor.cpp
-    terminal.cpp
     lldp.cpp
 )
 
@@ -17,11 +14,13 @@ target_compile_definitions(netd_client PRIVATE
 # Add subdirectories
 add_subdirectory(netconf)
 add_subdirectory(tui)
+add_subdirectory(processor)
 
 # Link libraries
 target_link_libraries(netd_client PRIVATE
     netd_shared_netconf
     netd_client_parser
+    netd_client_processor
     netd_client_netconf
     netd_tui
 )
