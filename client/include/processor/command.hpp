@@ -38,7 +38,8 @@ enum class CommandType {
     SHOW_CMD,
     COMMIT_CMD,
     EDIT_CMD,
-    QUIT_CMD
+    QUIT_CMD,
+    HELP_CMD
 };
 
 enum class DisplayMode {

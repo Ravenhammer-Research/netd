@@ -31,6 +31,13 @@
 #include <string.h>
 #include "parser.h"
 
+// Declare custom input function
+extern int custom_input(char* buf, int max_size);
+
+// Use custom input function instead of default file input
+#define YY_INPUT(buf, result, max_size) \
+    result = custom_input(buf, max_size)
+
 %}
 
 %option noyywrap
@@ -43,8 +50,9 @@
 "show"                   { return SHOW; }
 "commit"                 { return COMMIT; }
 "edit"                   { return EDIT; }
-"quit"                   { return QUIT; }
-"exit"                   { return QUIT; }
+"quit"                   { printf("LEXER: Found QUIT token\n"); return QUIT; }
+"exit"                   { printf("LEXER: Found QUIT token (exit)\n"); return QUIT; }
+"help"                   { printf("LEXER: Found HELP token\n"); return HELP; }
 
 "interfaces"             { return INTERFACES; }
 "interface"              { return INTERFACES; }
@@ -120,6 +128,7 @@
 
 [ \t\n]                 ;
 
-.                       { printf("Unknown character %s\n", yytext); }
+[a-zA-Z_][a-zA-Z0-9_]*  { printf("LEXER: Unknown token: %s\n", yytext); }
+.                       { printf("LEXER: Unknown character %s\n", yytext); }
 
 %%

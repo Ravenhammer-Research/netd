@@ -169,6 +169,9 @@ std::string Command::toString() const {
         case CommandType::QUIT_CMD:
             oss << "QUIT";
             return oss.str();
+        case CommandType::HELP_CMD:
+            oss << "HELP";
+            return oss.str();
     }
     
     if (!interface_name_.empty()) {

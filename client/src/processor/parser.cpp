@@ -50,6 +50,49 @@ static bool g_parse_success = false;
 // Global command object for parsed commands
 static netd::client::processor::Command g_parsed_command;
 
+// Custom input function variables for string buffer
+static const char* g_input_buffer = nullptr;
+static size_t g_input_pos = 0;
+static size_t g_input_len = 0;
+static std::string g_input_string;
+
+// Help topic variable
+static int g_help_topic = 0;
+
+// Custom input function for lexer to read from string buffer
+extern "C" int custom_input(char* buf, int max_size) {
+    if (g_input_pos >= g_input_len) {
+        return 0; // EOF
+    }
+    
+    int bytes_to_read = std::min(max_size, static_cast<int>(g_input_len - g_input_pos));
+    if (bytes_to_read > 0) {
+        std::memcpy(buf, g_input_buffer + g_input_pos, bytes_to_read);
+        g_input_pos += bytes_to_read;
+        
+        // Debug output
+        auto& logger = netd::shared::Logger::getInstance();
+        logger.debug("Custom input: read " + std::to_string(bytes_to_read) + " bytes, pos=" + std::to_string(g_input_pos) + "/" + std::to_string(g_input_len));
+    }
+    return bytes_to_read;
+}
+
+// Setup function to initialize string input for parser
+static void setupStringInput(const std::string& command) {
+    // Create a copy with newline termination for proper lexer handling
+    g_input_string = command + "\n";
+    g_input_buffer = g_input_string.c_str();
+    g_input_pos = 0;
+    g_input_len = g_input_string.length();
+    
+    // Reset help topic for each new command
+    g_help_topic = 0;
+    
+    // Debug output
+    auto& logger = netd::shared::Logger::getInstance();
+    logger.debug("Setup string input: '" + command + "' (length: " + std::to_string(g_input_len) + ")");
+}
+
 // Action functions called by the yacc parser
 extern "C" {
     void set_command_action() {
@@ -80,6 +123,15 @@ extern "C" {
     void quit_command_action() {
         g_parsed_command.setCommandType(netd::client::processor::CommandType::QUIT_CMD);
         g_parse_success = true;
+    }
+    
+    void help_command_action() {
+        g_parsed_command.setCommandType(netd::client::processor::CommandType::HELP_CMD);
+        g_parse_success = true;
+    }
+    
+    void set_help_topic(int topic) {
+        g_help_topic = topic;
     }
     
     void set_interface_name(const char* name) {
@@ -172,25 +224,11 @@ namespace netd::client::processor {
     // Reset parsed command structure
     g_parsed_command.reset();
 
-    // Create a temporary file to feed the command to the parser
-    FILE* temp_file = tmpfile();
-    if (!temp_file) {
-      tui_.putLine("Failed to create temporary file for parsing");
-      return true;
-    }
-
-    // Write the command to the temporary file
-    fprintf(temp_file, "%s\n", command.c_str());
-    rewind(temp_file);
-
-    // Set yyin to our temporary file
-    yyin = temp_file;
+    // Set up string input for the parser
+    setupStringInput(command);
 
     // Call the yacc parser
     int parse_result = yyparse();
-
-    // Clean up
-    fclose(temp_file);
 
     if (parse_result == 0 && g_parse_success) {
       // Command successfully parsed by yacc/lex
@@ -234,6 +272,91 @@ namespace netd::client::processor {
       case netd::client::processor::CommandType::QUIT_CMD:
         tui_.putLine("Exiting...");
         result = false; // Return false to exit the main loop
+        break;
+      case netd::client::processor::CommandType::HELP_CMD:
+        if (g_help_topic == 0) {
+          // General help
+          tui_.putLine("Available commands:");
+          tui_.putLine("  show <config>     - Display configuration information");
+          tui_.putLine("  set <config>      - Set configuration values");
+          tui_.putLine("  delete <config>   - Delete configuration values");
+          tui_.putLine("  commit            - Commit configuration changes");
+          tui_.putLine("  edit <config>     - Edit configuration");
+          tui_.putLine("  quit/exit         - Exit the program");
+          tui_.putLine("  help [topic]      - Show help for specific command");
+          tui_.putLine("");
+          tui_.putLine("Examples:");
+          tui_.putLine("  help show         - Help for show command");
+          tui_.putLine("  help interfaces   - Help for interface configuration");
+        } else {
+          // Contextual help based on topic
+          switch (g_help_topic) {
+            case 1: // SET
+              tui_.putLine("SET command - Configure system parameters");
+              tui_.putLine("Usage: set <config>");
+              tui_.putLine("Examples:");
+              tui_.putLine("  set interfaces xe-0/0/0 unit 0 family inet address 192.168.1.1/24");
+              tui_.putLine("  set interfaces xe-0/0/0 vlan-tagging");
+              break;
+            case 2: // DELETE
+              tui_.putLine("DELETE command - Remove configuration");
+              tui_.putLine("Usage: delete <config>");
+              tui_.putLine("Examples:");
+              tui_.putLine("  delete interfaces xe-0/0/0 unit 0 family inet address 192.168.1.1/24");
+              tui_.putLine("  delete interfaces xe-0/0/0 vlan-tagging");
+              break;
+            case 3: // SHOW
+              tui_.putLine("SHOW command - Display configuration and status");
+              tui_.putLine("Usage: show <config> [display-option]");
+              tui_.putLine("Display options: terse, brief, detail, extensive");
+              tui_.putLine("Examples:");
+              tui_.putLine("  show interfaces");
+              tui_.putLine("  show interfaces xe-0/0/0");
+              tui_.putLine("  show version brief");
+              break;
+            case 4: // COMMIT
+              tui_.putLine("COMMIT command - Apply configuration changes");
+              tui_.putLine("Usage: commit");
+              tui_.putLine("Note: Commits all pending configuration changes");
+              break;
+            case 5: // EDIT
+              tui_.putLine("EDIT command - Enter configuration edit mode");
+              tui_.putLine("Usage: edit <config>");
+              tui_.putLine("Examples:");
+              tui_.putLine("  edit interfaces xe-0/0/0 unit 0");
+              tui_.putLine("  edit routing-instances VRF1");
+              break;
+            case 6: // QUIT
+              tui_.putLine("QUIT/EXIT command - Exit the program");
+              tui_.putLine("Usage: quit or exit");
+              break;
+            case 7: // INTERFACES
+              tui_.putLine("INTERFACES configuration:");
+              tui_.putLine("  Configure network interfaces");
+              tui_.putLine("Examples:");
+              tui_.putLine("  set interfaces xe-0/0/0 unit 0 family inet address 192.168.1.1/24");
+              tui_.putLine("  set interfaces xe-0/0/0 vlan-tagging");
+              tui_.putLine("  show interfaces xe-0/0/0");
+              break;
+            case 8: // ROUTING_INSTANCES
+              tui_.putLine("ROUTING-INSTANCES configuration:");
+              tui_.putLine("  Configure virtual routing instances (VRFs)");
+              tui_.putLine("Examples:");
+              tui_.putLine("  set routing-instances VRF1 instance-type vrf");
+              tui_.putLine("  show routing-instances VRF1");
+              break;
+            case 9: // ROUTING_OPTIONS
+              tui_.putLine("ROUTING-OPTIONS configuration:");
+              tui_.putLine("  Configure routing protocols and static routes");
+              tui_.putLine("Examples:");
+              tui_.putLine("  set routing-options static route 0.0.0.0/0 next-hop 192.168.1.1");
+              break;
+            default:
+              tui_.putLine("Unknown help topic");
+          }
+        }
+        g_help_topic = 0; // Reset for next command
+        result = true;
         break;
       default:
         tui_.putLine("Unknown command type");

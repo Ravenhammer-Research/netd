@@ -57,6 +57,8 @@ void set_detail_mode();
 void set_extensive_mode();
 void set_terse_mode();
 void quit_command_action();
+void help_command_action();
+void set_help_topic(int topic);
 
 %}
 
@@ -66,7 +68,7 @@ void quit_command_action();
 }
 
 /* Tokens */
-%token SET DELETE SHOW COMMIT EDIT QUIT
+%token SET DELETE SHOW COMMIT EDIT QUIT HELP
 %token INTERFACES ROUTING_INSTANCES ROUTING_OPTIONS
 %token UNIT FAMILY INET ADDRESS DESCRIPTION ENCAPSULATION
 %token VLAN_ID SPEED VLAN_TAGGING ETHERNET_VLAN
@@ -91,6 +93,7 @@ command: set_command
     | commit_command
     | edit_command
     | quit_command
+    | help_command
     ;
 
 /* SET commands */
@@ -282,6 +285,34 @@ edit_command: EDIT INTERFACES interface_name UNIT NUMBER
 /* QUIT command */
 quit_command: QUIT
     { quit_command_action(); }
+    ;
+
+/* HELP command */
+help_command: HELP
+    { help_command_action(); }
+    | HELP help_topic
+    { help_command_action(); }
+    ;
+
+/* Help topics */
+help_topic: SET
+    { set_help_topic(1); }
+    | DELETE
+    { set_help_topic(2); }
+    | SHOW
+    { set_help_topic(3); }
+    | COMMIT
+    { set_help_topic(4); }
+    | EDIT
+    { set_help_topic(5); }
+    | QUIT
+    { set_help_topic(6); }
+    | INTERFACES
+    { set_help_topic(7); }
+    | ROUTING_INSTANCES
+    { set_help_topic(8); }
+    | ROUTING_OPTIONS
+    { set_help_topic(9); }
     ;
 
 /* Version commands */
