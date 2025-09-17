@@ -35,7 +35,6 @@ namespace netd::client::netconf {
 
   class ClientRpc : public netd::shared::netconf::Rpc {
   public:
-    // Override the shared RPC methods
     static void processRequest(netd::shared::RpcRxStream& rpc_stream, netd::shared::netconf::NetconfSession* session);
     static void processReply(netd::shared::RpcRxStream& rpc_stream, netd::shared::netconf::NetconfSession* session);
   };

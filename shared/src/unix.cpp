@@ -12,18 +12,18 @@
 
 namespace netd::shared {
 
-  static constexpr const char* CHUNK_END_MARKER = R"(\n##\n)";
-  static constexpr const char* NETCONF_SEPARATOR = R"(]]>]]>)";
-  static constexpr const char* CHUNK_HEADER_PATTERN = R"(\n#)";
-  static constexpr const char* CHUNK_START_PATTERN = R"(^\n#)";
-  static constexpr const char* CHUNK_HEADER_PREFIX = R"(\n#)";
-  static constexpr const char* NEWLINE = R"(\n)";
-  static constexpr const char* NULL_TERMINATOR = R"(\0)";
-  static constexpr const char* PATH_SEPARATOR = R"(/)";
-  static constexpr const char* CHUNK_SIZE_PATTERN = R"(\n#(\d+)\n)";
-  static constexpr const char* HEADER_EXTRACT_PATTERN = R"(\n#.*?\n)";
-  static constexpr const char* AFTER_HEADER_PATTERN = R"(\n#.*?\n(.*))";
-  static constexpr const char* BEFORE_SEPARATOR_PATTERN = R"(^(.*?)]]>]]>)";
+  static constexpr const char* CHUNK_END_MARKER = "\n##\n";
+  static constexpr const char* NETCONF_SEPARATOR = "]]>]]>";
+  static constexpr const char* CHUNK_HEADER_PATTERN = "\n#";
+  static constexpr const char* CHUNK_START_PATTERN = "^\n#";
+  static constexpr const char* CHUNK_HEADER_PREFIX = "\n#";
+  static constexpr const char* NEWLINE = "\n";
+  static constexpr const char* NULL_TERMINATOR = "\0";
+  static constexpr const char* PATH_SEPARATOR = "/";
+  static constexpr const char* CHUNK_SIZE_PATTERN = "\n#(\\d+)\n";
+  static constexpr const char* HEADER_EXTRACT_PATTERN = "\n#.*?\n";
+  static constexpr const char* AFTER_HEADER_PATTERN = "\n#.*?\n(.*)";
+  static constexpr const char* BEFORE_SEPARATOR_PATTERN = "^(.*?)]]>]]>";
   static constexpr const char* CHUNK_EXTRACT_PATTERN = "^(.{0,%zu})(.*)";
   static constexpr size_t CHUNK_SIZE = 4096;
   static constexpr size_t BUFFER_SIZE = 4096;
@@ -121,9 +121,7 @@ namespace netd::shared {
   }
 
   bool UnixTransport::sendData(int socket_fd, const std::string& data) {
-    Logger::getInstance().debug("UnixTransport: sendData called with socket_fd=" + std::to_string(socket_fd));
     if (socket_fd < 0) {
-      Logger::getInstance().debug("UnixTransport: Invalid socket_fd, returning false");
       return false;
     }
     
@@ -135,7 +133,9 @@ namespace netd::shared {
       while (offset < data.length()) {
         size_t current_chunk_size = std::min(CHUNK_SIZE, data.length() - offset);
         
-        std::string chunk_header = std::string(CHUNK_HEADER_PREFIX) + std::to_string(current_chunk_size) + NEWLINE;
+        std::string chunk_header = std::string(CHUNK_HEADER_PREFIX) 
+          + std::to_string(current_chunk_size) + NEWLINE;
+          
         if (send(socket_fd, chunk_header.c_str(), chunk_header.length(), 0) < 0) {
           return false;
         }

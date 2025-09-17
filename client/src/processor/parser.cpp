@@ -35,34 +35,26 @@
 #include <cstring>
 #include <sstream>
 
-// Do not change these.
 #include <client/parser/parser.h>
 #include <client/parser/parser_lex.h>
 
-// Only declare yyparse since it's from yacc (not lex)
 extern "C" int yyparse();
 
-// Global variables for parser communication
 static std::string g_current_command;
 static int g_parsed_command_type = 0;
 static bool g_parse_success = false;
 
-// Global command object for parsed commands
 static netd::client::processor::Command g_parsed_command;
 
-// Custom input function variables for string buffer
 static const char* g_input_buffer = nullptr;
 static size_t g_input_pos = 0;
 static size_t g_input_len = 0;
 static std::string g_input_string;
 
-// Help topic variable
 static int g_help_topic = 0;
-
-// Custom input function for lexer to read from string buffer
 extern "C" int custom_input(char* buf, int max_size) {
     if (g_input_pos >= g_input_len) {
-        return 0; // EOF
+        return 0;
     }
     
     int bytes_to_read = std::min(max_size, static_cast<int>(g_input_len - g_input_pos));
@@ -70,30 +62,24 @@ extern "C" int custom_input(char* buf, int max_size) {
         std::memcpy(buf, g_input_buffer + g_input_pos, bytes_to_read);
         g_input_pos += bytes_to_read;
         
-        // Debug output
         auto& logger = netd::shared::Logger::getInstance();
         logger.debug("Custom input: read " + std::to_string(bytes_to_read) + " bytes, pos=" + std::to_string(g_input_pos) + "/" + std::to_string(g_input_len));
     }
     return bytes_to_read;
 }
 
-// Setup function to initialize string input for parser
 static void setupStringInput(const std::string& command) {
-    // Create a copy with newline termination for proper lexer handling
     g_input_string = command + "\n";
     g_input_buffer = g_input_string.c_str();
     g_input_pos = 0;
     g_input_len = g_input_string.length();
     
-    // Reset help topic for each new command
     g_help_topic = 0;
     
-    // Debug output
     auto& logger = netd::shared::Logger::getInstance();
     logger.debug("Setup string input: '" + command + "' (length: " + std::to_string(g_input_len) + ")");
 }
 
-// Action functions called by the yacc parser
 extern "C" {
     void set_command_action() {
         g_parsed_command.setCommandType(netd::client::processor::CommandType::SET_CMD);
@@ -187,7 +173,6 @@ extern "C" {
     }
 }
 
-// yyerror function - defined in generated parser.c, but we can override it
 void yyerror(const char* s) {
     auto &logger = netd::shared::Logger::getInstance();
     logger.error("Parse error: " + std::string(s));
@@ -198,10 +183,8 @@ namespace netd::client::processor {
 
   CommandProcessor::CommandProcessor(netd::client::tui::TUI& tui, netd::client::netconf::NetconfClient& client)
       : tui_(tui), client_(client) {
-    // Set up tab completion with parser-generated keywords
     tui_.setCompletions(CommandCompletion::getAllKeywords());
     
-    // Set the NETCONF client for dynamic interface lookup
     CommandCompletion::setNetconfClient(&client_);
   }
 
@@ -216,22 +199,17 @@ namespace netd::client::processor {
     auto& logger = netd::shared::Logger::getInstance();
     logger.debug("Processing command: " + command);
 
-    // Set up parser input
     g_current_command = command;
     g_parsed_command_type = 0;
     g_parse_success = false;
     
-    // Reset parsed command structure
     g_parsed_command.reset();
 
-    // Set up string input for the parser
     setupStringInput(command);
 
-    // Call the yacc parser
     int parse_result = yyparse();
 
     if (parse_result == 0 && g_parse_success) {
-      // Command successfully parsed by yacc/lex
       return handleParsedCommand(g_parsed_command);
     } else {
       tui_.putLine("Syntax error or unknown command: " + command);
@@ -243,39 +221,65 @@ namespace netd::client::processor {
     try {
       auto& logger = netd::shared::Logger::getInstance();
       
-      // Connect to server for command execution
-      client_.connect();
-      
       bool result = false;
       
       switch (command.getCommandType()) {
       case netd::client::processor::CommandType::SHOW_CMD:
         logger.info("Executing command: " + g_current_command);
-        result = true;
+        try {
+          client_.connect();
+          result = true;
+        } catch (const std::exception& e) {
+          tui_.putLine("Command failed: " + std::string(e.what()));
+          result = true;
+        }
         break;
       case netd::client::processor::CommandType::SET_CMD:
         logger.info("Executing command: " + g_current_command);
-        result = true;
+        try {
+          client_.connect();
+          result = true;
+        } catch (const std::exception& e) {
+          tui_.putLine("Command failed: " + std::string(e.what()));
+          result = true;
+        }
         break;
       case netd::client::processor::CommandType::DELETE_CMD:
         logger.info("Executing command: " + g_current_command);
-        result = true;
+        try {
+          client_.connect();
+          result = true;
+        } catch (const std::exception& e) {
+          tui_.putLine("Command failed: " + std::string(e.what()));
+          result = true;
+        }
         break;
       case netd::client::processor::CommandType::COMMIT_CMD:
         logger.info("Executing command: " + g_current_command);
-        result = true;
+        try {
+          client_.connect();
+          result = true;
+        } catch (const std::exception& e) {
+          tui_.putLine("Command failed: " + std::string(e.what()));
+          result = true;
+        }
         break;
       case netd::client::processor::CommandType::EDIT_CMD:
         logger.info("Executing command: " + g_current_command);
-        result = true;
+        try {
+          client_.connect();
+          result = true;
+        } catch (const std::exception& e) {
+          tui_.putLine("Command failed: " + std::string(e.what()));
+          result = true;
+        }
         break;
       case netd::client::processor::CommandType::QUIT_CMD:
         tui_.putLine("Exiting...");
-        result = false; // Return false to exit the main loop
+        result = false;
         break;
       case netd::client::processor::CommandType::HELP_CMD:
         if (g_help_topic == 0) {
-          // General help
           tui_.putLine("Available commands:");
           tui_.putLine("  show <config>     - Display configuration information");
           tui_.putLine("  set <config>      - Set configuration values");
@@ -289,23 +293,22 @@ namespace netd::client::processor {
           tui_.putLine("  help show         - Help for show command");
           tui_.putLine("  help interfaces   - Help for interface configuration");
         } else {
-          // Contextual help based on topic
           switch (g_help_topic) {
-            case 1: // SET
+            case 1:
               tui_.putLine("SET command - Configure system parameters");
               tui_.putLine("Usage: set <config>");
               tui_.putLine("Examples:");
               tui_.putLine("  set interfaces xe-0/0/0 unit 0 family inet address 192.168.1.1/24");
               tui_.putLine("  set interfaces xe-0/0/0 vlan-tagging");
               break;
-            case 2: // DELETE
+            case 2:
               tui_.putLine("DELETE command - Remove configuration");
               tui_.putLine("Usage: delete <config>");
               tui_.putLine("Examples:");
               tui_.putLine("  delete interfaces xe-0/0/0 unit 0 family inet address 192.168.1.1/24");
               tui_.putLine("  delete interfaces xe-0/0/0 vlan-tagging");
               break;
-            case 3: // SHOW
+            case 3:
               tui_.putLine("SHOW command - Display configuration and status");
               tui_.putLine("Usage: show <config> [display-option]");
               tui_.putLine("Display options: terse, brief, detail, extensive");
@@ -314,23 +317,23 @@ namespace netd::client::processor {
               tui_.putLine("  show interfaces xe-0/0/0");
               tui_.putLine("  show version brief");
               break;
-            case 4: // COMMIT
+            case 4:
               tui_.putLine("COMMIT command - Apply configuration changes");
               tui_.putLine("Usage: commit");
               tui_.putLine("Note: Commits all pending configuration changes");
               break;
-            case 5: // EDIT
+            case 5:
               tui_.putLine("EDIT command - Enter configuration edit mode");
               tui_.putLine("Usage: edit <config>");
               tui_.putLine("Examples:");
               tui_.putLine("  edit interfaces xe-0/0/0 unit 0");
               tui_.putLine("  edit routing-instances VRF1");
               break;
-            case 6: // QUIT
+            case 6:
               tui_.putLine("QUIT/EXIT command - Exit the program");
               tui_.putLine("Usage: quit or exit");
               break;
-            case 7: // INTERFACES
+            case 7:
               tui_.putLine("INTERFACES configuration:");
               tui_.putLine("  Configure network interfaces");
               tui_.putLine("Examples:");
@@ -338,14 +341,14 @@ namespace netd::client::processor {
               tui_.putLine("  set interfaces xe-0/0/0 vlan-tagging");
               tui_.putLine("  show interfaces xe-0/0/0");
               break;
-            case 8: // ROUTING_INSTANCES
+            case 8:
               tui_.putLine("ROUTING-INSTANCES configuration:");
               tui_.putLine("  Configure virtual routing instances (VRFs)");
               tui_.putLine("Examples:");
               tui_.putLine("  set routing-instances VRF1 instance-type vrf");
               tui_.putLine("  show routing-instances VRF1");
               break;
-            case 9: // ROUTING_OPTIONS
+            case 9:
               tui_.putLine("ROUTING-OPTIONS configuration:");
               tui_.putLine("  Configure routing protocols and static routes");
               tui_.putLine("Examples:");
@@ -355,7 +358,7 @@ namespace netd::client::processor {
               tui_.putLine("Unknown help topic");
           }
         }
-        g_help_topic = 0; // Reset for next command
+        g_help_topic = 0;
         result = true;
         break;
       default:
@@ -363,7 +366,6 @@ namespace netd::client::processor {
         result = false;
       }
       
-      // Disconnect from server
       client_.disconnect(false);
       return result;
       

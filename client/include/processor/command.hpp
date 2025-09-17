@@ -55,11 +55,9 @@ public:
     Command();
     ~Command() = default;
 
-    // Command type
     void setCommandType(CommandType type);
     CommandType getCommandType() const;
 
-    // Interface configuration
     void setInterfaceName(const std::string& name);
     const std::string& getInterfaceName() const;
 
@@ -81,18 +79,14 @@ public:
     void setVlanTagging(bool tagging);
     bool getVlanTagging() const;
 
-    // Routing configuration
     void setIdentifier(const std::string& id);
     const std::string& getIdentifier() const;
 
     void setStringValue(const std::string& str);
     const std::string& getStringValue() const;
 
-    // Display options
     void setDisplayMode(DisplayMode mode);
     DisplayMode getDisplayMode() const;
-
-    // Utility methods
     void reset();
     bool isValid() const;
     std::string toString() const;

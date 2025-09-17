@@ -39,34 +39,27 @@ namespace netd::client {
     Terminal();
     ~Terminal();
 
-    // Terminal control
     bool initialize();
     void cleanup();
     bool isInitialized() const { return initialized_; }
 
-    // Input/Output
     std::string readLine();
     void write(const std::string &text);
     void writeLine(const std::string &text);
     void clear();
     void refresh();
 
-    // Command history
     void addToHistory(const std::string &command);
     std::string getHistoryUp();
     std::string getHistoryDown();
     void resetHistoryPosition();
 
-    // Command completion
     void setCompletions(const std::vector<std::string> &completions);
     std::string completeCommand(const std::string &partial);
 
-    // Interactive mode
     void runInteractive();
     void setPrompt(const std::string &prompt) { prompt_ = prompt; }
     void redrawPrompt();
-
-    // Command processing
     void setCommandHandler(std::function<bool(const std::string &)> handler) {
       commandHandler_ = handler;
     }

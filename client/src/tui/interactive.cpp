@@ -73,7 +73,7 @@ namespace netd::client::tui {
         refresh();
         
         try {
-          if (!commandHandler_(line)) {
+          if (!commandHandler_(line)) { // XXX: clean this up...
             break;
           }
         } catch (const netd::shared::NetdError &e) {

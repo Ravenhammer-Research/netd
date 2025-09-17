@@ -15,11 +15,8 @@ namespace netd::shared {
 
   bool ClientSocket::sendData(const std::string& data) {
     if (socket_fd_ < 0) {
-      Logger::getInstance().debug("ClientSocket: Invalid socket_fd, returning false");
       return false;
     }
-    
-    Logger::getInstance().debug("ClientSocket: Sending data: " + data);
     
     UnixTransport transport;
     return transport.sendData(socket_fd_, data);
@@ -31,9 +28,7 @@ namespace netd::shared {
     }
     
     UnixTransport transport;
-    std::string data = transport.receiveData(socket_fd_);
-    Logger::getInstance().debug("ClientSocket: Received data: " + data);
-    return data;
+    return transport.receiveData(socket_fd_);
   }
 
   bool ClientSocket::hasData() {

@@ -106,10 +106,14 @@ namespace netd::server::netconf {
         try {
           netd::shared::ClientSocket client_socket_obj(client_socket);
           auto session = this->handleClientSession(client_socket_obj);
+          
           netd::shared::netconf::Rpc::sendHelloToClient(client_socket_obj, session);
           netd::shared::RpcRxStream rpc_stream(client_socket_obj);
+
           this->rpcRequestReceiveWait(rpc_stream, session);
+          
           client_socket_obj.close();
+
         } catch (const std::exception& e) {
           // Log the error and close the socket
           auto& logger = netd::shared::Logger::getInstance();

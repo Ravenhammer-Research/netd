@@ -46,20 +46,17 @@ public:
     static void setVlanTagging(bool tagging);
     static void setDisplayMode(DisplayMode mode);
     
-    // Routing instance actions
     static void setInstanceType(const char* type);
     static void setVirtualRouter();
     static void setVrf();
     static void setVrfTarget(const char* target);
     static void setVrfTableLabel();
     
-    // Routing options actions
     static void setStaticRoute(const char* route);
     static void setNextHop(const char* hop);
     static void setTable(const char* table);
     static void setProtocol(const char* protocol);
     
-    // Show command specific actions
     static void setVersion();
     static void setConfiguration();
     static void setSystem();
@@ -76,7 +73,6 @@ public:
     static void setIpv6();
     static void setAll();
     
-    // Interface actions
     static void setInterfaces();
     static void setRoutingInstances();
     static void setRoutingOptions();
@@ -88,20 +84,16 @@ public:
     static void setEthernetVlan();
     static void setInterface();
     
-    // Protocol actions
     static void setOspf();
     static void setBgp();
     static void setStatic();
     static void setRoute();
     
-    // Utility actions
     static void setNumber(int num);
     static void setIpCidr(const char* cidr);
     static void setLbracket();
     static void setRbracket();
     static void setDot();
-    
-    // Reset and validation
     static void reset();
     static bool isValid();
     static Command& getCurrentCommand();

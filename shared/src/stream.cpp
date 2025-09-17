@@ -28,7 +28,6 @@ namespace netd::shared {
       return traits_type::eof();
     }
 
-    Logger::getInstance().debug("RpcRxStreamBuf: Read data: " + data);
     buffer_ = data;
     setg(buffer_.data(), buffer_.data(), buffer_.data() + buffer_.size());
 
@@ -96,9 +95,7 @@ namespace netd::shared {
   int RpcTxStreamBuf::sync() {
     if (pptr() > pbase()) {
       std::string data(pbase(), pptr() - pbase());
-      Logger::getInstance().debug("RpcTxStreamBuf: Write data: " + data);
       bool success = socket_.sendData(data);
-      Logger::getInstance().debug("RpcTxStreamBuf: sendData returned " + std::string(success ? "true" : "false"));
       
       if (success) {
         setp(buffer_.data(), buffer_.data() + BUFFER_SIZE - 1);
@@ -111,7 +108,6 @@ namespace netd::shared {
   }
 
   int RpcTxStreamBuf::flush() {
-    Logger::getInstance().debug("RpcTxStreamBuf: Flush called");
     return sync();
   }
 

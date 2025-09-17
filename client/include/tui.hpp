@@ -44,26 +44,21 @@ namespace netd::client::tui {
     TUI();
     ~TUI();
 
-    // TUI control
     bool initialize();
     void cleanup();
     bool isInitialized() const { return initialized_; }
 
-    // Input/Output
     std::string readLine();
     void putLine(const std::string &text);
     void clear();
 
-    // Command history
     void addToCommandHistory(const std::string &command);
     const std::vector<std::string>& getCommandHistory() const;
     
-    // Command completion
     void setCompletions(const std::vector<std::string> &completions);
     std::string completeCommand(const std::string &partial);
     std::string completeCommandContextual(const std::string &command_line);
     
-    // Display history management
     void addToDisplayHistory(const std::string &message);
     void clearDisplayHistory();
     void removeFromDisplayHistory(size_t index);
@@ -71,21 +66,17 @@ namespace netd::client::tui {
     const std::string& getDisplayHistoryAt(size_t index) const;
     const std::vector<std::string>& getDisplayHistory() const;
 
-    // Interactive mode
     void runInteractive(std::function<bool(const std::string &)> commandHandler);
     void setPrompt(const std::string &prompt) { prompt_ = prompt; }
 
-    // Command processing
     void setCommandHandler(std::function<bool(const std::string &)> handler) {
       commandHandler_ = handler;
     }
     
-    // Connection status
     void setConnectionStatus(const std::string& status) {
       connectionStatus_ = status;
     }
     
-    // Debug level
     void setDebugLevel(int level) {
       debugLevel_ = level;
     }
@@ -98,20 +89,16 @@ namespace netd::client::tui {
       return destroying_;
     }
 
-    // Display methods (public for signal handler access)
     void putMessages();
     void putPrompt();
-    void redrawScreen(); // Full screen redraw for signal handler
-    void putFormattedText(const std::string &format, const std::string &text); // Write formatted text
-    void clearToEndOfLine(); // Clear from cursor to end of line
-    void handleResize(); // Handle window resize signal
+    void redrawScreen();
+    void putFormattedText(const std::string &format, const std::string &text);
+    void clearToEndOfLine();
+    void handleResize();
 
-    // Logger integration
     void setLoggerInstance(TUI* tui);
     void initializeLogger();
     void cleanupLogger();
-
-    // Text formatting and wrapping
     std::vector<std::string> wrapText(const std::string &text, int width);
     std::vector<std::string> wrapTextToScreen(const std::string &text);
     std::vector<std::string> wrapTextWithIndent(const std::string &text, int width, int indent);

@@ -33,11 +33,7 @@
 #include <unordered_set>
 #include <memory>
 #include <shared/include/expect/base.hpp>
-
-// Forward declaration
-namespace netd::client::netconf {
-    class NetconfClient;
-}
+#include <client/include/netconf/client.hpp>
 
 namespace netd::client::processor {
 

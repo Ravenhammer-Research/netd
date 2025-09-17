@@ -63,11 +63,8 @@ namespace netd::client::netconf {
 
   class RpcHandler {
   public:
-    // Main RPC handler called from CommandProcessor
     static std::string handleRpc(const std::string& xml_request, 
                                 netd::shared::netconf::NetconfSession* session);
-
-    // Request-based handlers that take request objects and return response objects
     static std::unique_ptr<netd::shared::response::get::GetResponse> handleGetRequest(
         const netd::shared::request::get::GetRequest& request, 
         netd::shared::netconf::NetconfSession* session);
