@@ -1,15 +1,14 @@
-#include <shared/include/stream.hpp>
-#include <shared/include/logger.hpp>
 #include <atomic>
 #include <cstring>
+#include <shared/include/logger.hpp>
+#include <shared/include/stream.hpp>
 
 namespace netd::shared {
 
   const size_t RpcRxStreamBuf::BUFFER_SIZE;
   const size_t RpcTxStreamBuf::BUFFER_SIZE;
 
-  RpcRxStreamBuf::RpcRxStreamBuf(ClientSocket& socket)
-      : socket_(socket) {
+  RpcRxStreamBuf::RpcRxStreamBuf(ClientSocket &socket) : socket_(socket) {
     buffer_.resize(BUFFER_SIZE);
     setg(nullptr, nullptr, nullptr);
   }
@@ -48,36 +47,29 @@ namespace netd::shared {
     }
   }
 
-  bool RpcRxStreamBuf::hasData() {
-    return socket_.hasData();
-  }
+  bool RpcRxStreamBuf::hasData() { return socket_.hasData(); }
 
   std::string RpcRxStreamBuf::readToEnd() {
     if (underflow() == traits_type::eof()) {
       return "";
     }
-    
+
     std::string result;
     if (gptr() < egptr()) {
       result.assign(gptr(), egptr() - gptr());
     }
-    
+
     return result;
   }
 
-  ClientSocket& RpcRxStreamBuf::getSocket() {
-    return socket_;
-  }
+  ClientSocket &RpcRxStreamBuf::getSocket() { return socket_; }
 
-  RpcTxStreamBuf::RpcTxStreamBuf(ClientSocket& socket)
-      : socket_(socket) {
+  RpcTxStreamBuf::RpcTxStreamBuf(ClientSocket &socket) : socket_(socket) {
     buffer_.resize(BUFFER_SIZE);
     setp(buffer_.data(), buffer_.data() + BUFFER_SIZE - 1);
   }
 
-  RpcTxStreamBuf::~RpcTxStreamBuf() {
-    sync();
-  }
+  RpcTxStreamBuf::~RpcTxStreamBuf() { sync(); }
 
   std::streambuf::int_type RpcTxStreamBuf::overflow(int_type c) {
     if (c != traits_type::eof()) {
@@ -96,7 +88,7 @@ namespace netd::shared {
     if (pptr() > pbase()) {
       std::string data(pbase(), pptr() - pbase());
       bool success = socket_.sendData(data);
-      
+
       if (success) {
         setp(buffer_.data(), buffer_.data() + BUFFER_SIZE - 1);
         return 0;
@@ -107,33 +99,20 @@ namespace netd::shared {
     return 0;
   }
 
-  int RpcTxStreamBuf::flush() {
-    return sync();
-  }
+  int RpcTxStreamBuf::flush() { return sync(); }
 
-  RpcRxStream::RpcRxStream(ClientSocket& socket)
-      : std::istream(&streambuf_), streambuf_(socket) {
-  }
+  RpcRxStream::RpcRxStream(ClientSocket &socket)
+      : std::istream(&streambuf_), streambuf_(socket) {}
 
-  void RpcRxStream::rewind() {
-    streambuf_.rewind();
-  }
+  void RpcRxStream::rewind() { streambuf_.rewind(); }
 
-  bool RpcRxStream::hasData() {
-    return streambuf_.hasData();
-  }
+  bool RpcRxStream::hasData() { return streambuf_.hasData(); }
 
-  std::string RpcRxStream::readToEnd() {
-    return streambuf_.readToEnd();
-  }
+  std::string RpcRxStream::readToEnd() { return streambuf_.readToEnd(); }
 
-  ClientSocket& RpcRxStream::getSocket() {
-    return streambuf_.getSocket();
-  }
+  ClientSocket &RpcRxStream::getSocket() { return streambuf_.getSocket(); }
 
-  RpcTxStream::RpcTxStream(ClientSocket& socket)
-      : std::ostream(&streambuf_), streambuf_(socket) {
-  }
-
+  RpcTxStream::RpcTxStream(ClientSocket &socket)
+      : std::ostream(&streambuf_), streambuf_(socket) {}
 
 } // namespace netd::shared

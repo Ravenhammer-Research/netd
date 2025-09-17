@@ -27,42 +27,42 @@
 
 #include <libyang/libyang.h>
 #include <libyang/tree_data.h>
-#include <sstream>
+#include <shared/include/exception.hpp>
 #include <shared/include/request/base.hpp>
-#include <shared/include/request/get/base.hpp>
-#include <shared/include/request/get/config.hpp>
-#include <shared/include/request/get/library.hpp>
 #include <shared/include/request/commit.hpp>
 #include <shared/include/request/copy.hpp>
 #include <shared/include/request/delete.hpp>
 #include <shared/include/request/discard.hpp>
 #include <shared/include/request/edit.hpp>
+#include <shared/include/request/get/base.hpp>
+#include <shared/include/request/get/config.hpp>
+#include <shared/include/request/get/library.hpp>
 #include <shared/include/request/hello.hpp>
 #include <shared/include/request/lock.hpp>
-#include <shared/include/request/unlock.hpp>
-#include <shared/include/request/validate.hpp>
 #include <shared/include/request/session/close.hpp>
 #include <shared/include/request/session/destroy.hpp>
-#include <shared/include/yang.hpp>
-#include <shared/include/exception.hpp>
+#include <shared/include/request/unlock.hpp>
+#include <shared/include/request/validate.hpp>
 #include <shared/include/xml/base.hpp>
 #include <shared/include/xml/envelope.hpp>
+#include <shared/include/yang.hpp>
+#include <sstream>
 
 namespace netd::shared::request {
 
-  // NOTE: This base class contains stubbed implementations for interface compliance only.
-  // The actual functionality should be implemented in derived classes, not here.
+  // NOTE: This base class contains stubbed implementations for interface
+  // compliance only. The actual functionality should be implemented in derived
+  // classes, not here.
 
   // Base Request class implementation
   // Template class - implementations are in the header
-  
+
   // toXml implementation for template class
-  // NOTE: This method should NOT be implemented in base class - it is stubbed for interface compliance only
-  template<typename T>
-  std::string Request<T>::toXml() const {
+  // NOTE: This method should NOT be implemented in base class - it is stubbed
+  // for interface compliance only
+  template <typename T> std::string Request<T>::toXml() const {
     throw netd::shared::NotImplementedError("Request::toXml not implemented");
   }
-
 
   // Explicit template instantiations for all request types
   template class Request<get::GetRequest>;
@@ -81,38 +81,80 @@ namespace netd::shared::request {
   template class Request<session::DestroyRequest>;
 
   // fromRpcEnvelope implementation for template class
-  template<typename T>
-  std::unique_ptr<T> Request<T>::fromRpcEnvelope(const ly_ctx *ctx,
-                                                std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope) {
+  template <typename T>
+  std::unique_ptr<T> Request<T>::fromRpcEnvelope(
+      const ly_ctx *ctx,
+      std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope) {
     if (!envelope) {
-      throw netd::shared::ArgumentError("Invalid RpcEnvelope provided to Request::fromRpcEnvelope");
+      throw netd::shared::ArgumentError(
+          "Invalid RpcEnvelope provided to Request::fromRpcEnvelope");
     }
-    
+
     // Call fromYang with the envelope's data
     auto request = fromYang(ctx, envelope->getLydData());
-    
+
     // Store the envelope pointer
     if (request) {
       request->envelope_ = envelope;
     }
-    
+
     return request;
   }
 
   // Explicit template instantiations for fromRpcEnvelope
-  template std::unique_ptr<get::GetRequest> Request<get::GetRequest>::fromRpcEnvelope(const ly_ctx *ctx, std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope);
-  template std::unique_ptr<get::GetConfigRequest> Request<get::GetConfigRequest>::fromRpcEnvelope(const ly_ctx *ctx, std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope);
-  template std::unique_ptr<get::GetLibraryRequest> Request<get::GetLibraryRequest>::fromRpcEnvelope(const ly_ctx *ctx, std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope);
-  template std::unique_ptr<CommitRequest> Request<CommitRequest>::fromRpcEnvelope(const ly_ctx *ctx, std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope);
-  template std::unique_ptr<CopyConfigRequest> Request<CopyConfigRequest>::fromRpcEnvelope(const ly_ctx *ctx, std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope);
-  template std::unique_ptr<DeleteConfigRequest> Request<DeleteConfigRequest>::fromRpcEnvelope(const ly_ctx *ctx, std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope);
-  template std::unique_ptr<DiscardRequest> Request<DiscardRequest>::fromRpcEnvelope(const ly_ctx *ctx, std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope);
-  template std::unique_ptr<EditConfigRequest> Request<EditConfigRequest>::fromRpcEnvelope(const ly_ctx *ctx, std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope);
-  template std::unique_ptr<HelloRequest> Request<HelloRequest>::fromRpcEnvelope(const ly_ctx *ctx, std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope);
-  template std::unique_ptr<LockRequest> Request<LockRequest>::fromRpcEnvelope(const ly_ctx *ctx, std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope);
-  template std::unique_ptr<UnlockRequest> Request<UnlockRequest>::fromRpcEnvelope(const ly_ctx *ctx, std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope);
-  template std::unique_ptr<ValidateRequest> Request<ValidateRequest>::fromRpcEnvelope(const ly_ctx *ctx, std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope);
-  template std::unique_ptr<session::CloseRequest> Request<session::CloseRequest>::fromRpcEnvelope(const ly_ctx *ctx, std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope);
-  template std::unique_ptr<session::DestroyRequest> Request<session::DestroyRequest>::fromRpcEnvelope(const ly_ctx *ctx, std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope);
+  template std::unique_ptr<get::GetRequest>
+  Request<get::GetRequest>::fromRpcEnvelope(
+      const ly_ctx *ctx,
+      std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope);
+  template std::unique_ptr<get::GetConfigRequest>
+  Request<get::GetConfigRequest>::fromRpcEnvelope(
+      const ly_ctx *ctx,
+      std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope);
+  template std::unique_ptr<get::GetLibraryRequest>
+  Request<get::GetLibraryRequest>::fromRpcEnvelope(
+      const ly_ctx *ctx,
+      std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope);
+  template std::unique_ptr<CommitRequest>
+  Request<CommitRequest>::fromRpcEnvelope(
+      const ly_ctx *ctx,
+      std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope);
+  template std::unique_ptr<CopyConfigRequest>
+  Request<CopyConfigRequest>::fromRpcEnvelope(
+      const ly_ctx *ctx,
+      std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope);
+  template std::unique_ptr<DeleteConfigRequest>
+  Request<DeleteConfigRequest>::fromRpcEnvelope(
+      const ly_ctx *ctx,
+      std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope);
+  template std::unique_ptr<DiscardRequest>
+  Request<DiscardRequest>::fromRpcEnvelope(
+      const ly_ctx *ctx,
+      std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope);
+  template std::unique_ptr<EditConfigRequest>
+  Request<EditConfigRequest>::fromRpcEnvelope(
+      const ly_ctx *ctx,
+      std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope);
+  template std::unique_ptr<HelloRequest> Request<HelloRequest>::fromRpcEnvelope(
+      const ly_ctx *ctx,
+      std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope);
+  template std::unique_ptr<LockRequest> Request<LockRequest>::fromRpcEnvelope(
+      const ly_ctx *ctx,
+      std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope);
+  template std::unique_ptr<UnlockRequest>
+  Request<UnlockRequest>::fromRpcEnvelope(
+      const ly_ctx *ctx,
+      std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope);
+  template std::unique_ptr<ValidateRequest>
+  Request<ValidateRequest>::fromRpcEnvelope(
+      const ly_ctx *ctx,
+      std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope);
+  template std::unique_ptr<session::CloseRequest>
+  Request<session::CloseRequest>::fromRpcEnvelope(
+      const ly_ctx *ctx,
+      std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope);
+  template std::unique_ptr<session::DestroyRequest>
+  Request<session::DestroyRequest>::fromRpcEnvelope(
+      const ly_ctx *ctx,
+      std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope);
 
 } // namespace netd::shared::request

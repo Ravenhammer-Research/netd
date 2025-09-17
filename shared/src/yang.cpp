@@ -25,10 +25,8 @@
  * SUCH DAMAGE.
  */
 
-#include <fstream>
-#include <sys/stat.h>
-#include <unistd.h>
 #include <climits>
+#include <fstream>
 #include <libyang/libyang.h>
 #include <libyang/parser_data.h>
 #include <libyang/parser_schema.h>
@@ -38,6 +36,8 @@
 #include <shared/include/logger.hpp>
 #include <shared/include/yang.hpp>
 #include <sstream>
+#include <sys/stat.h>
+#include <unistd.h>
 
 namespace netd::shared {
 
@@ -54,41 +54,43 @@ namespace netd::shared {
     if (!ctx_) {
       auto &logger = Logger::getInstance();
       logger.error("Failed to create libyang context");
-      throw netd::shared::ConfigurationError("Failed to create libyang context");
+      throw netd::shared::ConfigurationError(
+          "Failed to create libyang context");
     }
-    
+
     // Set up search paths for YANG modules
     struct stat st;
     auto &logger = Logger::getInstance();
-    
+
     logger.info("YANG_DEV_DIR: " + std::string(YANG_DEV_DIR));
-    
+
 #ifdef DEBUG_BUILD
-    // Check if ../yang exists and is the same as YANG_DEV_DIR (DEBUG builds only)
+    // Check if ../yang exists and is the same as YANG_DEV_DIR (DEBUG builds
+    // only)
     if (stat("../yang", &st) == 0 && S_ISDIR(st.st_mode)) {
-        char realpath_yang[PATH_MAX];
-        char realpath_dev[PATH_MAX];
-        if (realpath("../yang", realpath_yang) != nullptr && 
-            realpath(YANG_DEV_DIR, realpath_dev) != nullptr &&
-            strcmp(realpath_yang, realpath_dev) == 0) {
-            ly_ctx_set_searchdir(ctx_, YANG_DEV_DIR "/standard/ietf/RFC");
-            ly_ctx_set_searchdir(ctx_, YANG_DEV_DIR "/standard/iana/");
-        } else {
-            throw netd::shared::YangSchemaError(ctx_);
-        }
-    } else {
+      char realpath_yang[PATH_MAX];
+      char realpath_dev[PATH_MAX];
+      if (realpath("../yang", realpath_yang) != nullptr &&
+          realpath(YANG_DEV_DIR, realpath_dev) != nullptr &&
+          strcmp(realpath_yang, realpath_dev) == 0) {
+        ly_ctx_set_searchdir(ctx_, YANG_DEV_DIR "/standard/ietf/RFC");
+        ly_ctx_set_searchdir(ctx_, YANG_DEV_DIR "/standard/iana/");
+      } else {
         throw netd::shared::YangSchemaError(ctx_);
+      }
+    } else {
+      throw netd::shared::YangSchemaError(ctx_);
     }
 #else
     // RELEASE builds - only use YANG_DIR
     if (stat(YANG_DIR, &st) == 0 && S_ISDIR(st.st_mode)) {
-        ly_ctx_set_searchdir(ctx_, YANG_DIR "/standard/ietf/RFC");
-        ly_ctx_set_searchdir(ctx_, YANG_DIR "/standard/iana/");
+      ly_ctx_set_searchdir(ctx_, YANG_DIR "/standard/ietf/RFC");
+      ly_ctx_set_searchdir(ctx_, YANG_DIR "/standard/iana/");
     } else {
-        throw netd::shared::YangSchemaError(ctx_);
+      throw netd::shared::YangSchemaError(ctx_);
     }
 #endif
-  
+
     loadStandardSchemas();
   }
 
@@ -160,10 +162,10 @@ namespace netd::shared {
         // Basic types first
         {"ietf-inet-types", "2013-07-15"},
         {"ietf-yang-types", "2013-07-15"},
-        
+
         // IETF interfaces (required by iana-if-type)
         {"ietf-interfaces", "2018-02-20"},
-        
+
         // IANA interface types (required for interface type identities)
         {"iana-if-type", "2023-01-26"},
 
@@ -285,46 +287,49 @@ namespace netd::shared {
     return node;
   }
 
-  const struct lys_module *Yang::getModule(const std::string &name, 
+  const struct lys_module *Yang::getModule(const std::string &name,
                                            const std::string &revision) const {
     auto &logger = Logger::getInstance();
-    
+
     if (!ctx_) {
       logger.error("YANG context not initialized");
       return nullptr;
     }
-    
+
     // Try to load the module if it's not already loaded
     if (name == "ietf-netconf" && revision == "2011-06-01") {
       logger.debug("Attempting to load ietf-netconf module on demand");
-      const_cast<Yang*>(this)->loadSchemaByName(name, revision);
+      const_cast<Yang *>(this)->loadSchemaByName(name, revision);
     }
 
     // Get the module
-    const struct lys_module *mod = ly_ctx_get_module(ctx_, name.c_str(), 
-                                                     revision.empty() ? nullptr : revision.c_str());
-    
+    const struct lys_module *mod = ly_ctx_get_module(
+        ctx_, name.c_str(), revision.empty() ? nullptr : revision.c_str());
+
     if (!mod) {
-      logger.error("Failed to get module: " + name + (revision.empty() ? "" : "@" + revision));
-      
+      logger.error("Failed to get module: " + name +
+                   (revision.empty() ? "" : "@" + revision));
+
       // Debug: List all loaded modules
       logger.debug("Available modules:");
       uint32_t index = 0;
       const struct lys_module *iter = nullptr;
       while ((iter = ly_ctx_get_module_iter(ctx_, &index)) != nullptr) {
-        logger.debug("  Module: " + std::string(iter->name) + "@" + (iter->revision ? iter->revision : "no-revision"));
+        logger.debug("  Module: " + std::string(iter->name) + "@" +
+                     (iter->revision ? iter->revision : "no-revision"));
       }
     } else {
-      logger.debug("Successfully retrieved module: " + name + "@" + (mod->revision ? mod->revision : "no-revision"));
+      logger.debug("Successfully retrieved module: " + name + "@" +
+                   (mod->revision ? mod->revision : "no-revision"));
     }
-    
+
     return mod;
   }
 
   std::vector<std::string> Yang::getCapabilities() const {
     std::vector<std::string> capabilities;
     auto &logger = Logger::getInstance();
-    
+
     if (!ctx_) {
       logger.error("YANG context not initialized");
       return capabilities;
@@ -333,7 +338,7 @@ namespace netd::shared {
     // Get capabilities from all loaded modules
     const struct lys_module *mod = nullptr;
     uint32_t idx = 0;
-    
+
     while ((mod = ly_ctx_get_module_iter(ctx_, &idx)) != nullptr) {
       if (mod->name && mod->ns) {
         // Add module capability using namespace
@@ -341,7 +346,8 @@ namespace netd::shared {
       }
     }
 
-    logger.debug("Generated " + std::to_string(capabilities.size()) + " NETCONF capabilities");
+    logger.debug("Generated " + std::to_string(capabilities.size()) +
+                 " NETCONF capabilities");
     return capabilities;
   }
 } // namespace netd::shared

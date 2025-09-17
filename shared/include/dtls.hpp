@@ -28,14 +28,14 @@
 #ifndef NETD_SERVER_NETCONF_DTLS_HPP
 #define NETD_SERVER_NETCONF_DTLS_HPP
 
-#include <string>
 #include <shared/include/tls.hpp>
+#include <string>
 
 namespace netd::shared {
 
   /**
    * DTLS Security Component
-   * 
+   *
    * This class extends TLSSecurity to provide DTLS encryption/decryption
    * for datagram-based transports. DTLS is particularly useful for UDP-based
    * transports and SCTP (RFC 6083).
@@ -56,35 +56,33 @@ namespace netd::shared {
      * @param verify_peer Whether to verify peer certificates
      * @param mtu_size Maximum transmission unit size (default 1500)
      */
-    DTLSSecurity(const std::string& cert_file,
-                 const std::string& key_file,
-                 const std::string& ca_file = "",
-                 bool verify_peer = true,
+    DTLSSecurity(const std::string &cert_file, const std::string &key_file,
+                 const std::string &ca_file = "", bool verify_peer = true,
                  uint32_t mtu_size = 1500);
-    
+
     ~DTLSSecurity();
 
     // DTLS-specific initialization (overrides TLS)
     bool initializeDTLS();
     void cleanupDTLS();
     bool isDTLSInitialized() const;
-    
+
     // DTLS handshake (connectionless - overrides TLS)
     bool performHandshake(int socket_fd, bool is_server = true) override;
-    
+
     // Encrypted data operations (overrides TLS with MTU awareness)
-    bool sendEncryptedData(int socket_fd, const std::string& data) override;
+    bool sendEncryptedData(int socket_fd, const std::string &data) override;
     std::string receiveEncryptedData(int socket_fd) override;
-    
+
     // DTLS-specific configuration
     void setMTUSize(uint32_t mtu);
     uint32_t getMTUSize() const;
-    
+
     // DTLS-specific features
     bool enableCookieExchange();
-    bool setCookieSecret(const std::string& secret);
+    bool setCookieSecret(const std::string &secret);
     bool setRetransmissionTimeout(uint32_t timeout_ms);
-    
+
     // Access to DTLS-specific state
     bool isCookieExchangeEnabled() const;
     uint32_t getRetransmissionTimeout() const;

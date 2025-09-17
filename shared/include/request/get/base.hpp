@@ -28,8 +28,8 @@
 #ifndef NETD_REQUEST_GET_BASE_HPP
 #define NETD_REQUEST_GET_BASE_HPP
 
-#include <shared/include/request/base.hpp>
 #include <shared/include/logger.hpp>
+#include <shared/include/request/base.hpp>
 #include <shared/include/xml/base.hpp>
 #include <shared/include/xml/envelope.hpp>
 
@@ -38,14 +38,17 @@ namespace netd::shared::request::get {
   class GetRequest : public netd::shared::request::Request<GetRequest> {
   public:
     GetRequest() : netd::shared::request::Request<GetRequest>() {}
-    GetRequest(netd::shared::netconf::NetconfSession *session, struct lyd_node *rpc)
+    GetRequest(netd::shared::netconf::NetconfSession *session,
+               struct lyd_node *rpc)
         : netd::shared::request::Request<GetRequest>(session, rpc) {
       // Parse the RPC data to populate filter information
       if (rpc) {
         auto &logger = netd::shared::Logger::getInstance();
         logger.info("GetRequest constructor: calling parseRpcData");
         parseRpcData(rpc);
-        logger.info("GetRequest constructor: parseRpcData completed, hasFilter=" + std::string(hasFilter_ ? "true" : "false"));
+        logger.info(
+            "GetRequest constructor: parseRpcData completed, hasFilter=" +
+            std::string(hasFilter_ ? "true" : "false"));
       }
     }
     virtual ~GetRequest() = default;
@@ -54,8 +57,9 @@ namespace netd::shared::request::get {
     lyd_node *toYang(ly_ctx *ctx) const;
     static std::unique_ptr<GetRequest> fromYang(const ly_ctx *ctx,
                                                 const lyd_node *node);
-    static std::unique_ptr<GetRequest> fromRpcEnvelope(const ly_ctx *ctx,
-                                                      std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope);
+    static std::unique_ptr<GetRequest>
+    fromRpcEnvelope(const ly_ctx *ctx,
+                    std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope);
 
     // Access methods for filter information
     bool hasFilter() const { return hasFilter_; }
@@ -66,7 +70,7 @@ namespace netd::shared::request::get {
     bool hasFilter_ = false;
     std::string filterType_;
     std::string filterSelect_;
-    
+
     // Helper method to parse RPC data
     void parseRpcData(const lyd_node *node);
   };

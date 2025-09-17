@@ -28,10 +28,10 @@
 #ifndef NETD_SHARED_EXPECT_INTERFACE_HPP
 #define NETD_SHARED_EXPECT_INTERFACE_HPP
 
-#include <vector>
-#include <string>
-#include <shared/include/expect/base.hpp>
 #include <libyang/libyang.h>
+#include <shared/include/expect/base.hpp>
+#include <string>
+#include <vector>
 
 namespace netd::shared::expect {
 
@@ -47,19 +47,19 @@ namespace netd::shared::expect {
    */
   class InterfaceExpect : public Expect<InterfaceResponse> {
   public:
-    using CallbackType = std::function<void(const InterfaceResponse&)>;
+    using CallbackType = std::function<void(const InterfaceResponse &)>;
 
     /**
      * @brief Constructor
-     * @param callback The callback function to call when interface response is received
+     * @param callback The callback function to call when interface response is
+     * received
      * @param message_id The NETCONF message ID to expect
      * @param session_id The NETCONF session ID
      * @param ttl Time to live in seconds (default: 8 seconds)
      */
-    InterfaceExpect(CallbackType callback,
-                   const std::string& message_id,
-                   const std::string& session_id,
-                   std::chrono::seconds ttl = std::chrono::seconds(8))
+    InterfaceExpect(CallbackType callback, const std::string &message_id,
+                    const std::string &session_id,
+                    std::chrono::seconds ttl = std::chrono::seconds(8))
         : Expect<InterfaceResponse>(callback, message_id, session_id, ttl) {}
 
   private:
@@ -68,7 +68,7 @@ namespace netd::shared::expect {
      * @param response_node The YANG response node
      * @return The converted interface response data
      */
-    InterfaceResponse convertFromYang(lyd_node* response_node);
+    InterfaceResponse convertFromYang(lyd_node *response_node);
   };
 
 } // namespace netd::shared::expect

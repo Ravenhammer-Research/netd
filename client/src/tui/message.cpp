@@ -25,9 +25,9 @@
  * SUCH DAMAGE.
  */
 
+#include <algorithm>
 #include <client/include/tui.hpp>
 #include <curses.h>
-#include <algorithm>
 
 namespace netd::client::tui {
 
@@ -53,15 +53,13 @@ namespace netd::client::tui {
     }
   }
 
-  size_t TUI::getDisplayHistorySize() const {
-    return displayHistory_.size();
-  }
+  size_t TUI::getDisplayHistorySize() const { return displayHistory_.size(); }
 
-  const std::string& TUI::getDisplayHistoryAt(size_t index) const {
+  const std::string &TUI::getDisplayHistoryAt(size_t index) const {
     return displayHistory_[index];
   }
 
-  const std::vector<std::string>& TUI::getDisplayHistory() const {
+  const std::vector<std::string> &TUI::getDisplayHistory() const {
     return displayHistory_;
   }
 
@@ -69,7 +67,7 @@ namespace netd::client::tui {
   void TUI::putLine(const std::string &text) {
     // Store the original message without any modification
     addToDisplayHistory(text);
-    
+
     // Clear screen and redraw all messages from bottom up
     clearCurses();
     putStatusBar();
@@ -78,20 +76,17 @@ namespace netd::client::tui {
     refreshCurses();
   }
 
-  void TUI::putFormattedText(const std::string &format, const std::string &text) {
+  void TUI::putFormattedText(const std::string &format,
+                             const std::string &text) {
     (void)format; // Suppress unused parameter warning
     addToDisplayHistory(text);
     redrawScreen();
   }
 
   // Scroll management
-  int TUI::getScrollOffset() {
-    return scrollOffset_;
-  }
+  int TUI::getScrollOffset() { return scrollOffset_; }
 
-  void TUI::setScrollOffset(int offset) {
-    scrollOffset_ = std::max(0, offset);
-  }
+  void TUI::setScrollOffset(int offset) { scrollOffset_ = std::max(0, offset); }
 
   void TUI::scrollMessages() {
     // Scroll up (show older messages) - limit to one screen height
@@ -108,6 +103,5 @@ namespace netd::client::tui {
       scrollOffset_ = 0;
     }
   }
-
 
 } // namespace netd::client::tui

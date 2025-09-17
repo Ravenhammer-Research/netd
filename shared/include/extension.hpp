@@ -28,11 +28,11 @@
 #ifndef NETD_SHARED_EXTENSION_HPP
 #define NETD_SHARED_EXTENSION_HPP
 
+#include <functional>
+#include <map>
+#include <memory>
 #include <string>
 #include <vector>
-#include <memory>
-#include <map>
-#include <functional>
 
 namespace netd::shared {
 
@@ -40,7 +40,8 @@ namespace netd::shared {
    * Extension capabilities that can be provided by loadable modules
    */
   enum class ExtensionCapability {
-    NATIVE_BACKEND       // Native backend implementation for OS-specific functionality
+    NATIVE_BACKEND // Native backend implementation for OS-specific
+                   // functionality
   };
 
   /**
@@ -90,13 +91,14 @@ namespace netd::shared {
      * @param netd_version Current NetD version
      * @return true if compatible, false otherwise
      */
-    virtual bool isCompatible(const std::string& netd_version) const = 0;
+    virtual bool isCompatible(const std::string &netd_version) const = 0;
 
     /**
      * Load extensions from the extension directory
      * @return Map of loaded extensions by name
      */
-    static std::map<std::string, std::shared_ptr<NetdExtension>> loadExtensions();
+    static std::map<std::string, std::shared_ptr<NetdExtension>>
+    loadExtensions();
 
     /**
      * Get the extension search path
@@ -110,7 +112,8 @@ namespace netd::shared {
      * @param filepath Path to the extension file
      * @return Shared pointer to loaded extension, or nullptr if failed
      */
-    static std::shared_ptr<NetdExtension> loadExtension(const std::string& filepath);
+    static std::shared_ptr<NetdExtension>
+    loadExtension(const std::string &filepath);
   };
 
 } // namespace netd::shared

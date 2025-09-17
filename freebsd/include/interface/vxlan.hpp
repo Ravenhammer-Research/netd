@@ -33,13 +33,14 @@
 #include <string>
 #include <vector>
 
+#include <shared/include/backend.hpp>
 #include <shared/include/base/serialization.hpp>
 #include <shared/include/interface/vxlan.hpp>
-#include <shared/include/backend.hpp>
 
 namespace netd::freebsd::interface {
 
-  class VxlanInterface : public netd::shared::interface::VxlanInterface, public netd::shared::BaseNativeBackend {
+  class VxlanInterface : public netd::shared::interface::VxlanInterface,
+                         public netd::shared::BaseNativeBackend {
   public:
     VxlanInterface();
     explicit VxlanInterface(const std::string &name);

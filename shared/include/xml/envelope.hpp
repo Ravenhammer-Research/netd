@@ -31,21 +31,21 @@
 #include <bsdxml.h>
 #include <libyang/libyang.h>
 #include <memory>
-#include <sstream>
-#include <string>
 #include <shared/include/marshalling/filter.hpp>
 #include <shared/include/netconf/rpc.hpp>
 #include <shared/include/xml/base.hpp>
+#include <sstream>
+#include <string>
 
 namespace netd::shared::xml {
 
   // RPC type enumeration
   enum class RpcType {
-    RPC,        // <rpc> request
-    RPC_REPLY,  // <rpc-reply> response
-    RPC_ERROR   // <rpc-error> error response
+    RPC,       // <rpc> request
+    RPC_REPLY, // <rpc-reply> response
+    RPC_ERROR  // <rpc-error> error response
   };
-  
+
   // RPC envelope class for XML serialization/deserialization
   class RpcEnvelope : public XMLTree {
   public:
@@ -53,18 +53,17 @@ namespace netd::shared::xml {
     virtual ~RpcEnvelope() = default;
 
     // Parse XML string into RpcEnvelope
-    static std::unique_ptr<RpcEnvelope> fromXml(const std::string& xml, const struct ly_ctx* ctx);
+    static std::unique_ptr<RpcEnvelope> fromXml(const std::string &xml,
+                                                const struct ly_ctx *ctx);
 
     // Generate RpcEnvelope from parameters
-    static std::unique_ptr<RpcEnvelope> toXml(RpcType rpc_type, 
-                                             int message_id, 
-                                             netconf::NetconfOperation operation,
-                                             marshalling::Filter* filter,
-                                             lyd_node* lyd_data,
-                                             const struct ly_ctx* ctx);
+    static std::unique_ptr<RpcEnvelope>
+    toXml(RpcType rpc_type, int message_id, netconf::NetconfOperation operation,
+          marshalling::Filter *filter, lyd_node *lyd_data,
+          const struct ly_ctx *ctx);
 
     // Override XMLTree methods
-    std::stringstream toXmlStream(const struct ly_ctx* ctx) const override;
+    std::stringstream toXmlStream(const struct ly_ctx *ctx) const override;
 
     // Getters and setters
     RpcType getRpcType() const { return rpc_type_; }
@@ -76,24 +75,30 @@ namespace netd::shared::xml {
     netconf::NetconfOperation getOperation() const { return operation_; }
     void setOperation(netconf::NetconfOperation op) { operation_ = op; }
 
-    const std::unique_ptr<marshalling::Filter>& getFilter() const { return filter_; }
-    void setFilter(std::unique_ptr<marshalling::Filter> filter) { filter_ = std::move(filter); }
+    const std::unique_ptr<marshalling::Filter> &getFilter() const {
+      return filter_;
+    }
+    void setFilter(std::unique_ptr<marshalling::Filter> filter) {
+      filter_ = std::move(filter);
+    }
 
-    lyd_node* getLydData() const { return lyd_data_; }
-    void setLydData(lyd_node* data) { lyd_data_ = data; }
+    lyd_node *getLydData() const { return lyd_data_; }
+    void setLydData(lyd_node *data) { lyd_data_ = data; }
 
   protected:
     // Override XMLTree protected methods
-    void startElementHandler(void* userData, const XML_Char* name, const XML_Char** atts) override;
-    void endElementHandler(void* userData, const XML_Char* name) override;
-    void characterDataHandler(void* userData, const XML_Char* s, int len) override;
+    void startElementHandler(void *userData, const XML_Char *name,
+                             const XML_Char **atts) override;
+    void endElementHandler(void *userData, const XML_Char *name) override;
+    void characterDataHandler(void *userData, const XML_Char *s,
+                              int len) override;
 
   private:
     RpcType rpc_type_ = RpcType::RPC;
     int message_id_ = 0;
     netconf::NetconfOperation operation_ = netconf::NetconfOperation::GET;
     std::unique_ptr<marshalling::Filter> filter_;
-    lyd_node* lyd_data_ = nullptr;
+    lyd_node *lyd_data_ = nullptr;
   };
 
 } // namespace netd::shared::xml

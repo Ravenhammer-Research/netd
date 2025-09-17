@@ -38,16 +38,18 @@ namespace netd::shared::request::get {
       : public netd::shared::request::Request<GetLibraryRequest> {
   public:
     GetLibraryRequest() : netd::shared::request::Request<GetLibraryRequest>() {}
-    GetLibraryRequest(netd::shared::netconf::NetconfSession *session, struct lyd_node *rpc)
+    GetLibraryRequest(netd::shared::netconf::NetconfSession *session,
+                      struct lyd_node *rpc)
         : netd::shared::request::Request<GetLibraryRequest>(session, rpc) {}
     virtual ~GetLibraryRequest() = default;
 
     // Override base methods
-    lyd_node *toYang(ly_ctx *ctx) const ;
+    lyd_node *toYang(ly_ctx *ctx) const;
     static std::unique_ptr<GetLibraryRequest> fromYang(const ly_ctx *ctx,
-                                                      const lyd_node *node) ;
-    static std::unique_ptr<GetLibraryRequest> fromRpcEnvelope(const ly_ctx *ctx,
-                                                             std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope) ;
+                                                       const lyd_node *node);
+    static std::unique_ptr<GetLibraryRequest>
+    fromRpcEnvelope(const ly_ctx *ctx,
+                    std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope);
 
     // Access methods for filter information
     bool hasLibraryFilter() const { return hasLibraryFilter_; }

@@ -25,37 +25,31 @@
  * SUCH DAMAGE.
  */
 
-#include <shared/include/lldp/connection.hpp>
 #include <shared/include/exception.hpp>
+#include <shared/include/lldp/connection.hpp>
 
 namespace netd::shared::lldp {
 
-Connection::Connection() 
-    : connection_(nullptr)
-    , initialized_(false)
-{
-}
+  Connection::Connection() : connection_(nullptr), initialized_(false) {}
 
-Connection::~Connection() {
-    cleanup();
-}
+  Connection::~Connection() { cleanup(); }
 
-void Connection::initialize() {
+  void Connection::initialize() {
     // Create connection with default callbacks (NULL parameters)
     connection_ = lldpctl_new(nullptr, nullptr, nullptr);
     if (!connection_) {
-        throw netd::shared::LLDPError("Failed to create LLDP connection");
+      throw netd::shared::LLDPError("Failed to create LLDP connection");
     }
 
     initialized_ = true;
-}
+  }
 
-void Connection::cleanup() {
+  void Connection::cleanup() {
     if (connection_) {
-        lldpctl_release(connection_);
-        connection_ = nullptr;
+      lldpctl_release(connection_);
+      connection_ = nullptr;
     }
     initialized_ = false;
-}
+  }
 
 } // namespace netd::shared::lldp

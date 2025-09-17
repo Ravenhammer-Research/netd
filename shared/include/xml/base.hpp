@@ -28,53 +28,55 @@
 #ifndef NETD_SHARED_XML_BASE_HPP
 #define NETD_SHARED_XML_BASE_HPP
 
-#include <string>
-#include <vector>
-#include <map>
-#include <sstream>
-#include <memory>
 #include <bsdxml.h>
 #include <libyang/libyang.h>
+#include <map>
+#include <memory>
+#include <sstream>
+#include <string>
+#include <vector>
 
 namespace netd::shared::xml {
 
   // XML element constants
-  static constexpr const char* XML_DECL_START     = R"(<?xml version="1.0" encoding="UTF-8"?>)";
-  static constexpr const char* MESSAGE_ID_ATTR    = R"(message-id)";
-  static constexpr const char* XMLNS_ATTR         = R"(xmlns)";
-  static constexpr const char* NETCONF_NAMESPACE  = R"(urn:ietf:params:xml:ns:netconf:base:1.0)";
-  static constexpr const char* FILTER_NAME        = R"(filter)";
-  static constexpr const char* TYPE_ATTR          = R"(type)";
-  static constexpr const char* SELECT_ATTR        = R"(select)";
-  static constexpr const char* SUBTREE_TYPE       = R"(subtree)";
-  static constexpr const char* XPATH_TYPE         = R"(xpath)";
-  static constexpr const char* DATA_NAME          = R"(data)";
-  static constexpr const char* ERROR_NAME         = R"(error)";
-  static constexpr const char* RPC_ELEMENT        = R"(rpc)";
-  static constexpr const char* RPC_REPLY_ELEMENT  = R"(rpc-reply)";
-  static constexpr const char* RPC_ERROR_ELEMENT  = R"(rpc-error)";
+  static constexpr const char *XML_DECL_START =
+      R"(<?xml version="1.0" encoding="UTF-8"?>)";
+  static constexpr const char *MESSAGE_ID_ATTR = R"(message-id)";
+  static constexpr const char *XMLNS_ATTR = R"(xmlns)";
+  static constexpr const char *NETCONF_NAMESPACE =
+      R"(urn:ietf:params:xml:ns:netconf:base:1.0)";
+  static constexpr const char *FILTER_NAME = R"(filter)";
+  static constexpr const char *TYPE_ATTR = R"(type)";
+  static constexpr const char *SELECT_ATTR = R"(select)";
+  static constexpr const char *SUBTREE_TYPE = R"(subtree)";
+  static constexpr const char *XPATH_TYPE = R"(xpath)";
+  static constexpr const char *DATA_NAME = R"(data)";
+  static constexpr const char *ERROR_NAME = R"(error)";
+  static constexpr const char *RPC_ELEMENT = R"(rpc)";
+  static constexpr const char *RPC_REPLY_ELEMENT = R"(rpc-reply)";
+  static constexpr const char *RPC_ERROR_ELEMENT = R"(rpc-error)";
 
   // XML element helper struct
   struct XmlElement {
     // XML syntax constants
-    static constexpr const char OPEN_TAG[]        = { 0x3C, 0x00 };        // '<'
-    static constexpr const char CLOSE_TAG[]       = { 0x3E, 0x00 };        // '>'
-    static constexpr const char SELF_CLOSE_TAG[]  = { 0x2F, 0x3E, 0x00 };  // '/>'
-    static constexpr const char QUOTE[]           = { 0x22, 0x00 };        // '"'
-    static constexpr const char SPACE[]           = { 0x20, 0x00 };        // ' '
-    static constexpr const char EQUALS[]          = { 0x3D };              // '='
-    static constexpr const char CLOSE_OPEN_TAG[]  = { 0x3C, 0x2F, 0x00 };  // '</'
-    
+    static constexpr const char OPEN_TAG[] = {0x3C, 0x00};             // '<'
+    static constexpr const char CLOSE_TAG[] = {0x3E, 0x00};            // '>'
+    static constexpr const char SELF_CLOSE_TAG[] = {0x2F, 0x3E, 0x00}; // '/>'
+    static constexpr const char QUOTE[] = {0x22, 0x00};                // '"'
+    static constexpr const char SPACE[] = {0x20, 0x00};                // ' '
+    static constexpr const char EQUALS[] = {0x3D};                     // '='
+    static constexpr const char CLOSE_OPEN_TAG[] = {0x3C, 0x2F, 0x00}; // '</'
+
     std::string name;
     std::map<std::string, std::string> attributes;
     std::string content;
     std::vector<XmlElement> children;
-    
-    XmlElement(const std::string& n) : name(n) {}
-    
-    XmlElement& addAttribute(const std::string& key, const std::string& value);
-    XmlElement& setContent(const std::string& c);
-    XmlElement& addChild(const XmlElement& child);
+
+    XmlElement(const std::string &n) : name(n) {}
+
+    XmlElement &addAttribute(const std::string &key, const std::string &value);
+    XmlElement &setContent(const std::string &c);
+    XmlElement &addChild(const XmlElement &child);
     std::string toString() const;
   };
 
@@ -84,12 +86,12 @@ namespace netd::shared::xml {
   };
 
   struct RpcElement {
-    static XmlElement create(const std::string& type, int messageId = 0);
+    static XmlElement create(const std::string &type, int messageId = 0);
   };
 
   struct FilterElement {
     static XmlElement createSubtree();
-    static XmlElement createXPath(const std::string& xpath);
+    static XmlElement createXPath(const std::string &xpath);
   };
 
   struct DataElement {
@@ -101,7 +103,7 @@ namespace netd::shared::xml {
   };
 
   struct OperationElement {
-    static XmlElement create(const std::string& operationName);
+    static XmlElement create(const std::string &operationName);
   };
 
   // Abstract base class for XML tree structures
@@ -111,27 +113,30 @@ namespace netd::shared::xml {
     virtual ~XMLTree() = default;
 
     // Parse XML string into object
-    static std::unique_ptr<XMLTree> fromXml(const std::string& xml, const struct ly_ctx* ctx);
+    static std::unique_ptr<XMLTree> fromXml(const std::string &xml,
+                                            const struct ly_ctx *ctx);
 
     // Serialize to XML stream
-    virtual std::stringstream toXmlStream(const struct ly_ctx* ctx) const = 0;
+    virtual std::stringstream toXmlStream(const struct ly_ctx *ctx) const = 0;
 
     // Convert to string representation
-    virtual std::string toString(const struct ly_ctx* ctx) const;
+    virtual std::string toString(const struct ly_ctx *ctx) const;
 
     // Validate by converting to XML and parsing it
-    virtual bool validate(const struct ly_ctx* ctx) const;
+    virtual bool validate(const struct ly_ctx *ctx) const;
 
   protected:
     // Helper methods for XML parsing (to be implemented by derived classes)
-    virtual void startElementHandler(void* userData, const XML_Char* name, const XML_Char** atts) = 0;
-    virtual void endElementHandler(void* userData, const XML_Char* name) = 0;
-    virtual void characterDataHandler(void* userData, const XML_Char* s, int len) = 0;
+    virtual void startElementHandler(void *userData, const XML_Char *name,
+                                     const XML_Char **atts) = 0;
+    virtual void endElementHandler(void *userData, const XML_Char *name) = 0;
+    virtual void characterDataHandler(void *userData, const XML_Char *s,
+                                      int len) = 0;
   };
 
   // Utility functions for message type detection
-  bool isHelloMessage(const std::string& xml);
-  bool isRpcMessage(const std::string& xml);
+  bool isHelloMessage(const std::string &xml);
+  bool isRpcMessage(const std::string &xml);
 
 } // namespace netd::shared::xml
 

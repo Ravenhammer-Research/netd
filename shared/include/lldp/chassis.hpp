@@ -28,16 +28,16 @@
 #pragma once
 
 #include <lldpctl.h>
-#include <string>
-#include <vector>
 #include <memory>
 #include <shared/include/address.hpp>
+#include <string>
+#include <vector>
 
 namespace netd::shared::lldp {
 
-class Chassis {
-public:
-    Chassis(lldpctl_atom_t* chassis_atom);
+  class Chassis {
+  public:
+    Chassis(lldpctl_atom_t *chassis_atom);
     ~Chassis();
 
     std::string getChassisId() const;
@@ -45,13 +45,14 @@ public:
     std::string getChassisDescription() const;
     int getCapabilitiesAvailable() const;
     int getCapabilitiesEnabled() const;
-    std::vector<std::unique_ptr<netd::shared::Address>> getManagementAddresses() const;
+    std::vector<std::unique_ptr<netd::shared::Address>>
+    getManagementAddresses() const;
     bool isValid() const;
 
-private:
-    lldpctl_atom_t* chassis_atom_;
+  private:
+    lldpctl_atom_t *chassis_atom_;
     std::string getStringValue(lldpctl_key_t key) const;
     int getIntValue(lldpctl_key_t key) const;
-};
+  };
 
 } // namespace netd::shared::lldp

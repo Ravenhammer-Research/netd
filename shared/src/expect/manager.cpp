@@ -25,20 +25,16 @@
  * SUCH DAMAGE.
  */
 
-#include <shared/include/expect/manager.hpp>
-#include <shared/include/logger.hpp>
 #include <algorithm>
 #include <chrono>
+#include <shared/include/expect/manager.hpp>
+#include <shared/include/logger.hpp>
 
 namespace netd::shared::expect {
 
-  ExpectManager::ExpectManager() : running_(false) {
-    startCleanupThread();
-  }
+  ExpectManager::ExpectManager() : running_(false) { startCleanupThread(); }
 
-  ExpectManager::~ExpectManager() {
-    stopCleanupThread();
-  }
+  ExpectManager::~ExpectManager() { stopCleanupThread(); }
 
   void ExpectManager::addExpect(std::shared_ptr<ExpectBase> expect) {
     if (!expect) {
@@ -47,47 +43,50 @@ namespace netd::shared::expect {
 
     std::lock_guard<std::mutex> lock(expects_mutex_);
     expects_.push_back(expect);
-    
-    auto& logger = netd::shared::Logger::getInstance();
-    logger.debug("ExpectManager - Added expect for message ID: " + expect->getMessageId());
+
+    auto &logger = netd::shared::Logger::getInstance();
+    logger.debug("ExpectManager - Added expect for message ID: " +
+                 expect->getMessageId());
   }
 
-  bool ExpectManager::processResponse(const std::string& message_id,
-                                    const std::string& session_id,
-                                    lyd_node* response_node) {
+  bool ExpectManager::processResponse(const std::string &message_id,
+                                      const std::string &session_id,
+                                      lyd_node *response_node) {
     std::lock_guard<std::mutex> lock(expects_mutex_);
-    
+
     // Find matching expect
-    auto it = std::find_if(expects_.begin(), expects_.end(),
-        [&message_id, &session_id](const std::shared_ptr<ExpectBase>& expect) {
-          return expect->matchesMessageId(message_id) && 
-                 expect->matchesSessionId(session_id) &&
-                 !expect->isExpired();
+    auto it = std::find_if(
+        expects_.begin(), expects_.end(),
+        [&message_id, &session_id](const std::shared_ptr<ExpectBase> &expect) {
+          return expect->matchesMessageId(message_id) &&
+                 expect->matchesSessionId(session_id) && !expect->isExpired();
         });
 
     if (it != expects_.end()) {
-      auto& logger = netd::shared::Logger::getInstance();
-      logger.debug("ExpectManager - Processing response for message ID: " + message_id);
-      
+      auto &logger = netd::shared::Logger::getInstance();
+      logger.debug("ExpectManager - Processing response for message ID: " +
+                   message_id);
+
       // Process the response
       bool handled = (*it)->processResponse(response_node);
-      
+
       // Remove the expect after processing
       expects_.erase(it);
-      
+
       return handled;
     }
 
     return false;
   }
 
-  bool ExpectManager::removeExpect(const std::string& message_id) {
+  bool ExpectManager::removeExpect(const std::string &message_id) {
     std::lock_guard<std::mutex> lock(expects_mutex_);
-    
-    auto it = std::find_if(expects_.begin(), expects_.end(),
-        [&message_id](const std::shared_ptr<ExpectBase>& expect) {
-          return expect->matchesMessageId(message_id);
-        });
+
+    auto it =
+        std::find_if(expects_.begin(), expects_.end(),
+                     [&message_id](const std::shared_ptr<ExpectBase> &expect) {
+                       return expect->matchesMessageId(message_id);
+                     });
 
     if (it != expects_.end()) {
       expects_.erase(it);
@@ -109,8 +108,8 @@ namespace netd::shared::expect {
 
     running_ = true;
     cleanup_thread_ = std::thread(&ExpectManager::cleanupThreadFunction, this);
-    
-    auto& logger = netd::shared::Logger::getInstance();
+
+    auto &logger = netd::shared::Logger::getInstance();
     logger.debug("ExpectManager - Started cleanup thread");
   }
 
@@ -121,51 +120,51 @@ namespace netd::shared::expect {
 
     running_ = false;
     cleanup_cv_.notify_all();
-    
+
     if (cleanup_thread_.joinable()) {
       cleanup_thread_.join();
     }
-    
-    auto& logger = netd::shared::Logger::getInstance();
+
+    auto &logger = netd::shared::Logger::getInstance();
     logger.debug("ExpectManager - Stopped cleanup thread");
   }
 
-  bool ExpectManager::isRunning() const {
-    return running_;
-  }
+  bool ExpectManager::isRunning() const { return running_; }
 
   void ExpectManager::cleanupExpiredExpects() {
     std::lock_guard<std::mutex> lock(expects_mutex_);
-    
+
     auto it = std::remove_if(expects_.begin(), expects_.end(),
-        [](const std::shared_ptr<ExpectBase>& expect) {
-          return expect->isExpired();
-        });
+                             [](const std::shared_ptr<ExpectBase> &expect) {
+                               return expect->isExpired();
+                             });
 
     size_t removed_count = std::distance(it, expects_.end());
     expects_.erase(it, expects_.end());
-    
+
     if (removed_count > 0) {
-      auto& logger = netd::shared::Logger::getInstance();
-      logger.debug("ExpectManager - Cleaned up " + std::to_string(removed_count) + " expired expects");
+      auto &logger = netd::shared::Logger::getInstance();
+      logger.debug("ExpectManager - Cleaned up " +
+                   std::to_string(removed_count) + " expired expects");
     }
   }
 
   void ExpectManager::cleanupThreadFunction() {
-    auto& logger = netd::shared::Logger::getInstance();
+    auto &logger = netd::shared::Logger::getInstance();
     logger.debug("ExpectManager - Cleanup thread started");
-    
+
     while (running_) {
       std::unique_lock<std::mutex> lock(cleanup_mutex_);
-      
+
       // Wait for 1 second or until notified to stop
-      cleanup_cv_.wait_for(lock, std::chrono::seconds(1), [this] { return !running_; });
-      
+      cleanup_cv_.wait_for(lock, std::chrono::seconds(1),
+                           [this] { return !running_; });
+
       if (running_) {
         cleanupExpiredExpects();
       }
     }
-    
+
     logger.debug("ExpectManager - Cleanup thread stopped");
   }
 

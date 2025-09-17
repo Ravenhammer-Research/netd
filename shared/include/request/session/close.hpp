@@ -37,15 +37,17 @@ namespace netd::shared::request::session {
   class CloseRequest : public Request<CloseRequest> {
   public:
     CloseRequest() : Request<CloseRequest>() {}
-    CloseRequest(netd::shared::netconf::NetconfSession *session, struct lyd_node *rpc)
+    CloseRequest(netd::shared::netconf::NetconfSession *session,
+                 struct lyd_node *rpc)
         : Request<CloseRequest>(session, rpc) {}
     virtual ~CloseRequest() = default;
 
-    lyd_node *toYang(ly_ctx *ctx) const ;
+    lyd_node *toYang(ly_ctx *ctx) const;
     static std::unique_ptr<CloseRequest> fromYang(const ly_ctx *ctx,
-                                                 const lyd_node *node) ;
-    static std::unique_ptr<CloseRequest> fromRpcEnvelope(const ly_ctx *ctx,
-                                                        std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope) ;
+                                                  const lyd_node *node);
+    static std::unique_ptr<CloseRequest>
+    fromRpcEnvelope(const ly_ctx *ctx,
+                    std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope);
   };
 
 } // namespace netd::shared::request::session

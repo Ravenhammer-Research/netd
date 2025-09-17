@@ -72,8 +72,9 @@ namespace netd::server::store::startup {
       }
 
       // TODO: Enumerate interfaces from FreeBSD system
-      // Interface discovery needs to be implemented using specific interface types
-      // (EthernetInterface, BridgeInterface, etc.) since the base Interface class was removed
+      // Interface discovery needs to be implemented using specific interface
+      // types (EthernetInterface, BridgeInterface, etc.) since the base
+      // Interface class was removed
 
       // TODO: Enumerate routes from FreeBSD system
       // TODO: Enumerate VRFs from FreeBSD system
@@ -149,28 +150,34 @@ namespace netd::server::store::startup {
 
   void StartupStore::populateFromSystem() {
     auto &logger = netd::shared::Logger::getInstance();
-    logger.info("Discovering system interfaces and populating startup store...");
-    
+    logger.info(
+        "Discovering system interfaces and populating startup store...");
+
     try {
       // TODO: Get all interfaces from the system
-      // Interface discovery needs to be implemented using specific interface types
-      // (EthernetInterface, BridgeInterface, etc.) since the base Interface class was removed
-      logger.info("Interface discovery temporarily disabled - needs implementation with specific interface types");
-      
+      // Interface discovery needs to be implemented using specific interface
+      // types (EthernetInterface, BridgeInterface, etc.) since the base
+      // Interface class was removed
+      logger.info("Interface discovery temporarily disabled - needs "
+                  "implementation with specific interface types");
+
       // Get the YANG context
       struct ly_ctx *ctx = netd::shared::Yang::getInstance().getContext();
       if (!ctx) {
         logger.error("No YANG context available for interface serialization");
         return;
       }
-      
+
       // TODO: Create a root data tree for interfaces
-      // Interface serialization needs to be implemented using specific interface types
-      // (EthernetInterface, BridgeInterface, etc.) since the base Interface class was removed
-      logger.info("Interface serialization temporarily disabled - needs implementation with specific interface types");
-      
+      // Interface serialization needs to be implemented using specific
+      // interface types (EthernetInterface, BridgeInterface, etc.) since the
+      // base Interface class was removed
+      logger.info("Interface serialization temporarily disabled - needs "
+                  "implementation with specific interface types");
+
     } catch (const std::exception &e) {
-      logger.error("Exception during interface discovery: " + std::string(e.what()));
+      logger.error("Exception during interface discovery: " +
+                   std::string(e.what()));
     }
   }
 

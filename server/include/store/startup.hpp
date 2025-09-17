@@ -49,7 +49,7 @@ namespace netd::server::store::startup {
     void clear() override;
     bool add(lyd_node *node) override;
     bool remove(lyd_node *node) override;
-    
+
     // Populate store with system interfaces
     void populateFromSystem();
 

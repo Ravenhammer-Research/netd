@@ -37,16 +37,18 @@ namespace netd::shared::request {
   class LockRequest : public Request<LockRequest> {
   public:
     LockRequest() : Request<LockRequest>() {}
-    LockRequest(netd::shared::netconf::NetconfSession *session, struct lyd_node *rpc)
+    LockRequest(netd::shared::netconf::NetconfSession *session,
+                struct lyd_node *rpc)
         : Request<LockRequest>(session, rpc) {}
     virtual ~LockRequest() = default;
 
     // Override base methods
-    lyd_node *toYang(ly_ctx *ctx) const ;
+    lyd_node *toYang(ly_ctx *ctx) const;
     static std::unique_ptr<LockRequest> fromYang(const ly_ctx *ctx,
-                                                const lyd_node *node) ;
-    static std::unique_ptr<LockRequest> fromRpcEnvelope(const ly_ctx *ctx,
-                                                       std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope) ;
+                                                 const lyd_node *node);
+    static std::unique_ptr<LockRequest>
+    fromRpcEnvelope(const ly_ctx *ctx,
+                    std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope);
   };
 
 } // namespace netd::shared::request

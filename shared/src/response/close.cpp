@@ -23,13 +23,14 @@ namespace netd::shared::response {
   CloseResponse::fromYang([[maybe_unused]] const ly_ctx *ctx,
                           const lyd_node *node) {
     if (!node) {
-      throw netd::shared::ArgumentError("Invalid YANG node provided to CloseResponse::fromYang");
+      throw netd::shared::ArgumentError(
+          "Invalid YANG node provided to CloseResponse::fromYang");
     }
 
-    // For close-session response, we just need to create a simple response object
-    // No additional parsing needed since close-session response is just OK
+    // For close-session response, we just need to create a simple response
+    // object No additional parsing needed since close-session response is just
+    // OK
     return std::make_unique<CloseResponse>();
   }
-
 
 } // namespace netd::shared::response

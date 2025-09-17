@@ -32,31 +32,31 @@
 
 namespace netd::client::processor {
 
-class ParserActions {
-public:
+  class ParserActions {
+  public:
     static void setCommandType(CommandType type);
-    static void setInterfaceName(const char* name);
+    static void setInterfaceName(const char *name);
     static void setUnitNumber(int unit);
-    static void setIpAddress(const char* ip);
-    static void setDescription(const char* desc);
+    static void setIpAddress(const char *ip);
+    static void setDescription(const char *desc);
     static void setVlanId(int vlan);
-    static void setSpeedValue(const char* speed);
-    static void setIdentifier(const char* id);
-    static void setStringValue(const char* str);
+    static void setSpeedValue(const char *speed);
+    static void setIdentifier(const char *id);
+    static void setStringValue(const char *str);
     static void setVlanTagging(bool tagging);
     static void setDisplayMode(DisplayMode mode);
-    
-    static void setInstanceType(const char* type);
+
+    static void setInstanceType(const char *type);
     static void setVirtualRouter();
     static void setVrf();
-    static void setVrfTarget(const char* target);
+    static void setVrfTarget(const char *target);
     static void setVrfTableLabel();
-    
-    static void setStaticRoute(const char* route);
-    static void setNextHop(const char* hop);
-    static void setTable(const char* table);
-    static void setProtocol(const char* protocol);
-    
+
+    static void setStaticRoute(const char *route);
+    static void setNextHop(const char *hop);
+    static void setTable(const char *table);
+    static void setProtocol(const char *protocol);
+
     static void setVersion();
     static void setConfiguration();
     static void setSystem();
@@ -72,7 +72,7 @@ public:
     static void setProtocols();
     static void setIpv6();
     static void setAll();
-    
+
     static void setInterfaces();
     static void setRoutingInstances();
     static void setRoutingOptions();
@@ -83,21 +83,21 @@ public:
     static void setEncapsulation();
     static void setEthernetVlan();
     static void setInterface();
-    
+
     static void setOspf();
     static void setBgp();
     static void setStatic();
     static void setRoute();
-    
+
     static void setNumber(int num);
-    static void setIpCidr(const char* cidr);
+    static void setIpCidr(const char *cidr);
     static void setLbracket();
     static void setRbracket();
     static void setDot();
     static void reset();
     static bool isValid();
-    static Command& getCurrentCommand();
-};
+    static Command &getCurrentCommand();
+  };
 
 } // namespace netd::client::processor
 

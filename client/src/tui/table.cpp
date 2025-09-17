@@ -28,7 +28,4 @@
 #include <client/include/tui.hpp>
 #include <shared/include/exception.hpp>
 
-namespace netd::client::tui {
-
-
-} // namespace netd::client::tui
+namespace netd::client::tui {} // namespace netd::client::tui

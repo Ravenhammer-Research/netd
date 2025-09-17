@@ -27,31 +27,32 @@
 
 #pragma once
 
-#include <lldpctl.h>
+#include <arpa/inet.h>
+#include <ifaddrs.h>
 #include <lldp-const.h>
-#include <shared/include/address.hpp>
-#include <string>
-#include <vector>
+#include <lldpctl.h>
 #include <map>
 #include <memory>
-#include <sys/socket.h>
 #include <net/if.h>
-#include <ifaddrs.h>
-#include <arpa/inet.h>
 #include <netinet/in.h>
+#include <shared/include/address.hpp>
+#include <string>
+#include <sys/socket.h>
+#include <vector>
 
 namespace netd::shared::lldp {
 
-class Interface {
-public:
-    Interface(lldpctl_conn_t* connection);
+  class Interface {
+  public:
+    Interface(lldpctl_conn_t *connection);
     ~Interface();
 
     std::vector<std::string> getLLDPInterfaces() const;
-    std::map<std::string, std::unique_ptr<netd::shared::Address>> getLinkLocalAddresses() const;
+    std::map<std::string, std::unique_ptr<netd::shared::Address>>
+    getLinkLocalAddresses() const;
 
-private:
-    lldpctl_conn_t* connection_;
-};
+  private:
+    lldpctl_conn_t *connection_;
+  };
 
 } // namespace netd::shared::lldp

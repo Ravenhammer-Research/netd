@@ -30,243 +30,213 @@
 
 namespace netd::client::processor {
 
-// Global command object for parsed commands
-static Command g_parsed_command;
+  // Global command object for parsed commands
+  static Command g_parsed_command;
 
-void ParserActions::setCommandType(CommandType type) {
+  void ParserActions::setCommandType(CommandType type) {
     g_parsed_command.setCommandType(type);
-}
+  }
 
-void ParserActions::setInterfaceName(const char* name) {
+  void ParserActions::setInterfaceName(const char *name) {
     g_parsed_command.setInterfaceName(name);
-}
+  }
 
-void ParserActions::setUnitNumber(int unit) {
+  void ParserActions::setUnitNumber(int unit) {
     g_parsed_command.setUnitNumber(unit);
-}
+  }
 
-void ParserActions::setIpAddress(const char* ip) {
+  void ParserActions::setIpAddress(const char *ip) {
     g_parsed_command.setIpAddress(ip);
-}
+  }
 
-void ParserActions::setDescription(const char* desc) {
+  void ParserActions::setDescription(const char *desc) {
     g_parsed_command.setDescription(desc);
-}
+  }
 
-void ParserActions::setVlanId(int vlan) {
-    g_parsed_command.setVlanId(vlan);
-}
+  void ParserActions::setVlanId(int vlan) { g_parsed_command.setVlanId(vlan); }
 
-void ParserActions::setSpeedValue(const char* speed) {
+  void ParserActions::setSpeedValue(const char *speed) {
     g_parsed_command.setSpeedValue(speed);
-}
+  }
 
-void ParserActions::setIdentifier(const char* id) {
+  void ParserActions::setIdentifier(const char *id) {
     g_parsed_command.setIdentifier(id);
-}
+  }
 
-void ParserActions::setStringValue(const char* str) {
+  void ParserActions::setStringValue(const char *str) {
     g_parsed_command.setStringValue(str);
-}
+  }
 
-void ParserActions::setVlanTagging(bool tagging) {
+  void ParserActions::setVlanTagging(bool tagging) {
     g_parsed_command.setVlanTagging(tagging);
-}
+  }
 
-void ParserActions::setDisplayMode(DisplayMode mode) {
+  void ParserActions::setDisplayMode(DisplayMode mode) {
     g_parsed_command.setDisplayMode(mode);
-}
+  }
 
-// Routing instance actions
-void ParserActions::setInstanceType(const char* type) {
+  // Routing instance actions
+  void ParserActions::setInstanceType(const char *type) {
     // Store instance type in string value for now
     g_parsed_command.setStringValue(type);
-}
+  }
 
-void ParserActions::setVirtualRouter() {
+  void ParserActions::setVirtualRouter() {
     g_parsed_command.setStringValue("virtual-router");
-}
+  }
 
-void ParserActions::setVrf() {
-    g_parsed_command.setStringValue("vrf");
-}
+  void ParserActions::setVrf() { g_parsed_command.setStringValue("vrf"); }
 
-void ParserActions::setVrfTarget(const char* target) {
+  void ParserActions::setVrfTarget(const char *target) {
     g_parsed_command.setStringValue(target);
-}
+  }
 
-void ParserActions::setVrfTableLabel() {
+  void ParserActions::setVrfTableLabel() {
     g_parsed_command.setStringValue("vrf-table-label");
-}
+  }
 
-// Routing options actions
-void ParserActions::setStaticRoute(const char* route) {
+  // Routing options actions
+  void ParserActions::setStaticRoute(const char *route) {
     g_parsed_command.setStringValue(route);
-}
+  }
 
-void ParserActions::setNextHop(const char* hop) {
+  void ParserActions::setNextHop(const char *hop) {
     g_parsed_command.setStringValue(hop);
-}
+  }
 
-void ParserActions::setTable(const char* table) {
+  void ParserActions::setTable(const char *table) {
     g_parsed_command.setStringValue(table);
-}
+  }
 
-void ParserActions::setProtocol(const char* protocol) {
+  void ParserActions::setProtocol(const char *protocol) {
     g_parsed_command.setStringValue(protocol);
-}
+  }
 
-// Show command specific actions
-void ParserActions::setVersion() {
+  // Show command specific actions
+  void ParserActions::setVersion() {
     g_parsed_command.setStringValue("version");
-}
+  }
 
-void ParserActions::setConfiguration() {
+  void ParserActions::setConfiguration() {
     g_parsed_command.setStringValue("configuration");
-}
+  }
 
-void ParserActions::setSystem() {
-    g_parsed_command.setStringValue("system");
-}
+  void ParserActions::setSystem() { g_parsed_command.setStringValue("system"); }
 
-void ParserActions::setUpTime() {
-    g_parsed_command.setStringValue("uptime");
-}
+  void ParserActions::setUpTime() { g_parsed_command.setStringValue("uptime"); }
 
-void ParserActions::setChassis() {
+  void ParserActions::setChassis() {
     g_parsed_command.setStringValue("chassis");
-}
+  }
 
-void ParserActions::setLog() {
-    g_parsed_command.setStringValue("log");
-}
+  void ParserActions::setLog() { g_parsed_command.setStringValue("log"); }
 
-void ParserActions::setMessages() {
+  void ParserActions::setMessages() {
     g_parsed_command.setStringValue("messages");
-}
+  }
 
-void ParserActions::setNeighbor() {
+  void ParserActions::setNeighbor() {
     g_parsed_command.setStringValue("neighbor");
-}
+  }
 
-void ParserActions::setNeighbors() {
+  void ParserActions::setNeighbors() {
     g_parsed_command.setStringValue("neighbors");
-}
+  }
 
-void ParserActions::setSummary() {
+  void ParserActions::setSummary() {
     g_parsed_command.setStringValue("summary");
-}
+  }
 
-void ParserActions::setArp() {
-    g_parsed_command.setStringValue("arp");
-}
+  void ParserActions::setArp() { g_parsed_command.setStringValue("arp"); }
 
-void ParserActions::setNoResolve() {
+  void ParserActions::setNoResolve() {
     g_parsed_command.setStringValue("no-resolve");
-}
+  }
 
-void ParserActions::setProtocols() {
+  void ParserActions::setProtocols() {
     g_parsed_command.setStringValue("protocols");
-}
+  }
 
-void ParserActions::setIpv6() {
-    g_parsed_command.setStringValue("ipv6");
-}
+  void ParserActions::setIpv6() { g_parsed_command.setStringValue("ipv6"); }
 
-void ParserActions::setAll() {
-    g_parsed_command.setStringValue("all");
-}
+  void ParserActions::setAll() { g_parsed_command.setStringValue("all"); }
 
-// Interface actions - these are mostly context setters
-void ParserActions::setInterfaces() {
+  // Interface actions - these are mostly context setters
+  void ParserActions::setInterfaces() {
     // Context: we're working with interfaces
-}
+  }
 
-void ParserActions::setRoutingInstances() {
+  void ParserActions::setRoutingInstances() {
     // Context: we're working with routing instances
-}
+  }
 
-void ParserActions::setRoutingOptions() {
+  void ParserActions::setRoutingOptions() {
     // Context: we're working with routing options
-}
+  }
 
-void ParserActions::setUnit() {
+  void ParserActions::setUnit() {
     // Context: we're working with a unit
-}
+  }
 
-void ParserActions::setFamily() {
+  void ParserActions::setFamily() {
     // Context: we're working with a family
-}
+  }
 
-void ParserActions::setInet() {
+  void ParserActions::setInet() {
     // Context: we're working with inet family
-}
+  }
 
-void ParserActions::setAddress() {
+  void ParserActions::setAddress() {
     // Context: we're working with an address
-}
+  }
 
-void ParserActions::setEncapsulation() {
+  void ParserActions::setEncapsulation() {
     // Context: we're working with encapsulation
-}
+  }
 
-void ParserActions::setEthernetVlan() {
+  void ParserActions::setEthernetVlan() {
     // Context: we're working with ethernet-vlan encapsulation
-}
+  }
 
-void ParserActions::setInterface() {
+  void ParserActions::setInterface() {
     // Context: we're working with an interface
-}
+  }
 
-// Protocol actions
-void ParserActions::setOspf() {
-    g_parsed_command.setStringValue("ospf");
-}
+  // Protocol actions
+  void ParserActions::setOspf() { g_parsed_command.setStringValue("ospf"); }
 
-void ParserActions::setBgp() {
-    g_parsed_command.setStringValue("bgp");
-}
+  void ParserActions::setBgp() { g_parsed_command.setStringValue("bgp"); }
 
-void ParserActions::setStatic() {
-    g_parsed_command.setStringValue("static");
-}
+  void ParserActions::setStatic() { g_parsed_command.setStringValue("static"); }
 
-void ParserActions::setRoute() {
-    g_parsed_command.setStringValue("route");
-}
+  void ParserActions::setRoute() { g_parsed_command.setStringValue("route"); }
 
-// Utility actions
-void ParserActions::setNumber(int num) {
+  // Utility actions
+  void ParserActions::setNumber(int num) {
     g_parsed_command.setUnitNumber(num);
-}
+  }
 
-void ParserActions::setIpCidr(const char* cidr) {
+  void ParserActions::setIpCidr(const char *cidr) {
     g_parsed_command.setIpAddress(cidr);
-}
+  }
 
-void ParserActions::setLbracket() {
+  void ParserActions::setLbracket() {
     // Context: left bracket
-}
+  }
 
-void ParserActions::setRbracket() {
+  void ParserActions::setRbracket() {
     // Context: right bracket
-}
+  }
 
-void ParserActions::setDot() {
+  void ParserActions::setDot() {
     // Context: dot separator
-}
+  }
 
-// Reset and validation
-void ParserActions::reset() {
-    g_parsed_command.reset();
-}
+  // Reset and validation
+  void ParserActions::reset() { g_parsed_command.reset(); }
 
-bool ParserActions::isValid() {
-    return g_parsed_command.isValid();
-}
+  bool ParserActions::isValid() { return g_parsed_command.isValid(); }
 
-Command& ParserActions::getCurrentCommand() {
-    return g_parsed_command;
-}
+  Command &ParserActions::getCurrentCommand() { return g_parsed_command; }
 
 } // namespace netd::client::processor

@@ -28,11 +28,11 @@
 #ifndef NETD_SHARED_EXPECT_BASE_HPP
 #define NETD_SHARED_EXPECT_BASE_HPP
 
+#include <chrono>
 #include <functional>
+#include <libyang/libyang.h>
 #include <memory>
 #include <string>
-#include <chrono>
-#include <libyang/libyang.h>
 
 namespace netd::shared::expect {
 
@@ -48,8 +48,7 @@ namespace netd::shared::expect {
      * @param session_id The NETCONF session ID
      * @param ttl Time to live in seconds (default: 8 seconds)
      */
-    ExpectBase(const std::string& message_id, 
-               const std::string& session_id, 
+    ExpectBase(const std::string &message_id, const std::string &session_id,
                std::chrono::seconds ttl = std::chrono::seconds(8));
 
     /**
@@ -62,14 +61,14 @@ namespace netd::shared::expect {
      * @param message_id The message ID to check
      * @return true if matches, false otherwise
      */
-    bool matchesMessageId(const std::string& message_id) const;
+    bool matchesMessageId(const std::string &message_id) const;
 
     /**
      * @brief Check if this expect matches the given session ID
      * @param session_id The session ID to check
      * @return true if matches, false otherwise
      */
-    bool matchesSessionId(const std::string& session_id) const;
+    bool matchesSessionId(const std::string &session_id) const;
 
     /**
      * @brief Check if this expect has expired
@@ -93,20 +92,20 @@ namespace netd::shared::expect {
      * @brief Get the message ID
      * @return The expected message ID
      */
-    const std::string& getMessageId() const;
+    const std::string &getMessageId() const;
 
     /**
      * @brief Get the session ID
      * @return The expected session ID
      */
-    const std::string& getSessionId() const;
+    const std::string &getSessionId() const;
 
     /**
      * @brief Process a response (to be implemented by derived classes)
      * @param response_node The YANG response node
      * @return true if the response was handled, false otherwise
      */
-    virtual bool processResponse(lyd_node* response_node) = 0;
+    virtual bool processResponse(lyd_node *response_node) = 0;
 
   private:
     std::string message_id_;
@@ -119,10 +118,9 @@ namespace netd::shared::expect {
    * @brief Template class for typed Expect objects
    * @tparam ResponseType The type of response data expected
    */
-  template<typename ResponseType>
-  class Expect : public ExpectBase {
+  template <typename ResponseType> class Expect : public ExpectBase {
   public:
-    using CallbackType = std::function<void(const ResponseType&)>;
+    using CallbackType = std::function<void(const ResponseType &)>;
 
     /**
      * @brief Constructor
@@ -131,9 +129,8 @@ namespace netd::shared::expect {
      * @param session_id The NETCONF session ID
      * @param ttl Time to live in seconds (default: 8 seconds)
      */
-    Expect(CallbackType callback,
-           const std::string& message_id,
-           const std::string& session_id,
+    Expect(CallbackType callback, const std::string &message_id,
+           const std::string &session_id,
            std::chrono::seconds ttl = std::chrono::seconds(8))
         : ExpectBase(message_id, session_id, ttl), callback_(callback) {}
 
@@ -142,7 +139,7 @@ namespace netd::shared::expect {
      * @param response_node The YANG response node
      * @return true if the response was handled, false otherwise
      */
-    bool processResponse(lyd_node* response_node) override {
+    bool processResponse(lyd_node *response_node) override {
       if (!response_node) {
         return false;
       }
@@ -150,14 +147,14 @@ namespace netd::shared::expect {
       try {
         // Convert YANG node to ResponseType
         ResponseType response_data = convertFromYang(response_node);
-        
+
         // Call the callback with the converted response
         if (callback_) {
           callback_(response_data);
         }
-        
+
         return true;
-      } catch (const std::exception& e) {
+      } catch (const std::exception &e) {
         // Log error and return false
         return false;
       }
@@ -172,10 +169,11 @@ namespace netd::shared::expect {
      * @param response_node The YANG response node
      * @return The converted response data
      */
-    ResponseType convertFromYang(lyd_node* response_node) {
+    ResponseType convertFromYang(lyd_node *response_node) {
       // Default implementation - should be specialized
       (void)response_node; // Suppress unused parameter warning
-      throw std::runtime_error("convertFromYang not implemented for this response type");
+      throw std::runtime_error(
+          "convertFromYang not implemented for this response type");
     }
   };
 

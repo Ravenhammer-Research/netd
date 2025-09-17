@@ -26,46 +26,50 @@
  */
 
 #include <client/include/netconf/handlers.hpp>
-#include <shared/include/logger.hpp>
-#include <shared/include/exception.hpp>
 #include <libyang/libyang.h>
+#include <shared/include/exception.hpp>
+#include <shared/include/logger.hpp>
 #include <sstream>
 
 namespace netd::client::netconf {
 
-  std::unique_ptr<netd::shared::response::get::GetConfigResponse> RpcHandler::handleGetConfigRequest(
-      const netd::shared::request::get::GetConfigRequest& /* request */, 
-      netd::shared::netconf::NetconfSession* session) {
+  std::unique_ptr<netd::shared::response::get::GetConfigResponse>
+  RpcHandler::handleGetConfigRequest(
+      const netd::shared::request::get::GetConfigRequest & /* request */,
+      netd::shared::netconf::NetconfSession *session) {
     if (!session) {
       return nullptr;
     }
 
     // Get YANG context from session
-    ly_ctx* ctx = session->getContext();
+    ly_ctx *ctx = session->getContext();
     if (!ctx) {
       return nullptr;
     }
-    
+
     // Get source from request (default to running if not specified)
     std::string source = "running"; // TODO: Get from request
 
     // Create get-config request
-    lyd_node* get_config_tree = nullptr;
-    LY_ERR err = lyd_new_path(nullptr, ctx, "/ietf-netconf:get-config", nullptr, 0, &get_config_tree);
+    lyd_node *get_config_tree = nullptr;
+    LY_ERR err = lyd_new_path(nullptr, ctx, "/ietf-netconf:get-config", nullptr,
+                              0, &get_config_tree);
     if (err != LY_SUCCESS || !get_config_tree) {
       return nullptr;
     }
 
     // Add source
-    lyd_node* source_node = nullptr;
-    err = lyd_new_path(get_config_tree, ctx, "source", nullptr, 0, &source_node);
+    lyd_node *source_node = nullptr;
+    err =
+        lyd_new_path(get_config_tree, ctx, "source", nullptr, 0, &source_node);
     if (source_node) {
       lyd_new_path(source_node, ctx, source.c_str(), nullptr, 0, nullptr);
     }
 
     // Convert to XML
-    char* xml_str = nullptr;
-    if (lyd_print_mem(&xml_str, get_config_tree, LYD_XML, 0) != LY_SUCCESS || !xml_str) {
+    char *xml_str = nullptr;
+    if (lyd_print_mem(&xml_str, get_config_tree, LYD_XML, 0) != LY_SUCCESS ||
+        !xml_str) {
       lyd_free_tree(get_config_tree);
       return nullptr;
     }
@@ -75,7 +79,8 @@ namespace netd::client::netconf {
     lyd_free_tree(get_config_tree);
 
     // Create response object
-    auto response = std::make_unique<netd::shared::response::get::GetConfigResponse>();
+    auto response =
+        std::make_unique<netd::shared::response::get::GetConfigResponse>();
     // TODO: Set response data from response_xml
     return response;
   }

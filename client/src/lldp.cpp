@@ -25,10 +25,10 @@
  * SUCH DAMAGE.
  */
 
-#include <shared/include/lldp/client.hpp>
-#include <shared/include/exception.hpp>
-#include <iostream>
 #include <iomanip>
+#include <iostream>
+#include <shared/include/exception.hpp>
+#include <shared/include/lldp/client.hpp>
 #include <string>
 
 int listLLDPNeighbors() {
@@ -37,58 +37,57 @@ int listLLDPNeighbors() {
     netd::shared::lldp::Client lldp_client;
     try {
       lldp_client.initialize();
-    } catch (const netd::shared::LLDPError& e) {
-      std::cerr << "Failed to initialize LLDP client: " << e.what() << std::endl;
+    } catch (const netd::shared::LLDPError &e) {
+      std::cerr << "Failed to initialize LLDP client: " << e.what()
+                << std::endl;
       return 1;
     }
-    
+
     // Get LLDP information
     auto ports = lldp_client.getPorts();
     auto link_local_addrs = lldp_client.getLinkLocalAddresses();
-    
+
     std::cout << "LLDP Discovery Results:" << std::endl;
     std::cout << "======================" << std::endl;
-    
+
     if (ports.empty()) {
       std::cout << "No LLDP ports found." << std::endl;
     } else {
       // Print table header
       std::cout << std::left;
-      std::cout << std::setw(20) << "PORT" 
-                << std::setw(20) << "DESCRIPTION" 
-                << std::setw(15) << "NEIGHBORS" 
-                << std::setw(15) << "TTL" << std::endl;
+      std::cout << std::setw(20) << "PORT" << std::setw(20) << "DESCRIPTION"
+                << std::setw(15) << "NEIGHBORS" << std::setw(15) << "TTL"
+                << std::endl;
       std::cout << std::string(70, '-') << std::endl;
-      
+
       // Print table rows
-      for (const auto& port : ports) {
+      for (const auto &port : ports) {
         if (port && port->isValid()) {
           auto neighbors = port->getNeighbors();
           std::string neighbor_count = std::to_string(neighbors.size());
           std::string ttl = std::to_string(port->getPortTTL());
-          
-          std::cout << std::setw(20) << port->getPortName()
-                    << std::setw(20) << port->getPortDescription()
-                    << std::setw(15) << neighbor_count
-                    << std::setw(15) << ttl << std::endl;
+
+          std::cout << std::setw(20) << port->getPortName() << std::setw(20)
+                    << port->getPortDescription() << std::setw(15)
+                    << neighbor_count << std::setw(15) << ttl << std::endl;
         }
       }
     }
-    
+
     // Show link-local addresses
     if (!link_local_addrs.empty()) {
       std::cout << "\nLink-local addresses:" << std::endl;
       std::cout << "===================" << std::endl;
-      for (const auto& [interface_name, address] : link_local_addrs) {
+      for (const auto &[interface_name, address] : link_local_addrs) {
         std::cout << interface_name << ": " << address << std::endl;
       }
     }
-    
+
     // Cleanup
     lldp_client.cleanup();
-    
+
     return 0;
-  } catch (const std::exception& e) {
+  } catch (const std::exception &e) {
     std::cerr << "Error listing LLDP neighbors: " << e.what() << std::endl;
     return 1;
   }

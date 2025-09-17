@@ -25,81 +25,89 @@
  * SUCH DAMAGE.
  */
 
-#include <shared/include/tls.hpp>
 #include <shared/include/exception.hpp>
+#include <shared/include/tls.hpp>
 
 namespace netd::shared {
 
-  TLSSecurity::TLSSecurity(const std::string& cert_file,
-                          const std::string& key_file,
-                          const std::string& ca_file,
-                          bool verify_peer)
-    : cert_file_(cert_file)
-    , key_file_(key_file)
-    , ca_file_(ca_file)
-    , verify_peer_(verify_peer)
-    , initialized_(false)
-  {
+  TLSSecurity::TLSSecurity(const std::string &cert_file,
+                           const std::string &key_file,
+                           const std::string &ca_file, bool verify_peer)
+      : cert_file_(cert_file), key_file_(key_file), ca_file_(ca_file),
+        verify_peer_(verify_peer), initialized_(false) {
+    (void)verify_peer_;
+    (void)initialized_;
   }
 
-  TLSSecurity::~TLSSecurity() {
-    cleanupTLS();
-  }
+  TLSSecurity::~TLSSecurity() { cleanupTLS(); }
 
   // TLS-specific methods
   bool TLSSecurity::initializeTLS() {
-    throw netd::shared::NotImplementedError("TLSSecurity::initializeTLS not implemented");
+    throw netd::shared::NotImplementedError(
+        "TLSSecurity::initializeTLS not implemented");
   }
 
   void TLSSecurity::cleanupTLS() {
-    throw netd::shared::NotImplementedError("TLSSecurity::cleanupTLS not implemented");
+    throw netd::shared::NotImplementedError(
+        "TLSSecurity::cleanupTLS not implemented");
   }
 
   bool TLSSecurity::isTLSInitialized() const {
-    throw netd::shared::NotImplementedError("TLSSecurity::isTLSInitialized not implemented");
+    throw netd::shared::NotImplementedError(
+        "TLSSecurity::isTLSInitialized not implemented");
   }
 
   // Certificate management
-  bool TLSSecurity::loadCertificate(const std::string& cert_file) {
+  bool TLSSecurity::loadCertificate(const std::string &cert_file) {
     (void)cert_file;
-    throw netd::shared::NotImplementedError("TLSSecurity::loadCertificate not implemented");
+    throw netd::shared::NotImplementedError(
+        "TLSSecurity::loadCertificate not implemented");
   }
 
-  bool TLSSecurity::loadPrivateKey(const std::string& key_file) {
+  bool TLSSecurity::loadPrivateKey(const std::string &key_file) {
     (void)key_file;
-    throw netd::shared::NotImplementedError("TLSSecurity::loadPrivateKey not implemented");
+    throw netd::shared::NotImplementedError(
+        "TLSSecurity::loadPrivateKey not implemented");
   }
 
-  bool TLSSecurity::loadCAFile(const std::string& ca_file) {
+  bool TLSSecurity::loadCAFile(const std::string &ca_file) {
     (void)ca_file;
-    throw netd::shared::NotImplementedError("TLSSecurity::loadCAFile not implemented");
+    throw netd::shared::NotImplementedError(
+        "TLSSecurity::loadCAFile not implemented");
   }
 
   // TLS handshake
   bool TLSSecurity::performHandshake(int socket_fd, bool is_server) {
-    (void)socket_fd; (void)is_server;
-    throw netd::shared::NotImplementedError("TLSSecurity::performHandshake not implemented");
+    (void)socket_fd;
+    (void)is_server;
+    throw netd::shared::NotImplementedError(
+        "TLSSecurity::performHandshake not implemented");
   }
 
   // Encrypted data operations
-  bool TLSSecurity::sendEncryptedData(int socket_fd, const std::string& data) {
-    (void)socket_fd; (void)data;
-    throw netd::shared::NotImplementedError("TLSSecurity::sendEncryptedData not implemented");
+  bool TLSSecurity::sendEncryptedData(int socket_fd, const std::string &data) {
+    (void)socket_fd;
+    (void)data;
+    throw netd::shared::NotImplementedError(
+        "TLSSecurity::sendEncryptedData not implemented");
   }
 
   std::string TLSSecurity::receiveEncryptedData(int socket_fd) {
     (void)socket_fd;
-    throw netd::shared::NotImplementedError("TLSSecurity::receiveEncryptedData not implemented");
+    throw netd::shared::NotImplementedError(
+        "TLSSecurity::receiveEncryptedData not implemented");
   }
 
   // Configuration
   void TLSSecurity::setVerifyPeer(bool verify) {
     (void)verify;
-    throw netd::shared::NotImplementedError("TLSSecurity::setVerifyPeer not implemented");
+    throw netd::shared::NotImplementedError(
+        "TLSSecurity::setVerifyPeer not implemented");
   }
 
   bool TLSSecurity::getVerifyPeer() const {
-    throw netd::shared::NotImplementedError("TLSSecurity::getVerifyPeer not implemented");
+    throw netd::shared::NotImplementedError(
+        "TLSSecurity::getVerifyPeer not implemented");
   }
 
 } // namespace netd::shared

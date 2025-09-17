@@ -33,22 +33,27 @@ namespace netd::shared::request::session {
     if (!ctx) {
       throw netd::shared::ArgumentError("toYang: ctx is null");
     }
-    
+
     // Validate that the provided context matches the session context
     if (session_ && session_->getContext() != ctx) {
-      throw netd::shared::ArgumentError("toYang: provided context does not match session context");
+      throw netd::shared::ArgumentError(
+          "toYang: provided context does not match session context");
     }
 
     // Get the ietf-netconf module
-    const struct lys_module *mod = ly_ctx_get_module(ctx, "ietf-netconf", "2011-06-01");
+    const struct lys_module *mod =
+        ly_ctx_get_module(ctx, "ietf-netconf", "2011-06-01");
     if (!mod) {
-      throw netd::shared::ArgumentError("toYang: ietf-netconf module not found");
+      throw netd::shared::ArgumentError(
+          "toYang: ietf-netconf module not found");
     }
 
     // Create close-session element
     lyd_node *closeNode = nullptr;
-    if (lyd_new_inner(nullptr, mod, "close-session", 0, &closeNode) != LY_SUCCESS) {
-      throw netd::shared::ArgumentError("toYang: failed to create close-session element");
+    if (lyd_new_inner(nullptr, mod, "close-session", 0, &closeNode) !=
+        LY_SUCCESS) {
+      throw netd::shared::ArgumentError(
+          "toYang: failed to create close-session element");
     }
 
     return closeNode;
@@ -56,21 +61,24 @@ namespace netd::shared::request::session {
 
   std::unique_ptr<CloseRequest>
   CloseRequest::fromYang([[maybe_unused]] const ly_ctx *ctx,
-                        const lyd_node *node) {
+                         const lyd_node *node) {
     if (!node) {
-      throw netd::shared::ArgumentError("Invalid YANG node provided to CloseRequest::fromYang");
+      throw netd::shared::ArgumentError(
+          "Invalid YANG node provided to CloseRequest::fromYang");
     }
 
     auto request = std::make_unique<CloseRequest>();
 
     // Find the close-session node
     lyd_node *closeNode = lyd_child(node);
-    while (closeNode && strcmp(lyd_node_schema(closeNode)->name, "close-session") != 0) {
+    while (closeNode &&
+           strcmp(lyd_node_schema(closeNode)->name, "close-session") != 0) {
       closeNode = closeNode->next;
     }
 
     if (!closeNode) {
-      throw netd::shared::ArgumentError("close-session element not found in RPC");
+      throw netd::shared::ArgumentError(
+          "close-session element not found in RPC");
     }
 
     return request;

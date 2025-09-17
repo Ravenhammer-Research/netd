@@ -29,9 +29,9 @@
 #include <libyang/libyang.h>
 #include <libyang/tree_data.h>
 #include <shared/include/exception.hpp>
+#include <shared/include/logger.hpp>
 #include <shared/include/request/get/base.hpp>
 #include <shared/include/yang.hpp>
-#include <shared/include/logger.hpp>
 
 namespace netd::shared::request::get {
 
@@ -39,9 +39,9 @@ namespace netd::shared::request::get {
   using netd::shared::NotImplementedError;
 
   lyd_node *GetRequest::toYang([[maybe_unused]] ly_ctx *ctx) const {
-    throw netd::shared::NotImplementedError("GetRequest::toYang not implemented");
+    throw netd::shared::NotImplementedError(
+        "GetRequest::toYang not implemented");
   }
-
 
   void GetRequest::parseRpcData(const lyd_node *node) {
     if (!node) {
@@ -50,7 +50,7 @@ namespace netd::shared::request::get {
 
     auto &logger = netd::shared::Logger::getInstance();
     logger.info("parseRpcData: Starting to parse RPC node");
-    
+
     // Debug: Check what type of node we're starting with
     const char *rootNodeName = nullptr;
     if (node->schema) {
@@ -59,30 +59,34 @@ namespace netd::shared::request::get {
       const struct lyd_node_opaq *opaqNode = (const struct lyd_node_opaq *)node;
       rootNodeName = opaqNode->name.name;
     }
-    logger.info("parseRpcData: Root node name: " + std::string(rootNodeName ? rootNodeName : "null"));
+    logger.info("parseRpcData: Root node name: " +
+                std::string(rootNodeName ? rootNodeName : "null"));
 
     // Determine if we're starting from the rpc node or the get node
     lyd_node *getNode = nullptr;
     if (rootNodeName && strcmp(rootNodeName, "get") == 0) {
       // We're already at the get node
-      getNode = const_cast<lyd_node*>(node);
+      getNode = const_cast<lyd_node *>(node);
       logger.info("parseRpcData: Already at get node, using it directly");
     } else {
       // We're at the rpc node, need to find the get node
       getNode = lyd_child(node);
-      logger.info("parseRpcData: Looking for get node, first child is: " + std::string(getNode ? "found" : "null"));
+      logger.info("parseRpcData: Looking for get node, first child is: " +
+                  std::string(getNode ? "found" : "null"));
       while (getNode) {
         const char *nodeName = nullptr;
         if (getNode->schema) {
           nodeName = getNode->schema->name;
         } else {
           // For opaque nodes, get the name from the opaque structure
-          const struct lyd_node_opaq *opaqNode = (const struct lyd_node_opaq *)getNode;
+          const struct lyd_node_opaq *opaqNode =
+              (const struct lyd_node_opaq *)getNode;
           nodeName = opaqNode->name.name;
         }
-        
-        logger.info("parseRpcData: Found RPC child node: " + std::string(nodeName ? nodeName : "null"));
-        
+
+        logger.info("parseRpcData: Found RPC child node: " +
+                    std::string(nodeName ? nodeName : "null"));
+
         if (nodeName && strcmp(nodeName, "get") == 0) {
           logger.info("parseRpcData: Found get node!");
           break;
@@ -105,14 +109,16 @@ namespace netd::shared::request::get {
         nodeName = filterNode->schema->name;
       } else {
         // For opaque nodes, get the name from the opaque structure
-        const struct lyd_node_opaq *opaqNode = (const struct lyd_node_opaq *)filterNode;
+        const struct lyd_node_opaq *opaqNode =
+            (const struct lyd_node_opaq *)filterNode;
         nodeName = opaqNode->name.name;
       }
-      
+
       // Debug logging
       auto &logger = netd::shared::Logger::getInstance();
-      logger.info("Found child node: " + std::string(nodeName ? nodeName : "null"));
-      
+      logger.info("Found child node: " +
+                  std::string(nodeName ? nodeName : "null"));
+
       if (nodeName && strcmp(nodeName, "filter") == 0) {
         logger.info("Found filter node!");
         break;
@@ -123,17 +129,21 @@ namespace netd::shared::request::get {
     if (filterNode) {
       hasFilter_ = true;
       logger.info("parseRpcData: Processing filter node attributes");
-      
+
       // Debug: Check what type of node this is
       if (filterNode->schema) {
-        logger.info("parseRpcData: Filter node has schema: " + std::string(filterNode->schema->name ? filterNode->schema->name : "null"));
+        logger.info("parseRpcData: Filter node has schema: " +
+                    std::string(filterNode->schema->name
+                                    ? filterNode->schema->name
+                                    : "null"));
       } else {
         logger.info("parseRpcData: Filter node has NO schema (opaque node)");
       }
-      
+
       // Get filter type and select from metadata (like libnetconf2 does)
-      logger.info("parseRpcData: Checking filter metadata for type and select attributes");
-      
+      logger.info("parseRpcData: Checking filter metadata for type and select "
+                  "attributes");
+
       // Process metadata like libnetconf2 does
       if (filterNode->meta) {
         logger.info("parseRpcData: Filter node has metadata");
@@ -143,14 +153,16 @@ namespace netd::shared::request::get {
             const char *metaValue = lyd_get_meta_value(meta);
             std::string metaName(meta->name);
             std::string metaVal(metaValue ? metaValue : "null");
-            logger.info("parseRpcData: Found metadata: " + metaName + " = " + metaVal);
-            
+            logger.info("parseRpcData: Found metadata: " + metaName + " = " +
+                        metaVal);
+
             if (strcmp(meta->name, "type") == 0) {
               filterType_ = metaValue ? std::string(metaValue) : "";
               logger.info("parseRpcData: Set filterType to: " + filterType_);
             } else if (strcmp(meta->name, "select") == 0) {
               filterSelect_ = metaValue ? std::string(metaValue) : "";
-              logger.info("parseRpcData: Set filterSelect to: " + filterSelect_);
+              logger.info("parseRpcData: Set filterSelect to: " +
+                          filterSelect_);
             }
           }
           meta = meta->next;
@@ -158,12 +170,14 @@ namespace netd::shared::request::get {
       } else {
         logger.info("parseRpcData: Filter node has NO metadata");
       }
-      
+
       // Also try to get the filter content as XML to extract yang-library info
       char *filterXml = nullptr;
-      if (lyd_print_mem(&filterXml, filterNode, LYD_XML, 0) == LY_SUCCESS && filterXml) {
-        logger.info("parseRpcData: Filter XML content: " + std::string(filterXml));
-        
+      if (lyd_print_mem(&filterXml, filterNode, LYD_XML, 0) == LY_SUCCESS &&
+          filterXml) {
+        logger.info("parseRpcData: Filter XML content: " +
+                    std::string(filterXml));
+
         // Check if this contains yang-library
         std::string filterContent(filterXml);
         if (filterContent.find("yang-library") != std::string::npos ||
@@ -172,13 +186,14 @@ namespace netd::shared::request::get {
           // Set the filter select to the XML content for yanglib detection
           filterSelect_ = filterContent;
         }
-        
+
         free(filterXml);
       }
-      
+
       // Handle different filter types
       if (filterType_ == "subtree") {
-        logger.info("parseRpcData: Detected subtree filter - assuming yang-library request");
+        logger.info("parseRpcData: Detected subtree filter - assuming "
+                    "yang-library request");
         filterSelect_ = "yang-library";
       } else if (filterType_ == "xpath") {
         logger.info("parseRpcData: Detected XPath filter");
@@ -196,7 +211,8 @@ namespace netd::shared::request::get {
   GetRequest::fromYang([[maybe_unused]] const ly_ctx *ctx,
                        const lyd_node *node) {
     if (!node) {
-      throw netd::shared::ArgumentError("Invalid YANG node provided to GetRequest::fromYang");
+      throw netd::shared::ArgumentError(
+          "Invalid YANG node provided to GetRequest::fromYang");
     }
 
     auto request = std::make_unique<GetRequest>();

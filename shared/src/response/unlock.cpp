@@ -82,5 +82,4 @@ namespace netd::shared::response {
     return std::make_unique<UnlockResponse>();
   }
 
-
 } // namespace netd::shared::response

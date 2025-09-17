@@ -25,130 +25,166 @@
  * SUCH DAMAGE.
  */
 
-#include <shared/include/sctp.hpp>
 #include <shared/include/exception.hpp>
+#include <shared/include/sctp.hpp>
 
 namespace netd::shared {
 
-  SCTPTransport::SCTPTransport(SCTPMode mode) 
-    : mode_(mode), primary_address_(""), port_(0), listening_(false), running_(false), server_socket_(-1) {}
+  SCTPTransport::SCTPTransport(SCTPMode mode)
+      : mode_(mode), primary_address_(""), port_(0), listening_(false),
+        running_(false), server_socket_(-1) {}
 
-  SCTPTransport::~SCTPTransport() { 
-    stop(); 
-  }
+  SCTPTransport::~SCTPTransport() { stop(); }
 
   // BaseTransport interface implementation
-  bool SCTPTransport::start(const std::string& address) {
+  bool SCTPTransport::start(const std::string &address) {
     (void)address;
-    throw netd::shared::NotImplementedError("SCTPTransport::start not implemented");
+    throw netd::shared::NotImplementedError(
+        "SCTPTransport::start not implemented");
   }
 
   bool SCTPTransport::start(const std::string &address, int port) {
-    (void)address; (void)port;
-    throw netd::shared::NotImplementedError("SCTPTransport::start not implemented");
+    (void)address;
+    (void)port;
+    throw netd::shared::NotImplementedError(
+        "SCTPTransport::start not implemented");
   }
 
   void SCTPTransport::stop() {
-    throw netd::shared::NotImplementedError("SCTPTransport::stop not implemented");
+    throw netd::shared::NotImplementedError(
+        "SCTPTransport::stop not implemented");
   }
 
   bool SCTPTransport::isListening() const {
-    throw netd::shared::NotImplementedError("SCTPTransport::isListening not implemented");
+    throw netd::shared::NotImplementedError(
+        "SCTPTransport::isListening not implemented");
   }
 
   int SCTPTransport::acceptConnection() {
-    throw netd::shared::NotImplementedError("SCTPTransport::acceptConnection not implemented");
+    throw netd::shared::NotImplementedError(
+        "SCTPTransport::acceptConnection not implemented");
   }
 
   void SCTPTransport::closeConnection(int socket_fd) {
     (void)socket_fd;
-    throw netd::shared::NotImplementedError("SCTPTransport::closeConnection not implemented");
+    throw netd::shared::NotImplementedError(
+        "SCTPTransport::closeConnection not implemented");
   }
 
-  bool SCTPTransport::connect(const std::string& address) {
+  bool SCTPTransport::connect(const std::string &address) {
     (void)address;
-    throw netd::shared::NotImplementedError("SCTPTransport::connect not implemented");
+    throw netd::shared::NotImplementedError(
+        "SCTPTransport::connect not implemented");
   }
 
   void SCTPTransport::disconnect() {
-    throw netd::shared::NotImplementedError("SCTPTransport::disconnect not implemented");
+    throw netd::shared::NotImplementedError(
+        "SCTPTransport::disconnect not implemented");
   }
 
   int SCTPTransport::getSocket() const {
-    throw netd::shared::NotImplementedError("SCTPTransport::getSocket not implemented");
+    throw netd::shared::NotImplementedError(
+        "SCTPTransport::getSocket not implemented");
   }
 
-  bool SCTPTransport::sendData(int socket_fd, const std::string& data) {
-    (void)socket_fd; (void)data;
-    throw netd::shared::NotImplementedError("SCTPTransport::sendData not implemented");
+  bool SCTPTransport::sendData(int socket_fd, const std::string &data) {
+    (void)socket_fd;
+    (void)data;
+    throw netd::shared::NotImplementedError(
+        "SCTPTransport::sendData not implemented");
   }
 
   std::string SCTPTransport::receiveData(int socket_fd) {
     (void)socket_fd;
-    throw netd::shared::NotImplementedError("SCTPTransport::receiveData not implemented");
+    throw netd::shared::NotImplementedError(
+        "SCTPTransport::receiveData not implemented");
   }
 
   void SCTPTransport::cancelOperation(int socket_fd) {
     (void)socket_fd;
-    throw netd::shared::NotImplementedError("SCTPTransport::cancelOperation not implemented");
+    throw netd::shared::NotImplementedError(
+        "SCTPTransport::cancelOperation not implemented");
   }
 
-  const std::string& SCTPTransport::getAddress() const {
-    throw netd::shared::NotImplementedError("SCTPTransport::getAddress not implemented");
+  const std::string &SCTPTransport::getAddress() const {
+    throw netd::shared::NotImplementedError(
+        "SCTPTransport::getAddress not implemented");
   }
 
   // Additional SCTP-specific methods
   bool SCTPTransport::isRunning() const {
-    throw netd::shared::NotImplementedError("SCTPTransport::isRunning not implemented");
+    throw netd::shared::NotImplementedError(
+        "SCTPTransport::isRunning not implemented");
   }
 
   int SCTPTransport::getPort() const {
-    throw netd::shared::NotImplementedError("SCTPTransport::getPort not implemented");
+    throw netd::shared::NotImplementedError(
+        "SCTPTransport::getPort not implemented");
   }
 
   std::vector<std::string> SCTPTransport::getConnectedPeers() const {
-    throw netd::shared::NotImplementedError("SCTPTransport::getConnectedPeers not implemented");
+    throw netd::shared::NotImplementedError(
+        "SCTPTransport::getConnectedPeers not implemented");
   }
 
   // Multihoming methods
-  bool SCTPTransport::addLocalAddress(const std::string& address, bool is_primary) {
-    (void)address; (void)is_primary;
-    throw netd::shared::NotImplementedError("SCTPTransport::addLocalAddress not implemented");
+  bool SCTPTransport::addLocalAddress(const std::string &address,
+                                      bool is_primary) {
+    (void)address;
+    (void)is_primary;
+    throw netd::shared::NotImplementedError(
+        "SCTPTransport::addLocalAddress not implemented");
   }
 
-  bool SCTPTransport::removeLocalAddress(const std::string& address) {
+  bool SCTPTransport::removeLocalAddress(const std::string &address) {
     (void)address;
-    throw netd::shared::NotImplementedError("SCTPTransport::removeLocalAddress not implemented");
+    throw netd::shared::NotImplementedError(
+        "SCTPTransport::removeLocalAddress not implemented");
   }
 
   std::vector<SCTPAddress> SCTPTransport::getLocalAddresses() const {
-    throw netd::shared::NotImplementedError("SCTPTransport::getLocalAddresses not implemented");
+    throw netd::shared::NotImplementedError(
+        "SCTPTransport::getLocalAddresses not implemented");
   }
 
-  std::vector<SCTPAddress> SCTPTransport::getRemoteAddresses(int socket_fd) const {
+  std::vector<SCTPAddress>
+  SCTPTransport::getRemoteAddresses(int socket_fd) const {
     (void)socket_fd;
-    throw netd::shared::NotImplementedError("SCTPTransport::getRemoteAddresses not implemented");
+    throw netd::shared::NotImplementedError(
+        "SCTPTransport::getRemoteAddresses not implemented");
   }
 
   // SCTP-AUTH methods (for use with DTLS wrapper)
   bool SCTPTransport::enableSCTPAuth() {
-    throw netd::shared::NotImplementedError("SCTPTransport::enableSCTPAuth not implemented");
+    throw netd::shared::NotImplementedError(
+        "SCTPTransport::enableSCTPAuth not implemented");
   }
 
-  bool SCTPTransport::setSCTPAuthKey(const std::string& key) {
+  bool SCTPTransport::setSCTPAuthKey(const std::string &key) {
     (void)key;
-    throw netd::shared::NotImplementedError("SCTPTransport::setSCTPAuthKey not implemented");
+    throw netd::shared::NotImplementedError(
+        "SCTPTransport::setSCTPAuthKey not implemented");
   }
 
   // Stream management (RFC 6083)
-  bool SCTPTransport::sendDataOnStream(int socket_fd, const std::string& data, uint16_t stream_id, bool ordered) {
-    (void)socket_fd; (void)data; (void)stream_id; (void)ordered;
-    throw netd::shared::NotImplementedError("SCTPTransport::sendDataOnStream not implemented");
+  bool SCTPTransport::sendDataOnStream(int socket_fd, const std::string &data,
+                                       uint16_t stream_id, bool ordered) {
+    (void)socket_fd;
+    (void)data;
+    (void)stream_id;
+    (void)ordered;
+    throw netd::shared::NotImplementedError(
+        "SCTPTransport::sendDataOnStream not implemented");
   }
 
-  std::string SCTPTransport::receiveDataFromStream(int socket_fd, uint16_t& stream_id, bool& ordered) {
-    (void)socket_fd; (void)stream_id; (void)ordered;
-    throw netd::shared::NotImplementedError("SCTPTransport::receiveDataFromStream not implemented");
+  std::string SCTPTransport::receiveDataFromStream(int socket_fd,
+                                                   uint16_t &stream_id,
+                                                   bool &ordered) {
+    (void)socket_fd;
+    (void)stream_id;
+    (void)ordered;
+    throw netd::shared::NotImplementedError(
+        "SCTPTransport::receiveDataFromStream not implemented");
   }
 
 } // namespace netd::shared

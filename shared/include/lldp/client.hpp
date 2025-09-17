@@ -27,22 +27,22 @@
 
 #pragma once
 
-#include <memory>
-#include <string>
-#include <vector>
 #include <map>
+#include <memory>
+#include <shared/include/lldp/chassis.hpp>
+#include <shared/include/lldp/config.hpp>
 #include <shared/include/lldp/connection.hpp>
+#include <shared/include/lldp/custom.hpp>
 #include <shared/include/lldp/interface.hpp>
 #include <shared/include/lldp/neighbor.hpp>
-#include <shared/include/lldp/chassis.hpp>
 #include <shared/include/lldp/port.hpp>
-#include <shared/include/lldp/config.hpp>
-#include <shared/include/lldp/custom.hpp>
+#include <string>
+#include <vector>
 
 namespace netd::shared::lldp {
 
-class Client {
-public:
+  class Client {
+  public:
     Client();
     ~Client();
 
@@ -51,7 +51,7 @@ public:
 
     std::vector<std::string> getLLDPInterfaces() const;
     std::map<std::string, std::string> getLinkLocalAddresses() const;
-    
+
     // Get LLDP objects
     std::vector<std::unique_ptr<Port>> getPorts() const;
     std::unique_ptr<Port> getLocalPort() const;
@@ -62,10 +62,10 @@ public:
 
     bool isInitialized() const { return initialized_; }
 
-private:
+  private:
     std::unique_ptr<Connection> connection_;
     std::unique_ptr<Interface> interface_;
     bool initialized_;
-};
+  };
 
 } // namespace netd::shared::lldp

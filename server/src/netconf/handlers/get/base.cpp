@@ -30,8 +30,8 @@
 #include <libyang/libyang.h>
 #include <libyang/tree_schema.h>
 #include <server/include/netconf/handlers.hpp>
-#include <shared/include/logger.hpp>
 #include <shared/include/exception.hpp>
+#include <shared/include/logger.hpp>
 #include <shared/include/request/get/library.hpp>
 #include <shared/include/response/get/library.hpp>
 #include <shared/include/yang.hpp>
@@ -41,57 +41,67 @@ namespace netd::server::netconf::handlers {
 
   std::unique_ptr<netd::shared::response::get::GetResponse>
   RpcHandler::handleGetRequest(
-      netd::shared::request::get::GetRequest* request) {
+      netd::shared::request::get::GetRequest *request) {
     auto &logger = netd::shared::Logger::getInstance();
     logger.info("handleGetRequest: Processing get request");
-    
+
     // Check if this is a YANG library request by examining the filter
     bool isYanglibRequest = false;
-    
-    if (request->hasFilter() && (request->getFilterType() == "subtree" || request->getFilterType() == "xpath")) {
+
+    if (request->hasFilter() && (request->getFilterType() == "subtree" ||
+                                 request->getFilterType() == "xpath")) {
       // Check if the filter contains yang-library
       std::string filterSelect = request->getFilterSelect();
       if (filterSelect.find("yang-library") != std::string::npos ||
           filterSelect.find("ietf-yang-library") != std::string::npos) {
         isYanglibRequest = true;
-        logger.info("handleGetRequest: Detected yang-library filter in " + request->getFilterType());
+        logger.info("handleGetRequest: Detected yang-library filter in " +
+                    request->getFilterType());
       }
     }
-    
+
     if (isYanglibRequest) {
-      logger.info("handleGetRequest: Detected YANG library request, processing...");
-      
+      logger.info(
+          "handleGetRequest: Detected YANG library request, processing...");
+
       // Create a YANG library response
-      auto libraryResponse = std::make_unique<netd::shared::response::get::GetLibraryResponse>();
-      
+      auto libraryResponse =
+          std::make_unique<netd::shared::response::get::GetLibraryResponse>();
+
       // Get the YANG context to generate YANG library data
       auto &yang = netd::shared::Yang::getInstance();
       ly_ctx *ctx = yang.getContext();
-      
+
       if (ctx) {
         // Use libyang's built-in function to generate YANG library data
         struct lyd_node *yanglibData = nullptr;
         // Use the change count as the content-id parameter
         uint32_t changeCount = ly_ctx_get_change_count(ctx);
-        if (ly_ctx_get_yanglib_data(ctx, &yanglibData, "%u", changeCount) == LY_SUCCESS && yanglibData) {
-          logger.info("handleGetRequest: Generated YANG library data successfully");
+        if (ly_ctx_get_yanglib_data(ctx, &yanglibData, "%u", changeCount) ==
+                LY_SUCCESS &&
+            yanglibData) {
+          logger.info(
+              "handleGetRequest: Generated YANG library data successfully");
           // The yanglibData contains the complete YANG library structure
           // We can use this directly in the response
           libraryResponse->setLibraryData(yanglibData);
         } else {
-          logger.error("handleGetRequest: Failed to generate YANG library data");
-          throw netd::shared::NotImplementedError("YANG library data generation failed");
+          logger.error(
+              "handleGetRequest: Failed to generate YANG library data");
+          throw netd::shared::NotImplementedError(
+              "YANG library data generation failed");
         }
       } else {
         throw netd::shared::NotImplementedError("YANG context not available");
       }
-      
+
       // Convert to base GetResponse
       return std::move(libraryResponse);
     }
-    
+
     // For other get requests, throw not implemented
-    throw NotImplementedError("handleGetRequest method not implemented for non-yanglib requests");
+    throw NotImplementedError(
+        "handleGetRequest method not implemented for non-yanglib requests");
   }
 
 } // namespace netd::server::netconf::handlers

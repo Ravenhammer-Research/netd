@@ -28,13 +28,13 @@
 #ifndef NETD_SHARED_EXPECT_MANAGER_HPP
 #define NETD_SHARED_EXPECT_MANAGER_HPP
 
-#include <memory>
-#include <vector>
-#include <mutex>
-#include <thread>
 #include <atomic>
 #include <condition_variable>
+#include <memory>
+#include <mutex>
 #include <shared/include/expect/base.hpp>
+#include <thread>
+#include <vector>
 
 namespace netd::shared::expect {
 
@@ -67,16 +67,16 @@ namespace netd::shared::expect {
      * @param response_node The YANG response node
      * @return true if the response was handled by an Expect, false otherwise
      */
-    bool processResponse(const std::string& message_id,
-                        const std::string& session_id,
-                        lyd_node* response_node);
+    bool processResponse(const std::string &message_id,
+                         const std::string &session_id,
+                         lyd_node *response_node);
 
     /**
      * @brief Remove an Expect object by message ID
      * @param message_id The message ID to remove
      * @return true if removed, false if not found
      */
-    bool removeExpect(const std::string& message_id);
+    bool removeExpect(const std::string &message_id);
 
     /**
      * @brief Get the number of active Expect objects
@@ -103,7 +103,7 @@ namespace netd::shared::expect {
   private:
     std::vector<std::shared_ptr<ExpectBase>> expects_;
     mutable std::mutex expects_mutex_;
-    
+
     std::atomic<bool> running_;
     std::thread cleanup_thread_;
     std::condition_variable cleanup_cv_;

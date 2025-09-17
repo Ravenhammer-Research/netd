@@ -28,14 +28,14 @@
 #ifndef NETD_NETCONF_SESSION_HPP
 #define NETD_NETCONF_SESSION_HPP
 
+#include <atomic>
 #include <libyang/libyang.h>
 #include <memory>
-#include <string>
-#include <vector>
-#include <unordered_map>
-#include <atomic>
 #include <mutex>
 #include <shared/include/transport.hpp>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 // Forward declaration
 namespace netd::shared::request {
@@ -43,7 +43,6 @@ namespace netd::shared::request {
 }
 
 namespace netd::shared::netconf {
-
 
   enum class SessionState {
     INITIALIZING,
@@ -56,7 +55,9 @@ namespace netd::shared::netconf {
 
   class NetconfSession {
   public:
-    NetconfSession(ly_ctx* ctx, int socket = -1, netd::shared::TransportType transport_type = netd::shared::TransportType::UNIX);
+    NetconfSession(ly_ctx *ctx, int socket = -1,
+                   netd::shared::TransportType transport_type =
+                       netd::shared::TransportType::UNIX);
     ~NetconfSession();
 
     // Session management
@@ -64,30 +65,37 @@ namespace netd::shared::netconf {
     void close();
     void setState(SessionState state);
     SessionState getState() const { return state_; }
-    
+
     // Session properties (using socket as ID)
     int getSessionId() const { return socket_; }
     uid_t getUserId() const { return user_id_; }
     void setUserId(uid_t user_id) { user_id_ = user_id; }
-    const std::vector<std::string>& getCapabilities() const { return capabilities_; }
-    void setCapabilities(const std::vector<std::string>& caps) { capabilities_ = caps; }
-    
+    const std::vector<std::string> &getCapabilities() const {
+      return capabilities_;
+    }
+    void setCapabilities(const std::vector<std::string> &caps) {
+      capabilities_ = caps;
+    }
+
     // YANG context access
-    ly_ctx* getContext() const { return ctx_; }
-    
+    ly_ctx *getContext() const { return ctx_; }
+
     // Message ID management
     uint64_t getNextMessageId() { return ++message_id_counter_; }
-    
+
     // Hello request processing
-    void processHelloRequest(const netd::shared::request::HelloRequest& hello_request);
-    
+    void processHelloRequest(
+        const netd::shared::request::HelloRequest &hello_request);
+
     // Socket management
     int getSocket() const { return socket_; }
     void updateSocket(int new_socket) { socket_ = new_socket; }
-    netd::shared::TransportType getTransportType() const { return transport_type_; }
+    netd::shared::TransportType getTransportType() const {
+      return transport_type_;
+    }
 
   private:
-    ly_ctx* ctx_;
+    ly_ctx *ctx_;
     SessionState state_;
     std::vector<std::string> capabilities_;
     std::atomic<uint64_t> message_id_counter_;
@@ -96,7 +104,6 @@ namespace netd::shared::netconf {
     uid_t user_id_;
     netd::shared::TransportType transport_type_;
   };
-
 
 } // namespace netd::shared::netconf
 

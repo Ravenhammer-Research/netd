@@ -32,7 +32,7 @@
 
 namespace netd::shared::lldp {
 
-enum class LLDPErrorCode {
+  enum class LLDPErrorCode {
     NONE = 0,
     NOT_EXIST = LLDPCTL_ERR_NOT_EXIST,
     BAD_VALUE = LLDPCTL_ERR_BAD_VALUE,
@@ -41,9 +41,9 @@ enum class LLDPErrorCode {
     SERIALIZATION = LLDPCTL_ERR_SERIALIZATION,
     WOULDBLOCK = LLDPCTL_ERR_WOULDBLOCK,
     INVALID_STATE = LLDPCTL_ERR_INVALID_STATE
-};
+  };
 
-const char* getLLDPErrorString(LLDPErrorCode error);
+  const char *getLLDPErrorString(LLDPErrorCode error);
 
 } // namespace netd::shared::lldp
 

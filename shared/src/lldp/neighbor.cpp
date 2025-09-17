@@ -25,114 +25,116 @@
  * SUCH DAMAGE.
  */
 
-#include <shared/include/lldp/neighbor.hpp>
-#include <shared/include/logger.hpp>
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <shared/include/lldp/neighbor.hpp>
+#include <shared/include/logger.hpp>
 #include <sstream>
 
 namespace netd::shared::lldp {
 
-Neighbor::Neighbor(lldpctl_atom_t* neighbor_atom)
-    : neighbor_atom_(neighbor_atom) {
+  Neighbor::Neighbor(lldpctl_atom_t *neighbor_atom)
+      : neighbor_atom_(neighbor_atom) {
     if (neighbor_atom_) {
-        lldpctl_atom_inc_ref(neighbor_atom_);
+      lldpctl_atom_inc_ref(neighbor_atom_);
     }
-}
+  }
 
-Neighbor::~Neighbor() {
+  Neighbor::~Neighbor() {
     if (neighbor_atom_) {
-        lldpctl_atom_dec_ref(neighbor_atom_);
+      lldpctl_atom_dec_ref(neighbor_atom_);
     }
-}
+  }
 
-std::string Neighbor::getChassisId() const {
+  std::string Neighbor::getChassisId() const {
     return getStringValue(lldpctl_k_chassis_id);
-}
+  }
 
-std::string Neighbor::getPortId() const {
+  std::string Neighbor::getPortId() const {
     return getStringValue(lldpctl_k_port_id);
-}
+  }
 
-std::string Neighbor::getSystemName() const {
+  std::string Neighbor::getSystemName() const {
     return getStringValue(lldpctl_k_chassis_name);
-}
+  }
 
-std::string Neighbor::getSystemDescription() const {
+  std::string Neighbor::getSystemDescription() const {
     return getStringValue(lldpctl_k_chassis_descr);
-}
+  }
 
-std::string Neighbor::getPortDescription() const {
+  std::string Neighbor::getPortDescription() const {
     return getStringValue(lldpctl_k_port_descr);
-}
+  }
 
-std::chrono::seconds Neighbor::getTTL() const {
+  std::chrono::seconds Neighbor::getTTL() const {
     return getSecondsValue(lldpctl_k_port_ttl);
-}
+  }
 
-std::chrono::system_clock::time_point Neighbor::getLastUpdate() const {
+  std::chrono::system_clock::time_point Neighbor::getLastUpdate() const {
     return std::chrono::system_clock::now();
-}
+  }
 
-std::vector<std::unique_ptr<netd::shared::Address>> Neighbor::getManagementAddresses() const {
+  std::vector<std::unique_ptr<netd::shared::Address>>
+  Neighbor::getManagementAddresses() const {
     std::vector<std::unique_ptr<netd::shared::Address>> addresses;
-    
+
     if (!neighbor_atom_) {
-        return addresses;
+      return addresses;
     }
-    
-    lldpctl_atom_t* mgmt_addrs = lldpctl_atom_get(neighbor_atom_, lldpctl_k_chassis_mgmt);
+
+    lldpctl_atom_t *mgmt_addrs =
+        lldpctl_atom_get(neighbor_atom_, lldpctl_k_chassis_mgmt);
     if (!mgmt_addrs) {
-        return addresses;
+      return addresses;
     }
-    
-    lldpctl_atom_t* mgmt_addr;
+
+    lldpctl_atom_t *mgmt_addr;
     lldpctl_atom_foreach(mgmt_addrs, mgmt_addr) {
-        const char* addr_data = lldpctl_atom_get_str(mgmt_addr, lldpctl_k_mgmt_ip);
-        
-        if (addr_data) {
-            struct in_addr addr4;
-            if (inet_pton(AF_INET, addr_data, &addr4) == 1) {
-                auto ipv4_addr = std::make_unique<netd::shared::IPv4Address>(
-                    ntohl(addr4.s_addr), 32);
-                addresses.push_back(std::move(ipv4_addr));
-            } else {
-                struct in6_addr addr6;
-                if (inet_pton(AF_INET6, addr_data, &addr6) == 1) {
-                    auto ipv6_addr = std::make_unique<netd::shared::IPv6Address>(
-                        addr6.s6_addr, 128);
-                    addresses.push_back(std::move(ipv6_addr));
-                }
-            }
+      const char *addr_data =
+          lldpctl_atom_get_str(mgmt_addr, lldpctl_k_mgmt_ip);
+
+      if (addr_data) {
+        struct in_addr addr4;
+        if (inet_pton(AF_INET, addr_data, &addr4) == 1) {
+          auto ipv4_addr = std::make_unique<netd::shared::IPv4Address>(
+              ntohl(addr4.s_addr), 32);
+          addresses.push_back(std::move(ipv4_addr));
+        } else {
+          struct in6_addr addr6;
+          if (inet_pton(AF_INET6, addr_data, &addr6) == 1) {
+            auto ipv6_addr =
+                std::make_unique<netd::shared::IPv6Address>(addr6.s6_addr, 128);
+            addresses.push_back(std::move(ipv6_addr));
+          }
         }
+      }
     }
-    
+
     lldpctl_atom_dec_ref(mgmt_addrs);
     return addresses;
-}
+  }
 
-bool Neighbor::isValid() const {
-    return neighbor_atom_ != nullptr && 
-           !getChassisId().empty() && 
+  bool Neighbor::isValid() const {
+    return neighbor_atom_ != nullptr && !getChassisId().empty() &&
            !getPortId().empty();
-}
+  }
 
-std::string Neighbor::getStringValue(lldpctl_key_t key) const {
+  std::string Neighbor::getStringValue(lldpctl_key_t key) const {
     if (!neighbor_atom_) {
-        return "";
+      return "";
     }
-    
-    const char* value = lldpctl_atom_get_str(neighbor_atom_, key);
+
+    const char *value = lldpctl_atom_get_str(neighbor_atom_, key);
     return value ? std::string(value) : "";
-}
+  }
 
-std::chrono::seconds Neighbor::getSecondsValue(lldpctl_key_t key) const {
+  std::chrono::seconds Neighbor::getSecondsValue(lldpctl_key_t key) const {
     if (!neighbor_atom_) {
-        return std::chrono::seconds(0);
+      return std::chrono::seconds(0);
     }
-    
+
     int value = lldpctl_atom_get_int(neighbor_atom_, key);
     return std::chrono::seconds(value);
-}
+  }
 
 } // namespace netd::shared::lldp

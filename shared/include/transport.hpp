@@ -28,20 +28,14 @@
 #ifndef NETD_SERVER_NETCONF_TRANSPORT_HPP
 #define NETD_SERVER_NETCONF_TRANSPORT_HPP
 
-#include <string>
-#include <memory>
-#include <iostream>
 #include <functional>
+#include <iostream>
+#include <memory>
+#include <string>
 
 namespace netd::shared {
 
-  enum class TransportType {
-    UNIX,
-    SCTP,
-    HTTP,
-    SCTPS,
-    HTTPS
-  };
+  enum class TransportType { UNIX, SCTP, HTTP, SCTPS, HTTPS };
 
   class BaseTransport {
   public:
@@ -50,12 +44,13 @@ namespace netd::shared {
 
     // Factory method for creating transports
     static std::unique_ptr<BaseTransport> create(TransportType type);
-    
+
     // Address formatting for different transport types
-    static std::string formatAddress(TransportType type, const std::string& bind_address, int port);
+    static std::string formatAddress(TransportType type,
+                                     const std::string &bind_address, int port);
 
     // Transport lifecycle
-    virtual bool start(const std::string& address) = 0;
+    virtual bool start(const std::string &address) = 0;
     virtual void stop() = 0;
     virtual bool isListening() const = 0;
 
@@ -64,20 +59,20 @@ namespace netd::shared {
     virtual void closeConnection(int socket_fd) = 0;
 
     // Client-side methods
-    virtual bool connect(const std::string& address) = 0;
+    virtual bool connect(const std::string &address) = 0;
     virtual void disconnect() = 0;
     virtual int getSocket() const = 0;
 
     // Communication
-    virtual bool sendData(int socket_fd, const std::string& data) = 0;
+    virtual bool sendData(int socket_fd, const std::string &data) = 0;
     virtual std::string receiveData(int socket_fd) = 0;
     virtual bool hasData(int socket_fd) = 0;
-    
+
     // Cancellation support
     virtual void cancelOperation(int socket_fd) = 0;
 
     // Transport properties
-    virtual const std::string& getAddress() const = 0;
+    virtual const std::string &getAddress() const = 0;
   };
 
 } // namespace netd::shared

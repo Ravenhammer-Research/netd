@@ -37,10 +37,9 @@ namespace netd::server::netconf::handlers {
 
   std::unique_ptr<netd::shared::response::UnlockResponse>
   RpcHandler::handleUnlockRequest(
-      netd::shared::request::UnlockRequest* /* request */) {
+      netd::shared::request::UnlockRequest * /* request */) {
     auto &logger = netd::shared::Logger::getInstance();
-    auto response =
-        std::make_unique<netd::shared::response::UnlockResponse>();
+    auto response = std::make_unique<netd::shared::response::UnlockResponse>();
 
     logger.info("Handling unlock request");
 

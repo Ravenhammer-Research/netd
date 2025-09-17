@@ -30,5 +30,4 @@ namespace netd::shared::response {
     return std::make_unique<KillResponse>();
   }
 
-
 } // namespace netd::shared::response

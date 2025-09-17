@@ -28,16 +28,18 @@
 #ifndef NETD_SERVER_NETCONF_RPC_HPP
 #define NETD_SERVER_NETCONF_RPC_HPP
 
-#include <shared/include/netconf/rpc.hpp>
 #include <istream>
+#include <shared/include/netconf/rpc.hpp>
 #include <string>
 
 namespace netd::server::netconf {
 
   class ServerRpc : public netd::shared::netconf::Rpc {
   public:
-    static void processRequest(netd::shared::RpcRxStream& rpc_stream, netd::shared::netconf::NetconfSession* session);
-    static void processReply(netd::shared::RpcRxStream& rpc_stream, netd::shared::netconf::NetconfSession* session);
+    static void processRequest(netd::shared::RpcRxStream &rpc_stream,
+                               netd::shared::netconf::NetconfSession *session);
+    static void processReply(netd::shared::RpcRxStream &rpc_stream,
+                             netd::shared::netconf::NetconfSession *session);
   };
 
 } // namespace netd::server::netconf

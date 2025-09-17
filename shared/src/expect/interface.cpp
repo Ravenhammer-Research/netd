@@ -25,15 +25,16 @@
  * SUCH DAMAGE.
  */
 
+#include <libyang/libyang.h>
 #include <shared/include/expect/interface.hpp>
 #include <shared/include/logger.hpp>
-#include <libyang/libyang.h>
 
 namespace netd::shared::expect {
 
-  InterfaceResponse InterfaceExpect::convertFromYang(lyd_node* response_node) {
+  InterfaceResponse InterfaceExpect::convertFromYang(lyd_node *response_node) {
     (void)response_node; // Suppress unused parameter warning
-    throw std::runtime_error("InterfaceExpect::convertFromYang not implemented");
+    throw std::runtime_error(
+        "InterfaceExpect::convertFromYang not implemented");
   }
 
 } // namespace netd::shared::expect

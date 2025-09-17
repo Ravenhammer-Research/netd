@@ -25,17 +25,19 @@
  * SUCH DAMAGE.
  */
 
+#include <istream>
 #include <server/include/netconf/rpc.hpp>
 #include <shared/include/exception.hpp>
-#include <istream>
 #include <string>
 
 namespace netd::server::netconf {
 
-  void ServerRpc::processReply(netd::shared::RpcRxStream& rpc_stream, netd::shared::netconf::NetconfSession* session) {
+  void ServerRpc::processReply(netd::shared::RpcRxStream &rpc_stream,
+                               netd::shared::netconf::NetconfSession *session) {
     (void)rpc_stream;
     (void)session;
-    throw netd::shared::NotImplementedError("ServerRpc::processReply not implemented");
+    throw netd::shared::NotImplementedError(
+        "ServerRpc::processReply not implemented");
   }
 
 } // namespace netd::server::netconf

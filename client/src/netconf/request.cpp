@@ -30,12 +30,15 @@
 
 namespace netd::client::netconf {
 
-  void ClientRpc::processRequest(netd::shared::RpcRxStream& rpc_stream, netd::shared::netconf::NetconfSession* session) {
+  void
+  ClientRpc::processRequest(netd::shared::RpcRxStream &rpc_stream,
+                            netd::shared::netconf::NetconfSession *session) {
     // Suppress unused parameter warnings
     (void)rpc_stream;
     (void)session;
-    
-    throw netd::shared::NotImplementedError("ClientRpc::processRequest not implemented");
+
+    throw netd::shared::NotImplementedError(
+        "ClientRpc::processRequest not implemented");
   }
 
 } // namespace netd::client::netconf

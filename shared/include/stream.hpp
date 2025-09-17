@@ -28,13 +28,13 @@
 #ifndef NETD_SHARED_STREAM_HPP
 #define NETD_SHARED_STREAM_HPP
 
-#include <memory>
-#include <string>
 #include <functional>
 #include <iostream>
-#include <streambuf>
-#include <shared/include/socket.hpp>
+#include <memory>
 #include <shared/include/netconf/session.hpp>
+#include <shared/include/socket.hpp>
+#include <streambuf>
+#include <string>
 
 namespace netd::shared {
 
@@ -43,25 +43,25 @@ namespace netd::shared {
    */
   class RpcRxStreamBuf : public std::streambuf {
   public:
-    RpcRxStreamBuf(ClientSocket& socket);
+    RpcRxStreamBuf(ClientSocket &socket);
     virtual ~RpcRxStreamBuf() = default;
-    
+
     void rewind();
     bool hasData();
     std::string readToEnd();
-    
+
     /**
      * @brief Get the socket reference
      * @return Reference to the underlying socket
      */
-    ClientSocket& getSocket();
+    ClientSocket &getSocket();
 
   protected:
     virtual int_type underflow() override;
     virtual int_type uflow() override;
 
   private:
-    ClientSocket& socket_;
+    ClientSocket &socket_;
     std::string buffer_;
     static const size_t BUFFER_SIZE = 4096;
   };
@@ -71,9 +71,9 @@ namespace netd::shared {
    */
   class RpcTxStreamBuf : public std::streambuf {
   public:
-    RpcTxStreamBuf(ClientSocket& socket);
+    RpcTxStreamBuf(ClientSocket &socket);
     virtual ~RpcTxStreamBuf();
-    
+
     int flush();
 
   protected:
@@ -81,14 +81,14 @@ namespace netd::shared {
     virtual int sync() override;
 
   private:
-    ClientSocket& socket_;
+    ClientSocket &socket_;
     std::string buffer_;
     static const size_t BUFFER_SIZE = 4096;
   };
 
   /**
    * @brief Stream class for receiving RPC data
-   * 
+   *
    * This class provides a standard C++ istream interface for receiving RPC data
    * from a transport layer.
    */
@@ -98,35 +98,35 @@ namespace netd::shared {
      * @brief Constructs an RpcRxStream
      * @param socket The socket to use for receiving data
      */
-    RpcRxStream(ClientSocket& socket);
-    
+    RpcRxStream(ClientSocket &socket);
+
     /**
      * @brief Destructor
      */
     virtual ~RpcRxStream() = default;
-    
+
     /**
      * @brief Rewinds the stream to the beginning of the current message
      */
     void rewind();
-    
+
     /**
      * @brief Checks if data is available to read without consuming it
      * @return true if data is available, false otherwise
      */
     bool hasData();
-    
+
     /**
      * @brief Reads all available data from the stream
      * @return string containing all data read from the stream
      */
     std::string readToEnd();
-    
+
     /**
      * @brief Get the socket reference
      * @return Reference to the underlying socket
      */
-    ClientSocket& getSocket();
+    ClientSocket &getSocket();
 
   private:
     RpcRxStreamBuf streambuf_;
@@ -134,7 +134,7 @@ namespace netd::shared {
 
   /**
    * @brief Stream class for transmitting RPC data
-   * 
+   *
    * This class provides a standard C++ ostream interface for sending RPC data
    * through a transport layer.
    */
@@ -144,13 +144,12 @@ namespace netd::shared {
      * @brief Constructs an RpcTxStream
      * @param socket The socket to use for sending data
      */
-    RpcTxStream(ClientSocket& socket);
-    
+    RpcTxStream(ClientSocket &socket);
+
     /**
      * @brief Destructor
      */
     virtual ~RpcTxStream() = default;
-    
 
   private:
     RpcTxStreamBuf streambuf_;

@@ -28,9 +28,9 @@
 #include <libyang/libyang.h>
 #include <libyang/tree_data.h>
 #include <shared/include/exception.hpp>
+#include <shared/include/logger.hpp>
 #include <shared/include/response/get/config.hpp>
 #include <shared/include/yang.hpp>
-#include <shared/include/logger.hpp>
 
 namespace netd::shared::response::get {
 
@@ -89,23 +89,29 @@ namespace netd::shared::response::get {
     }
 
     auto response = std::make_unique<GetConfigResponse>();
-    
+
     // Parse the received data node - walk through the YANG tree
     const lyd_node *child = lyd_child(node);
     while (child) {
-      const char *nodeName = lyd_node_schema(child) ? lyd_node_schema(child)->name : nullptr;
-      
+      const char *nodeName =
+          lyd_node_schema(child) ? lyd_node_schema(child)->name : nullptr;
+
       if (nodeName && strcmp(nodeName, "interfaces") == 0) {
         // Found interfaces container, parse interface data
         const lyd_node *interfaceChild = lyd_child(child);
         while (interfaceChild) {
-          const char *interfaceName = lyd_node_schema(interfaceChild) ? lyd_node_schema(interfaceChild)->name : nullptr;
-          
+          const char *interfaceName =
+              lyd_node_schema(interfaceChild)
+                  ? lyd_node_schema(interfaceChild)->name
+                  : nullptr;
+
           if (interfaceName && strcmp(interfaceName, "interface") == 0) {
             // Found an interface, extract its data
             const lyd_node *interfaceData = lyd_child(interfaceChild);
             while (interfaceData) {
-              const char *dataName = lyd_node_schema(interfaceData) ? lyd_node_schema(interfaceData)->name : nullptr;
+              const char *dataName = lyd_node_schema(interfaceData)
+                                         ? lyd_node_schema(interfaceData)->name
+                                         : nullptr;
               if (dataName) {
                 // Extract interface properties like name, type, enabled, etc.
                 // TODO: Store the actual interface data in the response object
@@ -118,7 +124,7 @@ namespace netd::shared::response::get {
       }
       child = child->next;
     }
-    
+
     return response;
   }
 

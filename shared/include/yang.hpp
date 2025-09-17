@@ -49,7 +49,7 @@ namespace netd::shared {
     bool loadSchema(const std::string &schemaPath);
     bool loadSchemaByName(const std::string &name,
                           const std::string &revision = "");
-    const struct lys_module *getModule(const std::string &name, 
+    const struct lys_module *getModule(const std::string &name,
                                        const std::string &revision = "") const;
 
     // Utility functions for YANG data conversion

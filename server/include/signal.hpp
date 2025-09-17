@@ -30,21 +30,21 @@
 
 namespace netd::server {
 
-/**
- * Check if the server should continue running
- * @return true if server should continue, false if shutdown requested
- */
-bool isRunning();
+  /**
+   * Check if the server should continue running
+   * @return true if server should continue, false if shutdown requested
+   */
+  bool isRunning();
 
-/**
- * Set up signal handlers for graceful shutdown
- */
-void setupSignalHandlers();
+  /**
+   * Set up signal handlers for graceful shutdown
+   */
+  void setupSignalHandlers();
 
-/**
- * Clean up signal handlers
- */
-void cleanupSignalHandlers();
+  /**
+   * Clean up signal handlers
+   */
+  void cleanupSignalHandlers();
 
 } // namespace netd::server
 

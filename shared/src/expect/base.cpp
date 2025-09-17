@@ -30,24 +30,24 @@
 
 namespace netd::shared::expect {
 
-  ExpectBase::ExpectBase(const std::string& message_id, 
-                         const std::string& session_id, 
+  ExpectBase::ExpectBase(const std::string &message_id,
+                         const std::string &session_id,
                          std::chrono::seconds ttl)
-      : message_id_(message_id), session_id_(session_id), ttl_(ttl), 
-        creation_time_(std::chrono::steady_clock::now()) {
-  }
+      : message_id_(message_id), session_id_(session_id), ttl_(ttl),
+        creation_time_(std::chrono::steady_clock::now()) {}
 
-  bool ExpectBase::matchesMessageId(const std::string& message_id) const {
+  bool ExpectBase::matchesMessageId(const std::string &message_id) const {
     return message_id_ == message_id;
   }
 
-  bool ExpectBase::matchesSessionId(const std::string& session_id) const {
+  bool ExpectBase::matchesSessionId(const std::string &session_id) const {
     return session_id_ == session_id;
   }
 
   bool ExpectBase::isExpired() const {
     auto now = std::chrono::steady_clock::now();
-    auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(now - creation_time_);
+    auto elapsed =
+        std::chrono::duration_cast<std::chrono::seconds>(now - creation_time_);
     return elapsed >= ttl_;
   }
 
@@ -55,16 +55,10 @@ namespace netd::shared::expect {
     return creation_time_;
   }
 
-  std::chrono::seconds ExpectBase::getTtl() const {
-    return ttl_;
-  }
+  std::chrono::seconds ExpectBase::getTtl() const { return ttl_; }
 
-  const std::string& ExpectBase::getMessageId() const {
-    return message_id_;
-  }
+  const std::string &ExpectBase::getMessageId() const { return message_id_; }
 
-  const std::string& ExpectBase::getSessionId() const {
-    return session_id_;
-  }
+  const std::string &ExpectBase::getSessionId() const { return session_id_; }
 
 } // namespace netd::shared::expect

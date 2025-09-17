@@ -28,12 +28,12 @@
 #ifndef NETD_CLIENT_TUI_HPP
 #define NETD_CLIENT_TUI_HPP
 
-#include <functional>
-#include <string>
-#include <vector>
-#include <memory>
-#include <thread>
 #include <client/include/netconf/client.hpp>
+#include <functional>
+#include <memory>
+#include <string>
+#include <thread>
+#include <vector>
 
 #define MAX_LINES 1000
 
@@ -53,41 +53,36 @@ namespace netd::client::tui {
     void clear();
 
     void addToCommandHistory(const std::string &command);
-    const std::vector<std::string>& getCommandHistory() const;
-    
+    const std::vector<std::string> &getCommandHistory() const;
+
     void setCompletions(const std::vector<std::string> &completions);
     std::string completeCommand(const std::string &partial);
     std::string completeCommandContextual(const std::string &command_line);
-    
+
     void addToDisplayHistory(const std::string &message);
     void clearDisplayHistory();
     void removeFromDisplayHistory(size_t index);
     size_t getDisplayHistorySize() const;
-    const std::string& getDisplayHistoryAt(size_t index) const;
-    const std::vector<std::string>& getDisplayHistory() const;
+    const std::string &getDisplayHistoryAt(size_t index) const;
+    const std::vector<std::string> &getDisplayHistory() const;
 
-    void runInteractive(std::function<bool(const std::string &)> commandHandler);
+    void
+    runInteractive(std::function<bool(const std::string &)> commandHandler);
     void setPrompt(const std::string &prompt) { prompt_ = prompt; }
 
     void setCommandHandler(std::function<bool(const std::string &)> handler) {
       commandHandler_ = handler;
     }
-    
-    void setConnectionStatus(const std::string& status) {
+
+    void setConnectionStatus(const std::string &status) {
       connectionStatus_ = status;
     }
-    
-    void setDebugLevel(int level) {
-      debugLevel_ = level;
-    }
-    
-    int getDebugLevel() const {
-      return debugLevel_;
-    }
-    
-    bool isDestroying() const {
-      return destroying_;
-    }
+
+    void setDebugLevel(int level) { debugLevel_ = level; }
+
+    int getDebugLevel() const { return debugLevel_; }
+
+    bool isDestroying() const { return destroying_; }
 
     void putMessages();
     void putPrompt();
@@ -96,12 +91,13 @@ namespace netd::client::tui {
     void clearToEndOfLine();
     void handleResize();
 
-    void setLoggerInstance(TUI* tui);
+    void setLoggerInstance(TUI *tui);
     void initializeLogger();
     void cleanupLogger();
     std::vector<std::string> wrapText(const std::string &text, int width);
     std::vector<std::string> wrapTextToScreen(const std::string &text);
-    std::vector<std::string> wrapTextWithIndent(const std::string &text, int width, int indent);
+    std::vector<std::string> wrapTextWithIndent(const std::string &text,
+                                                int width, int indent);
     std::string truncateText(const std::string &text, int width);
     std::vector<std::string> splitWords(const std::string &text);
     int getTextWidth(const std::string &text);
@@ -148,13 +144,13 @@ namespace netd::client::tui {
     void redrawPrompt();
     void scrollMessages();
     void scrollMessagesDown();
-    
+
     // Status bar functions
     void putStatusBar();
-    void updateStatusBar(const std::string& message);
+    void updateStatusBar(const std::string &message);
     void clearStatusBar();
     std::string getScrollInfo();
-    
+
     // Key input handlers
     void handleBackspace();
     void handleDelete();
@@ -167,15 +163,15 @@ namespace netd::client::tui {
     void handlePrintableChar(int key);
     void handleCtrlD();
     void handleCtrlL();
-    
+
     // Input state management
     void resetInputState();
-    
+
     // Screen dimension helpers
     int getScreenSizeX();
     int getScreenSizeY();
     int getPromptRow();
-    
+
     // Input helpers
     std::string scanPromptLine();
     void putCurrentLine(const std::string &line);
@@ -188,7 +184,7 @@ namespace netd::client::tui {
     int getMaxLines();
     int getScrollOffset();
     void setScrollOffset(int offset);
-    
+
     // History position helpers
     int getHistoryPosition();
     void setHistoryPosition(int position);

@@ -33,9 +33,9 @@
 
 namespace netd::shared::lldp {
 
-class CustomTLV {
-public:
-    CustomTLV(lldpctl_atom_t* custom_tlv_atom);
+  class CustomTLV {
+  public:
+    CustomTLV(lldpctl_atom_t *custom_tlv_atom);
     ~CustomTLV();
 
     std::string getOUI() const;
@@ -44,26 +44,27 @@ public:
     std::string getOperation() const;
     bool isValid() const;
 
-private:
-    lldpctl_atom_t* custom_tlv_atom_;
+  private:
+    lldpctl_atom_t *custom_tlv_atom_;
     std::string getStringValue(lldpctl_key_t key) const;
     int getIntValue(lldpctl_key_t key) const;
-};
+  };
 
-class CustomTLVManager {
-public:
-    CustomTLVManager(lldpctl_conn_t* connection);
+  class CustomTLVManager {
+  public:
+    CustomTLVManager(lldpctl_conn_t *connection);
     ~CustomTLVManager();
 
     std::vector<std::unique_ptr<CustomTLV>> getCustomTLVs() const;
-    bool addCustomTLV(const std::string& oui, int oui_subtype, 
-                     const std::string& info_string, const std::string& operation = "");
+    bool addCustomTLV(const std::string &oui, int oui_subtype,
+                      const std::string &info_string,
+                      const std::string &operation = "");
     bool clearCustomTLVs();
     bool isValid() const;
 
-private:
-    lldpctl_conn_t* connection_;
-    lldpctl_atom_t* getCustomTLVsAtom() const;
-};
+  private:
+    lldpctl_conn_t *connection_;
+    lldpctl_atom_t *getCustomTLVsAtom() const;
+  };
 
 } // namespace netd::shared::lldp

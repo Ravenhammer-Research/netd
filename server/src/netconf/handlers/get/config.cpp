@@ -38,8 +38,9 @@ namespace netd::server::netconf::handlers {
 
   std::unique_ptr<netd::shared::response::get::GetConfigResponse>
   RpcHandler::handleGetConfigRequest(
-      [[maybe_unused]] netd::shared::request::get::GetConfigRequest* request) {
-    throw netd::shared::NotImplementedError("RpcHandler::handleGetConfigRequest not implemented");
+      [[maybe_unused]] netd::shared::request::get::GetConfigRequest *request) {
+    throw netd::shared::NotImplementedError(
+        "RpcHandler::handleGetConfigRequest not implemented");
   }
 
 } // namespace netd::server::netconf::handlers

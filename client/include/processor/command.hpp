@@ -32,7 +32,7 @@
 
 namespace netd::client::processor {
 
-enum class CommandType {
+  enum class CommandType {
     SET_CMD,
     DELETE_CMD,
     SHOW_CMD,
@@ -40,50 +40,50 @@ enum class CommandType {
     EDIT_CMD,
     QUIT_CMD,
     HELP_CMD
-};
+  };
 
-enum class DisplayMode {
+  enum class DisplayMode {
     NONE,
     BRIEF_MODE,
     DETAIL_MODE,
     EXTENSIVE_MODE,
     TERSE_MODE
-};
+  };
 
-class Command {
-public:
+  class Command {
+  public:
     Command();
     ~Command() = default;
 
     void setCommandType(CommandType type);
     CommandType getCommandType() const;
 
-    void setInterfaceName(const std::string& name);
-    const std::string& getInterfaceName() const;
+    void setInterfaceName(const std::string &name);
+    const std::string &getInterfaceName() const;
 
     void setUnitNumber(int unit);
     int getUnitNumber() const;
 
-    void setIpAddress(const std::string& ip);
-    const std::string& getIpAddress() const;
+    void setIpAddress(const std::string &ip);
+    const std::string &getIpAddress() const;
 
-    void setDescription(const std::string& desc);
-    const std::string& getDescription() const;
+    void setDescription(const std::string &desc);
+    const std::string &getDescription() const;
 
     void setVlanId(int vlan);
     int getVlanId() const;
 
-    void setSpeedValue(const std::string& speed);
-    const std::string& getSpeedValue() const;
+    void setSpeedValue(const std::string &speed);
+    const std::string &getSpeedValue() const;
 
     void setVlanTagging(bool tagging);
     bool getVlanTagging() const;
 
-    void setIdentifier(const std::string& id);
-    const std::string& getIdentifier() const;
+    void setIdentifier(const std::string &id);
+    const std::string &getIdentifier() const;
 
-    void setStringValue(const std::string& str);
-    const std::string& getStringValue() const;
+    void setStringValue(const std::string &str);
+    const std::string &getStringValue() const;
 
     void setDisplayMode(DisplayMode mode);
     DisplayMode getDisplayMode() const;
@@ -91,7 +91,7 @@ public:
     bool isValid() const;
     std::string toString() const;
 
-private:
+  private:
     CommandType command_type_;
     std::string interface_name_;
     int unit_number_;
@@ -103,7 +103,7 @@ private:
     std::string string_value_;
     bool vlan_tagging_;
     DisplayMode display_mode_;
-};
+  };
 
 } // namespace netd::client::processor
 

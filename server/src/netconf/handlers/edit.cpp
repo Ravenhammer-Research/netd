@@ -40,7 +40,7 @@ namespace netd::server::netconf::handlers {
 
   std::unique_ptr<netd::shared::response::EditConfigResponse>
   RpcHandler::handleEditConfigRequest(
-      netd::shared::request::EditConfigRequest* request) {
+      netd::shared::request::EditConfigRequest *request) {
     auto &logger = netd::shared::Logger::getInstance();
     auto response =
         std::make_unique<netd::shared::response::EditConfigResponse>();
@@ -52,8 +52,8 @@ namespace netd::server::netconf::handlers {
 
     // Clone the whole RPC request for the store
     lyd_node *rpcData = nullptr;
-    LY_ERR err = lyd_dup_single(request->getRpc(), nullptr, LYD_DUP_RECURSIVE,
-                                &rpcData);
+    LY_ERR err =
+        lyd_dup_single(request->getRpc(), nullptr, LYD_DUP_RECURSIVE, &rpcData);
     if (err != LY_SUCCESS || !rpcData) {
       response->setProtocolError(
           netd::shared::marshalling::ErrorTag::OPERATION_FAILED,

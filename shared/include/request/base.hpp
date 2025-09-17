@@ -42,28 +42,34 @@ namespace netd::shared::request {
   // Source datastore enumeration
   enum class Source { RUNNING, CANDIDATE, STARTUP };
 
-  template <typename T> class Request : public netd::shared::base::Serialization<Request<T>> {
+  template <typename T>
+  class Request : public netd::shared::base::Serialization<Request<T>> {
   public:
     Request() = default;
-    Request(netd::shared::netconf::NetconfSession *session, struct lyd_node *rpc)
+    Request(netd::shared::netconf::NetconfSession *session,
+            struct lyd_node *rpc)
         : session_(session), rpc_(rpc) {}
     virtual ~Request() = default;
 
     // Pure virtual methods that must be implemented by subclasses
     virtual lyd_node *toYang(ly_ctx *ctx) const = 0;
-    static std::unique_ptr<T> fromYang(const ly_ctx *ctx,
-                                       const lyd_node *node);
-    static std::unique_ptr<T> fromRpcEnvelope(const ly_ctx *ctx,
-                                              std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope);
-    
+    static std::unique_ptr<T> fromYang(const ly_ctx *ctx, const lyd_node *node);
+    static std::unique_ptr<T>
+    fromRpcEnvelope(const ly_ctx *ctx,
+                    std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope);
+
     // Convert to XML string
     std::string toXml() const;
     std::string toRpcXml() const;
 
     // Session and RPC accessors
-    netd::shared::netconf::NetconfSession *getSession() const { return session_; }
+    netd::shared::netconf::NetconfSession *getSession() const {
+      return session_;
+    }
     struct lyd_node *getRpc() const { return rpc_; }
-    void setSession(netd::shared::netconf::NetconfSession *session) { session_ = session; }
+    void setSession(netd::shared::netconf::NetconfSession *session) {
+      session_ = session;
+    }
     void setRpc(struct lyd_node *rpc) { rpc_ = rpc; }
 
   protected:

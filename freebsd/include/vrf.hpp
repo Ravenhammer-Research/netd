@@ -29,8 +29,8 @@
 #define NETD_FREEBSD_VRF_HPP
 
 #include <memory>
-#include <shared/include/vrf.hpp>
 #include <shared/include/backend.hpp>
+#include <shared/include/vrf.hpp>
 #include <string>
 #include <vector>
 

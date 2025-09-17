@@ -25,11 +25,11 @@
  * SUCH DAMAGE.
  */
 
+#include <cstring>
+#include <cxxabi.h>
+#include <execinfo.h>
 #include <shared/include/exception.hpp>
 #include <shared/include/logger.hpp>
-#include <execinfo.h>
-#include <cxxabi.h>
-#include <cstring>
 
 namespace netd::shared {
 
@@ -41,8 +41,10 @@ namespace netd::shared {
     stackTrace_.assign(array, array + size);
   }
 
-  std::string NetdError::getStackTraceString(const std::vector<void*> &stackTrace) {
-    char **strings = backtrace_symbols(const_cast<void**>(stackTrace.data()), stackTrace.size());
+  std::string
+  NetdError::getStackTraceString(const std::vector<void *> &stackTrace) {
+    char **strings = backtrace_symbols(const_cast<void **>(stackTrace.data()),
+                                       stackTrace.size());
 
     std::string stackTraceStr = "Stack trace:\n";
 
@@ -54,11 +56,13 @@ namespace netd::shared {
       while (pos < line.length()) {
         // Look for mangled symbols that start with _Z
         size_t start = line.find("_Z", pos);
-        if (start == std::string::npos) break;
+        if (start == std::string::npos)
+          break;
 
         // Find the end of the mangled symbol (before + or at end of line)
         size_t end = start + 2; // Skip _Z
-        while (end < line.length() && line[end] != '+' && line[end] != ' ' && line[end] != '>') {
+        while (end < line.length() && line[end] != '+' && line[end] != ' ' &&
+               line[end] != '>') {
           end++;
         }
 
@@ -66,7 +70,8 @@ namespace netd::shared {
           std::string mangled = line.substr(start, end - start);
 
           int status;
-          char *demangled = abi::__cxa_demangle(mangled.c_str(), nullptr, nullptr, &status);
+          char *demangled =
+              abi::__cxa_demangle(mangled.c_str(), nullptr, nullptr, &status);
 
           if (status == 0 && demangled) {
             line = line.substr(0, start) + demangled + line.substr(end);

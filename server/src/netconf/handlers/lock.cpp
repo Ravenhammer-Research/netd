@@ -37,7 +37,7 @@ namespace netd::server::netconf::handlers {
 
   std::unique_ptr<netd::shared::response::LockResponse>
   RpcHandler::handleLockRequest(
-      netd::shared::request::LockRequest* /* request */) {
+      netd::shared::request::LockRequest * /* request */) {
     auto &logger = netd::shared::Logger::getInstance();
     auto response = std::make_unique<netd::shared::response::LockResponse>();
 

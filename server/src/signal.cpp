@@ -25,82 +25,80 @@
  * SUCH DAMAGE.
  */
 
+#include <atomic>
 #include <csignal>
 #include <shared/include/logger.hpp>
-#include <atomic>
 
 namespace netd::server {
 
-// Global flag for graceful shutdown
-static std::atomic<bool> g_running{true};
+  // Global flag for graceful shutdown
+  static std::atomic<bool> g_running{true};
 
-bool isRunning() {
-    return g_running.load();
-}
+  bool isRunning() { return g_running.load(); }
 
-void signalHandler(int signal) {
+  void signalHandler(int signal) {
     auto &logger = netd::shared::Logger::getInstance();
-    
+
     switch (signal) {
     case SIGINT:
-        logger.info("Received SIGINT, initiating graceful shutdown...");
-        g_running.store(false);
-        break;
-        
-    case SIGTERM:
-        logger.info("Received SIGTERM, initiating graceful shutdown...");
-        g_running.store(false);
-        break;
-        
-    case SIGHUP:
-        logger.info("Received SIGHUP, reloading configuration...");
-        // TODO: Implement configuration reload
-        break;
-        
-    case SIGPIPE:
-        logger.debug("Received SIGPIPE, ignoring...");
-        // Ignore SIGPIPE - this happens when client disconnects
-        break;
-        
-    default:
-        logger.warning("Received unknown signal: " + std::to_string(signal));
-        break;
-    }
-}
+      logger.info("Received SIGINT, initiating graceful shutdown...");
+      g_running.store(false);
+      break;
 
-void setupSignalHandlers() {
+    case SIGTERM:
+      logger.info("Received SIGTERM, initiating graceful shutdown...");
+      g_running.store(false);
+      break;
+
+    case SIGHUP:
+      logger.info("Received SIGHUP, reloading configuration...");
+      // TODO: Implement configuration reload
+      break;
+
+    case SIGPIPE:
+      logger.debug("Received SIGPIPE, ignoring...");
+      // Ignore SIGPIPE - this happens when client disconnects
+      break;
+
+    default:
+      logger.warning("Received unknown signal: " + std::to_string(signal));
+      break;
+    }
+  }
+
+  void setupSignalHandlers() {
     auto &logger = netd::shared::Logger::getInstance();
-    
+
     // Set up signal handlers for graceful shutdown
     if (signal(SIGINT, signalHandler) == SIG_ERR) {
-        logger.error("Failed to set SIGINT handler");
+      logger.error("Failed to set SIGINT handler");
     }
-    
-    if (signal(SIGTERM, signalHandler) == SIG_ERR) {
-        logger.error("Failed to set SIGTERM handler");
-    }
-    
-    if (signal(SIGHUP, signalHandler) == SIG_ERR) {
-        logger.error("Failed to set SIGHUP handler");
-    }
-    
-    if (signal(SIGPIPE, SIG_IGN) == SIG_ERR) {
-        logger.error("Failed to ignore SIGPIPE");
-    }
-    
-    logger.debug("Signal handlers set up successfully");
-}
 
-void cleanupSignalHandlers() {
+    if (signal(SIGTERM, signalHandler) == SIG_ERR) {
+      logger.error("Failed to set SIGTERM handler");
+    }
+
+    if (signal(SIGHUP, signalHandler) == SIG_ERR) {
+      logger.error("Failed to set SIGHUP handler");
+    }
+
+    if (signal(SIGPIPE, SIG_IGN) == SIG_ERR) {
+      logger.error("Failed to ignore SIGPIPE");
+    }
+
+    logger.debug("Signal handlers set up successfully");
+  }
+
+  void cleanupSignalHandlers() {
     auto &logger = netd::shared::Logger::getInstance();
-    
+
     // Restore default signal handlers
     signal(SIGINT, SIG_DFL);
     signal(SIGTERM, SIG_DFL);
     signal(SIGHUP, SIG_DFL);
     signal(SIGPIPE, SIG_DFL);
-    
+
     logger.debug("Signal handlers cleaned up");
-}
+  }
 
 } // namespace netd::server

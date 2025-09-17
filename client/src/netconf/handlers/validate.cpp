@@ -26,60 +26,65 @@
  */
 
 #include <client/include/netconf/handlers.hpp>
-#include <shared/include/logger.hpp>
-#include <shared/include/exception.hpp>
 #include <libyang/libyang.h>
+#include <shared/include/exception.hpp>
+#include <shared/include/logger.hpp>
 #include <sstream>
 
 namespace netd::client::netconf {
 
-  std::unique_ptr<netd::shared::response::ValidateResponse> RpcHandler::handleValidateRequest(
-      const netd::shared::request::ValidateRequest& /* request */, 
-      netd::shared::netconf::NetconfSession* session) {
+  std::unique_ptr<netd::shared::response::ValidateResponse>
+  RpcHandler::handleValidateRequest(
+      const netd::shared::request::ValidateRequest & /* request */,
+      netd::shared::netconf::NetconfSession *session) {
     if (!session) {
       return nullptr;
     }
 
     try {
-    // Get source from request
-    std::string source = "candidate"; // TODO: Get from request
+      // Get source from request
+      std::string source = "candidate"; // TODO: Get from request
 
-    ly_ctx* ctx = session->getContext();
-    if (!ctx) {
-      return nullptr;
-    }
+      ly_ctx *ctx = session->getContext();
+      if (!ctx) {
+        return nullptr;
+      }
 
-    // Create validate request
-    lyd_node* validate_tree = nullptr;
-    LY_ERR err = lyd_new_path(nullptr, ctx, "/ietf-netconf:validate", nullptr, 0, &validate_tree);
-    if (err != LY_SUCCESS || !validate_tree) {
-      return nullptr;
-    }
+      // Create validate request
+      lyd_node *validate_tree = nullptr;
+      LY_ERR err = lyd_new_path(nullptr, ctx, "/ietf-netconf:validate", nullptr,
+                                0, &validate_tree);
+      if (err != LY_SUCCESS || !validate_tree) {
+        return nullptr;
+      }
 
-    // Add source
-    lyd_node* source_node = nullptr;
-    err = lyd_new_path(validate_tree, ctx, "source", nullptr, 0, &source_node);
-    if (source_node) {
-      lyd_new_path(source_node, ctx, source.c_str(), nullptr, 0, nullptr);
-    }
+      // Add source
+      lyd_node *source_node = nullptr;
+      err =
+          lyd_new_path(validate_tree, ctx, "source", nullptr, 0, &source_node);
+      if (source_node) {
+        lyd_new_path(source_node, ctx, source.c_str(), nullptr, 0, nullptr);
+      }
 
-    // Convert to XML
-    char* xml_str = nullptr;
-    if (lyd_print_mem(&xml_str, validate_tree, LYD_XML, 0) != LY_SUCCESS || !xml_str) {
+      // Convert to XML
+      char *xml_str = nullptr;
+      if (lyd_print_mem(&xml_str, validate_tree, LYD_XML, 0) != LY_SUCCESS ||
+          !xml_str) {
+        lyd_free_tree(validate_tree);
+        return nullptr;
+      }
+
+      std::string response_xml(xml_str);
+      free(xml_str);
       lyd_free_tree(validate_tree);
-      return nullptr;
-    }
 
-    std::string response_xml(xml_str);
-    free(xml_str);
-    lyd_free_tree(validate_tree);
+      // Create response object
+      auto response =
+          std::make_unique<netd::shared::response::ValidateResponse>();
+      // TODO: Set response data from response_xml
+      return response;
 
-    // Create response object
-    auto response = std::make_unique<netd::shared::response::ValidateResponse>();
-    // TODO: Set response data from response_xml
-    return response;
-
-    } catch (const std::exception& e) {
+    } catch (const std::exception &e) {
       return nullptr;
     }
   }

@@ -33,19 +33,20 @@
 #include <server/include/netconf/handlers.hpp>
 #include <server/include/store/candidate.hpp>
 #include <server/include/store/running.hpp>
-#include <shared/include/exception.hpp>
 #include <server/include/store/startup.hpp>
+#include <shared/include/exception.hpp>
 #include <shared/include/logger.hpp>
 #include <shared/include/request/get/config.hpp>
 #include <shared/include/response/get/config.hpp>
 
 namespace netd::server::netconf::handlers {
   using netd::shared::NotImplementedError;
-  
+
   std::unique_ptr<netd::shared::response::get::GetConfigResponse>
   RpcHandler::handleGetInterfaceRequest(
-      [[maybe_unused]] netd::shared::request::get::GetConfigRequest* request) {
-    throw netd::shared::NotImplementedError("RpcHandler::handleGetInterfaceRequest not implemented");
+      [[maybe_unused]] netd::shared::request::get::GetConfigRequest *request) {
+    throw netd::shared::NotImplementedError(
+        "RpcHandler::handleGetInterfaceRequest not implemented");
   }
 
 } // namespace netd::server::netconf::handlers

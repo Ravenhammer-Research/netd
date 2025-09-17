@@ -33,13 +33,14 @@
 #include <string>
 #include <vector>
 
+#include <shared/include/backend.hpp>
 #include <shared/include/base/serialization.hpp>
 #include <shared/include/interface/80211.hpp>
-#include <shared/include/backend.hpp>
 
 namespace netd::freebsd::interface {
 
-  class WifiInterface : public netd::shared::interface::Ieee80211Interface, public netd::shared::BaseNativeBackend {
+  class WifiInterface : public netd::shared::interface::Ieee80211Interface,
+                        public netd::shared::BaseNativeBackend {
   public:
     WifiInterface();
     explicit WifiInterface(const std::string &name);

@@ -38,10 +38,9 @@ namespace netd::server::netconf::handlers {
 
   std::unique_ptr<netd::shared::response::DiscardResponse>
   RpcHandler::handleDiscardRequest(
-      netd::shared::request::DiscardRequest* /* request */) {
+      netd::shared::request::DiscardRequest * /* request */) {
     auto &logger = netd::shared::Logger::getInstance();
-    auto response =
-        std::make_unique<netd::shared::response::DiscardResponse>();
+    auto response = std::make_unique<netd::shared::response::DiscardResponse>();
 
     logger.info("Handling discard-changes request");
 

@@ -26,41 +26,45 @@
  */
 
 #include <client/include/netconf/handlers.hpp>
-#include <shared/include/logger.hpp>
-#include <shared/include/exception.hpp>
 #include <libyang/libyang.h>
+#include <shared/include/exception.hpp>
+#include <shared/include/logger.hpp>
 #include <sstream>
 
 namespace netd::client::netconf {
 
-  std::unique_ptr<netd::shared::response::CloseResponse> RpcHandler::handleDestroySessionRequest(
-      const netd::shared::request::session::DestroyRequest& /* request */, 
-      netd::shared::netconf::NetconfSession* session) {
+  std::unique_ptr<netd::shared::response::CloseResponse>
+  RpcHandler::handleDestroySessionRequest(
+      const netd::shared::request::session::DestroyRequest & /* request */,
+      netd::shared::netconf::NetconfSession *session) {
     if (!session) {
       return nullptr;
     }
 
     // Get session ID from request
     int session_id = 0; // TODO: Get from request
-    
-    ly_ctx* ctx = session->getContext();
+
+    ly_ctx *ctx = session->getContext();
     if (!ctx) {
       return nullptr;
     }
 
     // Create kill-session request
-    lyd_node* kill_tree = nullptr;
-    LY_ERR err = lyd_new_path(nullptr, ctx, "/ietf-netconf:kill-session", nullptr, 0, &kill_tree);
+    lyd_node *kill_tree = nullptr;
+    LY_ERR err = lyd_new_path(nullptr, ctx, "/ietf-netconf:kill-session",
+                              nullptr, 0, &kill_tree);
     if (err != LY_SUCCESS || !kill_tree) {
       return nullptr;
     }
 
     // Add session ID
-    lyd_new_path(kill_tree, ctx, "session-id", std::to_string(session_id).c_str(), 0, nullptr);
+    lyd_new_path(kill_tree, ctx, "session-id",
+                 std::to_string(session_id).c_str(), 0, nullptr);
 
     // Convert to XML
-    char* xml_str = nullptr;
-    if (lyd_print_mem(&xml_str, kill_tree, LYD_XML, 0) != LY_SUCCESS || !xml_str) {
+    char *xml_str = nullptr;
+    if (lyd_print_mem(&xml_str, kill_tree, LYD_XML, 0) != LY_SUCCESS ||
+        !xml_str) {
       lyd_free_tree(kill_tree);
       return nullptr;
     }
@@ -73,7 +77,6 @@ namespace netd::client::netconf {
     auto response = std::make_unique<netd::shared::response::CloseResponse>();
     // TODO: Set response data from response_xml
     return response;
-
   }
 
 } // namespace netd::client::netconf

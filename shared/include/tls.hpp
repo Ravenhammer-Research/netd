@@ -28,14 +28,14 @@
 #ifndef NETD_SERVER_NETCONF_TLS_HPP
 #define NETD_SERVER_NETCONF_TLS_HPP
 
-#include <string>
 #include <memory>
+#include <string>
 
 namespace netd::shared {
 
   /**
    * TLS Security Component
-   * 
+   *
    * This class provides TLS encryption/decryption as a security component
    * that can be consumed by transports. It provides TLS functionality
    * without wrapping transports.
@@ -56,30 +56,28 @@ namespace netd::shared {
      * @param ca_file Path to CA certificate file (optional)
      * @param verify_peer Whether to verify peer certificates
      */
-    TLSSecurity(const std::string& cert_file,
-                const std::string& key_file,
-                const std::string& ca_file = "",
-                bool verify_peer = true);
-    
+    TLSSecurity(const std::string &cert_file, const std::string &key_file,
+                const std::string &ca_file = "", bool verify_peer = true);
+
     ~TLSSecurity();
 
     // TLS-specific methods
     bool initializeTLS();
     void cleanupTLS();
     bool isTLSInitialized() const;
-    
+
     // Certificate management
-    bool loadCertificate(const std::string& cert_file);
-    bool loadPrivateKey(const std::string& key_file);
-    bool loadCAFile(const std::string& ca_file);
-    
+    bool loadCertificate(const std::string &cert_file);
+    bool loadPrivateKey(const std::string &key_file);
+    bool loadCAFile(const std::string &ca_file);
+
     // TLS handshake
     virtual bool performHandshake(int socket_fd, bool is_server = true);
-    
+
     // Encrypted data operations
-    virtual bool sendEncryptedData(int socket_fd, const std::string& data);
+    virtual bool sendEncryptedData(int socket_fd, const std::string &data);
     virtual std::string receiveEncryptedData(int socket_fd);
-    
+
     // Configuration
     void setVerifyPeer(bool verify);
     bool getVerifyPeer() const;

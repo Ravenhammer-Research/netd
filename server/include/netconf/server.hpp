@@ -28,13 +28,13 @@
 #ifndef NETD_SERVER_NETCONF_SERVER_HPP
 #define NETD_SERVER_NETCONF_SERVER_HPP
 
-#include <shared/include/netconf/session.hpp>
-#include <server/include/netconf/rpc.hpp>
-#include <shared/include/yang.hpp>
-#include <server/include/netconf/base.hpp>
-#include <shared/include/transport.hpp>
-#include <server/include/netconf/handlers.hpp>
 #include <memory>
+#include <server/include/netconf/base.hpp>
+#include <server/include/netconf/handlers.hpp>
+#include <server/include/netconf/rpc.hpp>
+#include <shared/include/netconf/session.hpp>
+#include <shared/include/transport.hpp>
+#include <shared/include/yang.hpp>
 #include <string>
 #include <thread>
 #include <vector>
@@ -43,7 +43,8 @@ namespace netd::server::netconf {
 
   class NetconfServer : public Server {
   public:
-    NetconfServer(netd::shared::TransportType transport_type, const std::string& bind_address, int port);
+    NetconfServer(netd::shared::TransportType transport_type,
+                  const std::string &bind_address, int port);
     ~NetconfServer();
 
     bool start();
@@ -57,14 +58,17 @@ namespace netd::server::netconf {
     int port_ [[maybe_unused]];
     std::unique_ptr<netd::shared::BaseTransport> transport_;
     std::vector<std::thread> session_threads_;
-    
+
     // Server management
     std::unique_ptr<netd::shared::BaseTransport> createTransport();
     void accept();
-    netd::shared::netconf::NetconfSession* handleClientSession(const netd::shared::ClientSocket& client_socket);
-    void rpcRequestReceiveWait(netd::shared::RpcRxStream& rpc_stream, netd::shared::netconf::NetconfSession* session);
-    void processRpcRequest(netd::shared::netconf::NetconfSession& session, const std::string& data);
-    void sendErrorResponse(int client_socket, const std::string& error_message);
+    netd::shared::netconf::NetconfSession *
+    handleClientSession(const netd::shared::ClientSocket &client_socket);
+    void rpcRequestReceiveWait(netd::shared::RpcRxStream &rpc_stream,
+                               netd::shared::netconf::NetconfSession *session);
+    void processRpcRequest(netd::shared::netconf::NetconfSession &session,
+                           const std::string &data);
+    void sendErrorResponse(int client_socket, const std::string &error_message);
   };
 
 } // namespace netd::server::netconf

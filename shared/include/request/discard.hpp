@@ -37,16 +37,18 @@ namespace netd::shared::request {
   class DiscardRequest : public Request<DiscardRequest> {
   public:
     DiscardRequest() : Request<DiscardRequest>() {}
-    DiscardRequest(netd::shared::netconf::NetconfSession *session, struct lyd_node *rpc)
+    DiscardRequest(netd::shared::netconf::NetconfSession *session,
+                   struct lyd_node *rpc)
         : Request<DiscardRequest>(session, rpc) {}
     virtual ~DiscardRequest() = default;
 
     // Override base methods
-    lyd_node *toYang(ly_ctx *ctx) const ;
+    lyd_node *toYang(ly_ctx *ctx) const;
     static std::unique_ptr<DiscardRequest> fromYang(const ly_ctx *ctx,
-                                                   const lyd_node *node) ;
-    static std::unique_ptr<DiscardRequest> fromRpcEnvelope(const ly_ctx *ctx,
-                                                          std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope) ;
+                                                    const lyd_node *node);
+    static std::unique_ptr<DiscardRequest>
+    fromRpcEnvelope(const ly_ctx *ctx,
+                    std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope);
   };
 
 } // namespace netd::shared::request

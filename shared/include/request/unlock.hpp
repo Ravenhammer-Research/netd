@@ -37,16 +37,18 @@ namespace netd::shared::request {
   class UnlockRequest : public Request<UnlockRequest> {
   public:
     UnlockRequest() : Request<UnlockRequest>() {}
-    UnlockRequest(netd::shared::netconf::NetconfSession *session, struct lyd_node *rpc)
+    UnlockRequest(netd::shared::netconf::NetconfSession *session,
+                  struct lyd_node *rpc)
         : Request<UnlockRequest>(session, rpc) {}
     virtual ~UnlockRequest() = default;
 
     // Override base methods
-    lyd_node *toYang(ly_ctx *ctx) const ;
+    lyd_node *toYang(ly_ctx *ctx) const;
     static std::unique_ptr<UnlockRequest> fromYang(const ly_ctx *ctx,
-                                                  const lyd_node *node) ;
-    static std::unique_ptr<UnlockRequest> fromRpcEnvelope(const ly_ctx *ctx,
-                                                         std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope) ;
+                                                   const lyd_node *node);
+    static std::unique_ptr<UnlockRequest>
+    fromRpcEnvelope(const ly_ctx *ctx,
+                    std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope);
   };
 
 } // namespace netd::shared::request

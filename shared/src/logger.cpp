@@ -25,16 +25,16 @@
  * SUCH DAMAGE.
  */
 
-#include <iomanip>
-#include <iostream>
 #include <chrono>
 #include <ctime>
-#include <mutex>
-#include <shared/include/logger.hpp>
-#include <shared/include/exception.hpp>
-#include <libyang/log.h>
-#include <libnetconf2/log.h>
 #include <execinfo.h>
+#include <iomanip>
+#include <iostream>
+#include <libnetconf2/log.h>
+#include <libyang/log.h>
+#include <mutex>
+#include <shared/include/exception.hpp>
+#include <shared/include/logger.hpp>
 #ifdef HAVE_LLDP
 #include <lldpctl.h>
 #endif
@@ -42,10 +42,12 @@
 namespace netd::shared {
 
   // libyang log callback
-  void libyang_log_callback(LY_LOG_LEVEL level, const char *msg, const char *data_path, const char *schema_path, uint64_t line) {
+  void libyang_log_callback(LY_LOG_LEVEL level, const char *msg,
+                            const char *data_path, const char *schema_path,
+                            uint64_t line) {
     auto &logger = Logger::getInstance();
     LogLevel logLevel;
-    
+
     // Check if this is a directory-related error that should be debug level
     std::string message = std::string(msg);
     if (message.find("Unable to use search directory") != std::string::npos) {
@@ -67,7 +69,7 @@ namespace netd::shared {
         break;
       }
     }
-    
+
     if (data_path) {
       message += " (data: " + std::string(data_path) + ")";
     }
@@ -79,12 +81,12 @@ namespace netd::shared {
     }
 
     logger.log(logLevel, message);
-    
+
     // Capture and print stack trace for errors
     if (level == LY_LLERR) {
       void *array[20];
       size_t size = backtrace(array, 20);
-      std::vector<void*> stackTrace(array, array + size);
+      std::vector<void *> stackTrace(array, array + size);
       logger.trace(stackTrace);
     }
   }
@@ -94,35 +96,36 @@ namespace netd::shared {
   void lldp_log_callback(int severity, const char *msg) {
     auto &logger = Logger::getInstance();
     LogLevel logLevel;
-    
-    // LLDP severity levels: 1=ALERT, 2=CRIT, 3=ERR, 4=WARNING, 5=NOTICE, 6=INFO, 7=DEBUG
+
+    // LLDP severity levels: 1=ALERT, 2=CRIT, 3=ERR, 4=WARNING, 5=NOTICE,
+    // 6=INFO, 7=DEBUG
     switch (severity) {
     case 1:
-      logLevel = LogLevel::ERROR;  // LOG_ALERT
+      logLevel = LogLevel::ERROR; // LOG_ALERT
       break;
     case 2:
-      logLevel = LogLevel::ERROR;  // LOG_CRIT
+      logLevel = LogLevel::ERROR; // LOG_CRIT
       break;
     case 3:
-      logLevel = LogLevel::ERROR;  // LOG_ERR
+      logLevel = LogLevel::ERROR; // LOG_ERR
       break;
     case 4:
-      logLevel = LogLevel::WARNING;  // LOG_WARNING
+      logLevel = LogLevel::WARNING; // LOG_WARNING
       break;
     case 5:
-      logLevel = LogLevel::INFO;  // LOG_NOTICE
+      logLevel = LogLevel::INFO; // LOG_NOTICE
       break;
     case 6:
-      logLevel = LogLevel::INFO;  // LOG_INFO
+      logLevel = LogLevel::INFO; // LOG_INFO
       break;
     case 7:
-      logLevel = LogLevel::DEBUG;  // LOG_DEBUG
+      logLevel = LogLevel::DEBUG; // LOG_DEBUG
       break;
     default:
       throw netd::shared::ArgumentError("Invalid LLDP severity level");
       break;
     }
-    
+
     logger.log(logLevel, msg);
   }
 #endif
@@ -151,31 +154,32 @@ namespace netd::shared {
         levelStr = "[Y]: ";
         break;
       }
-      
+
       if (timestampEnabled_) {
         auto now = std::chrono::system_clock::now();
         auto time_t = std::chrono::system_clock::to_time_t(now);
         auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
-            now.time_since_epoch()) % 1000;
-        
+                      now.time_since_epoch()) %
+                  1000;
+
         std::cerr << std::put_time(std::localtime(&time_t), "%Y%m%d%H%M%S");
         std::cerr << std::setfill('0') << std::setw(3) << ms.count() << " ";
       }
-      
+
       std::cerr << levelStr << message << std::endl;
     });
-    
+
     // Set up libyang log callbacks
     ly_set_log_clb(libyang_log_callback);
-    
+
     // Set default log levels for libyang (will be overridden by main.cpp)
-    
+
 #ifdef HAVE_LLDP
     // Set up LLDP log callbacks
     lldpctl_log_callback(lldp_log_callback);
     // LLDP log level will be set when setLogLevel is called
 #endif
-    
+
     // libssh verbosity removed - no longer using libnetconf2
   }
 
@@ -231,10 +235,11 @@ namespace netd::shared {
   }
 
   void Logger::trace(const netd::shared::NetdError &error) {
-    log(LogMask::DEBUG_TRACE, NetdError::getStackTraceString(error.getStackTrace()));
+    log(LogMask::DEBUG_TRACE,
+        NetdError::getStackTraceString(error.getStackTrace()));
   }
 
-  void Logger::trace(const std::vector<void*> &stackTrace) {
+  void Logger::trace(const std::vector<void *> &stackTrace) {
     log(LogMask::DEBUG_TRACE, NetdError::getStackTraceString(stackTrace));
   }
 
@@ -252,10 +257,7 @@ namespace netd::shared {
     log(LogMask::DEBUG_YANG, message);
   }
 
-
-  void Logger::info(const std::string &message) {
-    log(LogMask::INFO, message);
-  }
+  void Logger::info(const std::string &message) { log(LogMask::INFO, message); }
 
   void Logger::warning(const std::string &message) {
     log(LogMask::WARNING, message);
@@ -273,7 +275,7 @@ namespace netd::shared {
   void Logger::setLogMask(uint32_t mask) {
     std::lock_guard<std::mutex> lock(mutex_);
     currentLogMask_ = mask;
-    
+
     // Update libyang debug groups based on YANG debug flags
     uint32_t yang_groups = 0;
     if (mask & static_cast<uint32_t>(LogMask::DEBUG_YANG_DICT)) {
@@ -285,11 +287,11 @@ namespace netd::shared {
     if (mask & static_cast<uint32_t>(LogMask::DEBUG_YANG_DEPSETS)) {
       yang_groups |= LY_LDGDEPSETS;
     }
-    
+
     ly_log_dbg_groups(yang_groups);
-    
+
     // Set libyang log level based on whether any YANG debug is enabled
-    if (mask & (static_cast<uint32_t>(LogMask::DEBUG_YANG) | 
+    if (mask & (static_cast<uint32_t>(LogMask::DEBUG_YANG) |
                 static_cast<uint32_t>(LogMask::DEBUG_YANG_DICT) |
                 static_cast<uint32_t>(LogMask::DEBUG_YANG_XPATH) |
                 static_cast<uint32_t>(LogMask::DEBUG_YANG_DEPSETS))) {
@@ -299,7 +301,7 @@ namespace netd::shared {
     } else {
       ly_log_level(LY_LLERR);
     }
-    
+
 #ifdef HAVE_LLDP
     // Set LLDP log level based on whether LLDP debug is enabled
     if (mask & static_cast<uint32_t>(LogMask::DEBUG_LLDP)) {
@@ -324,7 +326,6 @@ namespace netd::shared {
     return (currentLogMask_ & static_cast<uint32_t>(mask)) != 0;
   }
 
-
   void Logger::setYangDebugGroups(uint32_t groups) {
     ly_log_dbg_groups(groups);
   }
@@ -332,6 +333,5 @@ namespace netd::shared {
   void Logger::setTimestampEnabled(bool enabled) {
     timestampEnabled_ = enabled;
   }
-
 
 } // namespace netd::shared

@@ -26,44 +26,48 @@
  */
 
 #include <client/include/netconf/handlers.hpp>
-#include <shared/include/logger.hpp>
-#include <shared/include/exception.hpp>
 #include <libyang/libyang.h>
+#include <shared/include/exception.hpp>
+#include <shared/include/logger.hpp>
 #include <sstream>
 
 namespace netd::client::netconf {
 
-  std::unique_ptr<netd::shared::response::get::GetResponse> RpcHandler::handleGetRequest(
-      const netd::shared::request::get::GetRequest& /* request */, 
-      netd::shared::netconf::NetconfSession* session) {
+  std::unique_ptr<netd::shared::response::get::GetResponse>
+  RpcHandler::handleGetRequest(
+      const netd::shared::request::get::GetRequest & /* request */,
+      netd::shared::netconf::NetconfSession *session) {
     if (!session) {
       return nullptr;
     }
 
     // Get YANG context from session
-    ly_ctx* ctx = session->getContext();
+    ly_ctx *ctx = session->getContext();
     if (!ctx) {
       return nullptr;
     }
 
     // Create a simple get request for all data
-    lyd_node* get_tree = nullptr;
-    LY_ERR err = lyd_new_path(nullptr, ctx, "/ietf-netconf:get", nullptr, 0, &get_tree);
+    lyd_node *get_tree = nullptr;
+    LY_ERR err =
+        lyd_new_path(nullptr, ctx, "/ietf-netconf:get", nullptr, 0, &get_tree);
     if (err != LY_SUCCESS || !get_tree) {
       return nullptr;
     }
 
     // Create response object
-    auto response = std::make_unique<netd::shared::response::get::GetResponse>();
-    
+    auto response =
+        std::make_unique<netd::shared::response::get::GetResponse>();
+
     // Set the data from the get request
     response->setData(get_tree);
 
     // Convert response to XML and display
-    lyd_node* response_tree = response->toYang(ctx);
+    lyd_node *response_tree = response->toYang(ctx);
     if (response_tree) {
-      char* xml_str = nullptr;
-      if (lyd_print_mem(&xml_str, response_tree, LYD_XML, 0) == LY_SUCCESS && xml_str) {
+      char *xml_str = nullptr;
+      if (lyd_print_mem(&xml_str, response_tree, LYD_XML, 0) == LY_SUCCESS &&
+          xml_str) {
         // TODO: Process response data
         free(xml_str);
       }

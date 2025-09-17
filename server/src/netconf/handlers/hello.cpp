@@ -38,15 +38,15 @@ namespace netd::server::netconf::handlers {
 
   std::unique_ptr<netd::shared::response::HelloResponse>
   RpcHandler::handleHelloRequest(
-      netd::shared::request::HelloRequest* /* request */) {
+      netd::shared::request::HelloRequest * /* request */) {
     auto &logger = netd::shared::Logger::getInstance();
     auto response = std::make_unique<netd::shared::response::HelloResponse>();
 
     logger.info("Handling hello request");
 
-    // The HelloResponse::toYang() method will automatically use dynamic capabilities
-    // from the Yang class, so we just need to return the response
+    // The HelloResponse::toYang() method will automatically use dynamic
+    // capabilities from the Yang class, so we just need to return the response
     return response;
   }
-  
+
 } // namespace netd::server::netconf::handlers

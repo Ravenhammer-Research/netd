@@ -43,9 +43,11 @@ namespace netd::shared::request::get {
     }
 
     // Get the ietf-netconf module
-    const struct lys_module *mod = ly_ctx_get_module(ctx, "ietf-netconf", "2011-06-01");
+    const struct lys_module *mod =
+        ly_ctx_get_module(ctx, "ietf-netconf", "2011-06-01");
     if (!mod) {
-      throw netd::shared::ArgumentError("toYang: ietf-netconf module not found");
+      throw netd::shared::ArgumentError(
+          "toYang: ietf-netconf module not found");
     }
 
     // Create get element
@@ -59,20 +61,27 @@ namespace netd::shared::request::get {
       lyd_node *filterNode = nullptr;
       if (lyd_new_inner(getNode, mod, "filter", 0, &filterNode) != LY_SUCCESS) {
         lyd_free_tree(getNode);
-        throw netd::shared::ArgumentError("toYang: failed to create filter element");
+        throw netd::shared::ArgumentError(
+            "toYang: failed to create filter element");
       }
 
       // Add type attribute to filter
-      if (lyd_new_attr(filterNode, nullptr, "type", getLibraryFilterType().c_str(), nullptr) != LY_SUCCESS) {
+      if (lyd_new_attr(filterNode, nullptr, "type",
+                       getLibraryFilterType().c_str(), nullptr) != LY_SUCCESS) {
         lyd_free_tree(getNode);
-        throw netd::shared::ArgumentError("toYang: failed to add type attribute to filter");
+        throw netd::shared::ArgumentError(
+            "toYang: failed to add type attribute to filter");
       }
 
       // Add select attribute for xpath filters
-      if (getLibraryFilterType() == "xpath" && !getLibraryFilterSelect().empty()) {
-        if (lyd_new_attr(filterNode, nullptr, "select", getLibraryFilterSelect().c_str(), nullptr) != LY_SUCCESS) {
+      if (getLibraryFilterType() == "xpath" &&
+          !getLibraryFilterSelect().empty()) {
+        if (lyd_new_attr(filterNode, nullptr, "select",
+                         getLibraryFilterSelect().c_str(),
+                         nullptr) != LY_SUCCESS) {
           lyd_free_tree(getNode);
-          throw netd::shared::ArgumentError("toYang: failed to add select attribute to filter");
+          throw netd::shared::ArgumentError(
+              "toYang: failed to add select attribute to filter");
         }
       }
     }
@@ -83,7 +92,8 @@ namespace netd::shared::request::get {
   std::unique_ptr<GetLibraryRequest>
   GetLibraryRequest::fromYang([[maybe_unused]] const ly_ctx *ctx,
                               [[maybe_unused]] const lyd_node *node) {
-    throw netd::shared::NotImplementedError("GetLibraryRequest::fromYang not implemented");
+    throw netd::shared::NotImplementedError(
+        "GetLibraryRequest::fromYang not implemented");
   }
 
 } // namespace netd::shared::request::get

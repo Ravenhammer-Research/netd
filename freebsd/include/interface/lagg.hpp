@@ -33,13 +33,14 @@
 #include <string>
 #include <vector>
 
+#include <shared/include/backend.hpp>
 #include <shared/include/base/serialization.hpp>
 #include <shared/include/interface/lagg.hpp>
-#include <shared/include/backend.hpp>
 
 namespace netd::freebsd::interface {
 
-  class LagInterface : public netd::shared::interface::LagInterface, public netd::shared::BaseNativeBackend {
+  class LagInterface : public netd::shared::interface::LagInterface,
+                       public netd::shared::BaseNativeBackend {
   public:
     LagInterface();
     explicit LagInterface(const std::string &name);

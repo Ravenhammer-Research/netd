@@ -32,16 +32,16 @@
 
 namespace netd::shared::lldp {
 
-class Config {
-public:
-    Config(lldpctl_conn_t* connection);
+  class Config {
+  public:
+    Config(lldpctl_conn_t *connection);
     ~Config();
 
     // System configuration
-    bool setHostname(const std::string& hostname);
-    bool setDescription(const std::string& description);
-    bool setPlatform(const std::string& platform);
-    
+    bool setHostname(const std::string &hostname);
+    bool setDescription(const std::string &description);
+    bool setPlatform(const std::string &platform);
+
     // LLDP configuration
     bool setTxInterval(int interval);
     bool setTxHold(int hold);
@@ -49,32 +49,32 @@ public:
     bool setPaused(bool paused);
     bool setFastStartEnabled(bool enabled);
     bool setFastStartInterval(int interval);
-    
+
     // Interface configuration
-    bool setInterfacePattern(const std::string& pattern);
-    bool setManagementPattern(const std::string& pattern);
-    bool setChassisIdPattern(const std::string& pattern);
-    bool setChassisIdString(const std::string& cid_string);
-    
+    bool setInterfacePattern(const std::string &pattern);
+    bool setManagementPattern(const std::string &pattern);
+    bool setChassisIdPattern(const std::string &pattern);
+    bool setChassisIdString(const std::string &cid_string);
+
     // Capability configuration
     bool setChassisCapAdvertise(bool advertise);
     bool setChassisMgmtAdvertise(bool advertise);
     bool setChassisCapOverride(bool override);
-    
+
     // LLDP-MED configuration
     bool setLldpMedNoInventory(bool no_inventory);
-    
+
     // Port configuration
     bool setLldpPortIdType(int type);
     bool setLldpAgentType(int type);
     bool setMaxNeighbors(int max_neighbors);
-    
+
     bool isValid() const;
 
-private:
-    lldpctl_conn_t* connection_;
-    bool setStringValue(lldpctl_key_t key, const std::string& value);
+  private:
+    lldpctl_conn_t *connection_;
+    bool setStringValue(lldpctl_key_t key, const std::string &value);
     bool setIntValue(lldpctl_key_t key, int value);
-};
+  };
 
 } // namespace netd::shared::lldp

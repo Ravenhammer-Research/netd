@@ -25,17 +25,18 @@
  * SUCH DAMAGE.
  */
 
+#include <shared/include/exception.hpp>
 #include <shared/include/marshalling/error.hpp>
 #include <shared/include/response/base.hpp>
-#include <shared/include/exception.hpp>
 #include <shared/include/xml/base.hpp>
 #include <shared/include/xml/envelope.hpp>
 #include <sstream>
 
 namespace netd::shared::response {
 
-  // NOTE: This base class contains stubbed implementations for interface compliance only.
-  // The actual functionality should be implemented in derived classes, not here.
+  // NOTE: This base class contains stubbed implementations for interface
+  // compliance only. The actual functionality should be implemented in derived
+  // classes, not here.
 
   Response::Response() {
     error = nullptr;
@@ -59,51 +60,59 @@ namespace netd::shared::response {
   }
 
   // Convenience methods for common error types
-  // NOTE: These methods should NOT be implemented in base class - they are stubbed for interface compliance only
-  void Response::setProtocolError([[maybe_unused]] netd::shared::marshalling::ErrorTag tag,
-                                  [[maybe_unused]] const std::string &message) {
-    throw netd::shared::NotImplementedError("Response::setProtocolError not implemented");
+  // NOTE: These methods should NOT be implemented in base class - they are
+  // stubbed for interface compliance only
+  void Response::setProtocolError(
+      [[maybe_unused]] netd::shared::marshalling::ErrorTag tag,
+      [[maybe_unused]] const std::string &message) {
+    throw netd::shared::NotImplementedError(
+        "Response::setProtocolError not implemented");
   }
 
-  void Response::setApplicationError([[maybe_unused]] netd::shared::marshalling::ErrorTag tag,
-                                     [[maybe_unused]] const std::string &message) {
-    throw netd::shared::NotImplementedError("Response::setApplicationError not implemented");
+  void Response::setApplicationError(
+      [[maybe_unused]] netd::shared::marshalling::ErrorTag tag,
+      [[maybe_unused]] const std::string &message) {
+    throw netd::shared::NotImplementedError(
+        "Response::setApplicationError not implemented");
   }
 
-  void Response::setRpcError([[maybe_unused]] netd::shared::marshalling::ErrorTag tag,
-                             [[maybe_unused]] const std::string &message) {
-    throw netd::shared::NotImplementedError("Response::setRpcError not implemented");
+  void Response::setRpcError(
+      [[maybe_unused]] netd::shared::marshalling::ErrorTag tag,
+      [[maybe_unused]] const std::string &message) {
+    throw netd::shared::NotImplementedError(
+        "Response::setRpcError not implemented");
   }
 
-  void Response::setTransportError([[maybe_unused]] netd::shared::marshalling::ErrorTag tag,
-                                   [[maybe_unused]] const std::string &message) {
-    throw netd::shared::NotImplementedError("Response::setTransportError not implemented");
+  void Response::setTransportError(
+      [[maybe_unused]] netd::shared::marshalling::ErrorTag tag,
+      [[maybe_unused]] const std::string &message) {
+    throw netd::shared::NotImplementedError(
+        "Response::setTransportError not implemented");
   }
 
   std::unique_ptr<netd::shared::xml::RpcEnvelope> Response::toRpcEnvelope(
       std::shared_ptr<netd::shared::xml::RpcEnvelope> request_envelope,
       ly_ctx *ctx) const {
     if (!request_envelope) {
-      throw netd::shared::ArgumentError("Invalid request envelope provided to Response::toRpcEnvelope");
+      throw netd::shared::ArgumentError(
+          "Invalid request envelope provided to Response::toRpcEnvelope");
     }
-    
+
     // Get the response data
-    lyd_node* response_data = toYang(ctx);
-    
+    lyd_node *response_data = toYang(ctx);
+
     // Determine if this is an error response
-    netd::shared::xml::RpcType reply_type = isError() ? 
-        netd::shared::xml::RpcType::RPC_ERROR : 
-        netd::shared::xml::RpcType::RPC_REPLY;
-    
-    // Create the reply envelope with the same message ID and operation as the request
+    netd::shared::xml::RpcType reply_type =
+        isError() ? netd::shared::xml::RpcType::RPC_ERROR
+                  : netd::shared::xml::RpcType::RPC_REPLY;
+
+    // Create the reply envelope with the same message ID and operation as the
+    // request
     return netd::shared::xml::RpcEnvelope::toXml(
-        reply_type,
-        request_envelope->getMessageId(),
+        reply_type, request_envelope->getMessageId(),
         request_envelope->getOperation(),
         nullptr, // No additional filter needed for responses
-        response_data,
-        ctx
-    );
+        response_data, ctx);
   }
 
 } // namespace netd::shared::response

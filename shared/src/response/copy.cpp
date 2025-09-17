@@ -82,5 +82,4 @@ namespace netd::shared::response {
     return std::make_unique<CopyConfigResponse>();
   }
 
-
 } // namespace netd::shared::response

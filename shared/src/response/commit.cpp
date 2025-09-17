@@ -23,13 +23,13 @@ namespace netd::shared::response {
   CommitResponse::fromYang([[maybe_unused]] const ly_ctx *ctx,
                            const lyd_node *node) {
     if (!node) {
-      throw netd::shared::ArgumentError("Invalid YANG node provided to CommitResponse::fromYang");
+      throw netd::shared::ArgumentError(
+          "Invalid YANG node provided to CommitResponse::fromYang");
     }
 
     // For commit response, we just need to create a simple response object
     // No additional parsing needed since commit response is just OK
     return std::make_unique<CommitResponse>();
   }
-
 
 } // namespace netd::shared::response

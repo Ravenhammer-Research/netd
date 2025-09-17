@@ -82,5 +82,4 @@ namespace netd::shared::response {
     return std::make_unique<EditConfigResponse>();
   }
 
-
 } // namespace netd::shared::response

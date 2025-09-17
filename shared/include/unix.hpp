@@ -28,14 +28,14 @@
 #ifndef NETD_SERVER_NETCONF_UNIX_HPP
 #define NETD_SERVER_NETCONF_UNIX_HPP
 
-#include <string>
-#include <iostream>
-#include <functional>
-#include <thread>
-#include <mutex>
-#include <unordered_map>
 #include <atomic>
+#include <functional>
+#include <iostream>
+#include <mutex>
 #include <shared/include/transport.hpp>
+#include <string>
+#include <thread>
+#include <unordered_map>
 
 namespace netd::shared {
 
@@ -46,7 +46,7 @@ namespace netd::shared {
     int server_socket_;
     int client_socket_;
     bool use_chunking_;
-    
+
     // Async operation support
     std::unordered_map<int, std::atomic<bool>> cancellation_flags_;
     std::mutex cancellation_mutex_;
@@ -61,17 +61,17 @@ namespace netd::shared {
     bool isListening() const override;
     int acceptConnection() override;
     void closeConnection(int socket_fd) override;
-    bool connect(const std::string& address) override;
+    bool connect(const std::string &address) override;
     void disconnect() override;
     int getSocket() const override;
-    bool sendData(int socket_fd, const std::string& data) override;
+    bool sendData(int socket_fd, const std::string &data) override;
     std::string receiveData(int socket_fd) override;
     bool hasData(int socket_fd) override;
-    
+
     // Cancellation support
     void cancelOperation(int socket_fd) override;
-    
-    const std::string& getAddress() const override;
+
+    const std::string &getAddress() const override;
 
     // Configuration methods
     void setChunking(bool enabled) { use_chunking_ = enabled; }
@@ -88,8 +88,10 @@ namespace netd::shared {
     bool checkSocketDirectory();
     std::string receiveChunkedData(int socket_fd);
     std::string receiveFramedData(int socket_fd);
-    std::string receiveChunkedDataFromBuffer(int socket_fd, const std::string& initial_data);
-    std::string receiveFramedDataFromBuffer(int socket_fd, const std::string& initial_data);
+    std::string receiveChunkedDataFromBuffer(int socket_fd,
+                                             const std::string &initial_data);
+    std::string receiveFramedDataFromBuffer(int socket_fd,
+                                            const std::string &initial_data);
   };
 
 } // namespace netd::shared

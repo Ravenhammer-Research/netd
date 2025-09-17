@@ -45,7 +45,8 @@ namespace netd::server::store::running {
     try {
       // First, try to load running store from disk
       // TODO: Implement disk loading for running store
-      logger.info("No disk file found for running store, copying from startup store");
+      logger.info(
+          "No disk file found for running store, copying from startup store");
 
       // If no disk file, copy from startup store
       auto &startupStore =
@@ -53,20 +54,22 @@ namespace netd::server::store::running {
 
       // Get startup store data (should be populated by populateFromSystem)
       lyd_node *startupTree = startupStore.getDataTree();
-      
+
       // If startup store is empty, then there are no interfaces to configure
       if (!startupTree) {
-        logger.info("Startup store is empty - no network interfaces to configure");
+        logger.info(
+            "Startup store is empty - no network interfaces to configure");
         return true; // Empty running store is valid
       }
 
       // Clone the startup data tree for running store
       lyd_node *runningTree = nullptr;
-      LY_ERR err = lyd_dup_single(startupTree, nullptr, LYD_DUP_RECURSIVE,
-                                  &runningTree);
+      LY_ERR err =
+          lyd_dup_single(startupTree, nullptr, LYD_DUP_RECURSIVE, &runningTree);
       if (err == LY_SUCCESS && runningTree) {
         setDataTree(runningTree);
-        logger.info("Successfully copied startup configuration to running store");
+        logger.info(
+            "Successfully copied startup configuration to running store");
         return true;
       } else {
         logger.error("Failed to duplicate startup configuration");

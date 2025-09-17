@@ -28,22 +28,22 @@
 #ifndef NETD_CLIENT_NETCONF_CLIENT_HPP
 #define NETD_CLIENT_NETCONF_CLIENT_HPP
 
+#include <client/include/netconf/base.hpp>
 #include <memory>
-#include <string>
-#include <shared/include/transport.hpp>
 #include <shared/include/netconf/session.hpp>
 #include <shared/include/socket.hpp>
 #include <shared/include/stream.hpp>
-#include <client/include/netconf/base.hpp>
+#include <shared/include/transport.hpp>
+#include <string>
 
 // Forward declarations for request types
 namespace netd::shared::request::get {
-    class GetConfigRequest;
+  class GetConfigRequest;
 }
 namespace netd::shared::request {
-    class CommitRequest;
-    class EditConfigRequest;
-}
+  class CommitRequest;
+  class EditConfigRequest;
+} // namespace netd::shared::request
 
 namespace netd::client::netconf {
 
@@ -52,13 +52,13 @@ namespace netd::client::netconf {
     /**
      * @brief Constructs a NetconfClient for the specified server
      * @param transport_type Type of transport to use
-     * @param server_address Address of the server (path for UNIX, hostname for others)
+     * @param server_address Address of the server (path for UNIX, hostname for
+     * others)
      * @param port Port number (ignored for UNIX transport)
      */
-    NetconfClient(netd::shared::TransportType transport_type, 
-                  const std::string& server_address, 
-                  int port = 0);
-    
+    NetconfClient(netd::shared::TransportType transport_type,
+                  const std::string &server_address, int port = 0);
+
     /**
      * @brief Destructor - automatically disconnects if connected
      */
@@ -73,7 +73,8 @@ namespace netd::client::netconf {
 
     /**
      * @brief Disconnects from the NETCONF server
-     * @param close_session Whether to close the NETCONF session (true) or just disconnect transport (false)
+     * @param close_session Whether to close the NETCONF session (true) or just
+     * disconnect transport (false)
      */
     void disconnect(bool close_session = true);
 
@@ -83,24 +84,23 @@ namespace netd::client::netconf {
      */
     bool isConnected() const;
 
-
     /**
      * @brief Gets the current NETCONF session
      * @return Pointer to the session, or nullptr if not connected
      */
-    netd::shared::netconf::NetconfSession* getSession() const;
-
+    netd::shared::netconf::NetconfSession *getSession() const;
 
     /**
      * @brief Waits for and processes RPC responses from the server
      * @param rpc_stream The RPC stream to read from
      * @param session The NETCONF session
      */
-    void rpcResponseReceiveWait(netd::shared::RpcRxStream& rpc_stream, netd::shared::netconf::NetconfSession* session);
+    void rpcResponseReceiveWait(netd::shared::RpcRxStream &rpc_stream,
+                                netd::shared::netconf::NetconfSession *session);
 
     /**
-     * @brief Handles the server session in a loop, processing incoming RPC messages
-     * This method runs continuously until the session is disconnected
+     * @brief Handles the server session in a loop, processing incoming RPC
+     * messages This method runs continuously until the session is disconnected
      */
     void handleServerSession();
 
@@ -110,7 +110,8 @@ namespace netd::client::netconf {
      * @return The response data as a string
      * @throws std::runtime_error if request fails
      */
-    std::string sendRequest(const netd::shared::request::get::GetConfigRequest& request);
+    std::string
+    sendRequest(const netd::shared::request::get::GetConfigRequest &request);
 
     /**
      * @brief Sends a commit request to the server
@@ -118,7 +119,8 @@ namespace netd::client::netconf {
      * @return The response data as a string
      * @throws std::runtime_error if request fails
      */
-    std::string sendRequest(const netd::shared::request::CommitRequest& request);
+    std::string
+    sendRequest(const netd::shared::request::CommitRequest &request);
 
     /**
      * @brief Sends an edit request to the server
@@ -126,7 +128,8 @@ namespace netd::client::netconf {
      * @return The response data as a string
      * @throws std::runtime_error if request fails
      */
-    std::string sendRequest(const netd::shared::request::EditConfigRequest& request);
+    std::string
+    sendRequest(const netd::shared::request::EditConfigRequest &request);
 
   private:
     netd::shared::TransportType transport_type_;

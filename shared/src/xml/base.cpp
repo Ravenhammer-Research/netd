@@ -25,70 +25,61 @@
  * SUCH DAMAGE.
  */
 
-#include <shared/include/xml/base.hpp>
+#include <algorithm>
+#include <bsdxml.h>
+#include <map>
 #include <shared/include/exception.hpp>
+#include <shared/include/xml/base.hpp>
 #include <shared/include/xml/envelope.hpp>
 #include <shared/include/xml/hello.hpp>
 #include <sstream>
 #include <stdexcept>
-#include <map>
 #include <vector>
-#include <algorithm>
-#include <bsdxml.h>
 
 namespace netd::shared::xml {
 
-
-  XmlElement& XmlElement::addAttribute(const std::string& key, const std::string& value) {
+  XmlElement &XmlElement::addAttribute(const std::string &key,
+                                       const std::string &value) {
     attributes[key] = value;
     return *this;
   }
 
-  XmlElement& XmlElement::setContent(const std::string& c) {
+  XmlElement &XmlElement::setContent(const std::string &c) {
     content = c;
     return *this;
   }
 
-  XmlElement& XmlElement::addChild(const XmlElement& child) {
+  XmlElement &XmlElement::addChild(const XmlElement &child) {
     children.push_back(child);
     return *this;
   }
 
   std::string XmlElement::toString() const {
     std::stringstream xml;
-    xml << XmlElement::OPEN_TAG 
-      << name;
-    
-    for (const auto& attr : attributes) {
-      xml << XmlElement::SPACE 
-      << attr.first 
-      << XmlElement::EQUALS
-      << XmlElement::QUOTE 
-      << attr.second 
-      << XmlElement::QUOTE;
+    xml << XmlElement::OPEN_TAG << name;
+
+    for (const auto &attr : attributes) {
+      xml << XmlElement::SPACE << attr.first << XmlElement::EQUALS
+          << XmlElement::QUOTE << attr.second << XmlElement::QUOTE;
     }
-    
+
     if (content.empty() && children.empty()) {
       xml << XmlElement::SELF_CLOSE_TAG;
     } else {
       xml << XmlElement::CLOSE_TAG;
       xml << content;
-      for (const auto& child : children) {
+      for (const auto &child : children) {
         xml << child.toString();
       }
-      xml << XmlElement::CLOSE_OPEN_TAG 
-          << name 
-          << XmlElement::CLOSE_TAG;
+      xml << XmlElement::CLOSE_OPEN_TAG << name << XmlElement::CLOSE_TAG;
     }
-    
+
     return xml.str();
   }
 
-  std::string XmlHeader::toString() {
-    return XML_DECL_START;
-  }
+  std::string XmlHeader::toString() { return XML_DECL_START; }
 
-  XmlElement RpcElement::create(const std::string& type, int messageId) {
+  XmlElement RpcElement::create(const std::string &type, int messageId) {
     XmlElement element(type);
     if (messageId > 0) {
       element.addAttribute(MESSAGE_ID_ATTR, std::to_string(messageId));
@@ -103,22 +94,18 @@ namespace netd::shared::xml {
     return element;
   }
 
-  XmlElement FilterElement::createXPath(const std::string& xpath) {
+  XmlElement FilterElement::createXPath(const std::string &xpath) {
     XmlElement element(FILTER_NAME);
     element.addAttribute(TYPE_ATTR, XPATH_TYPE);
     element.addAttribute(SELECT_ATTR, xpath);
     return element;
   }
 
-  XmlElement DataElement::create() {
-    return XmlElement(DATA_NAME);
-  }
+  XmlElement DataElement::create() { return XmlElement(DATA_NAME); }
 
-  XmlElement ErrorElement::create() {
-    return XmlElement(ERROR_NAME);
-  }
+  XmlElement ErrorElement::create() { return XmlElement(ERROR_NAME); }
 
-  XmlElement OperationElement::create(const std::string& operationName) {
+  XmlElement OperationElement::create(const std::string &operationName) {
     return XmlElement(operationName);
   }
 
@@ -130,11 +117,14 @@ namespace netd::shared::xml {
     bool parsingError = false;
   };
 
-  void messageTypeStartElementHandler(void* userData, const XML_Char* name, const XML_Char** atts [[maybe_unused]]) {
-    if (!userData || !name) return;
-    
-    MessageTypeParseState* state = static_cast<MessageTypeParseState*>(userData);
-    
+  void messageTypeStartElementHandler(void *userData, const XML_Char *name,
+                                      const XML_Char **atts [[maybe_unused]]) {
+    if (!userData || !name)
+      return;
+
+    MessageTypeParseState *state =
+        static_cast<MessageTypeParseState *>(userData);
+
     if (strcmp(name, HELLO_ELEMENT) == 0) {
       state->foundHello = true;
     } else if (strcmp(name, RPC_ELEMENT) == 0) {
@@ -146,7 +136,7 @@ namespace netd::shared::xml {
     }
   }
 
-  bool isHelloMessage(const std::string& xml) {
+  bool isHelloMessage(const std::string &xml) {
     if (xml.empty()) {
       return false;
     }
@@ -160,15 +150,16 @@ namespace netd::shared::xml {
     XML_SetUserData(parser, &state);
     XML_SetElementHandler(parser, messageTypeStartElementHandler, nullptr);
 
-    enum XML_Status status = XML_Parse(parser, xml.c_str(), static_cast<int>(xml.length()), 1);
-    
+    enum XML_Status status =
+        XML_Parse(parser, xml.c_str(), static_cast<int>(xml.length()), 1);
+
     XML_ParserFree(parser);
-    
-    return status != XML_STATUS_ERROR && state.foundHello && 
-           !state.foundRpc && !state.foundRpcReply && !state.foundRpcError;
+
+    return status != XML_STATUS_ERROR && state.foundHello && !state.foundRpc &&
+           !state.foundRpcReply && !state.foundRpcError;
   }
 
-  bool isRpcMessage(const std::string& xml) {
+  bool isRpcMessage(const std::string &xml) {
     if (xml.empty()) {
       return false;
     }
@@ -182,39 +173,44 @@ namespace netd::shared::xml {
     XML_SetUserData(parser, &state);
     XML_SetElementHandler(parser, messageTypeStartElementHandler, nullptr);
 
-    enum XML_Status status = XML_Parse(parser, xml.c_str(), static_cast<int>(xml.length()), 1);
-    
+    enum XML_Status status =
+        XML_Parse(parser, xml.c_str(), static_cast<int>(xml.length()), 1);
+
     XML_ParserFree(parser);
-    
-    return status != XML_STATUS_ERROR && 
+
+    return status != XML_STATUS_ERROR &&
            (state.foundRpc || state.foundRpcReply || state.foundRpcError);
   }
 
   // XMLTree implementation
-  std::unique_ptr<XMLTree> XMLTree::fromXml([[maybe_unused]] const std::string& xml, [[maybe_unused]] const struct ly_ctx* ctx) {
+  std::unique_ptr<XMLTree>
+  XMLTree::fromXml([[maybe_unused]] const std::string &xml,
+                   [[maybe_unused]] const struct ly_ctx *ctx) {
     // This is a factory method that should be overridden by derived classes
     // For now, we'll throw an exception as this should not be called directly
-    throw std::runtime_error("XMLTree::fromXml should be overridden by derived classes");
+    throw std::runtime_error(
+        "XMLTree::fromXml should be overridden by derived classes");
   }
 
-  std::string XMLTree::toString(const struct ly_ctx* ctx) const {
+  std::string XMLTree::toString(const struct ly_ctx *ctx) const {
     std::stringstream stream = toXmlStream(ctx);
     return stream.str();
   }
 
-  bool XMLTree::validate(const struct ly_ctx* ctx) const {
+  bool XMLTree::validate(const struct ly_ctx *ctx) const {
     std::string xml = toString(ctx);
     if (xml.empty()) {
       return false;
     }
-    
-    lyd_node* dataNode = nullptr;
-    LY_ERR result = lyd_parse_data_mem(ctx, xml.c_str(), LYD_XML, 0, 0, &dataNode);
-    
+
+    lyd_node *dataNode = nullptr;
+    LY_ERR result =
+        lyd_parse_data_mem(ctx, xml.c_str(), LYD_XML, 0, 0, &dataNode);
+
     if (dataNode) {
       lyd_free_tree(dataNode);
     }
-    
+
     return result == LY_SUCCESS;
   }
 

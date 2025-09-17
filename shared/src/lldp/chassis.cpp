@@ -25,101 +25,103 @@
  * SUCH DAMAGE.
  */
 
-#include <shared/include/lldp/chassis.hpp>
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <shared/include/lldp/chassis.hpp>
 
 namespace netd::shared::lldp {
 
-Chassis::Chassis(lldpctl_atom_t* chassis_atom)
-    : chassis_atom_(chassis_atom) {
+  Chassis::Chassis(lldpctl_atom_t *chassis_atom) : chassis_atom_(chassis_atom) {
     if (chassis_atom_) {
-        lldpctl_atom_inc_ref(chassis_atom_);
+      lldpctl_atom_inc_ref(chassis_atom_);
     }
-}
+  }
 
-Chassis::~Chassis() {
+  Chassis::~Chassis() {
     if (chassis_atom_) {
-        lldpctl_atom_dec_ref(chassis_atom_);
+      lldpctl_atom_dec_ref(chassis_atom_);
     }
-}
+  }
 
-std::string Chassis::getChassisId() const {
+  std::string Chassis::getChassisId() const {
     return getStringValue(lldpctl_k_chassis_id);
-}
+  }
 
-std::string Chassis::getChassisName() const {
+  std::string Chassis::getChassisName() const {
     return getStringValue(lldpctl_k_chassis_name);
-}
+  }
 
-std::string Chassis::getChassisDescription() const {
+  std::string Chassis::getChassisDescription() const {
     return getStringValue(lldpctl_k_chassis_descr);
-}
+  }
 
-int Chassis::getCapabilitiesAvailable() const {
+  int Chassis::getCapabilitiesAvailable() const {
     return getIntValue(lldpctl_k_chassis_cap_available);
-}
+  }
 
-int Chassis::getCapabilitiesEnabled() const {
+  int Chassis::getCapabilitiesEnabled() const {
     return getIntValue(lldpctl_k_chassis_cap_enabled);
-}
+  }
 
-std::vector<std::unique_ptr<netd::shared::Address>> Chassis::getManagementAddresses() const {
+  std::vector<std::unique_ptr<netd::shared::Address>>
+  Chassis::getManagementAddresses() const {
     std::vector<std::unique_ptr<netd::shared::Address>> addresses;
-    
+
     if (!chassis_atom_) {
-        return addresses;
+      return addresses;
     }
-    
-    lldpctl_atom_t* mgmt_addrs = lldpctl_atom_get(chassis_atom_, lldpctl_k_chassis_mgmt);
+
+    lldpctl_atom_t *mgmt_addrs =
+        lldpctl_atom_get(chassis_atom_, lldpctl_k_chassis_mgmt);
     if (!mgmt_addrs) {
-        return addresses;
+      return addresses;
     }
-    
-    lldpctl_atom_t* mgmt_addr;
+
+    lldpctl_atom_t *mgmt_addr;
     lldpctl_atom_foreach(mgmt_addrs, mgmt_addr) {
-        const char* addr_data = lldpctl_atom_get_str(mgmt_addr, lldpctl_k_mgmt_ip);
-        
-        if (addr_data) {
-            struct in_addr addr4;
-            if (inet_pton(AF_INET, addr_data, &addr4) == 1) {
-                auto ipv4_addr = std::make_unique<netd::shared::IPv4Address>(
-                    ntohl(addr4.s_addr), 32);
-                addresses.push_back(std::move(ipv4_addr));
-            } else {
-                struct in6_addr addr6;
-                if (inet_pton(AF_INET6, addr_data, &addr6) == 1) {
-                    auto ipv6_addr = std::make_unique<netd::shared::IPv6Address>(
-                        addr6.s6_addr, 128);
-                    addresses.push_back(std::move(ipv6_addr));
-                }
-            }
+      const char *addr_data =
+          lldpctl_atom_get_str(mgmt_addr, lldpctl_k_mgmt_ip);
+
+      if (addr_data) {
+        struct in_addr addr4;
+        if (inet_pton(AF_INET, addr_data, &addr4) == 1) {
+          auto ipv4_addr = std::make_unique<netd::shared::IPv4Address>(
+              ntohl(addr4.s_addr), 32);
+          addresses.push_back(std::move(ipv4_addr));
+        } else {
+          struct in6_addr addr6;
+          if (inet_pton(AF_INET6, addr_data, &addr6) == 1) {
+            auto ipv6_addr =
+                std::make_unique<netd::shared::IPv6Address>(addr6.s6_addr, 128);
+            addresses.push_back(std::move(ipv6_addr));
+          }
         }
+      }
     }
-    
+
     lldpctl_atom_dec_ref(mgmt_addrs);
     return addresses;
-}
+  }
 
-bool Chassis::isValid() const {
+  bool Chassis::isValid() const {
     return chassis_atom_ != nullptr && !getChassisId().empty();
-}
+  }
 
-std::string Chassis::getStringValue(lldpctl_key_t key) const {
+  std::string Chassis::getStringValue(lldpctl_key_t key) const {
     if (!chassis_atom_) {
-        return "";
+      return "";
     }
-    
-    const char* value = lldpctl_atom_get_str(chassis_atom_, key);
+
+    const char *value = lldpctl_atom_get_str(chassis_atom_, key);
     return value ? std::string(value) : "";
-}
+  }
 
-int Chassis::getIntValue(lldpctl_key_t key) const {
+  int Chassis::getIntValue(lldpctl_key_t key) const {
     if (!chassis_atom_) {
-        return 0;
+      return 0;
     }
-    
+
     return lldpctl_atom_get_int(chassis_atom_, key);
-}
+  }
 
 } // namespace netd::shared::lldp

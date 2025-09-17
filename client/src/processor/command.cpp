@@ -30,103 +30,61 @@
 
 namespace netd::client::processor {
 
-Command::Command() 
-    : command_type_(CommandType::SET_CMD)
-    , unit_number_(0)
-    , vlan_id_(0)
-    , vlan_tagging_(false)
-    , display_mode_(DisplayMode::NONE) {
-}
+  Command::Command()
+      : command_type_(CommandType::SET_CMD), unit_number_(0), vlan_id_(0),
+        vlan_tagging_(false), display_mode_(DisplayMode::NONE) {}
 
-void Command::setCommandType(CommandType type) {
-    command_type_ = type;
-}
+  void Command::setCommandType(CommandType type) { command_type_ = type; }
 
-CommandType Command::getCommandType() const {
-    return command_type_;
-}
+  CommandType Command::getCommandType() const { return command_type_; }
 
-void Command::setInterfaceName(const std::string& name) {
+  void Command::setInterfaceName(const std::string &name) {
     interface_name_ = name;
-}
+  }
 
-const std::string& Command::getInterfaceName() const {
+  const std::string &Command::getInterfaceName() const {
     return interface_name_;
-}
+  }
 
-void Command::setUnitNumber(int unit) {
-    unit_number_ = unit;
-}
+  void Command::setUnitNumber(int unit) { unit_number_ = unit; }
 
-int Command::getUnitNumber() const {
-    return unit_number_;
-}
+  int Command::getUnitNumber() const { return unit_number_; }
 
-void Command::setIpAddress(const std::string& ip) {
-    ip_address_ = ip;
-}
+  void Command::setIpAddress(const std::string &ip) { ip_address_ = ip; }
 
-const std::string& Command::getIpAddress() const {
-    return ip_address_;
-}
+  const std::string &Command::getIpAddress() const { return ip_address_; }
 
-void Command::setDescription(const std::string& desc) {
-    description_ = desc;
-}
+  void Command::setDescription(const std::string &desc) { description_ = desc; }
 
-const std::string& Command::getDescription() const {
-    return description_;
-}
+  const std::string &Command::getDescription() const { return description_; }
 
-void Command::setVlanId(int vlan) {
-    vlan_id_ = vlan;
-}
+  void Command::setVlanId(int vlan) { vlan_id_ = vlan; }
 
-int Command::getVlanId() const {
-    return vlan_id_;
-}
+  int Command::getVlanId() const { return vlan_id_; }
 
-void Command::setSpeedValue(const std::string& speed) {
+  void Command::setSpeedValue(const std::string &speed) {
     speed_value_ = speed;
-}
+  }
 
-const std::string& Command::getSpeedValue() const {
-    return speed_value_;
-}
+  const std::string &Command::getSpeedValue() const { return speed_value_; }
 
-void Command::setVlanTagging(bool tagging) {
-    vlan_tagging_ = tagging;
-}
+  void Command::setVlanTagging(bool tagging) { vlan_tagging_ = tagging; }
 
-bool Command::getVlanTagging() const {
-    return vlan_tagging_;
-}
+  bool Command::getVlanTagging() const { return vlan_tagging_; }
 
-void Command::setIdentifier(const std::string& id) {
-    identifier_ = id;
-}
+  void Command::setIdentifier(const std::string &id) { identifier_ = id; }
 
-const std::string& Command::getIdentifier() const {
-    return identifier_;
-}
+  const std::string &Command::getIdentifier() const { return identifier_; }
 
-void Command::setStringValue(const std::string& str) {
-    string_value_ = str;
-}
+  void Command::setStringValue(const std::string &str) { string_value_ = str; }
 
-const std::string& Command::getStringValue() const {
-    return string_value_;
-}
+  const std::string &Command::getStringValue() const { return string_value_; }
 
-void Command::setDisplayMode(DisplayMode mode) {
-    display_mode_ = mode;
-}
+  void Command::setDisplayMode(DisplayMode mode) { display_mode_ = mode; }
 
-DisplayMode Command::getDisplayMode() const {
-    return display_mode_;
-}
+  DisplayMode Command::getDisplayMode() const { return display_mode_; }
 
-void Command::reset() {
+  void Command::reset() {
     command_type_ = CommandType::SET_CMD;
     interface_name_.clear();
     unit_number_ = 0;
@@ -138,90 +96,90 @@ void Command::reset() {
     string_value_.clear();
     vlan_tagging_ = false;
     display_mode_ = DisplayMode::NONE;
-}
+  }
 
-bool Command::isValid() const {
+  bool Command::isValid() const {
     // Basic validation - at least one field should be set
-    return !interface_name_.empty() || !ip_address_.empty() || 
-           !description_.empty() || !identifier_.empty() || 
+    return !interface_name_.empty() || !ip_address_.empty() ||
+           !description_.empty() || !identifier_.empty() ||
            !string_value_.empty() || unit_number_ > 0 || vlan_id_ > 0;
-}
+  }
 
-std::string Command::toString() const {
+  std::string Command::toString() const {
     std::ostringstream oss;
-    
+
     switch (command_type_) {
-        case CommandType::SET_CMD:
-            oss << "SET ";
-            break;
-        case CommandType::DELETE_CMD:
-            oss << "DELETE ";
-            break;
-        case CommandType::SHOW_CMD:
-            oss << "SHOW ";
-            break;
-        case CommandType::COMMIT_CMD:
-            oss << "COMMIT";
-            return oss.str();
-        case CommandType::EDIT_CMD:
-            oss << "EDIT ";
-            break;
-        case CommandType::QUIT_CMD:
-            oss << "QUIT";
-            return oss.str();
-        case CommandType::HELP_CMD:
-            oss << "HELP";
-            return oss.str();
+    case CommandType::SET_CMD:
+      oss << "SET ";
+      break;
+    case CommandType::DELETE_CMD:
+      oss << "DELETE ";
+      break;
+    case CommandType::SHOW_CMD:
+      oss << "SHOW ";
+      break;
+    case CommandType::COMMIT_CMD:
+      oss << "COMMIT";
+      return oss.str();
+    case CommandType::EDIT_CMD:
+      oss << "EDIT ";
+      break;
+    case CommandType::QUIT_CMD:
+      oss << "QUIT";
+      return oss.str();
+    case CommandType::HELP_CMD:
+      oss << "HELP";
+      return oss.str();
     }
-    
+
     if (!interface_name_.empty()) {
-        oss << "INTERFACES " << interface_name_;
-        if (unit_number_ > 0) {
-            oss << " UNIT " << unit_number_;
-        }
-        if (!ip_address_.empty()) {
-            oss << " FAMILY INET ADDRESS " << ip_address_;
-        }
-        if (!description_.empty()) {
-            oss << " DESCRIPTION \"" << description_ << "\"";
-        }
-        if (vlan_id_ > 0) {
-            oss << " VLAN_ID " << vlan_id_;
-        }
-        if (!speed_value_.empty()) {
-            oss << " SPEED " << speed_value_;
-        }
-        if (vlan_tagging_) {
-            oss << " VLAN_TAGGING";
-        }
+      oss << "INTERFACES " << interface_name_;
+      if (unit_number_ > 0) {
+        oss << " UNIT " << unit_number_;
+      }
+      if (!ip_address_.empty()) {
+        oss << " FAMILY INET ADDRESS " << ip_address_;
+      }
+      if (!description_.empty()) {
+        oss << " DESCRIPTION \"" << description_ << "\"";
+      }
+      if (vlan_id_ > 0) {
+        oss << " VLAN_ID " << vlan_id_;
+      }
+      if (!speed_value_.empty()) {
+        oss << " SPEED " << speed_value_;
+      }
+      if (vlan_tagging_) {
+        oss << " VLAN_TAGGING";
+      }
     }
-    
+
     if (!identifier_.empty()) {
-        oss << " ROUTING_INSTANCES " << identifier_;
+      oss << " ROUTING_INSTANCES " << identifier_;
     }
-    
+
     if (!string_value_.empty()) {
-        oss << " \"" << string_value_ << "\"";
+      oss << " \"" << string_value_ << "\"";
     }
-    
+
     switch (display_mode_) {
-        case DisplayMode::BRIEF_MODE:
-            oss << " BRIEF";
-            break;
-        case DisplayMode::DETAIL_MODE:
-            oss << " DETAIL";
-            break;
-        case DisplayMode::EXTENSIVE_MODE:
-            oss << " EXTENSIVE";
-            break;
-        case DisplayMode::TERSE_MODE:
-            oss << " TERSE";
-            break;
-        case DisplayMode::NONE:
-            break;
+    case DisplayMode::BRIEF_MODE:
+      oss << " BRIEF";
+      break;
+    case DisplayMode::DETAIL_MODE:
+      oss << " DETAIL";
+      break;
+    case DisplayMode::EXTENSIVE_MODE:
+      oss << " EXTENSIVE";
+      break;
+    case DisplayMode::TERSE_MODE:
+      oss << " TERSE";
+      break;
+    case DisplayMode::NONE:
+      break;
     }
-    
+
     return oss.str();
-}
+  }
 
 } // namespace netd::client::processor

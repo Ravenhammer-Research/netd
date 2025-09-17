@@ -27,18 +27,18 @@
 
 #pragma once
 
+#include <chrono>
 #include <lldpctl.h>
+#include <memory>
+#include <shared/include/address.hpp>
 #include <string>
 #include <vector>
-#include <memory>
-#include <chrono>
-#include <shared/include/address.hpp>
 
 namespace netd::shared::lldp {
 
-class Neighbor {
-public:
-    Neighbor(lldpctl_atom_t* neighbor_atom);
+  class Neighbor {
+  public:
+    Neighbor(lldpctl_atom_t *neighbor_atom);
     ~Neighbor();
 
     std::string getChassisId() const;
@@ -48,13 +48,14 @@ public:
     std::string getPortDescription() const;
     std::chrono::seconds getTTL() const;
     std::chrono::system_clock::time_point getLastUpdate() const;
-    std::vector<std::unique_ptr<netd::shared::Address>> getManagementAddresses() const;
+    std::vector<std::unique_ptr<netd::shared::Address>>
+    getManagementAddresses() const;
     bool isValid() const;
 
-private:
-    lldpctl_atom_t* neighbor_atom_;
+  private:
+    lldpctl_atom_t *neighbor_atom_;
     std::string getStringValue(lldpctl_key_t key) const;
     std::chrono::seconds getSecondsValue(lldpctl_key_t key) const;
-};
+  };
 
 } // namespace netd::shared::lldp

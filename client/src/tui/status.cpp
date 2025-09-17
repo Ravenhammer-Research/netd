@@ -26,8 +26,8 @@
  */
 
 #include <client/include/tui.hpp>
-#include <curses.h>
 #include <ctime>
+#include <curses.h>
 #include <iomanip>
 #include <sstream>
 
@@ -38,26 +38,26 @@ namespace netd::client::tui {
     if (displayHistory_.empty()) {
       return "";
     }
-    
+
     int screenWidth = getScreenSizeX();
     int maxLines = getMaxLines();
-    
+
     // Calculate total lines needed for all messages
     int totalLines = 0;
-    for (const auto& message : displayHistory_) {
+    for (const auto &message : displayHistory_) {
       std::vector<std::string> wrapped = wrapText(message, screenWidth);
       totalLines += static_cast<int>(wrapped.size());
     }
-    
+
     // Only show page count if there's more than 1 page
     if (totalLines <= maxLines) {
       return "";
     }
-    
+
     // Calculate current page and total pages
     int currentPage = (scrollOffset_ / maxLines) + 1;
     int totalPages = (totalLines + maxLines - 1) / maxLines; // Ceiling division
-    
+
     std::ostringstream oss;
     oss << currentPage << "/" << totalPages;
     return oss.str();
@@ -67,34 +67,34 @@ namespace netd::client::tui {
   void TUI::putStatusBar() {
     int screenWidth = getScreenSizeX();
     int screenHeight = getScreenSizeY();
-    
+
     // Don't draw status bar if screen is too small
     if (screenHeight < 3) {
       return;
     }
-    
+
     // Move to top line
     move(0, 0);
-    
+
     // Clear the status bar line
     clrtoeol();
-    
+
     // Left side: Connection status
     std::string leftText = connectionStatus_;
-    
+
     // Right side: Scroll information
     std::string rightText = getScrollInfo();
-    
+
     // Calculate positions
     int leftPos = 1;
     int rightPos = screenWidth - rightText.length() - 1;
-    
+
     // Draw left text with bold only on hostname/filename
     if (leftText.find("Connected to ") == 0) {
       // Print "Connected to " in normal formatting
       std::string prefix = "Connected to ";
       mvprintw(0, leftPos, "%s", prefix.c_str());
-      
+
       // Print the hostname/filename with bold
       std::string hostname = leftText.substr(prefix.length());
       attron(A_BOLD);
@@ -104,7 +104,7 @@ namespace netd::client::tui {
       // For other status messages (like "Disconnected"), print normally
       mvprintw(0, leftPos, "%s", leftText.c_str());
     }
-    
+
     // Draw right text (only if there's scroll info to show)
     if (!rightText.empty()) {
       // Parse the page numbers and make digits bold
@@ -115,10 +115,10 @@ namespace netd::client::tui {
         attron(A_BOLD);
         mvprintw(0, rightPos, "%s", firstNum.c_str());
         attroff(A_BOLD);
-        
+
         // Print slash in normal
         mvprintw(0, rightPos + slashPos, "/");
-        
+
         // Print second number in bold
         std::string secondNum = rightText.substr(slashPos + 1);
         attron(A_BOLD);
@@ -134,33 +134,33 @@ namespace netd::client::tui {
   }
 
   // Update status bar with custom message
-  void TUI::updateStatusBar(const std::string& message) {
+  void TUI::updateStatusBar(const std::string &message) {
     int screenWidth = getScreenSizeX();
     int screenHeight = getScreenSizeY();
-    
+
     // Don't draw status bar if screen is too small
     if (screenHeight < 3) {
       return;
     }
-    
+
     // Move to top line
     move(0, 0);
-    
+
     // Set status bar attributes (reverse video)
     attron(A_REVERSE);
-    
+
     // Clear the status bar line
     clrtoeol();
-    
+
     // Center the message
     int messagePos = (screenWidth - message.length()) / 2;
     if (messagePos < 1) {
       messagePos = 1;
     }
-    
+
     // Draw the message
     mvprintw(0, messagePos, "%s", message.c_str());
-    
+
     // Turn off reverse video
     attroff(A_REVERSE);
   }
@@ -168,12 +168,12 @@ namespace netd::client::tui {
   // Clear status bar
   void TUI::clearStatusBar() {
     int screenHeight = getScreenSizeY();
-    
+
     // Don't draw status bar if screen is too small
     if (screenHeight < 3) {
       return;
     }
-    
+
     // Move to top line and clear it
     move(0, 0);
     clrtoeol();

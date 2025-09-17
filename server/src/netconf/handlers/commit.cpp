@@ -38,10 +38,9 @@ namespace netd::server::netconf::handlers {
 
   std::unique_ptr<netd::shared::response::CommitResponse>
   RpcHandler::handleCommitRequest(
-      netd::shared::request::CommitRequest* /* request */) {
+      netd::shared::request::CommitRequest * /* request */) {
     auto &logger = netd::shared::Logger::getInstance();
-    auto response =
-        std::make_unique<netd::shared::response::CommitResponse>();
+    auto response = std::make_unique<netd::shared::response::CommitResponse>();
 
     logger.info("Handling commit request");
 
@@ -64,8 +63,8 @@ namespace netd::server::netconf::handlers {
 
     // Clone the candidate data for the running store
     lyd_node *runningData = nullptr;
-    LY_ERR err = lyd_dup_single(candidateData, nullptr, LYD_DUP_RECURSIVE,
-                                &runningData);
+    LY_ERR err =
+        lyd_dup_single(candidateData, nullptr, LYD_DUP_RECURSIVE, &runningData);
     if (err != LY_SUCCESS || !runningData) {
       response->error = std::make_unique<netd::shared::marshalling::Error>(
           netd::shared::marshalling::ErrorType::PROTOCOL,

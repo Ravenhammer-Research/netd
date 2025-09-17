@@ -67,7 +67,7 @@ namespace netd::shared::response::get {
 
   private:
     std::vector<YangModule> modules_;
-    struct lyd_node *libraryData_ = nullptr;  // Pre-built YANG library data
+    struct lyd_node *libraryData_ = nullptr; // Pre-built YANG library data
   };
 
 } // namespace netd::shared::response::get

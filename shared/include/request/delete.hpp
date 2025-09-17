@@ -37,16 +37,18 @@ namespace netd::shared::request {
   class DeleteConfigRequest : public Request<DeleteConfigRequest> {
   public:
     DeleteConfigRequest() : Request<DeleteConfigRequest>() {}
-    DeleteConfigRequest(netd::shared::netconf::NetconfSession *session, struct lyd_node *rpc)
+    DeleteConfigRequest(netd::shared::netconf::NetconfSession *session,
+                        struct lyd_node *rpc)
         : Request<DeleteConfigRequest>(session, rpc) {}
     virtual ~DeleteConfigRequest() = default;
 
     // Override base methods
     lyd_node *toYang(ly_ctx *ctx) const;
+    static std::unique_ptr<DeleteConfigRequest> fromYang(const ly_ctx *ctx,
+                                                         const lyd_node *node);
     static std::unique_ptr<DeleteConfigRequest>
-    fromYang(const ly_ctx *ctx, const lyd_node *node);
-    static std::unique_ptr<DeleteConfigRequest> fromRpcEnvelope(const ly_ctx *ctx,
-                                                               std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope);
+    fromRpcEnvelope(const ly_ctx *ctx,
+                    std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope);
   };
 
 } // namespace netd::shared::request

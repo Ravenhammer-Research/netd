@@ -25,17 +25,18 @@
  * SUCH DAMAGE.
  */
 
-#include <client/include/tui.hpp>
 #include <client/include/netconf/client.hpp>
 #include <client/include/processor/parser.hpp>
-#include <shared/include/logger.hpp>
-#include <shared/include/exception.hpp>
+#include <client/include/tui.hpp>
 #include <curses.h>
+#include <shared/include/exception.hpp>
+#include <shared/include/logger.hpp>
 #include <thread>
 
 namespace netd::client::tui {
 
-  void TUI::runInteractive(std::function<bool(const std::string &)> commandHandler) {
+  void
+  TUI::runInteractive(std::function<bool(const std::string &)> commandHandler) {
     if (!initialized_) {
       throw std::runtime_error("TUI not initialized (runInteractive)");
     }
@@ -50,37 +51,37 @@ namespace netd::client::tui {
         handleResize();
         continue;
       }
-      
+
       ungetch(key);
-      
+
       putPrompt();
       line = readLine();
-      
+
       if (line.empty()) {
         continue;
       }
-      
+
       if (line == "\x04") {
         break;
       }
-      
+
       addToCommandHistory(line);
-      
+
       if (commandHandler_) {
         int promptRow = getPromptRow();
         move(promptRow, 0);
         clrtoeol();
         refresh();
-        
+
         try {
           if (!commandHandler_(line)) { // XXX: clean this up...
             break;
           }
         } catch (const netd::shared::NetdError &e) {
           putLine("Error: " + std::string(e.what()));
-          
+
           netd::shared::Logger::getInstance().trace(e);
-        } 
+        }
       }
     }
   }

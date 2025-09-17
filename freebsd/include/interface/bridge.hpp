@@ -29,17 +29,18 @@
 #define NETD_FREEBSD_INTERFACE_BRIDGE_HPP
 
 #include <memory>
+#include <shared/include/backend.hpp>
 #include <shared/include/base/serialization.hpp>
 #include <shared/include/interface/base/ether.hpp>
 #include <shared/include/interface/base/master.hpp>
 #include <shared/include/interface/bridge.hpp>
-#include <shared/include/backend.hpp>
 #include <string>
 #include <vector>
 
 namespace netd::freebsd::interface {
 
-  class BridgeInterface : public netd::shared::interface::BridgeInterface, public netd::shared::BaseNativeBackend {
+  class BridgeInterface : public netd::shared::interface::BridgeInterface,
+                          public netd::shared::BaseNativeBackend {
   public:
     BridgeInterface();
     explicit BridgeInterface(const std::string &name);

@@ -33,13 +33,14 @@
 #include <string>
 #include <vector>
 
+#include <shared/include/backend.hpp>
 #include <shared/include/base/serialization.hpp>
 #include <shared/include/interface/epair.hpp>
-#include <shared/include/backend.hpp>
 
 namespace netd::freebsd::interface {
 
-  class EpairInterface : public netd::shared::interface::EpairInterface, public netd::shared::BaseNativeBackend {
+  class EpairInterface : public netd::shared::interface::EpairInterface,
+                         public netd::shared::BaseNativeBackend {
   public:
     EpairInterface();
     explicit EpairInterface(const std::string &name);

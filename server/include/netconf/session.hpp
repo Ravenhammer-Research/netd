@@ -28,41 +28,48 @@
 #ifndef NETD_SERVER_NETCONF_SESSION_HPP
 #define NETD_SERVER_NETCONF_SESSION_HPP
 
-#include <shared/include/netconf/session.hpp>
 #include <memory>
-#include <vector>
 #include <mutex>
+#include <shared/include/netconf/session.hpp>
+#include <vector>
 
 namespace netd::server::netconf {
 
   // Session manager for tracking active server sessions
   class SessionManager {
   public:
-    static SessionManager& getInstance();
-    
+    static SessionManager &getInstance();
+
     // Session management
-    void addSession(std::unique_ptr<netd::shared::netconf::NetconfSession> session);
+    void
+    addSession(std::unique_ptr<netd::shared::netconf::NetconfSession> session);
     void removeSession(int session_id);
-    netd::shared::netconf::NetconfSession* getSession(int session_id);
-    std::vector<netd::shared::netconf::NetconfSession*> getAllSessions();
-    std::vector<netd::shared::netconf::NetconfSession*> getSessionsByTransportType(netd::shared::TransportType transport_type);
+    netd::shared::netconf::NetconfSession *getSession(int session_id);
+    std::vector<netd::shared::netconf::NetconfSession *> getAllSessions();
+    std::vector<netd::shared::netconf::NetconfSession *>
+    getSessionsByTransportType(netd::shared::TransportType transport_type);
     void closeAllSessions();
-    void closeSessionsByTransportType(netd::shared::TransportType transport_type);
-    
+    void
+    closeSessionsByTransportType(netd::shared::TransportType transport_type);
+
     // Session statistics
     size_t getSessionCount() const;
-    size_t getSessionsByTransportTypeCount(netd::shared::TransportType transport_type) const;
-    
+    size_t getSessionsByTransportTypeCount(
+        netd::shared::TransportType transport_type) const;
+
     // Session lookup by client info (for server sessions)
-    netd::shared::netconf::NetconfSession* findSessionByClient(const std::string& username, const std::string& host);
-    std::vector<netd::shared::netconf::NetconfSession*> findSessionsByClient(const std::string& username);
-    
+    netd::shared::netconf::NetconfSession *
+    findSessionByClient(const std::string &username, const std::string &host);
+    std::vector<netd::shared::netconf::NetconfSession *>
+    findSessionsByClient(const std::string &username);
+
     // Unix socket specific - find session by user ID
-    netd::shared::netconf::NetconfSession* findSessionByUserId(uid_t user_id);
-    
+    netd::shared::netconf::NetconfSession *findSessionByUserId(uid_t user_id);
+
   private:
     SessionManager() = default;
-    std::vector<std::unique_ptr<netd::shared::netconf::NetconfSession>> sessions_;
+    std::vector<std::unique_ptr<netd::shared::netconf::NetconfSession>>
+        sessions_;
     mutable std::mutex sessions_mutex_;
   };
 

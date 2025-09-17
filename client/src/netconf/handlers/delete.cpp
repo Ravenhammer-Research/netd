@@ -26,16 +26,17 @@
  */
 
 #include <client/include/netconf/handlers.hpp>
-#include <shared/include/logger.hpp>
-#include <shared/include/exception.hpp>
 #include <libyang/libyang.h>
+#include <shared/include/exception.hpp>
+#include <shared/include/logger.hpp>
 #include <sstream>
 
 namespace netd::client::netconf {
 
-  std::unique_ptr<netd::shared::response::DeleteConfigResponse> RpcHandler::handleDeleteConfigRequest(
-      const netd::shared::request::DeleteConfigRequest& /* request */, 
-      netd::shared::netconf::NetconfSession* session) {
+  std::unique_ptr<netd::shared::response::DeleteConfigResponse>
+  RpcHandler::handleDeleteConfigRequest(
+      const netd::shared::request::DeleteConfigRequest & /* request */,
+      netd::shared::netconf::NetconfSession *session) {
     if (!session) {
       return nullptr;
     }
@@ -43,44 +44,46 @@ namespace netd::client::netconf {
     // Get target from request
     std::string target = "candidate"; // TODO: Get from request
 
-    ly_ctx* ctx = session->getContext();
+    ly_ctx *ctx = session->getContext();
     if (!ctx) {
       return nullptr;
     }
 
-      // Create delete-config request
-      lyd_node* delete_tree = nullptr;
-      LY_ERR err = lyd_new_path(nullptr, ctx, "/ietf-netconf:delete-config", nullptr, 0, &delete_tree);
-      if (err != LY_SUCCESS || !delete_tree) {
-        return nullptr;
-      }
-      if (!delete_tree) {
-        return nullptr;
-      }
+    // Create delete-config request
+    lyd_node *delete_tree = nullptr;
+    LY_ERR err = lyd_new_path(nullptr, ctx, "/ietf-netconf:delete-config",
+                              nullptr, 0, &delete_tree);
+    if (err != LY_SUCCESS || !delete_tree) {
+      return nullptr;
+    }
+    if (!delete_tree) {
+      return nullptr;
+    }
 
-      // Add target
-      lyd_node* target_node = nullptr;
-      err = lyd_new_path(delete_tree, ctx, "target", nullptr, 0, &target_node);
-      if (target_node) {
-        lyd_new_path(target_node, ctx, target.c_str(), nullptr, 0, nullptr);
-      }
+    // Add target
+    lyd_node *target_node = nullptr;
+    err = lyd_new_path(delete_tree, ctx, "target", nullptr, 0, &target_node);
+    if (target_node) {
+      lyd_new_path(target_node, ctx, target.c_str(), nullptr, 0, nullptr);
+    }
 
-      // Convert to XML
-      char* xml_str = nullptr;
-      if (lyd_print_mem(&xml_str, delete_tree, LYD_XML, 0) != LY_SUCCESS || !xml_str) {
-        lyd_free_tree(delete_tree);
-        return nullptr;
-      }
-
-      std::string response_xml(xml_str);
-      free(xml_str);
+    // Convert to XML
+    char *xml_str = nullptr;
+    if (lyd_print_mem(&xml_str, delete_tree, LYD_XML, 0) != LY_SUCCESS ||
+        !xml_str) {
       lyd_free_tree(delete_tree);
+      return nullptr;
+    }
 
-      // Create response object
-      auto response = std::make_unique<netd::shared::response::DeleteConfigResponse>();
-      // TODO: Set response data from response_xml
-      return response;
+    std::string response_xml(xml_str);
+    free(xml_str);
+    lyd_free_tree(delete_tree);
 
+    // Create response object
+    auto response =
+        std::make_unique<netd::shared::response::DeleteConfigResponse>();
+    // TODO: Set response data from response_xml
+    return response;
   }
 
 } // namespace netd::client::netconf

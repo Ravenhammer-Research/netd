@@ -37,16 +37,18 @@ namespace netd::shared::request {
   class CopyConfigRequest : public Request<CopyConfigRequest> {
   public:
     CopyConfigRequest() : Request<CopyConfigRequest>() {}
-    CopyConfigRequest(netd::shared::netconf::NetconfSession *session, struct lyd_node *rpc)
+    CopyConfigRequest(netd::shared::netconf::NetconfSession *session,
+                      struct lyd_node *rpc)
         : Request<CopyConfigRequest>(session, rpc) {}
     virtual ~CopyConfigRequest() = default;
 
     // Override base methods
     lyd_node *toYang(ly_ctx *ctx) const;
     static std::unique_ptr<CopyConfigRequest> fromYang(const ly_ctx *ctx,
-                                                      const lyd_node *node);
-    static std::unique_ptr<CopyConfigRequest> fromRpcEnvelope(const ly_ctx *ctx,
-                                                             std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope);
+                                                       const lyd_node *node);
+    static std::unique_ptr<CopyConfigRequest>
+    fromRpcEnvelope(const ly_ctx *ctx,
+                    std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope);
   };
 
 } // namespace netd::shared::request

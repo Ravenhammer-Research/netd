@@ -25,28 +25,28 @@
  * SUCH DAMAGE.
  */
 
-#include <client/include/tui.hpp>
-#include <shared/include/logger.hpp>
-#include <shared/include/exception.hpp>
-#include <string>
-#include <memory>
-#include <stdexcept>
 #include <chrono>
+#include <client/include/tui.hpp>
 #include <iomanip>
+#include <memory>
+#include <shared/include/exception.hpp>
+#include <shared/include/logger.hpp>
 #include <sstream>
+#include <stdexcept>
+#include <string>
 
 namespace netd::client::tui {
 
   // Global TUI instance for logger callback
-  static TUI* g_tui_instance = nullptr;
-
+  static TUI *g_tui_instance = nullptr;
 
   // Custom logger callback function
-  void tui_logger_callback(netd::shared::LogLevel level, const std::string& message) {
+  void tui_logger_callback(netd::shared::LogLevel level,
+                           const std::string &message) {
     if (!g_tui_instance) {
       throw std::runtime_error("TUI instance not set");
     }
-    
+
     // Don't log if TUI is being destroyed
     if (g_tui_instance->isDestroying()) {
       return;
@@ -54,23 +54,23 @@ namespace netd::client::tui {
 
     std::string formatted_message;
     switch (level) {
-      case netd::shared::LogLevel::TRACE:
-        formatted_message = "[T]: " + message;
-        break;
-      case netd::shared::LogLevel::DEBUG:
-        formatted_message = "[D]: " + message;
-        break;
-      case netd::shared::LogLevel::INFO:
-        formatted_message = "[I]: " + message;
-        break;
-      case netd::shared::LogLevel::WARNING:
-        formatted_message = "[W]: " + message;
-        break;
-      case netd::shared::LogLevel::ERROR:
-        formatted_message = "[E]: " + message;
-        break;
-      case netd::shared::LogLevel::YANG:
-        return;          
+    case netd::shared::LogLevel::TRACE:
+      formatted_message = "[T]: " + message;
+      break;
+    case netd::shared::LogLevel::DEBUG:
+      formatted_message = "[D]: " + message;
+      break;
+    case netd::shared::LogLevel::INFO:
+      formatted_message = "[I]: " + message;
+      break;
+    case netd::shared::LogLevel::WARNING:
+      formatted_message = "[W]: " + message;
+      break;
+    case netd::shared::LogLevel::ERROR:
+      formatted_message = "[E]: " + message;
+      break;
+    case netd::shared::LogLevel::YANG:
+      return;
     }
 
     // Write to TUI using the appropriate method
@@ -78,9 +78,7 @@ namespace netd::client::tui {
   }
 
   // Set the TUI instance for logging
-  void TUI::setLoggerInstance(TUI* tui) {
-    g_tui_instance = tui;
-  }
+  void TUI::setLoggerInstance(TUI *tui) { g_tui_instance = tui; }
 
   // Initialize TUI logger
   void TUI::initializeLogger() {

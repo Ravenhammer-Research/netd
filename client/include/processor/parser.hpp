@@ -28,11 +28,11 @@
 #ifndef NETD_CLIENT_PROCESSOR_PARSER_HPP
 #define NETD_CLIENT_PROCESSOR_PARSER_HPP
 
-#include <string>
-#include <memory>
 #include <client/include/netconf/client.hpp>
-#include <client/include/tui.hpp>
 #include <client/include/processor/command.hpp>
+#include <client/include/tui.hpp>
+#include <memory>
+#include <string>
 
 namespace netd::client::processor {
 
@@ -43,7 +43,8 @@ namespace netd::client::processor {
      * @param tui Reference to the TUI interface
      * @param client Reference to the NETCONF client
      */
-    CommandProcessor(netd::client::tui::TUI& tui, netd::client::netconf::NetconfClient& client);
+    CommandProcessor(netd::client::tui::TUI &tui,
+                     netd::client::netconf::NetconfClient &client);
 
     /**
      * @brief Destructor
@@ -55,18 +56,18 @@ namespace netd::client::processor {
      * @param command The command string to process
      * @return true if command was processed successfully, false to exit
      */
-    bool processCommand(const std::string& command);
+    bool processCommand(const std::string &command);
 
   private:
-    netd::client::tui::TUI& tui_;
-    netd::client::netconf::NetconfClient& client_;
+    netd::client::tui::TUI &tui_;
+    netd::client::netconf::NetconfClient &client_;
 
     /**
      * @brief Handles parsed command execution
      * @param command_type The type of command that was parsed
      * @return true if command was handled successfully
      */
-    bool handleParsedCommand(const Command& command);
+    bool handleParsedCommand(const Command &command);
   };
 
 } // namespace netd::client::processor

@@ -32,20 +32,20 @@
 
 namespace netd::shared::lldp {
 
-class Connection {
-public:
+  class Connection {
+  public:
     Connection();
     ~Connection();
 
     void initialize();
     void cleanup();
-    
-    bool isConnected() const { return connection_ != nullptr; }
-    lldpctl_conn_t* getConnection() const { return connection_; }
 
-private:
-    lldpctl_conn_t* connection_;
+    bool isConnected() const { return connection_ != nullptr; }
+    lldpctl_conn_t *getConnection() const { return connection_; }
+
+  private:
+    lldpctl_conn_t *connection_;
     bool initialized_;
-};
+  };
 
 } // namespace netd::shared::lldp

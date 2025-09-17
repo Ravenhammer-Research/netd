@@ -25,25 +25,28 @@
  * SUCH DAMAGE.
  */
 
-#include <client/include/tui.hpp>
-#include <client/include/netconf/client.hpp>
-#include <client/include/processor/parser.hpp>
-#include <client/include/processor/completion.hpp>
-#include <shared/include/logger.hpp>
-#include <shared/include/exception.hpp>
-#include <curses.h>
 #include <algorithm>
+#include <client/include/netconf/client.hpp>
+#include <client/include/processor/completion.hpp>
+#include <client/include/processor/parser.hpp>
+#include <client/include/tui.hpp>
+#include <curses.h>
+#include <shared/include/exception.hpp>
+#include <shared/include/logger.hpp>
 #include <thread>
 
 namespace netd::client::tui {
 
   constexpr size_t MAX_HISTORY_SIZE = 10240;
 
-  TUI::TUI() : initialized_(false), prompt_("netc> "), commandHistoryPosition_(-1), scrollOffset_(0), connectionStatus_("Not connected"), debugLevel_(0), destroying_(false), client_(nullptr) {}
+  TUI::TUI()
+      : initialized_(false), prompt_("netc> "), commandHistoryPosition_(-1),
+        scrollOffset_(0), connectionStatus_("Not connected"), debugLevel_(0),
+        destroying_(false), client_(nullptr) {}
 
-  TUI::~TUI() { 
+  TUI::~TUI() {
     destroying_ = true;
-    cleanup(); 
+    cleanup();
   }
   bool TUI::initialize() {
     if (initialized_) {
@@ -52,16 +55,16 @@ namespace netd::client::tui {
 
     setupCurses();
     configureSignalHandler();
-    
+
     setLoggerInstance(this);
     initializeLogger();
-    
-    netd::shared::Logger::getInstance().debug("TUI Logger initialized successfully");
-    
+
+    netd::shared::Logger::getInstance().debug(
+        "TUI Logger initialized successfully");
+
     initialized_ = true;
     return true;
   }
-
 
   void TUI::addToCommandHistory(const std::string &command) {
     if (commandHistory_.empty() || commandHistory_.back() != command) {
@@ -73,20 +76,19 @@ namespace netd::client::tui {
     setHistoryPosition(-1);
   }
 
-  const std::vector<std::string>& TUI::getCommandHistory() const {
+  const std::vector<std::string> &TUI::getCommandHistory() const {
     return commandHistory_;
   }
 
-  int TUI::getHistoryPosition() {
-    return commandHistoryPosition_;
-  }
+  int TUI::getHistoryPosition() { return commandHistoryPosition_; }
 
   void TUI::setHistoryPosition(int position) {
     commandHistoryPosition_ = position;
   }
 
   void TUI::advanceHistoryPosition() {
-    if (commandHistoryPosition_ < static_cast<int>(commandHistory_.size()) - 1) {
+    if (commandHistoryPosition_ <
+        static_cast<int>(commandHistory_.size()) - 1) {
       commandHistoryPosition_++;
     }
   }
@@ -100,13 +102,14 @@ namespace netd::client::tui {
       return partial;
     }
 
-    // Use contextual completion if available, otherwise fall back to simple completion
+    // Use contextual completion if available, otherwise fall back to simple
+    // completion
     std::vector<std::string> matches;
-    
+
     // Try contextual completion first
     if (!completions_.empty()) {
-      // For now, use simple completion - contextual completion would need the full command line
-      // which we don't have in this interface
+      // For now, use simple completion - contextual completion would need the
+      // full command line which we don't have in this interface
       for (const auto &completion : completions_) {
         if (completion.find(partial) == 0) {
           matches.push_back(completion);
@@ -142,15 +145,17 @@ namespace netd::client::tui {
     netd::client::processor::CommandCompletion::debugCompletions(command_line);
 
     // Use the processor's contextual completion
-    auto matches = netd::client::processor::CommandCompletion::findContextualCompletions(command_line);
-    
+    auto matches =
+        netd::client::processor::CommandCompletion::findContextualCompletions(
+            command_line);
+
     if (matches.empty()) {
       return command_line;
     }
-    
+
     // Check if we're at the end of a word (no trailing space)
     bool at_word_end = (command_line.back() != ' ');
-    
+
     if (matches.size() == 1) {
       // Single match - complete it
       if (at_word_end) {
@@ -167,20 +172,22 @@ namespace netd::client::tui {
       }
     } else {
       // Multiple matches - show available options and find common prefix
-      std::string common = netd::client::processor::CommandCompletion::getCommonPrefix(matches);
-      
+      std::string common =
+          netd::client::processor::CommandCompletion::getCommonPrefix(matches);
+
       // Show available completions (like bash does)
-      auto& logger = netd::shared::Logger::getInstance();
+      auto &logger = netd::shared::Logger::getInstance();
       logger.info("Available completions:");
-      for (const auto& match : matches) {
+      for (const auto &match : matches) {
         logger.info("  " + match);
       }
-      
-      // If common prefix is empty, don't change anything but ensure we return the original
+
+      // If common prefix is empty, don't change anything but ensure we return
+      // the original
       if (common.empty()) {
         return command_line;
       }
-      
+
       if (at_word_end) {
         // Find the last word and replace it with common prefix
         size_t last_space = command_line.find_last_of(' ');

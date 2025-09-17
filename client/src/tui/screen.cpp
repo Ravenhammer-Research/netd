@@ -25,9 +25,9 @@
  * SUCH DAMAGE.
  */
 
+#include <algorithm>
 #include <client/include/tui.hpp>
 #include <curses.h>
-#include <algorithm>
 #include <regex>
 
 namespace netd::client::tui {
@@ -62,91 +62,99 @@ namespace netd::client::tui {
   }
 
   // Screen clearing
-  void TUI::clear() {
-    ::clear();
-  }
+  void TUI::clear() { ::clear(); }
 
-  void TUI::clearToEndOfLine() {
-    clrtoeol();
-  }
+  void TUI::clearToEndOfLine() { clrtoeol(); }
 
   // Message display - no state, calculate everything on the fly
   void TUI::putMessages() {
     int promptRow = getPromptRow();
     int maxLines = promptRow - 1; // Account for status bar
     int screenWidth = getScreenSizeX();
-    
+
     if (displayHistory_.empty()) {
       return;
     }
-    
+
     // Clear all message lines first (starting from line 1, after status bar)
     for (int row = 1; row <= maxLines; row++) {
       move(row, 0);
       clrtoeol();
     }
-    
+
     // Calculate total lines needed for all messages (newest to oldest)
     std::vector<std::vector<std::string>> all_wrapped_messages;
     int totalLines = 0;
-    
+
     // Process messages from newest to oldest
     for (int i = static_cast<int>(displayHistory_.size()) - 1; i >= 0; i--) {
-      std::vector<std::string> wrapped = wrapText(displayHistory_[i], screenWidth);
+      std::vector<std::string> wrapped =
+          wrapText(displayHistory_[i], screenWidth);
       all_wrapped_messages.push_back(wrapped);
       totalLines += static_cast<int>(wrapped.size());
     }
-    
+
     // Limit scroll offset to valid range
     int maxScroll = std::max(0, totalLines - maxLines);
     scrollOffset_ = std::min(scrollOffset_, maxScroll);
-    
+
     // Display messages from bottom up, accounting for scroll
     int displayRow = 0;
     int linesSkipped = 0;
-    
+
     for (const auto &wrapped_lines : all_wrapped_messages) {
       for (int j = static_cast<int>(wrapped_lines.size()) - 1; j >= 0; j--) {
         if (linesSkipped < scrollOffset_) {
           linesSkipped++;
           continue;
         }
-        
+
         if (displayRow >= maxLines) {
           return; // No more space
         }
-        
+
         int targetRow = maxLines - displayRow; // Account for status bar offset
         move(targetRow, 0);
         clrtoeol();
-        
+
         // Check if this is a log message and apply colors using regex
         std::string line = wrapped_lines[j];
         // Pattern matches both [timestamp][LEVEL]: and [LEVEL]: formats
         std::regex logPatternWithTimestamp(R"(\[([^\]]+)\]\[([TDIWE])\]:)");
         std::regex logPatternWithoutTimestamp(R"(\[([TDIWE])\]:)");
         std::smatch matches;
-        
+
         char level = 0;
         if (std::regex_search(line, matches, logPatternWithTimestamp)) {
           // Format: [timestamp][LEVEL]:
           level = matches[2].str()[0];
-        } else if (std::regex_search(line, matches, logPatternWithoutTimestamp)) {
+        } else if (std::regex_search(line, matches,
+                                     logPatternWithoutTimestamp)) {
           // Format: [LEVEL]:
           level = matches[1].str()[0];
         }
-        
+
         if (level != 0) {
           int color = 0;
-          
-            switch (level) {
-              case 'T': color = 12; break; // Bright White
-              case 'D': color = 11; break; // Bright Cyan
-              case 'I': color = 10; break; // Bright Green
-              case 'W': color = 9; break;  // Bright Yellow
-              case 'E': color = 8; break;  // Bright Red
-            }
-          
+
+          switch (level) {
+          case 'T':
+            color = 12;
+            break; // Bright White
+          case 'D':
+            color = 11;
+            break; // Bright Cyan
+          case 'I':
+            color = 10;
+            break; // Bright Green
+          case 'W':
+            color = 9;
+            break; // Bright Yellow
+          case 'E':
+            color = 8;
+            break; // Bright Red
+          }
+
           if (color > 0) {
             // Find the position of the level letter in the original string
             size_t levelPos;
@@ -163,16 +171,16 @@ namespace netd::client::tui {
                 levelPos += 1; // Move past "["
               }
             }
-            
+
             if (levelPos != std::string::npos) {
               // Print everything before the level letter
               printw("%s", line.substr(0, levelPos).c_str());
-              
+
               // Print level letter with color and bold
               attron(COLOR_PAIR(color) | A_BOLD);
               printw("%c", level);
               attroff(COLOR_PAIR(color) | A_BOLD);
-              
+
               // Print everything after the level letter
               printw("%s", line.substr(levelPos + 1).c_str());
             } else {
@@ -184,16 +192,14 @@ namespace netd::client::tui {
         } else {
           printw("%s", line.c_str());
         }
-        
+
         displayRow++;
       }
     }
   }
 
   // Utility functions
-  void TUI::sleepMs(int ms) {
-    napms(ms);
-  }
+  void TUI::sleepMs(int ms) { napms(ms); }
 
   void TUI::resizeTerminal() {
     // Use proper curses resize handling
@@ -202,8 +208,6 @@ namespace netd::client::tui {
     redrawScreen();
   }
 
-  void TUI::handleResize() {
-    resizeTerminal();
-  }
+  void TUI::handleResize() { resizeTerminal(); }
 
 } // namespace netd::client::tui

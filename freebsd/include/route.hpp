@@ -29,14 +29,15 @@
 #define NETD_FREEBSD_ROUTE_HPP
 
 #include <memory>
+#include <shared/include/backend.hpp>
 #include <shared/include/base/serialization.hpp>
 #include <shared/include/route.hpp>
-#include <shared/include/backend.hpp>
 #include <string>
 
 namespace netd::freebsd {
 
-  class Route : public netd::shared::Route, public netd::shared::BaseNativeBackend {
+  class Route : public netd::shared::Route,
+                public netd::shared::BaseNativeBackend {
   public:
     Route();
     explicit Route(const std::string &destination,

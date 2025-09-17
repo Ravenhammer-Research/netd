@@ -26,37 +26,39 @@
  */
 
 #include <client/include/netconf/handlers.hpp>
-#include <shared/include/logger.hpp>
-#include <shared/include/exception.hpp>
 #include <libyang/libyang.h>
+#include <shared/include/exception.hpp>
+#include <shared/include/logger.hpp>
 #include <sstream>
 
 namespace netd::client::netconf {
 
-  std::unique_ptr<netd::shared::response::CommitResponse> RpcHandler::handleCommitRequest(
-      const netd::shared::request::CommitRequest& request, 
-      netd::shared::netconf::NetconfSession* session) {
+  std::unique_ptr<netd::shared::response::CommitResponse>
+  RpcHandler::handleCommitRequest(
+      const netd::shared::request::CommitRequest &request,
+      netd::shared::netconf::NetconfSession *session) {
     if (!session) {
       throw netd::shared::ArgumentError("Session is null");
     }
 
-    ly_ctx* ctx = session->getContext();
+    ly_ctx *ctx = session->getContext();
     if (!ctx) {
       throw netd::shared::RpcError("No YANG context available in session");
     }
 
     // Convert request to YANG tree
-    lyd_node* request_tree = request.toYang(ctx);
+    lyd_node *request_tree = request.toYang(ctx);
     if (!request_tree) {
-      throw netd::shared::RpcError("Failed to convert commit request to YANG tree");
+      throw netd::shared::RpcError(
+          "Failed to convert commit request to YANG tree");
     }
 
     // Create response object
     auto response = std::make_unique<netd::shared::response::CommitResponse>();
-    
+
     // For now, return empty response - in real implementation this would
     // send the request to server and process the response
-    
+
     lyd_free_tree(request_tree);
     return response;
   }

@@ -37,7 +37,7 @@ namespace netd::server::netconf::handlers {
 
   std::unique_ptr<netd::shared::response::ValidateResponse>
   RpcHandler::handleValidateRequest(
-      netd::shared::request::ValidateRequest* /* request */) {
+      netd::shared::request::ValidateRequest * /* request */) {
     auto &logger = netd::shared::Logger::getInstance();
     auto response =
         std::make_unique<netd::shared::response::ValidateResponse>();

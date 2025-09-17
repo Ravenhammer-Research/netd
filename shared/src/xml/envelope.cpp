@@ -25,19 +25,19 @@
  * SUCH DAMAGE.
  */
 
-#include <shared/include/xml/envelope.hpp>
-#include <shared/include/xml/base.hpp>
+#include <bsdxml.h>
 #include <shared/include/exception.hpp>
+#include <shared/include/xml/base.hpp>
+#include <shared/include/xml/envelope.hpp>
 #include <shared/include/yang.hpp>
 #include <sstream>
 #include <stdexcept>
-#include <bsdxml.h>
 
 namespace netd::shared::xml {
 
   struct XmlParseState {
-    RpcEnvelope* envelope;
-    const struct ly_ctx* ctx;
+    RpcEnvelope *envelope;
+    const struct ly_ctx *ctx;
     std::string currentElement;
     std::string currentOperation;
     std::string currentData;
@@ -47,10 +47,11 @@ namespace netd::shared::xml {
     std::string filterType;
     std::string xpathSelect;
   };
-  
+
   RpcEnvelope::RpcEnvelope() = default;
 
-std::unique_ptr<RpcEnvelope> RpcEnvelope::fromXml(const std::string& xml, const struct ly_ctx* ctx) {
+  std::unique_ptr<RpcEnvelope> RpcEnvelope::fromXml(const std::string &xml,
+                                                    const struct ly_ctx *ctx) {
     auto envelope = std::make_unique<RpcEnvelope>();
 
     if (xml.empty()) {
@@ -67,26 +68,28 @@ std::unique_ptr<RpcEnvelope> RpcEnvelope::fromXml(const std::string& xml, const 
     state.ctx = ctx;
     XML_SetUserData(parser, &state);
 
-    XML_SetElementHandler(parser, 
-                         [](void* userData, const XML_Char* name, const XML_Char** atts) {
-                           XmlParseState* state = static_cast<XmlParseState*>(userData);
-                           state->envelope->startElementHandler(userData, name, atts);
-                         },
-                         [](void* userData, const XML_Char* name) {
-                           XmlParseState* state = static_cast<XmlParseState*>(userData);
-                           state->envelope->endElementHandler(userData, name);
-                         });
-    XML_SetCharacterDataHandler(parser, 
-                               [](void* userData, const XML_Char* s, int len) {
-                                 XmlParseState* state = static_cast<XmlParseState*>(userData);
-                                 state->envelope->characterDataHandler(userData, s, len);
-                               });
+    XML_SetElementHandler(
+        parser,
+        [](void *userData, const XML_Char *name, const XML_Char **atts) {
+          XmlParseState *state = static_cast<XmlParseState *>(userData);
+          state->envelope->startElementHandler(userData, name, atts);
+        },
+        [](void *userData, const XML_Char *name) {
+          XmlParseState *state = static_cast<XmlParseState *>(userData);
+          state->envelope->endElementHandler(userData, name);
+        });
+    XML_SetCharacterDataHandler(
+        parser, [](void *userData, const XML_Char *s, int len) {
+          XmlParseState *state = static_cast<XmlParseState *>(userData);
+          state->envelope->characterDataHandler(userData, s, len);
+        });
 
-    enum XML_Status status = XML_Parse(parser, xml.c_str(), static_cast<int>(xml.length()), 1);
-    
+    enum XML_Status status =
+        XML_Parse(parser, xml.c_str(), static_cast<int>(xml.length()), 1);
+
     if (status == XML_STATUS_ERROR) {
       enum XML_Error error = XML_GetErrorCode(parser);
-      const XML_LChar* errorString = XML_ErrorString(error);
+      const XML_LChar *errorString = XML_ErrorString(error);
       XML_ParserFree(parser);
       throw XmlParseError("XML parsing failed: " + std::string(errorString));
     }
@@ -95,131 +98,143 @@ std::unique_ptr<RpcEnvelope> RpcEnvelope::fromXml(const std::string& xml, const 
     return envelope;
   }
 
-std::unique_ptr<RpcEnvelope> RpcEnvelope::toXml(RpcType rpc_type, 
-                                               int message_id, 
-                                               netconf::NetconfOperation operation,
-                                               marshalling::Filter* filter,
-                                               lyd_node* lyd_data,
-                                               const struct ly_ctx* ctx [[maybe_unused]]) {
+  std::unique_ptr<RpcEnvelope>
+  RpcEnvelope::toXml(RpcType rpc_type, int message_id,
+                     netconf::NetconfOperation operation,
+                     marshalling::Filter *filter, lyd_node *lyd_data,
+                     const struct ly_ctx *ctx [[maybe_unused]]) {
     if (rpc_type == RpcType::RPC && message_id <= 0) {
       throw XmlValidationError("Invalid message-id for RPC request");
     }
 
     if (rpc_type == RpcType::RPC) {
-      const char* operationName = netconf::operationToString(operation);
+      const char *operationName = netconf::operationToString(operation);
       if (!operationName) {
         throw XmlValidationError("Invalid NETCONF operation");
       }
     }
 
     auto envelope = std::make_unique<RpcEnvelope>();
-    
+
     envelope->rpc_type_ = rpc_type;
     envelope->message_id_ = message_id;
     envelope->operation_ = operation;
-    
+
     if (filter) {
       envelope->filter_ = std::unique_ptr<marshalling::Filter>(filter);
     }
-    
+
     envelope->lyd_data_ = lyd_data;
 
     return envelope;
   }
 
-std::stringstream RpcEnvelope::toXmlStream(const struct ly_ctx* ctx) const {
+  std::stringstream RpcEnvelope::toXmlStream(const struct ly_ctx *ctx) const {
     std::stringstream xml;
     xml << XmlHeader::toString();
-    
+
     std::string rootElementName;
     switch (rpc_type_) {
-      case RpcType::RPC:
-        rootElementName = RPC_ELEMENT;
-        break;
-      case RpcType::RPC_REPLY:
-        rootElementName = RPC_REPLY_ELEMENT;
-        break;
-      case RpcType::RPC_ERROR:
-        rootElementName = RPC_ERROR_ELEMENT;
-        break;
-      default:
-        rootElementName = RPC_ELEMENT;
-        break;
+    case RpcType::RPC:
+      rootElementName = RPC_ELEMENT;
+      break;
+    case RpcType::RPC_REPLY:
+      rootElementName = RPC_REPLY_ELEMENT;
+      break;
+    case RpcType::RPC_ERROR:
+      rootElementName = RPC_ERROR_ELEMENT;
+      break;
+    default:
+      rootElementName = RPC_ELEMENT;
+      break;
     }
-    
+
     XmlElement rootElement = RpcElement::create(rootElementName, message_id_);
 
     if (rpc_type_ == RpcType::RPC) {
-      const char* operationName = netconf::operationToString(operation_);
+      const char *operationName = netconf::operationToString(operation_);
       if (operationName) {
         XmlElement operation = OperationElement::create(operationName);
-        
+
         if (filter_) {
           if (filter_->getType() == marshalling::FilterType::SUBTREE) {
             XmlElement filter = FilterElement::createSubtree();
             if (lyd_data_) {
-              char* dataXml = nullptr;
-              if (lyd_print_mem(&dataXml, lyd_data_, LYD_XML, LYD_PRINT_WITHSIBLINGS) == LY_SUCCESS) {
+              char *dataXml = nullptr;
+              if (lyd_print_mem(&dataXml, lyd_data_, LYD_XML,
+                                LYD_PRINT_WITHSIBLINGS) == LY_SUCCESS) {
                 filter.setContent(std::string(dataXml));
                 free(dataXml);
               } else {
-                throw YangDataError(const_cast<void*>(static_cast<const void*>(ctx)));
+                throw YangDataError(
+                    const_cast<void *>(static_cast<const void *>(ctx)));
               }
             }
             operation.addChild(filter);
           } else if (filter_->getType() == marshalling::FilterType::XPATH) {
-            auto* xpathFilter = dynamic_cast<marshalling::XPathFilter*>(filter_.get());
+            auto *xpathFilter =
+                dynamic_cast<marshalling::XPathFilter *>(filter_.get());
             if (xpathFilter) {
-              XmlElement filter = FilterElement::createXPath(xpathFilter->getXPath());
+              XmlElement filter =
+                  FilterElement::createXPath(xpathFilter->getXPath());
               if (lyd_data_) {
-                char* dataXml = nullptr;
-                if (lyd_print_mem(&dataXml, lyd_data_, LYD_XML, LYD_PRINT_WITHSIBLINGS) == LY_SUCCESS) {
+                char *dataXml = nullptr;
+                if (lyd_print_mem(&dataXml, lyd_data_, LYD_XML,
+                                  LYD_PRINT_WITHSIBLINGS) == LY_SUCCESS) {
                   filter.setContent(std::string(dataXml));
                   free(dataXml);
                 } else {
-                  throw YangDataError(const_cast<void*>(static_cast<const void*>(ctx)));
+                  throw YangDataError(
+                      const_cast<void *>(static_cast<const void *>(ctx)));
                 }
               }
               operation.addChild(filter);
             } else {
-              throw XmlSerializationError("Failed to cast filter to XPathFilter");
+              throw XmlSerializationError(
+                  "Failed to cast filter to XPathFilter");
             }
           }
         }
-        
+
         if (lyd_data_ && !filter_) {
-          char* dataXml = nullptr;
-          if (lyd_print_mem(&dataXml, lyd_data_, LYD_XML, LYD_PRINT_WITHSIBLINGS) == LY_SUCCESS) {
+          char *dataXml = nullptr;
+          if (lyd_print_mem(&dataXml, lyd_data_, LYD_XML,
+                            LYD_PRINT_WITHSIBLINGS) == LY_SUCCESS) {
             operation.setContent(std::string(dataXml));
             free(dataXml);
           } else {
-            throw YangDataError(const_cast<void*>(static_cast<const void*>(ctx)));
+            throw YangDataError(
+                const_cast<void *>(static_cast<const void *>(ctx)));
           }
         }
-        
+
         rootElement.addChild(operation);
       }
     } else if (rpc_type_ == RpcType::RPC_REPLY) {
       if (lyd_data_) {
         XmlElement data = DataElement::create();
-        char* dataXml = nullptr;
-        if (lyd_print_mem(&dataXml, lyd_data_, LYD_XML, LYD_PRINT_WITHSIBLINGS) == LY_SUCCESS) {
+        char *dataXml = nullptr;
+        if (lyd_print_mem(&dataXml, lyd_data_, LYD_XML,
+                          LYD_PRINT_WITHSIBLINGS) == LY_SUCCESS) {
           data.setContent(std::string(dataXml));
           free(dataXml);
         } else {
-          throw YangDataError(const_cast<void*>(static_cast<const void*>(ctx)));
+          throw YangDataError(
+              const_cast<void *>(static_cast<const void *>(ctx)));
         }
         rootElement.addChild(data);
       }
     } else if (rpc_type_ == RpcType::RPC_ERROR) {
       if (lyd_data_) {
         XmlElement error = ErrorElement::create();
-        char* errorXml = nullptr;
-        if (lyd_print_mem(&errorXml, lyd_data_, LYD_XML, LYD_PRINT_WITHSIBLINGS) == LY_SUCCESS) {
+        char *errorXml = nullptr;
+        if (lyd_print_mem(&errorXml, lyd_data_, LYD_XML,
+                          LYD_PRINT_WITHSIBLINGS) == LY_SUCCESS) {
           error.setContent(std::string(errorXml));
           free(errorXml);
         } else {
-          throw YangDataError(const_cast<void*>(static_cast<const void*>(ctx)));
+          throw YangDataError(
+              const_cast<void *>(static_cast<const void *>(ctx)));
         }
         rootElement.addChild(error);
       }
@@ -229,12 +244,13 @@ std::stringstream RpcEnvelope::toXmlStream(const struct ly_ctx* ctx) const {
     return xml;
   }
 
+  void RpcEnvelope::startElementHandler(void *userData, const XML_Char *name,
+                                        const XML_Char **atts) {
+    if (!userData || !name)
+      return;
 
-  void RpcEnvelope::startElementHandler(void* userData, const XML_Char* name, const XML_Char** atts) {
-    if (!userData || !name) return;
-    
-    XmlParseState* state = static_cast<XmlParseState*>(userData);
-    RpcEnvelope* envelope = state->envelope;
+    XmlParseState *state = static_cast<XmlParseState *>(userData);
+    RpcEnvelope *envelope = state->envelope;
     state->currentElement = name;
 
     if (strcmp(name, RPC_ELEMENT) == 0) {
@@ -256,7 +272,8 @@ std::stringstream RpcEnvelope::toXmlStream(const struct ly_ctx* ctx) const {
           state->xpathSelect = atts[i + 1];
         }
       }
-    } else if (envelope->rpc_type_ == RpcType::RPC && !state->inFilter && !state->inData) {
+    } else if (envelope->rpc_type_ == RpcType::RPC && !state->inFilter &&
+               !state->inData) {
       state->currentOperation = name;
     }
 
@@ -264,39 +281,44 @@ std::stringstream RpcEnvelope::toXmlStream(const struct ly_ctx* ctx) const {
       if (strcmp(atts[i], MESSAGE_ID_ATTR) == 0) {
         try {
           envelope->message_id_ = std::stoi(atts[i + 1]);
-        } catch (const std::exception&) {
+        } catch (const std::exception &) {
         }
         break;
       }
     }
   }
 
-  void RpcEnvelope::endElementHandler(void* userData, const XML_Char* name) {
-    if (!userData || !name) return;
-    
-    XmlParseState* state = static_cast<XmlParseState*>(userData);
-    RpcEnvelope* envelope = state->envelope;
-    const struct ly_ctx* yang_ctx = state->ctx;
+  void RpcEnvelope::endElementHandler(void *userData, const XML_Char *name) {
+    if (!userData || !name)
+      return;
+
+    XmlParseState *state = static_cast<XmlParseState *>(userData);
+    RpcEnvelope *envelope = state->envelope;
+    const struct ly_ctx *yang_ctx = state->ctx;
 
     if (strcmp(name, DATA_NAME) == 0) {
       state->inData = false;
       if (!state->currentData.empty()) {
-        lyd_node* dataNode = nullptr;
-        if (lyd_parse_data_mem(yang_ctx, state->currentData.c_str(), LYD_XML, 0, 0, &dataNode) == LY_SUCCESS) {
+        lyd_node *dataNode = nullptr;
+        if (lyd_parse_data_mem(yang_ctx, state->currentData.c_str(), LYD_XML, 0,
+                               0, &dataNode) == LY_SUCCESS) {
           envelope->lyd_data_ = dataNode;
         } else {
-          throw YangDataError(const_cast<void*>(static_cast<const void*>(yang_ctx)));
+          throw YangDataError(
+              const_cast<void *>(static_cast<const void *>(yang_ctx)));
         }
         state->currentData.clear();
       }
     } else if (strcmp(name, ERROR_NAME) == 0) {
       state->inError = false;
       if (!state->currentData.empty()) {
-        lyd_node* errorNode = nullptr;
-        if (lyd_parse_data_mem(yang_ctx, state->currentData.c_str(), LYD_XML, 0, 0, &errorNode) == LY_SUCCESS) {
+        lyd_node *errorNode = nullptr;
+        if (lyd_parse_data_mem(yang_ctx, state->currentData.c_str(), LYD_XML, 0,
+                               0, &errorNode) == LY_SUCCESS) {
           envelope->lyd_data_ = errorNode;
         } else {
-          throw YangDataError(const_cast<void*>(static_cast<const void*>(yang_ctx)));
+          throw YangDataError(
+              const_cast<void *>(static_cast<const void *>(yang_ctx)));
         }
         state->currentData.clear();
       }
@@ -306,7 +328,8 @@ std::stringstream RpcEnvelope::toXmlStream(const struct ly_ctx* ctx) const {
         auto filter = std::make_unique<marshalling::SubtreeFilter>();
         filter->setSubtree(state->currentData);
         envelope->filter_ = std::move(filter);
-      } else if (state->filterType == XPATH_TYPE && !state->xpathSelect.empty()) {
+      } else if (state->filterType == XPATH_TYPE &&
+                 !state->xpathSelect.empty()) {
         auto filter = std::make_unique<marshalling::XPathFilter>();
         filter->setXPath(state->xpathSelect);
         envelope->filter_ = std::move(filter);
@@ -314,17 +337,22 @@ std::stringstream RpcEnvelope::toXmlStream(const struct ly_ctx* ctx) const {
       state->currentData.clear();
       state->filterType.clear();
       state->xpathSelect.clear();
-    } else if (envelope->rpc_type_ == RpcType::RPC && !state->currentOperation.empty() && strcmp(name, state->currentOperation.c_str()) == 0) {
-      envelope->operation_ = netconf::stringToOperation(state->currentOperation);
+    } else if (envelope->rpc_type_ == RpcType::RPC &&
+               !state->currentOperation.empty() &&
+               strcmp(name, state->currentOperation.c_str()) == 0) {
+      envelope->operation_ =
+          netconf::stringToOperation(state->currentOperation);
       state->currentOperation.clear();
     }
   }
 
-  void RpcEnvelope::characterDataHandler(void* userData, const XML_Char* s, int len) {
-    if (!userData || !s || len <= 0) return;
-    
-    XmlParseState* state = static_cast<XmlParseState*>(userData);
-    
+  void RpcEnvelope::characterDataHandler(void *userData, const XML_Char *s,
+                                         int len) {
+    if (!userData || !s || len <= 0)
+      return;
+
+    XmlParseState *state = static_cast<XmlParseState *>(userData);
+
     if (state->inData || state->inError || state->inFilter) {
       state->currentData.append(s, len);
     }

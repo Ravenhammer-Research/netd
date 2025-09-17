@@ -25,42 +25,40 @@
  * SUCH DAMAGE.
  */
 
+#include <chrono>
 #include <client/include/netconf/client.hpp>
 #include <client/include/netconf/rpc.hpp>
+#include <cstring>
+#include <errno.h>
 #include <shared/include/exception.hpp>
-#include <shared/include/unix.hpp>
-#include <shared/include/netconf/session.hpp>
-#include <shared/include/stream.hpp>
-#include <shared/include/socket.hpp>
 #include <shared/include/logger.hpp>
-#include <shared/include/yang.hpp>
-#include <shared/include/request/get/config.hpp>
+#include <shared/include/netconf/session.hpp>
 #include <shared/include/request/commit.hpp>
 #include <shared/include/request/edit.hpp>
+#include <shared/include/request/get/config.hpp>
+#include <shared/include/socket.hpp>
+#include <shared/include/stream.hpp>
+#include <shared/include/unix.hpp>
 #include <shared/include/xml/envelope.hpp>
-#include <unistd.h>
-#include <errno.h>
-#include <cstring>
+#include <shared/include/yang.hpp>
 #include <sstream>
 #include <thread>
-#include <chrono>
+#include <unistd.h>
 
 namespace netd::client::netconf {
 
-  NetconfClient::NetconfClient(netd::shared::TransportType transport_type, 
-                               const std::string& server_address, 
-                               int port)
-      : transport_type_(transport_type), server_address_(server_address), port_(port), connected_(false) {
-    auto& yang = netd::shared::Yang::getInstance();
-    ly_ctx* ctx = yang.getContext();
-    
+  NetconfClient::NetconfClient(netd::shared::TransportType transport_type,
+                               const std::string &server_address, int port)
+      : transport_type_(transport_type), server_address_(server_address),
+        port_(port), connected_(false) {
+    auto &yang = netd::shared::Yang::getInstance();
+    ly_ctx *ctx = yang.getContext();
+
     session_ = std::make_unique<netd::shared::netconf::NetconfSession>(
         ctx, -1, transport_type_);
   }
 
-  NetconfClient::~NetconfClient() {
-    disconnect(true);
-  }
+  NetconfClient::~NetconfClient() { disconnect(true); }
 
   bool NetconfClient::connect() {
     if (connected_) {
@@ -73,10 +71,11 @@ namespace netd::client::netconf {
     }
 
     std::string formatted_address = netd::shared::BaseTransport::formatAddress(
-      transport_type_, server_address_, port_);
+        transport_type_, server_address_, port_);
 
     if (!transport_->connect(formatted_address)) {
-      throw netd::shared::ConnectionError("Failed to connect to server at " + formatted_address);
+      throw netd::shared::ConnectionError("Failed to connect to server at " +
+                                          formatted_address);
     }
 
     int socket = transport_->getSocket();
@@ -88,8 +87,9 @@ namespace netd::client::netconf {
 
     connected_ = true;
     netd::shared::ClientSocket client_socket(socket);
-    
-    netd::shared::netconf::Rpc::sendHelloToServer(client_socket, session_.get());
+
+    netd::shared::netconf::Rpc::sendHelloToServer(client_socket,
+                                                  session_.get());
     return true;
   }
 
@@ -117,14 +117,14 @@ namespace netd::client::netconf {
     return connected_ && session_ && session_->isConnected();
   }
 
-  netd::shared::netconf::NetconfSession* NetconfClient::getSession() const {
+  netd::shared::netconf::NetconfSession *NetconfClient::getSession() const {
     return session_.get();
   }
 
   void NetconfClient::rpcResponseReceiveWait(
-    netd::shared::RpcRxStream& rpc_stream, 
-    netd::shared::netconf::NetconfSession* session) {
-    
+      netd::shared::RpcRxStream &rpc_stream,
+      netd::shared::netconf::NetconfSession *session) {
+
     if (!session) {
       return;
     }
@@ -136,15 +136,18 @@ namespace netd::client::netconf {
     }
   }
 
-  std::string NetconfClient::sendRequest(const netd::shared::request::get::GetConfigRequest&) {
+  std::string NetconfClient::sendRequest(
+      const netd::shared::request::get::GetConfigRequest &) {
     throw netd::shared::NotImplementedError("Not implemented");
   }
 
-  std::string NetconfClient::sendRequest(const netd::shared::request::CommitRequest&) {
+  std::string
+  NetconfClient::sendRequest(const netd::shared::request::CommitRequest &) {
     throw netd::shared::NotImplementedError("Not implemented");
   }
 
-  std::string NetconfClient::sendRequest(const netd::shared::request::EditConfigRequest&) {
+  std::string
+  NetconfClient::sendRequest(const netd::shared::request::EditConfigRequest &) {
     throw netd::shared::NotImplementedError("Not implemented");
   }
 

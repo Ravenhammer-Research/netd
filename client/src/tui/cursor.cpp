@@ -45,9 +45,7 @@ namespace netd::client::tui {
     return y;
   }
 
-  void TUI::moveCursor(int y, int x) {
-    move(y, x);
-  }
+  void TUI::moveCursor(int y, int x) { move(y, x); }
 
   // Character insertion/deletion
   void TUI::insertCharAtCursor(char ch) {

@@ -32,11 +32,11 @@ namespace netd::shared {
 
   /**
    * BaseNativeBackend
-   * 
+   *
    * This is a mix-in class that serves as a marker for host-specific
    * implementations. Classes that inherit from this indicate they are
    * native backend implementations for a specific operating system.
-   * 
+   *
    * Currently used by FreeBSD-specific implementations in the freebsd/
    * directory to indicate they are host-specific backend classes.
    */

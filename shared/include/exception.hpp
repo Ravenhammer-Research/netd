@@ -36,12 +36,13 @@ namespace netd::shared {
 
   class NetdError : public std::runtime_error {
   private:
-    std::vector<void*> stackTrace_;
+    std::vector<void *> stackTrace_;
 
   public:
     explicit NetdError(const std::string &message);
-    const std::vector<void*>& getStackTrace() const { return stackTrace_; }
-    static std::string getStackTraceString(const std::vector<void*> &stackTrace);
+    const std::vector<void *> &getStackTrace() const { return stackTrace_; }
+    static std::string
+    getStackTraceString(const std::vector<void *> &stackTrace);
   };
 
   class NotImplementedError : public NetdError {
@@ -52,14 +53,12 @@ namespace netd::shared {
 
   class ArgumentError : public NetdError {
   public:
-    explicit ArgumentError(const std::string &message)
-        : NetdError(message) {}
+    explicit ArgumentError(const std::string &message) : NetdError(message) {}
   };
 
   class ConnectionError : public NetdError {
   public:
-    explicit ConnectionError(const std::string &message)
-        : NetdError(message) {}
+    explicit ConnectionError(const std::string &message) : NetdError(message) {}
   };
 
   class ConfigurationError : public NetdError {
@@ -70,63 +69,56 @@ namespace netd::shared {
 
   class NetworkError : public NetdError {
   public:
-    explicit NetworkError(const std::string &message)
-        : NetdError(message) {}
+    explicit NetworkError(const std::string &message) : NetdError(message) {}
   };
 
   class RpcError : public NetdError {
   public:
-    explicit RpcError(const std::string &message)
-        : NetdError(message) {}
+    explicit RpcError(const std::string &message) : NetdError(message) {}
   };
 
   // YANG-related exceptions
   class YangError : public NetdError {
   private:
-    void* yang_ctx_;  // ly_ctx* but using void* to avoid libyang dependency in header
+    void *yang_ctx_; // ly_ctx* but using void* to avoid libyang dependency in
+                     // header
 
   public:
-    explicit YangError(void* yang_ctx)
+    explicit YangError(void *yang_ctx)
         : NetdError("YANG error"), yang_ctx_(yang_ctx) {}
-    
-    void* getYangContext() const { return yang_ctx_; }
+
+    void *getYangContext() const { return yang_ctx_; }
   };
 
   class YangParseError : public YangError {
   public:
-    explicit YangParseError(void* yang_ctx)
-        : YangError(yang_ctx) {}
+    explicit YangParseError(void *yang_ctx) : YangError(yang_ctx) {}
   };
 
   class YangValidationError : public YangError {
   public:
-    explicit YangValidationError(void* yang_ctx)
-        : YangError(yang_ctx) {}
+    explicit YangValidationError(void *yang_ctx) : YangError(yang_ctx) {}
   };
 
   class YangContextError : public YangError {
   public:
-    explicit YangContextError(void* yang_ctx)
-        : YangError(yang_ctx) {}
+    explicit YangContextError(void *yang_ctx) : YangError(yang_ctx) {}
   };
 
   class YangDataError : public YangError {
   public:
-    explicit YangDataError(void* yang_ctx)
-        : YangError(yang_ctx) {}
+    explicit YangDataError(void *yang_ctx) : YangError(yang_ctx) {}
   };
 
   class YangSchemaError : public YangError {
   public:
-    explicit YangSchemaError(void* yang_ctx)
-        : YangError(yang_ctx) {}
+    explicit YangSchemaError(void *yang_ctx) : YangError(yang_ctx) {}
   };
 
   // Transport-specific exceptions
   class TransportError : public NetdError {
   public:
-    explicit TransportError(const std::string &message)
-        : NetdError(message) {}
+    explicit TransportError(const std::string &message) : NetdError(message) {}
   };
 
   class SocketError : public TransportError {
@@ -137,8 +129,7 @@ namespace netd::shared {
 
   class BindError : public TransportError {
   public:
-    explicit BindError(const std::string &message)
-        : TransportError(message) {}
+    explicit BindError(const std::string &message) : TransportError(message) {}
   };
 
   class ListenError : public TransportError {
@@ -155,8 +146,7 @@ namespace netd::shared {
 
   class SendError : public TransportError {
   public:
-    explicit SendError(const std::string &message)
-        : TransportError(message) {}
+    explicit SendError(const std::string &message) : TransportError(message) {}
   };
 
   class ReceiveError : public TransportError {
@@ -168,20 +158,17 @@ namespace netd::shared {
   // Protocol-specific exceptions
   class ProtocolError : public NetdError {
   public:
-    explicit ProtocolError(const std::string &message)
-        : NetdError(message) {}
+    explicit ProtocolError(const std::string &message) : NetdError(message) {}
   };
 
   class HttpError : public ProtocolError {
   public:
-    explicit HttpError(const std::string &message)
-        : ProtocolError(message) {}
+    explicit HttpError(const std::string &message) : ProtocolError(message) {}
   };
 
   class HttpParseError : public HttpError {
   public:
-    explicit HttpParseError(const std::string &message)
-        : HttpError(message) {}
+    explicit HttpParseError(const std::string &message) : HttpError(message) {}
   };
 
   class HttpVersionError : public HttpError {
@@ -192,8 +179,7 @@ namespace netd::shared {
 
   class QuicError : public ProtocolError {
   public:
-    explicit QuicError(const std::string &message)
-        : ProtocolError(message) {}
+    explicit QuicError(const std::string &message) : ProtocolError(message) {}
   };
 
   class QuicConnectionError : public QuicError {
@@ -204,20 +190,17 @@ namespace netd::shared {
 
   class QuicStreamError : public QuicError {
   public:
-    explicit QuicStreamError(const std::string &message)
-        : QuicError(message) {}
+    explicit QuicStreamError(const std::string &message) : QuicError(message) {}
   };
 
   class QuicPacketError : public QuicError {
   public:
-    explicit QuicPacketError(const std::string &message)
-        : QuicError(message) {}
+    explicit QuicPacketError(const std::string &message) : QuicError(message) {}
   };
 
   class SctpError : public ProtocolError {
   public:
-    explicit SctpError(const std::string &message)
-        : ProtocolError(message) {}
+    explicit SctpError(const std::string &message) : ProtocolError(message) {}
   };
 
   class SctpAssociationError : public SctpError {
@@ -228,8 +211,7 @@ namespace netd::shared {
 
   class SctpStreamError : public SctpError {
   public:
-    explicit SctpStreamError(const std::string &message)
-        : SctpError(message) {}
+    explicit SctpStreamError(const std::string &message) : SctpError(message) {}
   };
 
   class SctpMultihomingError : public SctpError {
@@ -241,14 +223,12 @@ namespace netd::shared {
   // Security-related exceptions
   class SecurityError : public NetdError {
   public:
-    explicit SecurityError(const std::string &message)
-        : NetdError(message) {}
+    explicit SecurityError(const std::string &message) : NetdError(message) {}
   };
 
   class TLSError : public SecurityError {
   public:
-    explicit TLSError(const std::string &message)
-        : SecurityError(message) {}
+    explicit TLSError(const std::string &message) : SecurityError(message) {}
   };
 
   class TLSCertificateError : public TLSError {
@@ -265,20 +245,17 @@ namespace netd::shared {
 
   class TLSKeyError : public TLSError {
   public:
-    explicit TLSKeyError(const std::string &message)
-        : TLSError(message) {}
+    explicit TLSKeyError(const std::string &message) : TLSError(message) {}
   };
 
   class DTLSError : public TLSError {
   public:
-    explicit DTLSError(const std::string &message)
-        : TLSError(message) {}
+    explicit DTLSError(const std::string &message) : TLSError(message) {}
   };
 
   class DTLSMTUError : public DTLSError {
   public:
-    explicit DTLSMTUError(const std::string &message)
-        : DTLSError(message) {}
+    explicit DTLSMTUError(const std::string &message) : DTLSError(message) {}
   };
 
   class DTLSRetransmissionError : public DTLSError {
@@ -315,14 +292,12 @@ namespace netd::shared {
   // XML-related exceptions
   class XmlError : public NetdError {
   public:
-    explicit XmlError(const std::string &message)
-        : NetdError(message) {}
+    explicit XmlError(const std::string &message) : NetdError(message) {}
   };
 
   class XmlParseError : public XmlError {
   public:
-    explicit XmlParseError(const std::string &message)
-        : XmlError(message) {}
+    explicit XmlParseError(const std::string &message) : XmlError(message) {}
   };
 
   class XmlValidationError : public XmlError {
@@ -345,14 +320,12 @@ namespace netd::shared {
 
   class XmlSchemaError : public XmlError {
   public:
-    explicit XmlSchemaError(const std::string &message)
-        : XmlError(message) {}
+    explicit XmlSchemaError(const std::string &message) : XmlError(message) {}
   };
 
   class XmlEncodingError : public XmlError {
   public:
-    explicit XmlEncodingError(const std::string &message)
-        : XmlError(message) {}
+    explicit XmlEncodingError(const std::string &message) : XmlError(message) {}
   };
 
   class XmlMalformedError : public XmlError {

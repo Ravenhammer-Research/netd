@@ -32,7 +32,7 @@ namespace netd::client::netconf {
 
   /**
    * @brief Empty mixin class for NETCONF client functionality
-   * 
+   *
    * This class serves as a pure mixin that can be inherited by other classes
    * to provide NETCONF client capabilities through multiple inheritance.
    */

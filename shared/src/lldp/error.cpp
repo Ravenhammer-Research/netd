@@ -25,13 +25,13 @@
  * SUCH DAMAGE.
  */
 
-#include <shared/include/lldp/error.hpp>
 #include <lldpctl.h>
+#include <shared/include/lldp/error.hpp>
 
 namespace netd::shared::lldp {
 
-const char* getLLDPErrorString(LLDPErrorCode error) {
+  const char *getLLDPErrorString(LLDPErrorCode error) {
     return lldpctl_strerror(static_cast<lldpctl_error_t>(error));
-}
+  }
 
 } // namespace netd::shared::lldp

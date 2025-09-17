@@ -27,21 +27,21 @@
 
 #pragma once
 
-#include <lldpctl.h>
-#include <string>
-#include <vector>
-#include <memory>
 #include <chrono>
-#include <shared/include/lldp/neighbor.hpp>
+#include <lldpctl.h>
+#include <memory>
 #include <shared/include/lldp/chassis.hpp>
 #include <shared/include/lldp/custom.hpp>
 #include <shared/include/lldp/error.hpp>
+#include <shared/include/lldp/neighbor.hpp>
+#include <string>
+#include <vector>
 
 namespace netd::shared::lldp {
 
-class Port {
-public:
-    Port(lldpctl_atom_t* port_atom, lldpctl_conn_t* connection);
+  class Port {
+  public:
+    Port(lldpctl_atom_t *port_atom, lldpctl_conn_t *connection);
     ~Port();
 
     std::string getPortName() const;
@@ -52,22 +52,23 @@ public:
     int getPortAge() const;
     std::vector<std::unique_ptr<Neighbor>> getNeighbors() const;
     std::unique_ptr<Chassis> getChassis() const;
-    
+
     // Custom TLV operations
     std::vector<std::unique_ptr<CustomTLV>> getCustomTLVs() const;
-    bool addCustomTLV(const std::string& oui, int oui_subtype, 
-                     const std::string& info_string, const std::string& operation = "add");
+    bool addCustomTLV(const std::string &oui, int oui_subtype,
+                      const std::string &info_string,
+                      const std::string &operation = "add");
     bool clearCustomTLVs();
-    
+
     bool isValid() const;
 
-private:
-    lldpctl_atom_t* port_atom_;
-    lldpctl_conn_t* connection_;
+  private:
+    lldpctl_atom_t *port_atom_;
+    lldpctl_conn_t *connection_;
     bool atom_modified_;
     std::string getStringValue(lldpctl_key_t key) const;
     int getIntValue(lldpctl_key_t key) const;
-    lldpctl_atom_t* getFreshPortAtom() const;
-};
+    lldpctl_atom_t *getFreshPortAtom() const;
+  };
 
 } // namespace netd::shared::lldp

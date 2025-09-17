@@ -34,8 +34,9 @@ namespace netd::server::netconf::handlers {
 
   std::unique_ptr<netd::shared::response::CloseResponse>
   RpcHandler::handleCloseSessionRequest(
-      netd::shared::request::session::CloseRequest* request [[maybe_unused]]) {
-    throw netd::shared::NotImplementedError("Close session handler not implemented");
+      netd::shared::request::session::CloseRequest *request [[maybe_unused]]) {
+    throw netd::shared::NotImplementedError(
+        "Close session handler not implemented");
   }
 
 } // namespace netd::server::netconf::handlers

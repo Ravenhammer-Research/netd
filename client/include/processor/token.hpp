@@ -33,21 +33,21 @@
 
 namespace netd::client::processor {
 
-class TokenMapper {
-public:
+  class TokenMapper {
+  public:
     static std::string getTokenName(int token);
-    static int getTokenValue(const std::string& name);
+    static int getTokenValue(const std::string &name);
     static bool isCommandToken(int token);
     static bool isInterfaceToken(int token);
     static bool isRoutingToken(int token);
     static bool isDisplayToken(int token);
     static bool isProtocolToken(int token);
     static bool isValueToken(int token);
-    
-private:
+
+  private:
     static const std::unordered_map<int, std::string> token_names_;
     static const std::unordered_map<std::string, int> token_values_;
-};
+  };
 
 } // namespace netd::client::processor
 

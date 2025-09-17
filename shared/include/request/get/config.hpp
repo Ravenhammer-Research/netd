@@ -44,16 +44,18 @@ namespace netd::shared::request::get {
       : public netd::shared::request::Request<GetConfigRequest> {
   public:
     GetConfigRequest() : netd::shared::request::Request<GetConfigRequest>() {}
-    GetConfigRequest(netd::shared::netconf::NetconfSession *session, struct lyd_node *rpc)
+    GetConfigRequest(netd::shared::netconf::NetconfSession *session,
+                     struct lyd_node *rpc)
         : netd::shared::request::Request<GetConfigRequest>(session, rpc) {}
     virtual ~GetConfigRequest() = default;
 
     // Override base methods
-    lyd_node *toYang(ly_ctx *ctx) const ;
+    lyd_node *toYang(ly_ctx *ctx) const;
     static std::unique_ptr<GetConfigRequest> fromYang(const ly_ctx *ctx,
-                                                     const lyd_node *node) ;
-    static std::unique_ptr<GetConfigRequest> fromRpcEnvelope(const ly_ctx *ctx,
-                                                            std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope) ;
+                                                      const lyd_node *node);
+    static std::unique_ptr<GetConfigRequest>
+    fromRpcEnvelope(const ly_ctx *ctx,
+                    std::shared_ptr<netd::shared::xml::RpcEnvelope> envelope);
 
     // Source datastore access
     Datastore getSource() const { return source_; }
@@ -61,15 +63,18 @@ namespace netd::shared::request::get {
 
     // Requested module access
     std::string getRequestedModule() const { return requestedModule_; }
-    void setRequestedModule(const std::string &module) { requestedModule_ = module; }
-    
+    void setRequestedModule(const std::string &module) {
+      requestedModule_ = module;
+    }
+
     // Interfaces filter access
     bool hasInterfacesFilter() const { return hasInterfacesFilter_; }
 
   private:
     Datastore source_ = Datastore::RUNNING; // Default to running datastore
     std::string requestedModule_ = "all";   // Store the requested module name
-    bool hasInterfacesFilter_ = false;      // Track if this is an interfaces filter request
+    bool hasInterfacesFilter_ =
+        false; // Track if this is an interfaces filter request
   };
 
 } // namespace netd::shared::request::get

@@ -25,65 +25,70 @@
  * SUCH DAMAGE.
  */
 
+#include <climits>
+#include <dirent.h>
+#include <dlfcn.h>
+#include <filesystem>
+#include <shared/include/exception.hpp>
 #include <shared/include/extension.hpp>
 #include <shared/include/logger.hpp>
-#include <shared/include/exception.hpp>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <climits>
-#include <dlfcn.h>
-#include <dirent.h>
-#include <filesystem>
 
 namespace netd::shared {
 
-  std::map<std::string, std::shared_ptr<NetdExtension>> NetdExtension::loadExtensions() {
+  std::map<std::string, std::shared_ptr<NetdExtension>>
+  NetdExtension::loadExtensions() {
     auto &logger = Logger::getInstance();
     std::map<std::string, std::shared_ptr<NetdExtension>> extensions;
-    
+
     logger.info("Loading NetD extensions...");
-    
+
     auto paths = getExtensionPaths();
-    for (const auto& path : paths) {
+    for (const auto &path : paths) {
       logger.debug("Searching for extensions in: " + path);
-      
-      if (!std::filesystem::exists(path) || !std::filesystem::is_directory(path)) {
+
+      if (!std::filesystem::exists(path) ||
+          !std::filesystem::is_directory(path)) {
         continue;
       }
-      
+
       try {
-        for (const auto& entry : std::filesystem::directory_iterator(path)) {
+        for (const auto &entry : std::filesystem::directory_iterator(path)) {
           if (entry.is_regular_file() && entry.path().extension() == ".so") {
             std::string filepath = entry.path().string();
             logger.debug("Found extension file: " + filepath);
-            
+
             auto extension = loadExtension(filepath);
             if (extension) {
               auto info = extension->getInfo();
               extensions[info.name] = extension;
-              logger.info("Loaded extension: " + info.name + " v" + info.version);
+              logger.info("Loaded extension: " + info.name + " v" +
+                          info.version);
             }
           }
         }
-      } catch (const std::filesystem::filesystem_error& e) {
-        logger.warning("Error reading extension directory " + path + ": " + e.what());
+      } catch (const std::filesystem::filesystem_error &e) {
+        logger.warning("Error reading extension directory " + path + ": " +
+                       e.what());
       }
     }
-    
+
     logger.info("Loaded " + std::to_string(extensions.size()) + " extensions");
     return extensions;
   }
 
   std::vector<std::string> NetdExtension::getExtensionPaths() {
     std::vector<std::string> paths;
-    
+
 #ifdef DEBUG_BUILD
-    // Check if extensions directory exists relative to current working directory
+    // Check if extensions directory exists relative to current working
+    // directory
     struct stat st;
     if (stat("extensions", &st) == 0 && S_ISDIR(st.st_mode)) {
       char realpath_ext[PATH_MAX];
       char realpath_dev[PATH_MAX];
-      if (realpath("extensions", realpath_ext) != nullptr && 
+      if (realpath("extensions", realpath_ext) != nullptr &&
           realpath(EXTENSION_DEV_DIR, realpath_dev) != nullptr &&
           strcmp(realpath_ext, realpath_dev) == 0) {
         paths.push_back(EXTENSION_DEV_DIR);
@@ -93,50 +98,54 @@ namespace netd::shared {
 
     // Add production extension directory
     paths.push_back(EXTENSION_DIR);
-    
+
     return paths;
   }
 
-  std::shared_ptr<NetdExtension> NetdExtension::loadExtension(const std::string& filepath) {
+  std::shared_ptr<NetdExtension>
+  NetdExtension::loadExtension(const std::string &filepath) {
     auto &logger = Logger::getInstance();
-    
+
     // Load the shared library
-    void* handle = dlopen(filepath.c_str(), RTLD_LAZY);
+    void *handle = dlopen(filepath.c_str(), RTLD_LAZY);
     if (!handle) {
       logger.error("Failed to load extension " + filepath + ": " + dlerror());
       return nullptr;
     }
-    
+
     // Clear any existing error
     dlerror();
-    
+
     // Get the create function
-    typedef NetdExtension* (*CreateExtensionFunc)();
-    CreateExtensionFunc create_func = (CreateExtensionFunc)dlsym(handle, "createExtension");
-    
-    const char* dlsym_error = dlerror();
+    typedef NetdExtension *(*CreateExtensionFunc)();
+    CreateExtensionFunc create_func =
+        (CreateExtensionFunc)dlsym(handle, "createExtension");
+
+    const char *dlsym_error = dlerror();
     if (dlsym_error) {
-      logger.error("Failed to find createExtension symbol in " + filepath + ": " + dlsym_error);
+      logger.error("Failed to find createExtension symbol in " + filepath +
+                   ": " + dlsym_error);
       dlclose(handle);
       return nullptr;
     }
-    
+
     // Create the extension instance
-    NetdExtension* extension_ptr = create_func();
+    NetdExtension *extension_ptr = create_func();
     if (!extension_ptr) {
       logger.error("Failed to create extension instance from " + filepath);
       dlclose(handle);
       return nullptr;
     }
-    
+
     // Check compatibility
     if (!extension_ptr->isCompatible(PROJECT_VERSION)) {
-      logger.warning("Extension " + filepath + " is not compatible with NetD version " + PROJECT_VERSION);
+      logger.warning("Extension " + filepath +
+                     " is not compatible with NetD version " + PROJECT_VERSION);
       delete extension_ptr;
       dlclose(handle);
       return nullptr;
     }
-    
+
     // Initialize the extension
     if (!extension_ptr->initialize()) {
       logger.error("Failed to initialize extension from " + filepath);
@@ -144,16 +153,16 @@ namespace netd::shared {
       dlclose(handle);
       return nullptr;
     }
-    
+
     // Create a shared_ptr with custom deleter to handle dlclose
-    auto deleter = [handle](NetdExtension* ext) {
+    auto deleter = [handle](NetdExtension *ext) {
       if (ext) {
         ext->cleanup();
         delete ext;
       }
       dlclose(handle);
     };
-    
+
     return std::shared_ptr<NetdExtension>(extension_ptr, deleter);
   }
 

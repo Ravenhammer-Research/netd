@@ -25,55 +25,58 @@
  * SUCH DAMAGE.
  */
 
-#include <shared/include/transport.hpp>
-#include <shared/include/unix.hpp>
-#include <shared/include/sctp.hpp>
+#include <shared/include/exception.hpp>
 #include <shared/include/http.hpp>
 #include <shared/include/quic.hpp>
-#include <shared/include/exception.hpp>
+#include <shared/include/sctp.hpp>
+#include <shared/include/transport.hpp>
+#include <shared/include/unix.hpp>
 
 namespace netd::shared {
 
   std::unique_ptr<BaseTransport> BaseTransport::create(TransportType type) {
     switch (type) {
-      case TransportType::UNIX:
-        return std::make_unique<UnixTransport>();
-        
-      case TransportType::SCTP:
-        throw NotImplementedError("SCTP transport not yet implemented");
-        
-      case TransportType::HTTP:
-        throw NotImplementedError("HTTP transport not yet implemented");
-        
-      case TransportType::SCTPS:
-        throw NotImplementedError("SCTP over TLS transport not yet implemented");
-        
-      case TransportType::HTTPS:
-        throw NotImplementedError("HTTPS transport not yet implemented");
-        
-      default:
-        throw TransportError("Unsupported transport type: " + std::to_string(static_cast<int>(type)));
+    case TransportType::UNIX:
+      return std::make_unique<UnixTransport>();
+
+    case TransportType::SCTP:
+      throw NotImplementedError("SCTP transport not yet implemented");
+
+    case TransportType::HTTP:
+      throw NotImplementedError("HTTP transport not yet implemented");
+
+    case TransportType::SCTPS:
+      throw NotImplementedError("SCTP over TLS transport not yet implemented");
+
+    case TransportType::HTTPS:
+      throw NotImplementedError("HTTPS transport not yet implemented");
+
+    default:
+      throw TransportError("Unsupported transport type: " +
+                           std::to_string(static_cast<int>(type)));
     }
   }
 
-  std::string BaseTransport::formatAddress(TransportType type, const std::string& bind_address, int port) {
+  std::string BaseTransport::formatAddress(TransportType type,
+                                           const std::string &bind_address,
+                                           int port) {
     switch (type) {
-      case TransportType::UNIX:
-        // For Unix domain sockets, use the bind_address as the socket path
-        return bind_address;
-        
-      case TransportType::SCTP:
-      case TransportType::HTTP:
-        // For TCP-based transports, format as "address:port"
-        return bind_address + ":" + std::to_string(port);
-        
-      case TransportType::SCTPS:
-      case TransportType::HTTPS:
-        // For TLS-based transports, format as "address:port"
-        return bind_address + ":" + std::to_string(port);
-        
-      default:
-        throw TransportError("Unknown transport type for address formatting");
+    case TransportType::UNIX:
+      // For Unix domain sockets, use the bind_address as the socket path
+      return bind_address;
+
+    case TransportType::SCTP:
+    case TransportType::HTTP:
+      // For TCP-based transports, format as "address:port"
+      return bind_address + ":" + std::to_string(port);
+
+    case TransportType::SCTPS:
+    case TransportType::HTTPS:
+      // For TLS-based transports, format as "address:port"
+      return bind_address + ":" + std::to_string(port);
+
+    default:
+      throw TransportError("Unknown transport type for address formatting");
     }
   }
 

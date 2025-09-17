@@ -82,5 +82,4 @@ namespace netd::shared::response {
     return std::make_unique<DeleteConfigResponse>();
   }
 
-
 } // namespace netd::shared::response

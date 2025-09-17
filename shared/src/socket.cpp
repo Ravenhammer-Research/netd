@@ -1,7 +1,7 @@
 #define _WANT_UCRED
+#include <shared/include/logger.hpp>
 #include <shared/include/socket.hpp>
 #include <shared/include/unix.hpp>
-#include <shared/include/logger.hpp>
 #include <sys/select.h>
 #include <sys/socket.h>
 #include <sys/ucred.h>
@@ -10,14 +10,13 @@
 
 namespace netd::shared {
 
-  ClientSocket::ClientSocket(int socket_fd) : socket_fd_(socket_fd) {
-  }
+  ClientSocket::ClientSocket(int socket_fd) : socket_fd_(socket_fd) {}
 
-  bool ClientSocket::sendData(const std::string& data) {
+  bool ClientSocket::sendData(const std::string &data) {
     if (socket_fd_ < 0) {
       return false;
     }
-    
+
     UnixTransport transport;
     return transport.sendData(socket_fd_, data);
   }
@@ -26,7 +25,7 @@ namespace netd::shared {
     if (socket_fd_ < 0) {
       return "";
     }
-    
+
     UnixTransport transport;
     return transport.receiveData(socket_fd_);
   }
@@ -47,11 +46,11 @@ namespace netd::shared {
 
     struct xucred cred;
     socklen_t len = sizeof(cred);
-    
+
     if (getsockopt(socket_fd_, SOL_LOCAL, LOCAL_PEERCRED, &cred, &len) == -1) {
       return 0;
     }
-    
+
     return cred.cr_uid;
   }
 

@@ -39,36 +39,30 @@ namespace netd::client::tui {
   constexpr char BACKSPACE_KEY = 127;
   constexpr char PRINTABLE_CHAR_MIN = 32;
   constexpr char PRINTABLE_CHAR_MAX = 126;
-  
+
   // String literals
-  constexpr const char* PROMPT_PREFIX = "netc";
-  constexpr const char* PROMPT_SUFFIX = "> ";
+  constexpr const char *PROMPT_PREFIX = "netc";
+  constexpr const char *PROMPT_SUFFIX = "> ";
 
   // Prompt management
-  int TUI::getPromptLength() {
-    return static_cast<int>(prompt_.length());
-  }
+  int TUI::getPromptLength() { return static_cast<int>(prompt_.length()); }
 
-  int TUI::getPromptRow() {
-    return getScreenSizeY() - 1;
-  }
+  int TUI::getPromptRow() { return getScreenSizeY() - 1; }
 
   void TUI::putPrompt() {
     move(getPromptRow(), 0);
     clrtoeol();
-    
+
     // Print "netc" in bold, then ">" in normal formatting
     attron(A_BOLD);
     printw(PROMPT_PREFIX);
     attroff(A_BOLD);
     printw(PROMPT_SUFFIX);
-    
+
     refresh();
   }
 
-  void TUI::redrawPrompt() {
-    putPrompt();
-  }
+  void TUI::redrawPrompt() { putPrompt(); }
 
   // Input line management
   void TUI::putCurrentLine(const std::string &line) {
@@ -92,10 +86,10 @@ namespace netd::client::tui {
 
     std::string line;
     int key;
-    
+
     while (true) {
       key = scanKeyInput();
-      
+
       if (key == KEY_RESIZE) {
         handleResize();
         // Redraw the prompt and current input after resize
@@ -109,7 +103,7 @@ namespace netd::client::tui {
         nodelay(stdscr, TRUE);
         int next_key = getch();
         nodelay(stdscr, FALSE);
-        
+
         if (next_key == ERR) {
           // EOF (Ctrl+D) - return special marker to signal exit
           return std::string(1, CTRL_D_MARKER);
@@ -149,38 +143,37 @@ namespace netd::client::tui {
         refresh();
       }
     }
-    
+
     return line;
   }
 
-  int TUI::scanKeyInput() {
-    return getch();
-  }
+  int TUI::scanKeyInput() { return getch(); }
 
-  std::string TUI::formatReturnValue(bool ctrl_d_exit, const std::string &result) {
+  std::string TUI::formatReturnValue(bool ctrl_d_exit,
+                                     const std::string &result) {
     return ctrl_d_exit ? std::string(1, CTRL_D_MARKER) : result;
   }
 
   void TUI::handleKeyInput(int key) {
     // Basic key handling - can be expanded for more complex input
     switch (key) {
-      case KEY_UP:
-        // Handle up arrow for command history
-        break;
-      case KEY_DOWN:
-        // Handle down arrow for command history
-        break;
-      case KEY_LEFT:
-        // Handle left arrow for cursor movement
-        break;
-      case KEY_RIGHT:
-        // Handle right arrow for cursor movement
-        break;
-      case TAB_KEY:  // Tab key
-        // Handle tab completion
-        break;
-      default:
-        break;
+    case KEY_UP:
+      // Handle up arrow for command history
+      break;
+    case KEY_DOWN:
+      // Handle down arrow for command history
+      break;
+    case KEY_LEFT:
+      // Handle left arrow for cursor movement
+      break;
+    case KEY_RIGHT:
+      // Handle right arrow for cursor movement
+      break;
+    case TAB_KEY: // Tab key
+      // Handle tab completion
+      break;
+    default:
+      break;
     }
   }
 
