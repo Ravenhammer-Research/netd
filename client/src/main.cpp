@@ -30,6 +30,7 @@
 #include <client/include/netconf/client.hpp>
 #include <client/include/processor/parser.hpp>
 #include <client/include/tui.hpp>
+#include <exception>
 #include <getopt.h>
 #include <iostream>
 #include <shared/include/exception.hpp>
@@ -40,43 +41,94 @@
 #include <unistd.h>
 #include <vector>
 
+#define SPACE(n) std::string(n, ' ')
+
+constexpr const char ANSI_CLEAR_SCREEN[] = {0x1b, 0x5b, 0x32, 0x4a,
+                                            0x1b, 0x5b, 0x48, 0x00};
+constexpr const char ANSI_BOLD[] = {0x1b, 0x5b, 0x31, 0x6d, 0x00};
+constexpr const char ANSI_RESET[] = {0x1b, 0x5b, 0x30, 0x6d, 0x00};
+constexpr const char ANSI_ITALIC[] = {0x1b, 0x5b, 0x33, 0x6d, 0x00};
+constexpr const char NEWLINE[] = {0x0a, 0x00};
+
+void global_exception_handler() {
+  std::cout << ANSI_CLEAR_SCREEN << std::flush;
+
+  std::cerr << "FATAL: Uncaught exception in netc" << std::endl;
+  std::cerr << "This might explain why netc -d exits unexpectedly" << std::endl;
+
+  try {
+    std::rethrow_exception(std::current_exception());
+  } catch (const std::exception &e) {
+    std::cerr << "Exception: " << e.what() << std::endl;
+  } catch (...) {
+    std::cerr << "Unknown exception type" << std::endl;
+  }
+
+  std::abort();
+}
+
 void printUsage(const char *progname) {
-  std::cerr << "\033[1mUsage:\033[0m " << progname
-            << " [\033[3moptions\033[0m]\n\n";
-  std::cerr << "\033[1mTransport Options\033[0m:\n";
-  std::cerr << "  \033[1m--unix\033[0m  [\033[3mpath\033[0m]             Unix "
-               "domain socket (default: /tmp/netd.sock)\n";
-  std::cerr
-      << "  \033[1m--sctps\033[0m [\033[3maddr\033[0m]:[\033[3mport\033[0m]    "
-         "  SCTP with DTLS \033[3m(not implemented)\033[0m\n";
-  std::cerr
-      << "  \033[1m--https\033[0m [\033[3maddr\033[0m]:[\033[3mport\033[0m]    "
-         "  HTTP with TLS \033[3m (not implemented)\033[0m\n\n";
-  std::cerr << "\033[1mDebug Options\033[0m:\n";
-  std::cerr
-      << "  \033[1m-d\033[0m                         Basic debug output\n";
-  std::cerr << "  \033[1m-dd\033[0m                        Basic debug + trace "
-               "output\n";
-  std::cerr << "  \033[1m-q\033[0m                         Quiet mode (errors "
-               "only)\n";
-  std::cerr
-      << "  \033[1m--debug\033[0m                    Basic debug output\n";
+  std::cerr << ANSI_BOLD << "Usage:" << ANSI_RESET << SPACE(1) << progname
+            << SPACE(1) << "[" << ANSI_ITALIC << "options" << ANSI_RESET << "]"
+            << NEWLINE << NEWLINE;
+  std::cerr << ANSI_BOLD << "Transport Options" << ANSI_RESET << ":" << NEWLINE;
+
+  std::cerr << SPACE(2) << ANSI_BOLD << "--unix" << ANSI_RESET << SPACE(2)
+            << "[" << ANSI_ITALIC << "path" << ANSI_RESET << "]" << SPACE(14)
+            << "Unix domain socket (default: /tmp/netd.sock)" << NEWLINE;
+
+  std::cerr << SPACE(2) << ANSI_BOLD << "--sctps" << ANSI_RESET << SPACE(1)
+            << "[" << ANSI_ITALIC << "addr" << ANSI_RESET << "]:["
+            << ANSI_ITALIC << "port" << ANSI_RESET << "]" << SPACE(7)
+            << "SCTP with DTLS" << SPACE(1) << ANSI_ITALIC
+            << "(not implemented)" << ANSI_RESET << NEWLINE;
+
+  std::cerr << SPACE(2) << ANSI_BOLD << "--https" << ANSI_RESET << SPACE(1)
+            << "[" << ANSI_ITALIC << "addr" << ANSI_RESET << "]:["
+            << ANSI_ITALIC << "port" << ANSI_RESET << "]" << SPACE(7)
+            << "HTTP with TLS " << ANSI_ITALIC << SPACE(1)
+            << "(not implemented)" << ANSI_RESET << NEWLINE << NEWLINE;
+
+  std::cerr << ANSI_BOLD << "Debug Options" << ANSI_RESET << ":" << NEWLINE;
+
+  std::cerr << SPACE(2) << ANSI_BOLD << "-d" << ANSI_RESET << SPACE(26)
+            << "Basic debug output" << NEWLINE;
+
+  std::cerr << SPACE(2) << ANSI_BOLD << "-dd" << ANSI_RESET << SPACE(25)
+            << "Basic debug + trace output" << NEWLINE;
+
+  std::cerr << SPACE(2) << ANSI_BOLD << "-q" << ANSI_RESET << SPACE(26)
+            << "Quiet mode (errors only)" << NEWLINE;
+
+  std::cerr << SPACE(2) << ANSI_BOLD << "--debug" << ANSI_RESET << SPACE(21)
+            << "Basic debug output" << NEWLINE;
+
 #ifdef HAVE_LLDP
-  std::cerr << "  \033[1m--debug-lldp\033[0m               LLDP debug output\n";
+  std::cerr << SPACE(2) << ANSI_BOLD << "--debug-lldp" << ANSI_RESET
+            << SPACE(16) << "LLDP debug output" << NEWLINE;
 #endif
-  std::cerr << "  \033[1m--debug-yang\033[0m               YANG debug output\n";
-  std::cerr
-      << "  \033[1m--debug-yang-dict\033[0m          YANG dictionary debug\n";
-  std::cerr << "  \033[1m--debug-yang-xpath\033[0m         YANG XPath debug\n";
-  std::cerr << "  \033[1m--debug-yang-depsets\033[0m       YANG dependency "
-               "sets debug\n";
-  std::cerr << "  \033[1m--debug-trace\033[0m              Application trace "
-               "debug\n\n";
-  std::cerr << "\033[1mOther Options\033[0m:\n";
-  std::cerr << "  \033[1m-L\033[0m                         List LLDP neighbors "
-               "and exit\n";
-  std::cerr
-      << "  \033[1m-h\033[0m                         Show this help message\n";
+  std::cerr << SPACE(2) << ANSI_BOLD << "--debug-yang" << ANSI_RESET
+            << SPACE(16) << "YANG debug output" << NEWLINE;
+
+  std::cerr << SPACE(2) << ANSI_BOLD << "--debug-yang-dict" << ANSI_RESET
+            << SPACE(11) << "YANG dictionary debug" << NEWLINE;
+
+  std::cerr << SPACE(2) << ANSI_BOLD << "--debug-yang-xpath" << ANSI_RESET
+            << SPACE(10) << "YANG XPath debug" << NEWLINE;
+
+  std::cerr << SPACE(2) << ANSI_BOLD << "--debug-yang-depsets" << ANSI_RESET
+            << SPACE(8) << "YANG dependency sets debug" << NEWLINE;
+
+  std::cerr << SPACE(2) << ANSI_BOLD << "--debug-trace" << ANSI_RESET
+            << SPACE(15) << "Application trace debug" << NEWLINE << NEWLINE;
+
+  std::cerr << ANSI_BOLD << "Other Options" << ANSI_RESET << ":" << NEWLINE;
+
+  std::cerr << SPACE(2) << ANSI_BOLD << "-L" << ANSI_RESET << SPACE(26)
+            << "List LLDP neighbors and exit" << NEWLINE;
+
+  std::cerr << SPACE(2) << ANSI_BOLD << "-h" << ANSI_RESET << SPACE(26)
+            << "Show this help message" << NEWLINE;
 }
 
 void showStartupInfo(netd::client::tui::TUI &tui) {
@@ -100,23 +152,21 @@ void showStartupInfo(netd::client::tui::TUI &tui) {
 }
 
 int main(int argc, char *argv[]) {
+  std::set_terminate(global_exception_handler);
+
   auto &logger = netd::shared::Logger::getInstance();
 
-  // Default values
   netd::shared::TransportType transportType = netd::shared::TransportType::UNIX;
   std::string bindAddress = "/tmp/netd.sock";
   uint32_t logMask = netd::shared::LOG_DEFAULT;
   bool listLLDP = false;
 
-  // Parse command line options
   int opt;
 
-  // Handle -dd before main parsing (getopt doesn't handle -dd naturally)
   for (int i = 1; i < argc; i++) {
     if (strcmp(argv[i], "-dd") == 0) {
       logMask |= static_cast<uint32_t>(netd::shared::LogMask::DEBUG);
       logMask |= static_cast<uint32_t>(netd::shared::LogMask::DEBUG_TRACE);
-      // Replace -dd with -d so getopt can handle it normally
       argv[i] = const_cast<char *>("-d");
     }
   }
@@ -140,19 +190,19 @@ int main(int argc, char *argv[]) {
   while ((opt = getopt_long(argc, argv, "dqlLh", long_options,
                             &option_index)) != -1) {
     switch (opt) {
-    case 1000: // --unix
+    case 1000:
       transportType = netd::shared::TransportType::UNIX;
       if (optarg)
         bindAddress = optarg;
       break;
-    case 1003: // --sctps
+    case 1003:
       transportType = netd::shared::TransportType::SCTPS;
       if (optarg)
         bindAddress = optarg;
       else
         bindAddress = "::";
       break;
-    case 1004: // --https
+    case 1004:
       transportType = netd::shared::TransportType::HTTPS;
       if (optarg)
         bindAddress = optarg;
@@ -160,35 +210,33 @@ int main(int argc, char *argv[]) {
         bindAddress = "::";
       break;
     case 'd':
-      // Legacy debug flag - add basic debug
       logMask |= static_cast<uint32_t>(netd::shared::LogMask::DEBUG);
       break;
     case 'q':
-      // Quiet mode - only error messages
       logMask = static_cast<uint32_t>(netd::shared::LogMask::ERROR);
       break;
-    case 2000: // --debug
+    case 2000:
       logMask |= static_cast<uint32_t>(netd::shared::LogMask::DEBUG);
       break;
 #ifdef HAVE_LLDP
-    case 2001: // --debug-lldp
+    case 2001:
       logMask |= static_cast<uint32_t>(netd::shared::LogMask::DEBUG_LLDP);
       break;
 #endif
-    case 2002: // --debug-yang
+    case 2002:
       logMask |= static_cast<uint32_t>(netd::shared::LogMask::DEBUG_YANG);
       break;
-    case 2003: // --debug-yang-dict
+    case 2003:
       logMask |= static_cast<uint32_t>(netd::shared::LogMask::DEBUG_YANG_DICT);
       break;
-    case 2004: // --debug-yang-xpath
+    case 2004:
       logMask |= static_cast<uint32_t>(netd::shared::LogMask::DEBUG_YANG_XPATH);
       break;
-    case 2005: // --debug-yang-depsets
+    case 2005:
       logMask |=
           static_cast<uint32_t>(netd::shared::LogMask::DEBUG_YANG_DEPSETS);
       break;
-    case 2006: // --debug-trace
+    case 2006:
       logMask |= static_cast<uint32_t>(netd::shared::LogMask::DEBUG_TRACE);
       break;
     case 'L':
@@ -207,10 +255,8 @@ int main(int argc, char *argv[]) {
     return listLLDPNeighbors();
   }
 
-  // Set log mask based on command line options
   logger.setLogMask(logMask);
 
-  // Enable timestamps if any debug is enabled
   if (logMask & (static_cast<uint32_t>(netd::shared::LogMask::DEBUG) |
                  static_cast<uint32_t>(netd::shared::LogMask::DEBUG_LLDP) |
                  static_cast<uint32_t>(netd::shared::LogMask::DEBUG_YANG) |
@@ -232,11 +278,9 @@ int main(int argc, char *argv[]) {
       transportType, bindAddress);
 
   try {
-    // Connect on startup to verify server availability
     client->connect();
     tui.setConnectionStatus("Server available at " + bindAddress);
-    client->disconnect(false); // Disconnect transport but don't close session
-                               // after verification
+    client->disconnect(false);
 
   } catch (const std::exception &e) {
     tui.setConnectionStatus("Server unavailable: " + std::string(e.what()));

@@ -55,7 +55,7 @@ extern int custom_input(char* buf, int max_size);
 "help"                   { printf("LEXER: Found HELP token\n"); return HELP; }
 
 "interfaces"             { return INTERFACES; }
-"interface"              { return INTERFACES; }
+"interface"              { return INTERFACE; }
 "routing-instances"      { return ROUTING_INSTANCES; }
 "routing-options"        { return ROUTING_OPTIONS; }
 
@@ -75,7 +75,6 @@ extern int custom_input(char* buf, int max_size);
 "vrf"                    { return VRF; }
 "vrf-target"             { return VRF_TARGET; }
 "vrf-table-label"        { return VRF_TABLE_LABEL; }
-"interface"              { return INTERFACE; }
 "static"                 { return STATIC; }
 "route"                  { return ROUTE; }
 "next-hop"               { return NEXT_HOP; }
@@ -128,7 +127,6 @@ extern int custom_input(char* buf, int max_size);
 
 [ \t\n]                 ;
 
-[a-zA-Z_][a-zA-Z0-9_]*  { printf("LEXER: Unknown token: %s\n", yytext); }
 .                       { printf("LEXER: Unknown character %s\n", yytext); }
 
 %%
