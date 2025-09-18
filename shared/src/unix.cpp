@@ -120,7 +120,13 @@ namespace netd::shared {
       return false;
     }
 
-    Logger::getInstance().debug("UnixTransport: Sending data: " + data);
+    if (data.length() > 200) {
+      Logger::getInstance().debug(
+          "UnixTransport: Sending data: " + data.substr(0, 100) + "..." +
+          data.substr(data.length() - 100));
+    } else {
+      Logger::getInstance().debug("UnixTransport: Sending data: " + data);
+    }
 
     if (use_chunking_) {
       size_t offset = 0;
@@ -181,12 +187,171 @@ namespace netd::shared {
 
     std::string result;
     if (is_chunked) {
-      result = receiveChunkedData(socket_fd);
+      result = receiveChunkedDataFromBuffer(socket_fd, peek_data);
     } else {
-      result = receiveFramedData(socket_fd);
+      result = receiveFramedDataFromBuffer(socket_fd, peek_data);
     }
 
-    Logger::getInstance().debug("UnixTransport: Received data: " + result);
+    if (result.length() > 200) {
+      Logger::getInstance().debug(
+          "UnixTransport: Received data: " + result.substr(0, 100) + "..." +
+          result.substr(result.length() - 100));
+    } else {
+      Logger::getInstance().debug("UnixTransport: Received data: " + result);
+    }
+    return result;
+  }
+
+  std::string UnixTransport::readNextMessage(int socket_fd) {
+    if (socket_fd < 0) {
+      return "";
+    }
+
+    char peek_buffer[16];
+    ssize_t bytes_received =
+        recv(socket_fd, peek_buffer, sizeof(peek_buffer) - 1, 0);
+    if (bytes_received <= 0) {
+      return "";
+    }
+
+    peek_buffer[bytes_received] = *NULL_TERMINATOR;
+    std::string peek_data(peek_buffer);
+
+    std::regex chunk_start_pattern(CHUNK_START_PATTERN);
+    bool is_chunked = std::regex_search(peek_data, chunk_start_pattern);
+
+    std::string result;
+    if (is_chunked) {
+      result = readNextChunkedMessage(socket_fd, peek_data);
+    } else {
+      result = readNextFramedMessage(socket_fd, peek_data);
+    }
+
+    Logger::getInstance().debug("UnixTransport: Read next message: " + result);
+    return result;
+  }
+
+  std::string
+  UnixTransport::readNextChunkedMessage(int socket_fd,
+                                        const std::string &initial_data) {
+    std::string result;
+    char buffer[BUFFER_SIZE];
+    std::string current_data = initial_data;
+    std::regex header_pattern(CHUNK_HEADER_PATTERN);
+
+    while (true) {
+      std::smatch match;
+      if (!std::regex_search(current_data, match, header_pattern)) {
+        ssize_t bytes_received = recv(socket_fd, buffer, sizeof(buffer) - 1, 0);
+        if (bytes_received <= 0) {
+          return "";
+        }
+        buffer[bytes_received] = *NULL_TERMINATOR;
+        current_data += buffer;
+        continue;
+      }
+
+      size_t header_start = match.position();
+      std::regex newline_pattern(NEWLINE);
+      std::sregex_iterator iter(current_data.begin() + header_start + 2,
+                                current_data.end(), newline_pattern);
+      std::sregex_iterator end;
+      size_t header_end = (iter != end) ? iter->position() + header_start + 2
+                                        : std::string::npos;
+      if (header_end == std::string::npos) {
+        ssize_t bytes_received = recv(socket_fd, buffer, sizeof(buffer) - 1, 0);
+        if (bytes_received <= 0) {
+          return "";
+        }
+        buffer[bytes_received] = *NULL_TERMINATOR;
+        current_data += buffer;
+        continue;
+      }
+
+      std::regex header_extract_pattern(HEADER_EXTRACT_PATTERN);
+      std::smatch header_match;
+      if (std::regex_search(current_data, header_match,
+                            header_extract_pattern)) {
+        std::string header = header_match.str();
+
+        if (header == CHUNK_END_MARKER) {
+          break;
+        }
+
+        std::regex chunk_size_pattern(CHUNK_SIZE_PATTERN);
+        std::smatch size_match;
+        if (!std::regex_search(header, size_match, chunk_size_pattern)) {
+          return "";
+        }
+
+        size_t chunk_size = std::stoul(size_match[1].str());
+
+        std::regex after_header_pattern(AFTER_HEADER_PATTERN);
+        std::smatch after_match;
+        if (std::regex_search(current_data, after_match,
+                              after_header_pattern)) {
+          current_data = after_match[1].str();
+        }
+
+        while (current_data.length() < chunk_size) {
+          size_t needed = chunk_size - current_data.length();
+          size_t to_read = std::min(needed, sizeof(buffer));
+
+          ssize_t bytes_received = recv(socket_fd, buffer, to_read, 0);
+          if (bytes_received <= 0) {
+            return "";
+          }
+
+          current_data.append(buffer, bytes_received);
+        }
+
+        char chunk_pattern[256];
+        snprintf(chunk_pattern, sizeof(chunk_pattern), CHUNK_EXTRACT_PATTERN,
+                 chunk_size);
+        std::regex chunk_extract_pattern(chunk_pattern);
+        std::smatch chunk_match;
+        if (std::regex_search(current_data, chunk_match,
+                              chunk_extract_pattern)) {
+          std::string chunk_data = chunk_match[1].str();
+          result += chunk_data;
+          current_data = chunk_match[2].str();
+        }
+      }
+    }
+
+    return result;
+  }
+
+  std::string
+  UnixTransport::readNextFramedMessage(int socket_fd,
+                                       const std::string &initial_data) {
+    std::string result = initial_data;
+    char buffer[BUFFER_SIZE];
+    std::regex separator_pattern(NETCONF_SEPARATOR);
+
+    while (true) {
+      if (std::regex_search(result, separator_pattern)) {
+        break;
+      }
+
+      ssize_t bytes_received = recv(socket_fd, buffer, sizeof(buffer) - 1, 0);
+      if (bytes_received <= 0) {
+        return "";
+      }
+
+      buffer[bytes_received] = *NULL_TERMINATOR;
+      result += buffer;
+    }
+
+    std::smatch match;
+    if (std::regex_search(result, match, separator_pattern)) {
+      std::regex before_separator_pattern(BEFORE_SEPARATOR_PATTERN);
+      std::smatch before_match;
+      if (std::regex_search(result, before_match, before_separator_pattern)) {
+        result = before_match[1].str();
+      }
+    }
+
     return result;
   }
 
@@ -324,6 +489,7 @@ namespace netd::shared {
 
   bool UnixTransport::hasData(int socket_fd) {
     if (socket_fd < 0) {
+      Logger::getInstance().debug("UnixTransport::hasData: Invalid socket fd");
       return false;
     }
 
@@ -337,7 +503,19 @@ namespace netd::shared {
     timeout.tv_usec = 0;
 
     int result = select(socket_fd + 1, &readfds, nullptr, nullptr, &timeout);
-    return result > 0 && FD_ISSET(socket_fd, &readfds);
+    if (result <= 0 || !FD_ISSET(socket_fd, &readfds)) {
+      Logger::getInstance().debug(
+          "UnixTransport::hasData: No data available from select");
+      return false;
+    }
+
+    char peek_buffer[1];
+    ssize_t bytes_received = recv(socket_fd, peek_buffer, 1, MSG_PEEK);
+    bool has_data = bytes_received > 0;
+    Logger::getInstance().debug("UnixTransport::hasData: Peek result=" +
+                                std::to_string(bytes_received) +
+                                ", hasData=" + std::to_string(has_data));
+    return has_data;
   }
 
   void UnixTransport::cancelOperation(int socket_fd) {

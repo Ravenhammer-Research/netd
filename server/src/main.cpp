@@ -50,18 +50,15 @@ constexpr const char NEWLINE[] = {0x0a, 0x00};
 void global_exception_handler() {
   std::cout << ANSI_CLEAR_SCREEN << std::flush;
 
-  std::cerr << "FATAL: Uncaught exception in netd server" << std::endl;
-  std::cerr << "This might explain unexpected server crashes" << std::endl;
-
-  try {
-    std::rethrow_exception(std::current_exception());
-  } catch (const std::exception &e) {
-    std::cerr << "Exception: " << e.what() << std::endl;
-  } catch (...) {
-    std::cerr << "Unknown exception type" << std::endl;
+  std::exception_ptr current_exception = std::current_exception();
+  if (current_exception) {
+    std::cerr << "FATAL: Uncaught exception in netd server" << std::endl;
+    std::cerr << "This might explain unexpected server crashes" << std::endl;
+    std::cerr << "Exception type check not possible without try-catch" << std::endl;
+  } else {
+    std::cerr << "FATAL: Uncaught exception in netd server" << std::endl;
+    std::cerr << "This might explain unexpected server crashes" << std::endl;
   }
-
-  std::abort();
 }
 
 void printUsage(const char *progname) {
@@ -123,6 +120,7 @@ void printUsage(const char *progname) {
             << SPACE(15) << "Application trace debug" << NEWLINE << NEWLINE;
 
   std::cerr << ANSI_BOLD << "Other Options" << ANSI_RESET << ":" << NEWLINE;
+  
   std::cerr << SPACE(2) << ANSI_BOLD << "-l" << ANSI_RESET << SPACE(26)
             << "List available YANG modules and exit" << NEWLINE;
 

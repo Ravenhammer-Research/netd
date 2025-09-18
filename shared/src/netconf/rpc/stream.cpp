@@ -1,7 +1,8 @@
 #include <atomic>
 #include <cstring>
+#include <shared/include/exception.hpp>
 #include <shared/include/logger.hpp>
-#include <shared/include/stream.hpp>
+#include <shared/include/netconf/rpc/stream.hpp>
 
 namespace netd::shared {
 
@@ -47,17 +48,64 @@ namespace netd::shared {
     }
   }
 
-  bool RpcRxStreamBuf::hasData() { return socket_.hasData(); }
-
-  std::string RpcRxStreamBuf::readToEnd() {
-    if (underflow() == traits_type::eof()) {
-      return "";
+  void RpcRxStreamBuf::rewindOne() {
+    if (message_starts_.empty()) {
+      return;
     }
 
-    std::string result;
-    if (gptr() < egptr()) {
-      result.assign(gptr(), egptr() - gptr());
+    message_starts_.pop_back();
+    size_t prev_start = message_starts_.empty() ? 0 : message_starts_.back();
+    setg(buffer_.data(), buffer_.data() + prev_start,
+         buffer_.data() + buffer_.size());
+  }
+
+  bool RpcRxStreamBuf::hasData() {
+    size_t current_pos = gptr() - eback();
+
+    for (size_t start : message_starts_) {
+      if (start > current_pos) {
+        Logger::getInstance().debug(
+            "RpcRxStreamBuf::hasData: Found unprocessed message at position " +
+            std::to_string(start));
+        return true;
+      }
     }
+
+    bool socket_has_data = socket_.hasData();
+    Logger::getInstance().debug(
+        "RpcRxStreamBuf::hasData: No unprocessed messages, socket_hasData=" +
+        std::to_string(socket_has_data));
+    return socket_has_data;
+  }
+
+  std::string RpcRxStreamBuf::readNextMessage() {
+    if (gptr() >= egptr()) {
+      std::string new_message = socket_.receiveData();
+      if (new_message.empty()) {
+        throw EndOfStreamError("No data available from socket");
+      }
+      message_starts_.push_back(buffer_.length());
+      buffer_ += new_message;
+      setg(buffer_.data(),
+           buffer_.data() + buffer_.length() - new_message.length(),
+           buffer_.data() + buffer_.size());
+    }
+
+    size_t current_pos = gptr() - eback();
+    size_t next_message_start = buffer_.length();
+
+    for (size_t start : message_starts_) {
+      if (start > current_pos) {
+        next_message_start = start;
+        break;
+      }
+    }
+
+    std::string result =
+        buffer_.substr(current_pos, next_message_start - current_pos);
+
+    setg(buffer_.data(), buffer_.data() + next_message_start,
+         buffer_.data() + buffer_.size());
 
     return result;
   }
@@ -106,9 +154,13 @@ namespace netd::shared {
 
   void RpcRxStream::rewind() { streambuf_.rewind(); }
 
+  void RpcRxStream::rewindOne() { streambuf_.rewindOne(); }
+
   bool RpcRxStream::hasData() { return streambuf_.hasData(); }
 
-  std::string RpcRxStream::readToEnd() { return streambuf_.readToEnd(); }
+  std::string RpcRxStream::readNextMessage() {
+    return streambuf_.readNextMessage();
+  }
 
   ClientSocket &RpcRxStream::getSocket() { return streambuf_.getSocket(); }
 

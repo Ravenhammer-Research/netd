@@ -1,5 +1,6 @@
 #include <bsdxml.h>
 #include <shared/include/exception.hpp>
+#include <shared/include/logger.hpp>
 #include <shared/include/xml/base.hpp>
 #include <shared/include/xml/hello.hpp>
 #include <sstream>
@@ -72,10 +73,98 @@ namespace netd::shared::xml {
   }
 
   // HelloToServer implementation
+  struct HelloParseState {
+    HelloToServer *hello;
+    const struct ly_ctx *ctx;
+    std::string currentCapability;
+    bool inCapability = false;
+  };
+
   std::unique_ptr<HelloToServer>
-  HelloToServer::fromXml([[maybe_unused]] const std::string &xml,
-                         [[maybe_unused]] const struct ly_ctx *ctx) {
-    throw NotImplementedError("HelloToServer::fromXml not implemented");
+  HelloToServer::fromXml(const std::string &xml, const struct ly_ctx *ctx) {
+    auto hello = std::make_unique<HelloToServer>();
+
+    if (xml.empty()) {
+      throw std::runtime_error("Empty XML string provided");
+    }
+
+    XML_Parser parser = XML_ParserCreate(nullptr);
+    if (!parser) {
+      throw std::runtime_error("Failed to create XML parser");
+    }
+
+    HelloParseState state;
+    state.hello = hello.get();
+    state.ctx = ctx;
+    XML_SetUserData(parser, &state);
+
+    XML_SetElementHandler(
+        parser,
+        [](void *userData, const XML_Char *name, const XML_Char **atts) {
+          HelloParseState *state = static_cast<HelloParseState *>(userData);
+          state->hello->startElementHandler(userData, name, atts);
+        },
+        [](void *userData, const XML_Char *name) {
+          HelloParseState *state = static_cast<HelloParseState *>(userData);
+          state->hello->endElementHandler(userData, name);
+        });
+    XML_SetCharacterDataHandler(
+        parser, [](void *userData, const XML_Char *s, int len) {
+          HelloParseState *state = static_cast<HelloParseState *>(userData);
+          state->hello->characterDataHandler(userData, s, len);
+        });
+
+    enum XML_Status status =
+        XML_Parse(parser, xml.c_str(), static_cast<int>(xml.length()), 1);
+
+    XML_ParserFree(parser);
+
+    if (status == XML_STATUS_ERROR) {
+      throw std::runtime_error("Failed to parse XML");
+    }
+
+    return hello;
+  }
+
+  void HelloToServer::startElementHandler(void *userData, const XML_Char *name,
+                                          const XML_Char **atts
+                                          [[maybe_unused]]) {
+    if (!userData || !name)
+      return;
+
+    HelloParseState *state = static_cast<HelloParseState *>(userData);
+
+    if (strcmp(name, CAPABILITY_ELEMENT) == 0) {
+      state->inCapability = true;
+      state->currentCapability = "";
+    }
+  }
+
+  void HelloToServer::endElementHandler(void *userData, const XML_Char *name) {
+    if (!userData || !name)
+      return;
+
+    HelloParseState *state = static_cast<HelloParseState *>(userData);
+
+    if (strcmp(name, CAPABILITY_ELEMENT) == 0) {
+      if (!state->currentCapability.empty()) {
+        state->hello->capabilities_.push_back(state->currentCapability);
+        state->currentCapability.clear();
+      }
+      state->inCapability = false;
+    }
+  }
+
+  void HelloToServer::characterDataHandler(void *userData, const XML_Char *s,
+                                           int len) {
+    if (!userData || !s || len <= 0)
+      return;
+
+    HelloParseState *state = static_cast<HelloParseState *>(userData);
+
+    if (state->inCapability) {
+      state->currentCapability += std::string(s, len);
+    }
   }
 
   std::unique_ptr<HelloToServer>

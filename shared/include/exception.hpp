@@ -77,6 +77,17 @@ namespace netd::shared {
     explicit RpcError(const std::string &message) : NetdError(message) {}
   };
 
+  class SessionError : public NetdError {
+  public:
+    explicit SessionError(const std::string &message) : NetdError(message) {}
+  };
+
+  class EndOfStreamError : public NetdError {
+  public:
+    explicit EndOfStreamError(const std::string &message)
+        : NetdError(message) {}
+  };
+
   // YANG-related exceptions
   class YangError : public NetdError {
   private:

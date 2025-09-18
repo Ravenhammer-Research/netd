@@ -47,8 +47,10 @@ namespace netd::shared {
     virtual ~RpcRxStreamBuf() = default;
 
     void rewind();
+    void rewindOne();
     bool hasData();
     std::string readToEnd();
+    std::string readNextMessage();
 
     /**
      * @brief Get the socket reference
@@ -63,6 +65,7 @@ namespace netd::shared {
   private:
     ClientSocket &socket_;
     std::string buffer_;
+    std::vector<size_t> message_starts_;
     static const size_t BUFFER_SIZE = 4096;
   };
 
@@ -111,6 +114,11 @@ namespace netd::shared {
     void rewind();
 
     /**
+     * @brief Rewinds the stream to the beginning of the last read message
+     */
+    void rewindOne();
+
+    /**
      * @brief Checks if data is available to read without consuming it
      * @return true if data is available, false otherwise
      */
@@ -121,6 +129,12 @@ namespace netd::shared {
      * @return string containing all data read from the stream
      */
     std::string readToEnd();
+
+    /**
+     * @brief Reads the next complete message from the stream
+     * @return string containing the next message
+     */
+    std::string readNextMessage();
 
     /**
      * @brief Get the socket reference

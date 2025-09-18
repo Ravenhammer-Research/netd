@@ -64,8 +64,8 @@ namespace netd::server::netconf {
     void accept();
     netd::shared::netconf::NetconfSession *
     handleClientSession(const netd::shared::ClientSocket &client_socket);
-    void rpcRequestReceiveWait(netd::shared::RpcRxStream &rpc_stream,
-                               netd::shared::netconf::NetconfSession *session);
+    void rpcReceive(netd::shared::RpcRxStream &rpc_stream,
+                    netd::shared::netconf::NetconfSession *session);
     void processRpcRequest(netd::shared::netconf::NetconfSession &session,
                            const std::string &data);
     void sendErrorResponse(int client_socket, const std::string &error_message);

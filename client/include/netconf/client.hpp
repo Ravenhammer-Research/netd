@@ -30,9 +30,9 @@
 
 #include <client/include/netconf/base.hpp>
 #include <memory>
+#include <shared/include/netconf/rpc/stream.hpp>
 #include <shared/include/netconf/session.hpp>
 #include <shared/include/socket.hpp>
-#include <shared/include/stream.hpp>
 #include <shared/include/transport.hpp>
 #include <string>
 
@@ -95,8 +95,8 @@ namespace netd::client::netconf {
      * @param rpc_stream The RPC stream to read from
      * @param session The NETCONF session
      */
-    void rpcResponseReceiveWait(netd::shared::RpcRxStream &rpc_stream,
-                                netd::shared::netconf::NetconfSession *session);
+    void rpcReceive(netd::shared::RpcRxStream &rpc_stream,
+                    netd::shared::netconf::NetconfSession *session);
 
     /**
      * @brief Handles the server session in a loop, processing incoming RPC
@@ -110,7 +110,7 @@ namespace netd::client::netconf {
      * @return The response data as a string
      * @throws std::runtime_error if request fails
      */
-    std::string
+    bool
     sendRequest(const netd::shared::request::get::GetConfigRequest &request);
 
     /**
@@ -119,8 +119,7 @@ namespace netd::client::netconf {
      * @return The response data as a string
      * @throws std::runtime_error if request fails
      */
-    std::string
-    sendRequest(const netd::shared::request::CommitRequest &request);
+    bool sendRequest(const netd::shared::request::CommitRequest &request);
 
     /**
      * @brief Sends an edit request to the server
@@ -128,8 +127,7 @@ namespace netd::client::netconf {
      * @return The response data as a string
      * @throws std::runtime_error if request fails
      */
-    std::string
-    sendRequest(const netd::shared::request::EditConfigRequest &request);
+    bool sendRequest(const netd::shared::request::EditConfigRequest &request);
 
   private:
     netd::shared::TransportType transport_type_;

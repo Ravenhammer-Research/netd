@@ -29,8 +29,8 @@
 #include <server/include/netconf/handlers.hpp>
 #include <server/include/netconf/rpc.hpp>
 #include <shared/include/exception.hpp>
+#include <shared/include/netconf/rpc/stream.hpp>
 #include <shared/include/socket.hpp>
-#include <shared/include/stream.hpp>
 #include <shared/include/xml/base.hpp>
 #include <shared/include/xml/envelope.hpp>
 #include <string>

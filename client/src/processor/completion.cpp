@@ -398,12 +398,15 @@ namespace netd::client::processor {
       getConfigRequest->setRequestedModule("ietf-interfaces");
 
       // Send the request (response will be handled by expect callback)
-      std::string response_xml =
-          netconf_client_->sendRequest(*getConfigRequest);
+      bool success = netconf_client_->sendRequest(*getConfigRequest);
 
       auto &logger = netd::shared::Logger::getInstance();
-      logger.debug(
-          "Tab completion - Sent get-config request, waiting for callback");
+      if (success) {
+        logger.debug(
+            "Tab completion - Sent get-config request, waiting for callback");
+      } else {
+        logger.error("Tab completion - Failed to send get-config request");
+      }
 
       // For now, use fallback interfaces while waiting for async response
       interfaces = {"ge-0/0/0", "ge-0/0/1", "ge-0/0/2", "ge-0/0/3", "xe-0/0/0",

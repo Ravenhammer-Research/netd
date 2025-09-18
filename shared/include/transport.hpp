@@ -66,6 +66,7 @@ namespace netd::shared {
     // Communication
     virtual bool sendData(int socket_fd, const std::string &data) = 0;
     virtual std::string receiveData(int socket_fd) = 0;
+    virtual std::string readNextMessage(int socket_fd) = 0;
     virtual bool hasData(int socket_fd) = 0;
 
     // Cancellation support

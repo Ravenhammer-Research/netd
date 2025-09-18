@@ -29,7 +29,7 @@
 #define NETD_CLIENT_NETCONF_RPC_HPP
 
 #include <istream>
-#include <shared/include/netconf/rpc.hpp>
+#include <shared/include/netconf/rpc/rpc.hpp>
 
 namespace netd::client::netconf {
 

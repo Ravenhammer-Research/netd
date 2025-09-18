@@ -32,7 +32,7 @@
 #include <libyang/libyang.h>
 #include <memory>
 #include <shared/include/marshalling/filter.hpp>
-#include <shared/include/netconf/rpc.hpp>
+#include <shared/include/netconf/rpc/rpc.hpp>
 #include <shared/include/xml/base.hpp>
 #include <sstream>
 #include <string>

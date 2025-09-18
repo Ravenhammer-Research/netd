@@ -12,7 +12,6 @@ set(SHARED_SOURCES
     src/unix.cpp
     src/http.cpp
     src/quic.cpp
-    src/stream.cpp
     src/socket.cpp
 )
 

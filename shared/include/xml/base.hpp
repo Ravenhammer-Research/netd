@@ -64,7 +64,7 @@ namespace netd::shared::xml {
     static constexpr const char SELF_CLOSE_TAG[] = {0x2F, 0x3E, 0x00}; // '/>'
     static constexpr const char QUOTE[] = {0x22, 0x00};                // '"'
     static constexpr const char SPACE[] = {0x20, 0x00};                // ' '
-    static constexpr const char EQUALS[] = {0x3D};                     // '='
+    static constexpr const char EQUALS[] = {0x3D, 0x00};               // '='
     static constexpr const char CLOSE_OPEN_TAG[] = {0x3C, 0x2F, 0x00}; // '</'
 
     std::string name;

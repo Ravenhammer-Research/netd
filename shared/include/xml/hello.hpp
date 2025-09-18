@@ -89,6 +89,15 @@ namespace netd::shared::xml {
     // Override XMLTree methods
     std::stringstream toXmlStream(const struct ly_ctx *ctx) const override;
 
+  protected:
+    // Override XMLTree protected methods
+    void startElementHandler(void *userData, const XML_Char *name,
+                             const XML_Char **atts) override;
+    void endElementHandler(void *userData, const XML_Char *name) override;
+    void characterDataHandler(void *userData, const XML_Char *s,
+                              int len) override;
+
+  public:
     // Getters and setters
     const std::vector<std::string> &getCapabilities() const {
       return capabilities_;

@@ -66,6 +66,7 @@ namespace netd::shared {
     int getSocket() const override;
     bool sendData(int socket_fd, const std::string &data) override;
     std::string receiveData(int socket_fd) override;
+    std::string readNextMessage(int socket_fd) override;
     bool hasData(int socket_fd) override;
 
     // Cancellation support
@@ -77,6 +78,12 @@ namespace netd::shared {
     void setChunking(bool enabled) { use_chunking_ = enabled; }
     bool getChunking() const { return use_chunking_; }
     void setClientSocket(int socket_fd) { client_socket_ = socket_fd; }
+
+  private:
+    std::string readNextChunkedMessage(int socket_fd,
+                                       const std::string &initial_data);
+    std::string readNextFramedMessage(int socket_fd,
+                                      const std::string &initial_data);
 
     // Legacy methods for compatibility
     const std::string &getSocketPath() const;

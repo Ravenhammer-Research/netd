@@ -33,9 +33,9 @@
 #include <map>
 #include <memory>
 #include <shared/include/exception.hpp>
+#include <shared/include/netconf/rpc/stream.hpp>
 #include <shared/include/netconf/session.hpp>
 #include <shared/include/socket.hpp>
-#include <shared/include/stream.hpp>
 #include <string>
 
 namespace netd::shared::netconf {

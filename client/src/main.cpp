@@ -35,6 +35,7 @@
 #include <iostream>
 #include <shared/include/exception.hpp>
 #include <shared/include/logger.hpp>
+#include <shared/include/request/get/library.hpp>
 #include <sstream>
 #include <string>
 #include <thread>
@@ -53,24 +54,22 @@ constexpr const char NEWLINE[] = {0x0a, 0x00};
 void global_exception_handler() {
   std::cout << ANSI_CLEAR_SCREEN << std::flush;
 
-  std::cerr << "FATAL: Uncaught exception in netc" << std::endl;
-  std::cerr << "This might explain why netc -d exits unexpectedly" << std::endl;
-
-  try {
-    std::rethrow_exception(std::current_exception());
-  } catch (const std::exception &e) {
-    std::cerr << "Exception: " << e.what() << std::endl;
-  } catch (...) {
-    std::cerr << "Unknown exception type" << std::endl;
+  std::exception_ptr current_exception = std::current_exception();
+  if (current_exception) {
+    std::cerr << "FATAL: Uncaught exception in netc" << std::endl;
+    std::cerr << "This might explain why netc -d exits unexpectedly" << std::endl;
+    std::cerr << "Exception type check not possible without try-catch" << std::endl;
+  } else {
+    std::cerr << "FATAL: Uncaught exception in netc" << std::endl;
+    std::cerr << "This might explain why netc -d exits unexpectedly" << std::endl;
   }
-
-  std::abort();
 }
 
 void printUsage(const char *progname) {
   std::cerr << ANSI_BOLD << "Usage:" << ANSI_RESET << SPACE(1) << progname
             << SPACE(1) << "[" << ANSI_ITALIC << "options" << ANSI_RESET << "]"
             << NEWLINE << NEWLINE;
+            
   std::cerr << ANSI_BOLD << "Transport Options" << ANSI_RESET << ":" << NEWLINE;
 
   std::cerr << SPACE(2) << ANSI_BOLD << "--unix" << ANSI_RESET << SPACE(2)
@@ -151,12 +150,30 @@ void showStartupInfo(netd::client::tui::TUI &tui) {
   tui.putLine(" ");
 }
 
+void testdebug() {
+  auto &logger = netd::shared::Logger::getInstance();
+  uint32_t logMask = netd::shared::LOG_DEFAULT;
+  logMask |= static_cast<uint32_t>(netd::shared::LogMask::DEBUG);
+  logMask |= static_cast<uint32_t>(netd::shared::LogMask::DEBUG_TRACE);
+  logger.setLogMask(logMask);
+  logger.setTimestampEnabled(true);
+
+  auto client = std::make_unique<netd::client::netconf::NetconfClient>(
+      netd::shared::TransportType::UNIX, "/tmp/netd.sock");
+  client->connect();
+  client->disconnect(true);
+}
+
 int main(int argc, char *argv[]) {
   std::set_terminate(global_exception_handler);
 
   auto &logger = netd::shared::Logger::getInstance();
 
   netd::shared::TransportType transportType = netd::shared::TransportType::UNIX;
+
+  testdebug();
+  return 0;
+
   std::string bindAddress = "/tmp/netd.sock";
   uint32_t logMask = netd::shared::LOG_DEFAULT;
   bool listLLDP = false;

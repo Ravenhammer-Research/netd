@@ -29,6 +29,7 @@
 #include <bsdxml.h>
 #include <map>
 #include <shared/include/exception.hpp>
+#include <shared/include/logger.hpp>
 #include <shared/include/xml/base.hpp>
 #include <shared/include/xml/envelope.hpp>
 #include <shared/include/xml/hello.hpp>
@@ -152,6 +153,13 @@ namespace netd::shared::xml {
 
     enum XML_Status status =
         XML_Parse(parser, xml.c_str(), static_cast<int>(xml.length()), 1);
+
+    auto &logger = netd::shared::Logger::getInstance();
+    logger.debug("isHelloMessage: status=" + std::to_string(status) +
+                 ", foundHello=" + std::to_string(state.foundHello) +
+                 ", foundRpc=" + std::to_string(state.foundRpc) +
+                 ", foundRpcReply=" + std::to_string(state.foundRpcReply) +
+                 ", foundRpcError=" + std::to_string(state.foundRpcError));
 
     XML_ParserFree(parser);
 

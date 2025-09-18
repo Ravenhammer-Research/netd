@@ -32,14 +32,17 @@
 #include <errno.h>
 #include <shared/include/exception.hpp>
 #include <shared/include/logger.hpp>
+#include <shared/include/netconf/rpc/stream.hpp>
 #include <shared/include/netconf/session.hpp>
 #include <shared/include/request/commit.hpp>
 #include <shared/include/request/edit.hpp>
 #include <shared/include/request/get/config.hpp>
+#include <shared/include/request/get/library.hpp>
+#include <shared/include/request/hello.hpp>
 #include <shared/include/socket.hpp>
-#include <shared/include/stream.hpp>
 #include <shared/include/unix.hpp>
 #include <shared/include/xml/envelope.hpp>
+#include <shared/include/xml/hello.hpp>
 #include <shared/include/yang.hpp>
 #include <sstream>
 #include <thread>
@@ -90,7 +93,41 @@ namespace netd::client::netconf {
 
     netd::shared::netconf::Rpc::sendHelloToServer(client_socket,
                                                   session_.get());
-    return true;
+
+    netd::shared::RpcRxStream rpc_stream(client_socket);
+
+    // Wait for server hello message
+    auto &logger = netd::shared::Logger::getInstance();
+    logger.debug("connect: Waiting for server hello message");
+
+    for (int attempt = 1; attempt <= 3; attempt++) {
+      logger.debug("connect: Attempt " + std::to_string(attempt) +
+                   " to receive server hello");
+
+      if (rpc_stream.hasData()) {
+        try {
+          rpcReceive(rpc_stream, session_.get());
+          attempt = 1;
+          continue;
+        } catch (const std::exception &e) {
+          logger.error("connect: Exception in rpcReceive: " +
+                       std::string(e.what()));
+          return false;
+        }
+      } else {
+        logger.debug("Error in rpcReceive: " +
+                     std::to_string(attempt));
+      }
+
+      if (attempt < 3) {
+        logger.debug("connect: Sleeping 1 second before next attempt");
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+      }
+    }
+
+    logger.error("connect: Failed to receive server hello after 3 attempts");
+    throw netd::shared::ConnectionError(
+        "Failed to receive server hello message");
   }
 
   void NetconfClient::disconnect(bool close_session) {
@@ -121,32 +158,71 @@ namespace netd::client::netconf {
     return session_.get();
   }
 
-  void NetconfClient::rpcResponseReceiveWait(
-      netd::shared::RpcRxStream &rpc_stream,
-      netd::shared::netconf::NetconfSession *session) {
+  void
+  NetconfClient::rpcReceive(netd::shared::RpcRxStream &rpc_stream,
+                            netd::shared::netconf::NetconfSession *session) {
+
+    auto &logger = netd::shared::Logger::getInstance();
+    logger.debug("rpcReceive: Starting");
 
     if (!session) {
-      return;
+      logger.error("rpcReceive: session is null");
+      throw netd::shared::SessionError("session not found");
     }
 
-    if (rpc_stream.hasData()) {
+    logger.debug("rpcReceive: Reading next message");
+    std::string xml = rpc_stream.readNextMessage();
+    logger.debug("rpcReceive: Read message, length=" +
+                 std::to_string(xml.length()));
+
+    if (netd::shared::xml::isRpcMessage(xml)) {
+      logger.debug("rpcReceive: Processing RPC message");
+      rpc_stream.rewindOne();
       netd::client::netconf::ClientRpc::processRpc(rpc_stream, session);
+    } else if (netd::shared::xml::isHelloMessage(xml)) {
+      logger.debug("rpcReceive: Processing hello message");
+      auto yang_ctx = session->getContext();
+      // XXX
+      // auto hello = netd::shared::xml::HelloToClient::fromXml(xml, yang_ctx);
+      // session->processHelloRequest(*hello);
+
+      logger.debug("rpcReceive: Sending Yang library request");
+      netd::shared::request::get::GetLibraryRequest library_request;
+      lyd_node *yang_node = library_request.toYang(yang_ctx);
+
+      auto envelope = netd::shared::xml::RpcEnvelope::toXml(
+          netd::shared::xml::RpcType::RPC, 1,
+          netd::shared::netconf::NetconfOperation::GET, nullptr, yang_node,
+          yang_ctx);
+
+      logger.debug("rpcReceive: Creating tx stream and sending envelope");
+      netd::shared::RpcTxStream tx_stream(rpc_stream.getSocket());
+      std::stringstream envelope_stream = envelope->toXmlStream(yang_ctx);
+
+      std::string line;
+      while (std::getline(envelope_stream, line)) {
+        tx_stream << line << "\n";
+      }
+      tx_stream.flush();
+
+      lyd_free_tree(yang_node);
+      logger.debug("rpcReceive: Envelope sent");
     } else {
-      std::this_thread::sleep_for(std::chrono::milliseconds(1));
+      logger.error("rpcReceive: received unknown message");
     }
   }
 
-  std::string NetconfClient::sendRequest(
+  bool NetconfClient::sendRequest(
       const netd::shared::request::get::GetConfigRequest &) {
     throw netd::shared::NotImplementedError("Not implemented");
   }
 
-  std::string
+  bool
   NetconfClient::sendRequest(const netd::shared::request::CommitRequest &) {
     throw netd::shared::NotImplementedError("Not implemented");
   }
 
-  std::string
+  bool
   NetconfClient::sendRequest(const netd::shared::request::EditConfigRequest &) {
     throw netd::shared::NotImplementedError("Not implemented");
   }
